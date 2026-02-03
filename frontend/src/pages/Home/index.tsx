@@ -1,25 +1,10 @@
 import { Button } from '@/components/ui/button'
 import { ArrowRight, Check } from 'lucide-react'
+import { Layout } from '../../components/Layout'
 
-function App() {
+export const Home = () => {
   return (
-    <div className="min-h-screen bg-background text-foreground">
-      <nav className="flex items-center justify-between px-6 h-16 border-b border-border">
-        <div className="text-xl font-bold">FlexVaults</div>
-        <div className="flex items-center gap-4">
-          <a href="#" className="text-primary font-medium text-sm">
-            Menu item 1
-          </a>
-          <a href="#" className="text-muted-foreground font-medium text-sm">
-            Menu item 2
-          </a>
-          <a href="#" className="text-muted-foreground font-medium text-sm">
-            Menu item 3
-          </a>
-          <Button>Connect Wallet</Button>
-        </div>
-      </nav>
-
+    <Layout>
       <section className="flex flex-col items-center py-24 px-6">
         <p className="text-sm font-bold text-foreground mb-4">Private & diversified</p>
         <h1 className="text-5xl font-normal text-foreground text-center tracking-tight mb-8">
@@ -67,8 +52,6 @@ function App() {
           <div className="flex-1 bg-muted rounded-md aspect-video"></div>
         </div>
       </section>
-    </div>
+    </Layout>
   )
 }
-
-export default App
