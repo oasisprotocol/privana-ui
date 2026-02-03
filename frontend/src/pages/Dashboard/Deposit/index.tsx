@@ -1,3 +1,3 @@
 export const Deposit = () => {
-  return <div>deposit</div>;
-};
+  return <div>deposit</div>
+}

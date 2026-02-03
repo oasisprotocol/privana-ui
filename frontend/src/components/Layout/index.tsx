@@ -1,9 +1,9 @@
-import type { ReactNode } from 'react';
-import { Link } from 'react-router';
-import { RainbowKitConnectButton } from '../RainbowKitConnectButton';
+import type { ReactNode } from 'react'
+import { Link } from 'react-router'
+import { RainbowKitConnectButton } from '../RainbowKitConnectButton'
 
 interface LayoutProps {
-  children: ReactNode;
+  children: ReactNode
 }
 
 export const Layout = ({ children }: LayoutProps) => {
@@ -19,5 +19,5 @@ export const Layout = ({ children }: LayoutProps) => {
       </nav>
       {children}
     </div>
-  );
-};
+  )
+}

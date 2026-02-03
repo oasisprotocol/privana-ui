@@ -1,3 +1,3 @@
 export const CopyTrading = () => {
-  return <div>copy-trading</div>;
-};
+  return <div>copy-trading</div>
+}
