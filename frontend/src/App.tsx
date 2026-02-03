@@ -1,5 +1,6 @@
 import { Button } from '@/components/ui/button'
 import { ArrowRight, Check } from 'lucide-react'
+import { RainbowKitConnectButton } from './components/RainbowKitConnectButton'
 
 function App() {
   return (
@@ -16,7 +17,7 @@ function App() {
           <a href="#" className="text-muted-foreground font-medium text-sm">
             Menu item 3
           </a>
-          <Button>Connect Wallet</Button>
+          <RainbowKitConnectButton />
         </div>
       </nav>
 

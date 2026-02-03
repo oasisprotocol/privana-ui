@@ -11,3 +11,8 @@ interface ImportMetaEnv {
 interface ImportMeta {
   readonly env: ImportMetaEnv;
 }
+
+declare module '@metamask/jazzicon' {
+  const jazzicon: (diameter: number, seed: number) => HTMLDivElement;
+  export default jazzicon;
+}
