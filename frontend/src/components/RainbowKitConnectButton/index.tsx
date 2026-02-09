@@ -12,6 +12,7 @@ import {
 } from '../ui/dropdown-menu'
 import { AccountAvatar } from '../AccountAvatar'
 import { trimLongString } from '../../utils/trimLongString'
+import { sapphire, sapphireTestnet, baseSepolia } from 'viem/chains'
 
 export const RainbowKitConnectButton: FC = () => {
   const { disconnect } = useDisconnect()
@@ -37,6 +38,17 @@ export const RainbowKitConnectButton: FC = () => {
                 return (
                   <Button onClick={openConnectModal} type="button">
                     Connect Wallet
+                  </Button>
+                )
+              }
+              if (
+                chain.id !== sapphire.id &&
+                chain.id !== sapphireTestnet.id &&
+                chain.id !== baseSepolia.id
+              ) {
+                return (
+                  <Button onClick={openChainModal} type="button">
+                    Wrong network
                   </Button>
                 )
               }
