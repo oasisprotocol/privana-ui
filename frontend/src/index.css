@@ -2,6 +2,9 @@
 @import 'tw-animate-css';
 @import '@fontsource-variable/geist';
 
+/* Exclude SDK from Tailwind scanning - SDK provides its own scoped CSS */
+@source not "../node_modules/@oasisprotocol/flexvaults-sdk";
+
 @custom-variant dark (&:is(.dark *));
 
 @theme inline {
@@ -76,4 +79,35 @@
     @apply bg-background text-foreground;
     font-family: var(--font-sans);
   }
+}
+
+[data-flexvaults].dark,
+.dark [data-flexvaults] {
+  --fv-radius: var(--radius);
+  --fv-background: var(--background);
+  --fv-foreground: var(--foreground);
+  --fv-primary: var(--primary);
+  --fv-primary-foreground: var(--primary-foreground);
+  --fv-secondary: var(--secondary);
+  --fv-secondary-foreground: var(--secondary-foreground);
+  --fv-card: var(--card);
+  --fv-card-foreground: var(--card-foreground);
+  --fv-popover: var(--popover);
+  --fv-popover-foreground: var(--popover-foreground);
+  --fv-muted: var(--muted);
+  --fv-muted-foreground: var(--muted-foreground);
+  --fv-accent: var(--accent);
+  --fv-accent-foreground: var(--accent-foreground);
+  --fv-border: var(--border);
+  --fv-input: var(--input);
+  --fv-destructive: var(--destructive);
+}
+
+/* Force SDK buttons with bg-primary to use app's primary color */
+[data-flexvaults] .bg-primary {
+  background-color: var(--primary) !important;
+}
+
+[data-flexvaults] .bg-primary:hover {
+  background-color: color-mix(in srgb, var(--primary) 90%, transparent) !important;
 }

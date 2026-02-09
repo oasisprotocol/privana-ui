@@ -6,8 +6,11 @@ import { WagmiProvider } from 'wagmi'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { darkTheme, RainbowKitProvider, Theme } from '@rainbow-me/rainbowkit'
 import { wagmiConfig } from './wagmi-config.ts'
+import { FlexvaultsProvider } from '@oasisprotocol/flexvaults-sdk'
 import '@rainbow-me/rainbowkit/styles.css'
 import './index.css'
+import '@oasisprotocol/flexvaults-sdk/styles.css'
+import { sapphireTestnet } from 'viem/chains'
 
 const queryClient = new QueryClient()
 
@@ -20,14 +23,21 @@ const rainbowKitTheme: Theme = {
   },
 }
 
+const flexvaultsNetwork =
+  parseInt(import.meta.env.VITE_CHAIN_ID, 10) === sapphireTestnet.id ? 'testnet' : 'mainnet'
+
 createRoot(document.getElementById('root')!).render(
   <StrictMode>
-    <WagmiProvider config={wagmiConfig}>
-      <QueryClientProvider client={queryClient}>
-        <RainbowKitProvider theme={rainbowKitTheme} modalSize="compact">
-          <RouterProvider router={router} />
-        </RainbowKitProvider>
-      </QueryClientProvider>
-    </WagmiProvider>
+    <div className="dark">
+      <WagmiProvider config={wagmiConfig}>
+        <QueryClientProvider client={queryClient}>
+          <FlexvaultsProvider network={flexvaultsNetwork}>
+            <RainbowKitProvider theme={rainbowKitTheme} modalSize="compact">
+              <RouterProvider router={router} />
+            </RainbowKitProvider>
+          </FlexvaultsProvider>
+        </QueryClientProvider>
+      </WagmiProvider>
+    </div>
   </StrictMode>,
 )
