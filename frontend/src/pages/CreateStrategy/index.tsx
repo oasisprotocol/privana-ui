@@ -10,7 +10,7 @@ import {
 import { Separator } from '@/components/ui/separator'
 import TraderTable from '@/components/TraderTable'
 import { Button } from '@oasisprotocol/flexvaults-sdk'
-import HyperliquidLogo from '../../assets/hyperliquid.svg'
+import { PoweredByHyperliquid } from '@/components/PoweredByHyperliquid'
 
 const steps = ['1. Choose traders to copy', '2. Enter strategy details', '3. Confirm']
 
@@ -55,10 +55,7 @@ export const CreateStrategy = () => {
         </Button>
       </div>
 
-      <div className="flex justify-center gap-2.5">
-        <div className="text-muted-foreground text-sm font-normal">Powered by</div>
-        <img src={HyperliquidLogo} alt="Hyperliquid" className="h-5" />
-      </div>
+      <PoweredByHyperliquid />
     </>
   )
 }

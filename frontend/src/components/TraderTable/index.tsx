@@ -3,6 +3,7 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { ChevronDownIcon } from 'lucide-react'
 import { cn } from '@/lib/utils'
+import { trimLongString } from '@/utils/trimLongString'
 
 interface TraderTableProps {
   className?: string
@@ -11,7 +12,7 @@ interface TraderTableProps {
 const traders = [
   {
     id: '1',
-    trader: '0x71F3...a92b',
+    trader: '0x4838b106fce9647bdf1e7877bf73ce8b0bad5f97',
     lastTrade: '1 min ago',
     size: '$7.24M',
     monthlyPnl: '+35.5%',
@@ -19,7 +20,7 @@ const traders = [
   },
   {
     id: '2',
-    trader: '0x9c4a...2Fe9',
+    trader: '0x4675C7e5BaAFBFFbca748158bEcBA61ef3b0a263',
     lastTrade: '3min ago',
     size: '$3.54M',
     monthlyPnl: '+23.5%',
@@ -27,7 +28,7 @@ const traders = [
   },
   {
     id: '3',
-    trader: '0xbE12...78Cd',
+    trader: '0xab97925eB84fe0260779F58B7cb08d77dcB1ee2B',
     lastTrade: '6 min ago',
     size: '$1.24M',
     monthlyPnl: '+16.5%',
@@ -57,7 +58,7 @@ export function TraderTable({ className }: TraderTableProps) {
         <TableBody>
           {traders.map(trader => (
             <TableRow key={trader.id}>
-              <TableCell className="font-medium">{trader.trader}</TableCell>
+              <TableCell className="font-medium">{trimLongString(trader.trader)}</TableCell>
               <TableCell>{trader.lastTrade}</TableCell>
               <TableCell>{trader.size}</TableCell>
               <TableCell className="text-chart-1">{trader.monthlyPnl}</TableCell>
@@ -67,13 +68,7 @@ export function TraderTable({ className }: TraderTableProps) {
                 </Button>
               </TableCell>
               <TableCell className="max-w-30">
-                <Input
-                  value={trader.allocation}
-                  className="w-full"
-                  onChange={e => {
-                    // Handle allocation change
-                  }}
-                />
+                <Input value={trader.allocation} className="w-full" onChange={() => {}} />
               </TableCell>
             </TableRow>
           ))}
