@@ -3,7 +3,7 @@ import { Home } from './pages/Home'
 import { Dashboard } from './pages/Dashboard'
 import { DashboardHome } from './pages/Dashboard/DashboardHome'
 import { Deposit } from './pages/Dashboard/Deposit'
-import { CopyTrading } from './pages/Dashboard/CopyTrading'
+import { CopyTrading } from './pages/CopyTrading'
 
 export const router = createBrowserRouter([
   {
@@ -11,7 +11,7 @@ export const router = createBrowserRouter([
     element: <Home />,
   },
   {
-    path: '/dashboard/:address',
+    path: '/portfolio',
     element: <Dashboard />,
     children: [
       {
@@ -19,11 +19,22 @@ export const router = createBrowserRouter([
         element: <DashboardHome />,
       },
       {
-        path: 'deposit',
+        path: 'portfolio/:address',
         element: <Deposit />,
       },
+    ],
+  },
+  {
+    path: 'copy-trading',
+    element: <Dashboard />,
+
+    children: [
       {
-        path: 'copy-trading',
+        index: true,
+        element: <CopyTrading />,
+      },
+      {
+        path: 'copy-trading/:address',
         element: <CopyTrading />,
       },
     ],
