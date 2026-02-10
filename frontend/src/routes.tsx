@@ -19,7 +19,7 @@ export const router = createBrowserRouter([
         element: <DashboardHome />,
       },
       {
-        path: 'portfolio/:address',
+        path: ':address',
         element: <Deposit />,
       },
     ],
@@ -34,7 +34,7 @@ export const router = createBrowserRouter([
         element: <CopyTrading />,
       },
       {
-        path: 'copy-trading/:address',
+        path: ':address',
         element: <CopyTrading />,
       },
     ],
