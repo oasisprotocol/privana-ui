@@ -4,6 +4,7 @@ import { Dashboard } from './pages/Dashboard'
 import { DashboardHome } from './pages/Dashboard/DashboardHome'
 import { Deposit } from './pages/Dashboard/Deposit'
 import { CopyTrading } from './pages/CopyTrading'
+import { CreateStrategy } from './pages/CreateStrategy'
 
 export const router = createBrowserRouter([
   {
@@ -34,8 +35,8 @@ export const router = createBrowserRouter([
         element: <CopyTrading />,
       },
       {
-        path: ':address',
-        element: <CopyTrading />,
+        path: 'create',
+        element: <CreateStrategy />,
       },
     ],
   },
