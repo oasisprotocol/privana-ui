@@ -17,7 +17,7 @@ const steps = ['1. Choose traders to copy', '2. Enter strategy details', '3. Con
 
 export const CreateStrategy = () => {
   const [step, setStep] = useState(0)
-  const [strategy, setStrategy] = useState<StrategyData>({ name: '', amount: '', traders: [] })
+  const [strategy, setStrategy] = useState<StrategyData>({ name: '', amount: '', token: '', traders: [] })
 
   return (
     <>
