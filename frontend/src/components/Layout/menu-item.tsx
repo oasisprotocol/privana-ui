@@ -1,10 +1,9 @@
-import type { ComponentProps } from 'react'
-import { NavLink } from 'react-router'
+import { NavLink, type To } from 'react-router'
 import { cn } from '@/lib/utils'
 
 interface MenuItemProps {
   label: string
-  to: ComponentProps<typeof NavLink>['to']
+  to: To
 }
 
 export const MenuItem = ({ label, to }: MenuItemProps) => {

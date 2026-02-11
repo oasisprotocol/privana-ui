@@ -15,6 +15,7 @@
   },
   "dependencies": {
     "@fontsource-variable/geist": "^5.2.8",
+    "@hookform/resolvers": "^5.2.2",
     "@metamask/jazzicon": "^2.0.0",
     "@oasisprotocol/flexvaults-sdk": "^0.1.4",
     "@rainbow-me/rainbowkit": "^2.2.10",

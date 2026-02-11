@@ -37,7 +37,7 @@ export const Layout = ({ children, dashboard }: LayoutProps) => {
 
         {dashboard ? (
           <div className="w-full max-w-7xl mx-auto">
-            <div className="min-h-[500px] self-stretch px-24 py-16 flex flex-col border-r border-b border-l border-white/10 bg-linear-to-b from-[#18181B] to-[#09090B]">
+            <div className="min-h-[500px] self-stretch px-8 md:px-24 py-8 md:py-16 gap-12 md:gap-16 flex flex-col border-r border-b border-l border-white/10 bg-linear-to-b from-[#18181B] to-[#09090B]">
               {children}
             </div>
           </div>
