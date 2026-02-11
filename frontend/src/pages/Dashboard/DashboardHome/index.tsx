@@ -4,14 +4,21 @@ import { PortfolioCard } from './PortfolioCard'
 import { Separator } from '@/components/ui/separator'
 import { PortfolioChange } from './PortfolioChange'
 import { PortfolioChart } from './PortfolioChart'
+import { useBalance } from '@oasisprotocol/flexvaults-sdk'
+import { formatUnits } from 'viem'
+import { Skeleton } from '@/components/ui/skeleton'
 
 export const DashboardHome = () => {
-  const hasFunds = true // get from SDK
+  const { balanceWei, isLoading } = useBalance({
+    tokenId: import.meta.env.VITE_USDC_TOKEN_ID,
+  })
+  const hasFunds = BigInt(balanceWei || 0) > 0
 
   return (
     <>
       <div className="flex flex-col gap-6 mb-8 md:mb-24">
-        {!hasFunds && (
+        {isLoading && <Skeleton className="h-70 w-full" />}
+        {!isLoading && !hasFunds && (
           <>
             <div className="flex flex-col gap-0.5">
               <h3 className="text-xl font-semibold text-tertiary-foreground">Wallet connected</h3>
@@ -24,12 +31,17 @@ export const DashboardHome = () => {
             </Button>
           </>
         )}
-        {hasFunds && (
+        {!isLoading && hasFunds && (
           <div className="flex justify-between flex-col md:flex-row items-center">
             <div className="w-full md:w-auto md:max-w-78 flex flex-col gap-4">
               <div className="flex flex-col gap-0.5">
                 <h3 className="text-xl font-semibold text-tertiary-foreground">Available</h3>
-                <h2 className="max-w-md text-3xl font-medium text-card-foreground">2.000,00$</h2>
+                <h2 className="max-w-md text-3xl font-medium text-card-foreground">
+                  {Number(
+                    formatUnits(BigInt(balanceWei), Number(import.meta.env.VITE_USDC_DECIMALS)),
+                  ).toFixed(2)}{' '}
+                  USDC
+                </h2>
               </div>
               <div className="flex gap-3">
                 <Button variant="outline">Deposit</Button>
