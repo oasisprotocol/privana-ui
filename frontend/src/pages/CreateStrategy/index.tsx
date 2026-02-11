@@ -1,5 +1,4 @@
 import { useState } from 'react'
-import { useNavigate } from 'react-router'
 import {
   Breadcrumb,
   BreadcrumbList,
@@ -8,15 +7,17 @@ import {
   BreadcrumbSeparator,
 } from '@/components/ui/breadcrumb'
 import { Separator } from '@/components/ui/separator'
-import TraderTable from '@/components/TraderTable'
-import { Button } from '@oasisprotocol/flexvaults-sdk'
 import { PoweredByHyperliquid } from '@/components/PoweredByHyperliquid'
+import { StrategyData } from './types'
+import { ChooseTradersStep } from './ChooseTradersStep'
+import { SettingsStep } from './SettingsStep'
+import { BootstrapStep } from './BootstrapStep'
 
 const steps = ['1. Choose traders to copy', '2. Enter strategy details', '3. Confirm']
 
 export const CreateStrategy = () => {
   const [step, setStep] = useState(0)
-  const navigate = useNavigate()
+  const [strategy, setStrategy] = useState<StrategyData>({ name: '', amount: '', traders: [] })
 
   return (
     <>
@@ -37,23 +38,13 @@ export const CreateStrategy = () => {
 
       <Separator />
 
-      <div>
-        <div className="text-foreground text-2xl font-medium mb-1.5">Choose traders to copy</div>
-        <div className="max-w-87.5 text-muted-foreground text-sm font-normal">
-          Select traders whose moves you want to mirror. Diversify across different styles for balanced risk.
-        </div>
-      </div>
-
-      <TraderTable />
-
-      <div className={'flex flex-col sm:flex-row gap-6 justify-center'}>
-        <Button variant="secondary" onClick={() => navigate(-1)} className="w-full sm:w-70">
-          Cancel
-        </Button>
-        <Button variant="default" onClick={() => {}} className="w-full sm:w-70">
-          Next
-        </Button>
-      </div>
+      {step === 0 && (
+        <ChooseTradersStep step={step} setStep={setStep} strategy={strategy} setStrategy={setStrategy} />
+      )}
+      {step === 1 && (
+        <SettingsStep step={step} setStep={setStep} strategy={strategy} setStrategy={setStrategy} />
+      )}
+      {step === 2 && <BootstrapStep strategy={strategy} />}
 
       <PoweredByHyperliquid />
     </>

@@ -4,9 +4,12 @@ import { Input } from '@/components/ui/input'
 import { ChevronDownIcon } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { trimLongString } from '@/utils/trimLongString'
+import { FC } from 'react'
 
-interface TraderTableProps {
+type TraderTableProps = {
   className?: string
+  strategy: any
+  setStrategy: any
 }
 
 const traders = [
@@ -36,7 +39,11 @@ const traders = [
   },
 ]
 
-export function TraderTable({ className }: TraderTableProps) {
+export const TraderTable: FC<TraderTableProps> = ({
+  className,
+  strategy: _strategy,
+  setStrategy: _setStrategy,
+}) => {
   return (
     <div className={cn('w-full overflow-auto', className)}>
       <Table>
