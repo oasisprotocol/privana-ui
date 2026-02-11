@@ -3,6 +3,7 @@ import { Button } from '@/components/ui/button'
 import { Card, CardFooter, CardHeader } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { cn } from '@/lib/utils'
+import { PortfolioChange } from './PortfolioChange'
 
 type PortfolioCardProps = {
   disabled?: boolean
@@ -32,9 +33,7 @@ export const PortfolioCard: FC<PortfolioCardProps> = ({
 
       <CardHeader className="p-0 space-y-1.5">
         <p className="text-[15px] font-bold text-muted-foreground uppercase">{title}</p>
-        <h3 className="text-[30px] leading-9 font-medium text-card-foreground">{amount}</h3>
-        <p className="text-[30px] leading-9 font-medium text-chart-positive">{changePercentage}</p>
-        <p className="text-sm font-semibold text-card-foreground">24h change</p>
+        <PortfolioChange amount={amount} changePercentage={changePercentage} />
       </CardHeader>
 
       <CardFooter className="p-0 mt-auto">
