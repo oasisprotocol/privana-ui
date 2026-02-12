@@ -28,16 +28,14 @@ const flexvaultsNetwork =
 
 createRoot(document.getElementById('root')!).render(
   <StrictMode>
-    <div className="dark">
-      <WagmiProvider config={wagmiConfig}>
-        <QueryClientProvider client={queryClient}>
-          <FlexvaultsProvider network={flexvaultsNetwork}>
-            <RainbowKitProvider theme={rainbowKitTheme} modalSize="compact">
-              <RouterProvider router={router} />
-            </RainbowKitProvider>
-          </FlexvaultsProvider>
-        </QueryClientProvider>
-      </WagmiProvider>
-    </div>
+    <WagmiProvider config={wagmiConfig}>
+      <QueryClientProvider client={queryClient}>
+        <FlexvaultsProvider network={flexvaultsNetwork}>
+          <RainbowKitProvider theme={rainbowKitTheme} modalSize="compact">
+            <RouterProvider router={router} />
+          </RainbowKitProvider>
+        </FlexvaultsProvider>
+      </QueryClientProvider>
+    </WagmiProvider>
   </StrictMode>,
 )
