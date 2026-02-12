@@ -5,6 +5,8 @@ import { DashboardHome } from './pages/Dashboard/DashboardHome'
 import { Deposit } from './pages/Dashboard/Deposit'
 import { CopyTrading } from './pages/CopyTrading'
 import { CreateStrategy } from './pages/CreateStrategy'
+import { NotFound } from './components/NotFound'
+import { ProtectedLayout } from './components/ProtectedLayout'
 
 export const router = createBrowserRouter([
   {
@@ -13,31 +15,44 @@ export const router = createBrowserRouter([
   },
   {
     path: '/portfolio',
-    element: <Dashboard />,
+    element: <ProtectedLayout />,
     children: [
       {
-        index: true,
-        element: <DashboardHome />,
-      },
-      {
-        path: ':address',
-        element: <Deposit />,
+        element: <Dashboard />,
+        children: [
+          {
+            index: true,
+            element: <DashboardHome />,
+          },
+          {
+            path: ':address',
+            element: <Deposit />,
+          },
+        ],
       },
     ],
   },
   {
     path: 'copy-trading',
-    element: <Dashboard />,
-
+    element: <ProtectedLayout />,
     children: [
       {
-        index: true,
-        element: <CopyTrading />,
-      },
-      {
-        path: 'create',
-        element: <CreateStrategy />,
+        element: <Dashboard />,
+        children: [
+          {
+            index: true,
+            element: <CopyTrading />,
+          },
+          {
+            path: 'create',
+            element: <CreateStrategy />,
+          },
+        ],
       },
     ],
+  },
+  {
+    path: '*',
+    element: <NotFound />,
   },
 ])
