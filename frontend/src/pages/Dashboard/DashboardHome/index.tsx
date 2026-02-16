@@ -66,7 +66,15 @@ export const DashboardHome = () => {
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-        <PortfolioCard title="Copy trading" amount="0$" changePercentage="+0%" icon={<GitCompareArrows />} />
+        <PortfolioCard
+          disabled={isLoading || !hasFunds}
+          title="Copy trading"
+          buttonLabel="Create your first strategy"
+          amount="0$"
+          changePercentage="+0%"
+          icon={<GitCompareArrows />}
+          to="/copy-trading/create"
+        />
         <PortfolioCard
           title="Spot trading"
           amount="0$"

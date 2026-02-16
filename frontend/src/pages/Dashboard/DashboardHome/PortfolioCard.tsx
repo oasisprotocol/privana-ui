@@ -4,6 +4,7 @@ import { Card, CardFooter, CardHeader } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { cn } from '@/lib/utils'
 import { PortfolioChange } from './PortfolioChange'
+import { Link, type To } from 'react-router'
 
 type PortfolioCardProps = {
   disabled?: boolean
@@ -11,6 +12,8 @@ type PortfolioCardProps = {
   amount: string
   changePercentage: string
   icon: ReactNode
+  buttonLabel?: string
+  to?: To
 }
 
 export const PortfolioCard: FC<PortfolioCardProps> = ({
@@ -19,10 +22,12 @@ export const PortfolioCard: FC<PortfolioCardProps> = ({
   amount,
   changePercentage,
   icon,
+  buttonLabel,
+  to,
 }) => {
   return (
-    <Card className={cn('p-8 flex flex-col gap-6', disabled ? 'opacity-50' : '')}>
-      {disabled ? (
+    <Card className={cn('p-8 flex flex-col gap-6', !to ? 'opacity-50' : '')}>
+      {!to ? (
         <div className="flex justify-between items-start">
           {icon}
           <Badge variant="secondary">Coming soon</Badge>
@@ -37,8 +42,12 @@ export const PortfolioCard: FC<PortfolioCardProps> = ({
       </CardHeader>
 
       <CardFooter className="p-0 mt-auto">
-        <Button className="w-full" disabled={disabled}>
-          Trade
+        <Button
+          className="w-full disabled:cursor-not-allowed disabled:opacity-50"
+          disabled={disabled}
+          asChild={!!to && !disabled}
+        >
+          {to && !disabled ? <Link to={to}>{buttonLabel}</Link> : (buttonLabel ?? 'Trade')}
         </Button>
       </CardFooter>
     </Card>
