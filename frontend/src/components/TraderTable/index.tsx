@@ -12,10 +12,12 @@ import { Input } from '@/components/ui/input'
 import { ChevronDownIcon } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { trimLongString } from '@/utils/trimLongString'
+import { Skeleton } from '@/components/ui/skeleton'
 import { FC } from 'react'
 
 type TraderTableProps = {
   className?: string
+  isLoading: boolean
   strategy: any
   setStrategy: any
 }
@@ -49,6 +51,7 @@ const traders = [
 
 export const TraderTable: FC<TraderTableProps> = ({
   className,
+  isLoading,
   strategy: _strategy,
   setStrategy: _setStrategy,
 }) => {
@@ -73,22 +76,30 @@ export const TraderTable: FC<TraderTableProps> = ({
           </TableRow>
         </TableHeader>
         <TableBody>
-          {traders.map(trader => (
-            <TableRow key={trader.id}>
-              <TableCell className="font-medium">{trimLongString(trader.trader)}</TableCell>
-              <TableCell>{trader.lastTrade}</TableCell>
-              <TableCell>{trader.size}</TableCell>
-              <TableCell className="text-chart-1">{trader.monthlyPnl}</TableCell>
-              <TableCell>
-                <Button variant="destructive" size="sm" className="w-full">
-                  Remove
-                </Button>
-              </TableCell>
-              <TableCell className="max-w-30">
-                <Input value={`${trader.allocation}%`} className="w-full" onChange={() => {}} />
-              </TableCell>
-            </TableRow>
-          ))}
+          {isLoading
+            ? Array.from({ length: 15 }, (_, i) => (
+                <TableRow key={i}>
+                  <TableCell colSpan={6}>
+                    <Skeleton className="h-8 w-full" />
+                  </TableCell>
+                </TableRow>
+              ))
+            : traders.map(trader => (
+                <TableRow key={trader.id}>
+                  <TableCell className="font-medium">{trimLongString(trader.trader)}</TableCell>
+                  <TableCell>{trader.lastTrade}</TableCell>
+                  <TableCell>{trader.size}</TableCell>
+                  <TableCell className="text-chart-1">{trader.monthlyPnl}</TableCell>
+                  <TableCell>
+                    <Button variant="destructive" size="sm" className="w-full">
+                      Remove
+                    </Button>
+                  </TableCell>
+                  <TableCell className="max-w-30">
+                    <Input value={`${trader.allocation}%`} className="w-full" onChange={() => {}} />
+                  </TableCell>
+                </TableRow>
+              ))}
         </TableBody>
         <TableFooter>
           <TableRow>
@@ -105,9 +116,11 @@ export const TraderTable: FC<TraderTableProps> = ({
           </TableRow>
         </TableFooter>
       </Table>
-      <div className="py-3 text-center text-muted-foreground text-sm">
-        To be able to proceed, your total allocation should be 100%.
-      </div>
+      {!isLoading && (
+        <div className="py-3 text-center text-muted-foreground text-sm">
+          To be able to proceed, your total allocation should be 100%.
+        </div>
+      )}
     </div>
   )
 }

@@ -13,6 +13,7 @@ type ChooseTradersStepProps = {
 
 export const ChooseTradersStep: FC<ChooseTradersStepProps> = ({ step, setStep, strategy, setStrategy }) => {
   const navigate = useNavigate()
+  const isLoading = false
 
   return (
     <>
@@ -23,9 +24,9 @@ export const ChooseTradersStep: FC<ChooseTradersStepProps> = ({ step, setStep, s
         </div>
       </div>
 
-      <TraderTable strategy={strategy} setStrategy={setStrategy} />
+      <TraderTable isLoading={isLoading} strategy={strategy} setStrategy={setStrategy} />
 
-      <StepNavigation back={() => navigate(-1)} next={() => setStep(step + 1)} />
+      <StepNavigation disabled={isLoading} back={() => navigate(-1)} next={() => setStep(step + 1)} />
     </>
   )
 }
