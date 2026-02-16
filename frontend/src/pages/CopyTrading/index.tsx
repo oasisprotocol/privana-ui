@@ -51,7 +51,11 @@ export const CopyTrading = () => {
           </div>
 
           <div className="flex flex-row flex-wrap gap-6">
-            <Button className="w-full md:w-auto" disabled={disabled} onClick={() => navigate('create')}>
+            <Button
+              className="w-full md:w-auto"
+              disabled={disabled}
+              onClick={() => navigate('create', { viewTransition: true })}
+            >
               Create your strategy
             </Button>
             <Button variant="secondary" className="w-full md:w-auto">

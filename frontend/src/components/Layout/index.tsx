@@ -22,7 +22,7 @@ export const Layout = ({ children, dashboard }: LayoutProps) => {
         }}
       >
         <nav className="flex items-center justify-between px-6 h-16 border-b border-border shadow-[0_10px_15px_-3px_rgba(0,0,0,0.20),0_4px_6px_-2px_rgba(0,0,0,0.20)] bg-background">
-          <Link to="/" className="text-xl font-bold">
+          <Link to="/" viewTransition className="text-xl font-bold">
             <img src={Logo} alt="FlexVaults" className="h-8" />
           </Link>
           <div className="flex items-center gap-1">
@@ -36,13 +36,15 @@ export const Layout = ({ children, dashboard }: LayoutProps) => {
         </nav>
 
         {dashboard ? (
-          <div className="w-full max-w-7xl mx-auto">
+          <div className="w-full max-w-7xl mx-auto" style={{ viewTransitionName: 'page-content' }}>
             <div className="min-h-[500px] self-stretch px-8 md:px-24 py-8 md:py-16 gap-12 md:gap-16 flex flex-col border-r border-b border-l border-white/10 bg-linear-to-b from-[#18181B] to-[#09090B]">
               {children}
             </div>
           </div>
         ) : (
-          <div className="w-full max-w-7xl px-6 py-12 mx-auto">{children}</div>
+          <div className="w-full max-w-7xl px-6 py-12 mx-auto" style={{ viewTransitionName: 'page-content' }}>
+            {children}
+          </div>
         )}
         <div className="w-full max-w-7xl py-12 mx-auto flex flex-col justify-start items-center gap-16 text-xs text-muted-foreground ">
           <Separator />

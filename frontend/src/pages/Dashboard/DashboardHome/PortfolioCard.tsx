@@ -47,7 +47,13 @@ export const PortfolioCard: FC<PortfolioCardProps> = ({
           disabled={disabled}
           asChild={!!to && !disabled}
         >
-          {to && !disabled ? <Link to={to}>{buttonLabel}</Link> : (buttonLabel ?? 'Trade')}
+          {to && !disabled ? (
+            <Link to={to} viewTransition>
+              {buttonLabel}
+            </Link>
+          ) : (
+            (buttonLabel ?? 'Trade')
+          )}
         </Button>
       </CardFooter>
     </Card>
