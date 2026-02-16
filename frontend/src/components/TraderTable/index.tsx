@@ -1,4 +1,12 @@
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableFooter,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from '@/components/ui/table'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { ChevronDownIcon } from 'lucide-react'
@@ -19,7 +27,7 @@ const traders = [
     lastTrade: '1 min ago',
     size: '$7.24M',
     monthlyPnl: '+35.5%',
-    allocation: '30%',
+    allocation: 30,
   },
   {
     id: '2',
@@ -27,7 +35,7 @@ const traders = [
     lastTrade: '3min ago',
     size: '$3.54M',
     monthlyPnl: '+23.5%',
-    allocation: '40%',
+    allocation: 40,
   },
   {
     id: '3',
@@ -35,7 +43,7 @@ const traders = [
     lastTrade: '6 min ago',
     size: '$1.24M',
     monthlyPnl: '+16.5%',
-    allocation: '30%',
+    allocation: 30,
   },
 ]
 
@@ -44,6 +52,8 @@ export const TraderTable: FC<TraderTableProps> = ({
   strategy: _strategy,
   setStrategy: _setStrategy,
 }) => {
+  const totalAllocation = traders.reduce((sum, t) => sum + t.allocation, 0)
+
   return (
     <div className={cn('w-full overflow-auto', className)}>
       <Table>
@@ -75,14 +85,29 @@ export const TraderTable: FC<TraderTableProps> = ({
                 </Button>
               </TableCell>
               <TableCell className="max-w-30">
-                <Input value={trader.allocation} className="w-full" onChange={() => {}} />
+                <Input value={`${trader.allocation}%`} className="w-full" onChange={() => {}} />
               </TableCell>
             </TableRow>
           ))}
         </TableBody>
+        <TableFooter>
+          <TableRow>
+            <TableCell colSpan={6}>
+              <div
+                className={cn(
+                  'text-right text-sm',
+                  totalAllocation === 100 ? 'text-chart-1' : 'text-destructive',
+                )}
+              >
+                Total allocation: {totalAllocation}%
+              </div>
+            </TableCell>
+          </TableRow>
+        </TableFooter>
       </Table>
+      <div className="py-3 text-center text-muted-foreground text-sm">
+        To be able to proceed, your total allocation should be 100%.
+      </div>
     </div>
   )
 }
-
-export default TraderTable

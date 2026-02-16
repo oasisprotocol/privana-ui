@@ -1,5 +1,5 @@
 import { useNavigate } from 'react-router'
-import TraderTable from '@/components/TraderTable'
+import { TraderTable } from '@/components/TraderTable'
 import { StepNavigation } from './StepNavigation'
 import { FC } from 'react'
 import { StrategyData } from './types'
