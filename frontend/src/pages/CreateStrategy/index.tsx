@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import React, { useState } from 'react'
 import {
   Breadcrumb,
   BreadcrumbList,
@@ -27,10 +27,12 @@ export const CreateStrategy = () => {
         <Breadcrumb className="py-2 h-10">
           <BreadcrumbList>
             {steps.map((label, i) => (
-              <BreadcrumbItem key={i} className="text-input-focused">
-                {i === step ? <BreadcrumbPage className="underline">{label}</BreadcrumbPage> : label}
+              <React.Fragment key={i}>
+                <BreadcrumbItem className="text-input-focused">
+                  {i === step ? <BreadcrumbPage className="underline">{label}</BreadcrumbPage> : label}
+                </BreadcrumbItem>
                 {i < steps.length - 1 && <BreadcrumbSeparator className="pl-4" />}
-              </BreadcrumbItem>
+              </React.Fragment>
             ))}
           </BreadcrumbList>
         </Breadcrumb>
