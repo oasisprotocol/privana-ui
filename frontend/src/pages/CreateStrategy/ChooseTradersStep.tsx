@@ -3,6 +3,8 @@ import { TraderTable } from '@/components/TraderTable'
 import { StepNavigation } from './StepNavigation'
 import { FC } from 'react'
 import { StrategyData } from './types'
+import { Input } from '@/components/ui/input'
+import { Label } from '@/components/ui/label'
 
 type ChooseTradersStepProps = {
   step: number
@@ -24,7 +26,16 @@ export const ChooseTradersStep: FC<ChooseTradersStepProps> = ({ step, setStep, s
         </div>
       </div>
 
-      <TraderTable isLoading={isLoading} strategy={strategy} setStrategy={setStrategy} />
+      <div className="flex flex-col gap-4">
+        <div className="max-w-95 flex flex-col gap-2 items-start">
+          <Label htmlFor="address-search" className="font-medium">
+            Search for specific address
+          </Label>
+          <Input id="address-search" placeholder='e.g., "0x71F3wef34r3r2a92b"' className="w-full" />
+        </div>
+
+        <TraderTable isLoading={isLoading} strategy={strategy} setStrategy={setStrategy} />
+      </div>
 
       <StepNavigation disabled={isLoading} back={() => navigate(-1)} next={() => setStep(step + 1)} />
     </>
