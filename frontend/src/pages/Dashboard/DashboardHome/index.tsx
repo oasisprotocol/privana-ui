@@ -77,7 +77,7 @@ export const DashboardHome = () => {
         <PortfolioCard title="AI trading" amount="0$" changePercentage="0%" icon={<Wand />} disabled />
       </div>
 
-      <FlexvaultsModal open={modalOpen} onClose={() => setModalOpen(false)} />
+      <FlexvaultsModal open={modalOpen} onClose={() => setModalOpen(false)} showLockedFunds={false} />
     </>
   )
 }

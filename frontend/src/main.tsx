@@ -10,7 +10,6 @@ import { FlexvaultsProvider } from '@oasisprotocol/flexvaults-sdk'
 import '@rainbow-me/rainbowkit/styles.css'
 import './index.css'
 import '@oasisprotocol/flexvaults-sdk/styles.css'
-import { sapphireTestnet } from 'viem/chains'
 
 const queryClient = new QueryClient()
 
@@ -23,14 +22,16 @@ const rainbowKitTheme: Theme = {
   },
 }
 
-const flexvaultsNetwork =
-  parseInt(import.meta.env.VITE_CHAIN_ID, 10) === sapphireTestnet.id ? 'testnet' : 'mainnet'
-
 createRoot(document.getElementById('root')!).render(
   <StrictMode>
     <WagmiProvider config={wagmiConfig}>
       <QueryClientProvider client={queryClient}>
-        <FlexvaultsProvider network={flexvaultsNetwork}>
+        <FlexvaultsProvider
+          networkConfig={{
+            chainId: parseInt(import.meta.env.VITE_CHAIN_ID, 10),
+            accountingContract: import.meta.env.VITE_ACCOUNTING_CONTRACT_ADDRESS,
+          }}
+        >
           <RainbowKitProvider theme={rainbowKitTheme} modalSize="compact">
             <RouterProvider router={router} />
           </RainbowKitProvider>
