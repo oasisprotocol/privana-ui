@@ -4,13 +4,13 @@ import { PortfolioCard } from './PortfolioCard'
 import { Separator } from '@/components/ui/separator'
 import { PortfolioChange } from './PortfolioChange'
 import { PortfolioChart } from './PortfolioChart'
-import { useState } from 'react'
+import { ComponentProps, useState } from 'react'
 import { FlexvaultsModal, useBalance } from '@oasisprotocol/flexvaults-sdk'
 import { formatUnits } from 'viem'
 import { Skeleton } from '@/components/ui/skeleton'
 
 export const DashboardHome = () => {
-  const [modalOpen, setModalOpen] = useState(false)
+  const [modalOpen, setModalOpen] = useState<ComponentProps<typeof FlexvaultsModal>['defaultTab']>(undefined)
   const { balanceWei, isLoading } = useBalance({
     tokenId: import.meta.env.VITE_USDC_TOKEN_ID,
   })
@@ -28,7 +28,7 @@ export const DashboardHome = () => {
                 Start your private trading journey, FlexVaults
               </h2>
             </div>
-            <Button className="w-full md:w-35" size="lg" onClick={() => setModalOpen(true)}>
+            <Button className="w-full md:w-35" size="lg" onClick={() => setModalOpen('deposit')}>
               Start
             </Button>
           </>
@@ -46,10 +46,10 @@ export const DashboardHome = () => {
                 </h2>
               </div>
               <div className="flex gap-3">
-                <Button variant="outline" onClick={() => setModalOpen(true)}>
+                <Button variant="outline" onClick={() => setModalOpen('deposit')}>
                   Deposit
                 </Button>
-                <Button variant="outline" onClick={() => setModalOpen(true)}>
+                <Button variant="outline" onClick={() => setModalOpen('withdraw')}>
                   Withdraw
                 </Button>
                 <Button variant="outline">See activity</Button>
@@ -85,7 +85,12 @@ export const DashboardHome = () => {
         <PortfolioCard title="AI trading" amount="0$" changePercentage="0%" icon={<Wand />} disabled />
       </div>
 
-      <FlexvaultsModal open={modalOpen} onClose={() => setModalOpen(false)} showLockedFunds={false} />
+      <FlexvaultsModal
+        open={!!modalOpen}
+        onClose={() => setModalOpen(undefined)}
+        showLockedFunds={false}
+        defaultTab={modalOpen}
+      />
     </>
   )
 }

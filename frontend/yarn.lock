@@ -900,10 +900,10 @@
   resolved "https://registry.npmjs.org/@noble/hashes/-/hashes-1.8.0.tgz"
   integrity sha512-jCs9ldd7NwzpgXDIf6P3+NrHh9/sD6CQdxHyjQI+h/6rDNo88ypBxxz45UDuZHz9r3tNz7N/VInSVoVdtXEI4A==
 
-"@oasisprotocol/flexvaults-sdk@^0.1.9":
-  version "0.1.9"
-  resolved "https://registry.yarnpkg.com/@oasisprotocol/flexvaults-sdk/-/flexvaults-sdk-0.1.9.tgz#0a8ce04d2a845beaba2020f53991d645c3490576"
-  integrity sha512-0Sksx4tZVfy+DpDyTtuiMIaGuaBzyCXw3d0mEw18df/fT+azad8HgZ1e/6CVw+7n7KAl3NB4D6jyN8biQo4i3A==
+"@oasisprotocol/flexvaults-sdk@^0.1.11":
+  version "0.1.11"
+  resolved "https://registry.yarnpkg.com/@oasisprotocol/flexvaults-sdk/-/flexvaults-sdk-0.1.11.tgz#5710119848689faa29737f45fe776d2ee7674c82"
+  integrity sha512-LFrxYBmm/KScRiV6VsWa+KBzQygCyYzemX3aLqKErCIMV5/msXuRttGC/4ppXDvJQGRXPhO55P8NWPNMGB7zlg==
   dependencies:
     "@radix-ui/react-dialog" "^1.1.15"
     "@radix-ui/react-dropdown-menu" "^2.1.16"
