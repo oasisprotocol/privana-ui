@@ -89,6 +89,17 @@
   }
 }
 
+::view-transition-old(root),
+::view-transition-new(root) {
+  animation: none;
+}
+
+::view-transition-old(page-content),
+::view-transition-new(page-content) {
+  animation-duration: 100ms;
+  animation-timing-function: ease-in-out;
+}
+
 [data-flexvaults].dark,
 .dark [data-flexvaults] {
   --fv-radius: var(--radius);

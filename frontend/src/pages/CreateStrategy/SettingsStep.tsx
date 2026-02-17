@@ -39,7 +39,6 @@ export const SettingsStep: FC<SettingsStepProps> = ({ step, setStep, strategy, s
       token: (strategy.token as SettingsFormData['token']) || undefined,
     },
   })
-
   const onSubmit = (data: SettingsFormData) => {
     setStrategy({ ...strategy, ...data })
     setStep(step + 1)

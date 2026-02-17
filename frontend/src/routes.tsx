@@ -34,7 +34,6 @@ export const router = createBrowserRouter([
   },
   {
     path: 'copy-trading',
-    element: <ProtectedLayout />,
     children: [
       {
         element: <Dashboard />,
@@ -43,9 +42,19 @@ export const router = createBrowserRouter([
             index: true,
             element: <CopyTrading />,
           },
+        ],
+      },
+      {
+        element: <ProtectedLayout />,
+        children: [
           {
-            path: 'create',
-            element: <CreateStrategy />,
+            element: <Dashboard />,
+            children: [
+              {
+                path: 'create',
+                element: <CreateStrategy />,
+              },
+            ],
           },
         ],
       },

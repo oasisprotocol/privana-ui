@@ -4,6 +4,7 @@ import { PoweredByHyperliquid } from '@/components/PoweredByHyperliquid'
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion'
 import { Separator } from '@/components/ui/separator'
 import { Button } from '@oasisprotocol/flexvaults-sdk'
+import { useBalance } from '@oasisprotocol/flexvaults-sdk'
 import HeroImage from '../../assets/hero-create-strategy.svg'
 
 const features = [
@@ -27,6 +28,11 @@ const features = [
 
 export const CopyTrading = () => {
   const navigate = useNavigate()
+  const { balanceWei, isLoading } = useBalance({
+    tokenId: import.meta.env.VITE_USDC_TOKEN_ID,
+  })
+  const hasFunds = BigInt(balanceWei || 0) > 0
+  const disabled = isLoading || !hasFunds
 
   return (
     <>
@@ -45,7 +51,11 @@ export const CopyTrading = () => {
           </div>
 
           <div className="flex flex-row flex-wrap gap-6">
-            <Button className="w-full md:w-auto" onClick={() => navigate('create')}>
+            <Button
+              className="w-full md:w-auto"
+              disabled={disabled}
+              onClick={() => navigate('create', { viewTransition: true })}
+            >
               Create your strategy
             </Button>
             <Button variant="secondary" className="w-full md:w-auto">
