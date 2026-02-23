@@ -1,16 +1,15 @@
 import { Button } from '@/components/ui/button'
-import { GitCompareArrows, GitCompare, Wand } from 'lucide-react'
+import { GitCompareArrows, GitCompare, Wand, ArrowDownToLine, ArrowUpToLine, History } from 'lucide-react'
 import { PortfolioCard } from './PortfolioCard'
-import { Separator } from '@/components/ui/separator'
-import { PortfolioChange } from './PortfolioChange'
 import { PortfolioChart } from './PortfolioChart'
-import { useState } from 'react'
+import { ComponentProps, useState } from 'react'
 import { FlexvaultsModal, useBalance } from '@oasisprotocol/flexvaults-sdk'
 import { formatUnits } from 'viem'
 import { Skeleton } from '@/components/ui/skeleton'
+import { PortfolioSummary } from './PortfolioSummary'
 
 export const DashboardHome = () => {
-  const [modalOpen, setModalOpen] = useState(false)
+  const [modalOpen, setModalOpen] = useState<ComponentProps<typeof FlexvaultsModal>['defaultTab']>(undefined)
   const { balanceWei, isLoading } = useBalance({
     tokenId: import.meta.env.VITE_USDC_TOKEN_ID,
   })
@@ -18,7 +17,7 @@ export const DashboardHome = () => {
 
   return (
     <>
-      <div className="flex flex-col gap-6 mb-8 md:mb-24">
+      <div className="flex flex-col gap-6 mb-8 md:mb-12">
         {isLoading && <Skeleton className="h-70 w-full" />}
         {!isLoading && !hasFunds && (
           <>
@@ -28,39 +27,55 @@ export const DashboardHome = () => {
                 Start your private trading journey, FlexVaults
               </h2>
             </div>
-            <Button className="w-full md:w-35" size="lg" onClick={() => setModalOpen(true)}>
+            <Button className="w-full md:w-35" size="lg" onClick={() => setModalOpen('deposit')}>
               Start
             </Button>
           </>
         )}
         {!isLoading && hasFunds && (
-          <div className="flex justify-between flex-col md:flex-row items-center">
-            <div className="w-full md:w-auto md:max-w-78 flex flex-col gap-4">
-              <div className="flex flex-col gap-0.5">
-                <h3 className="text-xl font-semibold text-tertiary-foreground">Available</h3>
-                <h2 className="max-w-md text-3xl font-medium text-card-foreground">
-                  {Number(
-                    formatUnits(BigInt(balanceWei), Number(import.meta.env.VITE_USDC_DECIMALS)),
-                  ).toFixed(2)}{' '}
-                  USDC
-                </h2>
-              </div>
-              <div className="flex gap-3">
-                <Button variant="outline" onClick={() => setModalOpen(true)}>
-                  Deposit
-                </Button>
-                <Button variant="outline" onClick={() => setModalOpen(true)}>
-                  Withdraw
-                </Button>
-                <Button variant="outline">See activity</Button>
-              </div>
-              <Separator />
-              <div className="flex flex-col gap-0.75">
-                <div className="text-tertiary-foreground text-xl font-semibold">Total invested balance</div>
-                <PortfolioChange amount="0$" changePercentage="+0%" />
+          <div className="flex flex-col gap-6">
+            <div className="flex justify-end">
+              <div className="flex items-center gap-6 rounded-lg border bg-card p-3">
+                <div className="flex items-center gap-3 text-base font-medium">
+                  <span className="text-secondary-foreground">Available funds</span>
+                  <span className="text-foreground">
+                    $
+                    {Number(
+                      formatUnits(BigInt(balanceWei), Number(import.meta.env.VITE_USDC_DECIMALS)),
+                    ).toFixed(2)}
+                  </span>
+                </div>
+                <div className="flex items-center gap-3">
+                  <Button variant="secondary" size="xs" onClick={() => setModalOpen('deposit')}>
+                    <ArrowDownToLine />
+                    Deposit
+                  </Button>
+                  <Button variant="secondary" size="xs" onClick={() => setModalOpen('withdraw')}>
+                    <ArrowUpToLine />
+                    Withdraw
+                  </Button>
+                  <Button variant="secondary" size="xs">
+                    <History />
+                    See activity
+                  </Button>
+                </div>
               </div>
             </div>
-            <PortfolioChart />
+            <div className="flex justify-between items-center">
+              <div className="flex flex-col gap-3">
+                <div className="flex flex-col">
+                  <h3 className="text-xl font-semibold text-tertiary-foreground">Total balance</h3>
+                  <h2 className="text-3xl font-medium text-card-foreground">
+                    $
+                    {Number(
+                      formatUnits(BigInt(balanceWei), Number(import.meta.env.VITE_USDC_DECIMALS)),
+                    ).toFixed(2)}
+                  </h2>
+                  <span className="text-lg font-semibold text-chart-positive">+$0.00 (+0%)</span>
+                </div>
+              </div>
+              <PortfolioChart />
+            </div>
           </div>
         )}
       </div>
@@ -85,7 +100,14 @@ export const DashboardHome = () => {
         <PortfolioCard title="AI trading" amount="0$" changePercentage="0%" icon={<Wand />} disabled />
       </div>
 
-      <FlexvaultsModal open={modalOpen} onClose={() => setModalOpen(false)} showLockedFunds={false} />
+      <PortfolioSummary />
+
+      <FlexvaultsModal
+        open={!!modalOpen}
+        onClose={() => setModalOpen(undefined)}
+        showLockedFunds={false}
+        defaultTab={modalOpen}
+      />
     </>
   )
 }

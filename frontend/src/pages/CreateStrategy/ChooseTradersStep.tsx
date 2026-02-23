@@ -118,6 +118,7 @@ export const ChooseTradersStep: FC<ChooseTradersStepProps> = ({ step, setStep, s
           disabled={isLoading}
           back={() => navigate(-1)}
           next={() => handleSubmit(onSubmit)()}
+          step={step}
         />
       </form>
     </>
