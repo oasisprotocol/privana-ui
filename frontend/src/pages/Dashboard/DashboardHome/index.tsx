@@ -8,6 +8,7 @@ import { ComponentProps, useState } from 'react'
 import { FlexvaultsModal, useBalance } from '@oasisprotocol/flexvaults-sdk'
 import { formatUnits } from 'viem'
 import { Skeleton } from '@/components/ui/skeleton'
+import { PortfolioSummary } from './PortfolioSummary'
 
 export const DashboardHome = () => {
   const [modalOpen, setModalOpen] = useState<ComponentProps<typeof FlexvaultsModal>['defaultTab']>(undefined)
@@ -84,6 +85,8 @@ export const DashboardHome = () => {
         />
         <PortfolioCard title="AI trading" amount="0$" changePercentage="0%" icon={<Wand />} disabled />
       </div>
+
+      <PortfolioSummary />
 
       <FlexvaultsModal
         open={!!modalOpen}
