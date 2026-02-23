@@ -12,8 +12,9 @@ import { StrategyData } from './types'
 import { ChooseTradersStep } from './ChooseTradersStep'
 import { SettingsStep } from './SettingsStep'
 import { BootstrapStep } from './BootstrapStep'
+import { SummaryStep } from './SummaryStep'
 
-const steps = ['1. Choose traders to copy', '2. Enter strategy details', '3. Confirm']
+const steps = ['1. Choose traders to copy', '2. Enter strategy details', '3. Strategy summary', '4. Enjoy']
 
 export const CreateStrategy = () => {
   const [step, setStep] = useState(0)
@@ -46,7 +47,8 @@ export const CreateStrategy = () => {
       {step === 1 && (
         <SettingsStep step={step} setStep={setStep} strategy={strategy} setStrategy={setStrategy} />
       )}
-      {step === 2 && <BootstrapStep strategy={strategy} />}
+      {step === 2 && <SummaryStep step={step} setStep={setStep} strategy={strategy} />}
+      {step === 3 && <BootstrapStep strategy={strategy} />}
 
       <PoweredByHyperliquid />
     </>
