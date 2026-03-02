@@ -4,6 +4,7 @@ import { Dashboard } from './pages/Dashboard'
 import { DashboardHome } from './pages/Dashboard/DashboardHome'
 import { Deposit } from './pages/Dashboard/Deposit'
 import { CopyTrading } from './pages/CopyTrading'
+import { CopyTradingDetails } from './pages/CopyTradingDetails'
 import { CreateStrategy } from './pages/CreateStrategy'
 import { NotFound } from './components/NotFound'
 import { ProtectedLayout } from './components/ProtectedLayout'
@@ -53,6 +54,10 @@ export const router = createBrowserRouter([
               {
                 path: 'create',
                 element: <CreateStrategy />,
+              },
+              {
+                path: ':id',
+                element: <CopyTradingDetails />,
               },
             ],
           },
