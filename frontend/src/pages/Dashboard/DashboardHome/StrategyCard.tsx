@@ -37,10 +37,10 @@ export const StrategyCard: FC<StrategyInfo> = ({
   } satisfies ChartConfig
 
   return (
-    <Card className="flex-row items-center justify-between gap-0 p-8">
+    <Card className="flex-col md:flex-row md:items-center justify-between gap-4 md:gap-0 p-8">
       <div className="flex flex-col gap-3">
         <div className="flex flex-col gap-1">
-          <div className="flex items-center gap-1">
+          <div className="flex items-center gap-2">
             <GitCompareArrows className="size-6 text-muted-foreground" />
             <span className="text-xl font-medium text-foreground">{name}</span>
           </div>
@@ -51,7 +51,7 @@ export const StrategyCard: FC<StrategyInfo> = ({
             </span>
           </p>
         </div>
-        <div className="flex gap-8 text-sm font-medium">
+        <div className="flex flex-col md:flex-row gap-2 md:gap-8 text-sm font-medium">
           <div className="flex gap-4">
             <span className="text-tertiary-foreground">Invested</span>
             <span className="text-foreground">{invested}</span>
@@ -66,7 +66,7 @@ export const StrategyCard: FC<StrategyInfo> = ({
           </div>
         </div>
       </div>
-      <ChartContainer config={chartConfig} className="h-[70px] w-[200px]">
+      <ChartContainer config={chartConfig} className="h-[70px] md:w-50">
         <AreaChart data={chartData} margin={{ top: 0, right: 0, bottom: 0, left: 0 }}>
           <defs>
             <linearGradient id={gradientId} x1="0" y1="0" x2="0" y2="1">
