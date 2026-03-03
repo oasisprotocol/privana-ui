@@ -1,6 +1,7 @@
-import { type FC } from 'react'
+import { useEffect, useRef, type FC } from 'react'
+import { useNavigate } from 'react-router'
 import { ConnectButton } from '@rainbow-me/rainbowkit'
-import { useDisconnect } from 'wagmi'
+import { useAccount, useDisconnect } from 'wagmi'
 import { ChevronDown } from 'lucide-react'
 import { Button } from '../ui/button'
 import {
@@ -16,6 +17,16 @@ import { sapphire, sapphireTestnet, baseSepolia } from 'viem/chains'
 
 export const RainbowKitConnectButton: FC = () => {
   const { disconnect } = useDisconnect()
+  const { isConnected } = useAccount()
+  const navigate = useNavigate()
+  const wasConnected = useRef(isConnected)
+
+  useEffect(() => {
+    if (!wasConnected.current && isConnected) {
+      navigate('/portfolio')
+    }
+    wasConnected.current = isConnected
+  }, [isConnected, navigate])
 
   return (
     <ConnectButton.Custom>
