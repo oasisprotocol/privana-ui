@@ -7,13 +7,18 @@ import { FlexvaultsModal, useBalance } from '@oasisprotocol/flexvaults-sdk'
 import { formatUnits } from 'viem'
 import { Skeleton } from '@/components/ui/skeleton'
 import { PortfolioSummary } from './PortfolioSummary'
+import { DepositAlertDialog } from './DepositAlertDialog'
 
 export const DashboardHome = () => {
   const [modalOpen, setModalOpen] = useState<ComponentProps<typeof FlexvaultsModal>['defaultTab']>(undefined)
   const { balanceWei, isLoading } = useBalance({
     tokenId: import.meta.env.VITE_USDC_TOKEN_ID,
   })
+  const [alertOpen, setAlertOpen] = useState(false)
   const hasFunds = BigInt(balanceWei || 0) > 0
+  const handleStartWithoutFunds = () => {
+    setAlertOpen(true)
+  }
 
   return (
     <>
@@ -27,16 +32,16 @@ export const DashboardHome = () => {
                 Start your private trading journey, FlexVaults
               </h2>
             </div>
-            <Button className="w-full md:w-35" size="lg" onClick={() => setModalOpen('deposit')}>
+            <Button className="w-full md:w-35" size="lg" onClick={handleStartWithoutFunds}>
               Start
             </Button>
           </>
         )}
         {!isLoading && hasFunds && (
           <div className="flex flex-col gap-6">
-            <div className="flex justify-end">
-              <div className="flex items-center gap-6 rounded-lg border bg-card p-3">
-                <div className="flex items-center gap-3 text-base font-medium">
+            <div className="flex md:justify-end">
+              <div className="flex flex-col md:flex-row md:items-center gap-2 md:gap-6 rounded-lg border bg-card p-3 w-full md:w-auto">
+                <div className="flex md:items-center gap-3 text-base font-medium">
                   <span className="text-secondary-foreground">Available funds</span>
                   <span className="text-foreground">
                     $
@@ -61,7 +66,7 @@ export const DashboardHome = () => {
                 </div>
               </div>
             </div>
-            <div className="flex justify-between items-center">
+            <div className="flex flex-col lg:flex-row justify-between lg:items-center">
               <div className="flex flex-col gap-3">
                 <div className="flex flex-col">
                   <h3 className="text-xl font-semibold text-tertiary-foreground">Total balance</h3>
@@ -82,25 +87,33 @@ export const DashboardHome = () => {
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
         <PortfolioCard
-          disabled={isLoading || !hasFunds}
-          title="Copy trading"
-          buttonLabel="Create your first strategy"
           amount="0$"
+          buttonAction={hasFunds ? undefined : handleStartWithoutFunds}
+          buttonLabel="Create your first strategy"
           changePercentage="+0%"
+          disabled={isLoading}
           icon={<GitCompareArrows />}
+          title="Copy trading"
           to="/copy-trading/create"
         />
         <PortfolioCard
-          title="Spot trading"
           amount="0$"
+          buttonAction={hasFunds ? undefined : handleStartWithoutFunds}
           changePercentage="+0%"
-          icon={<GitCompare />}
           disabled
+          icon={<GitCompare />}
+          title="Spot trading"
         />
         <PortfolioCard title="AI trading" amount="0$" changePercentage="0%" icon={<Wand />} disabled />
       </div>
 
       <PortfolioSummary />
+
+      <DepositAlertDialog
+        open={alertOpen}
+        onClose={() => setAlertOpen(false)}
+        onDeposit={() => setModalOpen('deposit')}
+      />
 
       <FlexvaultsModal
         open={!!modalOpen}

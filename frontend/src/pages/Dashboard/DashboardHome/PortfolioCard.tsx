@@ -7,24 +7,28 @@ import { PortfolioChange } from './PortfolioChange'
 import { Link, type To } from 'react-router'
 
 type PortfolioCardProps = {
-  disabled?: boolean
-  title: string
   amount: string
-  changePercentage: string
-  icon: ReactNode
+  buttonAction?: () => void
   buttonLabel?: string
+  changePercentage: string
+  disabled?: boolean
+  icon: ReactNode
+  title: string
   to?: To
 }
 
 export const PortfolioCard: FC<PortfolioCardProps> = ({
-  disabled,
-  title,
   amount,
-  changePercentage,
-  icon,
+  buttonAction,
   buttonLabel,
+  changePercentage,
+  disabled,
+  icon,
+  title,
   to,
 }) => {
+  const renderAsLink = !!to && !disabled && !buttonAction
+
   return (
     <Card className={cn('p-8 flex flex-col gap-6', !to ? 'opacity-50' : '')}>
       {!to ? (
@@ -43,11 +47,12 @@ export const PortfolioCard: FC<PortfolioCardProps> = ({
 
       <CardFooter className="p-0 mt-auto">
         <Button
+          onClick={buttonAction}
           className="w-full disabled:cursor-not-allowed disabled:opacity-50"
           disabled={disabled}
-          asChild={!!to && !disabled}
+          asChild={renderAsLink}
         >
-          {to && !disabled ? (
+          {renderAsLink ? (
             <Link to={to} viewTransition>
               {buttonLabel}
             </Link>
