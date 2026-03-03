@@ -41,7 +41,7 @@ export const DepositAlertDialog = ({ open, onClose, onDeposit }: DepositAlertDia
 
   return (
     <>
-      <AlertDialog open={open && !showConfirmCancel} onOpenChange={isOpen => !isOpen && onClose()}>
+      <AlertDialog open={open && !showConfirmCancel}>
         <AlertDialogContent size="sm">
           <AlertDialogHeader>
             <AlertDialogTitle>
@@ -56,7 +56,7 @@ export const DepositAlertDialog = ({ open, onClose, onDeposit }: DepositAlertDia
         </AlertDialogContent>
       </AlertDialog>
 
-      <AlertDialog open={showConfirmCancel} onOpenChange={isOpen => !isOpen && handleConfirmCancel()}>
+      <AlertDialog open={open && showConfirmCancel} onOpenChange={isOpen => !isOpen && handleConfirmCancel()}>
         <AlertDialogContent size="sm">
           <AlertDialogHeader>
             <AlertDialogTitle>Are you sure?</AlertDialogTitle>
