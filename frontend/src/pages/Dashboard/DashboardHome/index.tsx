@@ -7,13 +7,18 @@ import { FlexvaultsModal, useBalance } from '@oasisprotocol/flexvaults-sdk'
 import { formatUnits } from 'viem'
 import { Skeleton } from '@/components/ui/skeleton'
 import { PortfolioSummary } from './PortfolioSummary'
+import { DepositAlertDialog } from './DepositAlertDialog'
 
 export const DashboardHome = () => {
   const [modalOpen, setModalOpen] = useState<ComponentProps<typeof FlexvaultsModal>['defaultTab']>(undefined)
   const { balanceWei, isLoading } = useBalance({
     tokenId: import.meta.env.VITE_USDC_TOKEN_ID,
   })
+  const [alertOpen, setAlertOpen] = useState(false)
   const hasFunds = BigInt(balanceWei || 0) > 0
+  const handleStart = () => {
+    setAlertOpen(true)
+  }
 
   return (
     <>
@@ -27,7 +32,7 @@ export const DashboardHome = () => {
                 Start your private trading journey, FlexVaults
               </h2>
             </div>
-            <Button className="w-full md:w-35" size="lg" onClick={() => setModalOpen('deposit')}>
+            <Button className="w-full md:w-35" size="lg" onClick={handleStart}>
               Start
             </Button>
           </>
@@ -82,25 +87,33 @@ export const DashboardHome = () => {
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
         <PortfolioCard
-          disabled={isLoading || !hasFunds}
-          title="Copy trading"
-          buttonLabel="Create your first strategy"
           amount="0$"
+          buttonAction={hasFunds ? undefined : handleStart}
+          buttonLabel="Create your first strategy"
           changePercentage="+0%"
+          disabled={isLoading}
           icon={<GitCompareArrows />}
+          title="Copy trading"
           to="/copy-trading/create"
         />
         <PortfolioCard
-          title="Spot trading"
           amount="0$"
+          buttonAction={hasFunds ? undefined : handleStart}
           changePercentage="+0%"
-          icon={<GitCompare />}
           disabled
+          icon={<GitCompare />}
+          title="Spot trading"
         />
         <PortfolioCard title="AI trading" amount="0$" changePercentage="0%" icon={<Wand />} disabled />
       </div>
 
       <PortfolioSummary />
+
+      <DepositAlertDialog
+        open={alertOpen}
+        onClose={() => setAlertOpen(false)}
+        onDeposit={() => setModalOpen('deposit')}
+      />
 
       <FlexvaultsModal
         open={!!modalOpen}
