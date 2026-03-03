@@ -1,5 +1,5 @@
 import { useEffect, useRef, type FC } from 'react'
-import { useNavigate } from 'react-router'
+import { useLocation, useNavigate } from 'react-router'
 import { ConnectButton } from '@rainbow-me/rainbowkit'
 import { useAccount, useDisconnect } from 'wagmi'
 import { ChevronDown } from 'lucide-react'
@@ -19,14 +19,15 @@ export const RainbowKitConnectButton: FC = () => {
   const { disconnect } = useDisconnect()
   const { isConnected } = useAccount()
   const navigate = useNavigate()
+  const location = useLocation()
   const wasConnected = useRef(isConnected)
 
   useEffect(() => {
-    if (!wasConnected.current && isConnected) {
+    if (!wasConnected.current && isConnected && location.pathname === '/') {
       navigate('/portfolio')
     }
     wasConnected.current = isConnected
-  }, [isConnected, navigate])
+  }, [isConnected, navigate, location.pathname])
 
   return (
     <ConnectButton.Custom>
