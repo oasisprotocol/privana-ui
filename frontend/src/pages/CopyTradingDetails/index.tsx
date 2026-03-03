@@ -49,6 +49,7 @@ const strategy: CopyTradingStrategyInfo = {
 
 export const CopyTradingDetails = () => {
   // @ts-expect-error id will be used once API is ready
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const { id } = useParams<{ id: string }>()
   const isLoading = false
 
