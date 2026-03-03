@@ -16,7 +16,7 @@ export const DashboardHome = () => {
   })
   const [alertOpen, setAlertOpen] = useState(false)
   const hasFunds = BigInt(balanceWei || 0) > 0
-  const handleStart = () => {
+  const handleStartWithoutFunds = () => {
     setAlertOpen(true)
   }
 
@@ -32,7 +32,7 @@ export const DashboardHome = () => {
                 Start your private trading journey, FlexVaults
               </h2>
             </div>
-            <Button className="w-full md:w-35" size="lg" onClick={handleStart}>
+            <Button className="w-full md:w-35" size="lg" onClick={handleStartWithoutFunds}>
               Start
             </Button>
           </>
@@ -88,7 +88,7 @@ export const DashboardHome = () => {
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
         <PortfolioCard
           amount="0$"
-          buttonAction={hasFunds ? undefined : handleStart}
+          buttonAction={hasFunds ? undefined : handleStartWithoutFunds}
           buttonLabel="Create your first strategy"
           changePercentage="+0%"
           disabled={isLoading}
@@ -98,7 +98,7 @@ export const DashboardHome = () => {
         />
         <PortfolioCard
           amount="0$"
-          buttonAction={hasFunds ? undefined : handleStart}
+          buttonAction={hasFunds ? undefined : handleStartWithoutFunds}
           changePercentage="+0%"
           disabled
           icon={<GitCompare />}
