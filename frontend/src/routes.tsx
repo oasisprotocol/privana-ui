@@ -8,6 +8,7 @@ import { CopyTradingDetails } from './pages/CopyTradingDetails'
 import { CreateStrategy } from './pages/CreateStrategy'
 import { NotFound } from './components/NotFound'
 import { ProtectedLayout } from './components/ProtectedLayout'
+import { Swap } from './pages/Swap'
 
 export const router = createBrowserRouter([
   {
@@ -60,6 +61,20 @@ export const router = createBrowserRouter([
                 element: <CopyTradingDetails />,
               },
             ],
+          },
+        ],
+      },
+    ],
+  },
+  {
+    path: 'swap',
+    children: [
+      {
+        element: <Dashboard />,
+        children: [
+          {
+            index: true,
+            element: <Swap />,
           },
         ],
       },
