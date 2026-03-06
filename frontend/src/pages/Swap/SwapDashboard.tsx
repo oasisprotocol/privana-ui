@@ -1,4 +1,4 @@
-import React from 'react'
+import React, { useState } from 'react'
 import {
   Breadcrumb,
   BreadcrumbList,
@@ -12,7 +12,7 @@ import { PoweredByHyperliquid } from '@/components/PoweredByHyperliquid'
 const steps = ['1. Execute your private swap', '2. Review', '3. Enjoy']
 
 export const SwapDashboard = () => {
-  const step = 0
+  const [step] = useState(0)
 
   return (
     <>

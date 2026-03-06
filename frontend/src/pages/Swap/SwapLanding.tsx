@@ -51,7 +51,7 @@ export const SwapLanding = () => {
         </div>
 
         <div className="w-full md:w-88 h-76 relative shrink-0">
-          <img src={HeroImage} alt="TODO" className="w-full h-full object-contain" />
+          <img src={HeroImage} alt="Privacy preserving swaps" className="w-full h-full object-contain" />
         </div>
       </div>
 
@@ -77,7 +77,9 @@ export const SwapLanding = () => {
               <AccordionItem value="private-swap">
                 <AccordionTrigger>How does private swap work?</AccordionTrigger>
                 <AccordionContent>
-                  {`It's essentially "autopilot" for your portfolio. You choose a trader based on their performance and risk level, and our system automatically mirrors their trades in your account. When they buy or sell, you do too—no manual effort required.`}
+                  It's essentially "autopilot" for your portfolio. You choose a trader based on their
+                  performance and risk level, and our system automatically mirrors their trades in your
+                  account. When they buy or sell, you do too—no manual effort required.
                 </AccordionContent>
               </AccordionItem>
             </Accordion>
