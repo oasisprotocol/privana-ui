@@ -28,6 +28,7 @@ export const Layout = ({ children, dashboard }: LayoutProps) => {
           <div className="flex items-center gap-1">
             <MenuItem to="/portfolio" label="Portfolio" />
             <MenuItem to="/copy-trading" label="Copy trading" />
+            <MenuItem to="/swap" label="Trading" />
           </div>
 
           <div className="flex items-center gap-4">
