@@ -1,4 +1,4 @@
-import React, { useState } from 'react'
+import React, { useEffect, useRef, useState } from 'react'
 import {
   Breadcrumb,
   BreadcrumbList,
@@ -18,6 +18,7 @@ import { Skeleton } from '@/components/ui/skeleton'
 import { signLockMessage, createLockExpiry, useBalance } from '@oasisprotocol/flexvaults-sdk'
 import { formatUnits, parseUnits } from 'viem'
 import { useAccount, useWalletClient } from 'wagmi'
+import { useDebouncedValue } from '@/hooks/use-debounced-value'
 
 const steps = ['1. Execute your private swap', '2. Review', '3. Enjoy']
 const DECIMALS = Number(import.meta.env.VITE_USDC_DECIMALS)
@@ -34,40 +35,89 @@ export const SwapDashboard = () => {
   const { data, isLoading, error } = useTokens()
   const { address } = useAccount()
   const { data: walletClient } = useWalletClient()
-
   const [fromTokenId, setFromTokenId] = useState<string>('')
   const [toTokenId, setToTokenId] = useState<string>('')
   const [fromAmount, setFromAmount] = useState('')
   const [toAmount, setToAmount] = useState('')
-
-  const fromBalance = useBalance({ tokenId: fromTokenId || undefined, enabled: !!fromTokenId })
-  const toBalance = useBalance({ tokenId: toTokenId || undefined, enabled: !!toTokenId })
-
+  const fromBalance = useBalance({
+    tokenId: (fromTokenId || undefined) as `0x${string}` | undefined,
+    enabled: !!fromTokenId,
+  })
+  const toBalance = useBalance({
+    tokenId: (toTokenId || undefined) as `0x${string}` | undefined,
+    enabled: !!toTokenId,
+  })
+  const debouncedFromAmount = useDebouncedValue(fromAmount)
   const [quoteData, setQuoteData] = useState<QuoteResponse | null>(null)
   const [quoteLoading, setQuoteLoading] = useState(false)
   const [quoteError, setQuoteError] = useState<string | null>(null)
+  const [quoteRefetchKey, setQuoteRefetchKey] = useState(0)
 
-  const canGetQuote = !!fromTokenId && !!toTokenId && !!fromAmount && !!toAmount && !!address
+  const insufficientFunds =
+    !!fromTokenId &&
+    !!debouncedFromAmount &&
+    !fromBalance.isLoading &&
+    (() => {
+      try {
+        return parseUnits(debouncedFromAmount, DECIMALS) > BigInt(fromBalance.balanceWei || '0')
+      } catch {
+        return false
+      }
+    })()
 
-  const handleGetQuote = async () => {
-    if (!canGetQuote) return
+  const quoteAbortRef = useRef<AbortController | null>(null)
+
+  useEffect(() => {
+    if (!fromTokenId || !toTokenId || !debouncedFromAmount || !address || insufficientFunds) {
+      setQuoteData(null)
+      setQuoteError(null)
+      setToAmount('')
+      return
+    }
+
+    quoteAbortRef.current?.abort()
+    const abort = new AbortController()
+    quoteAbortRef.current = abort
+
     setQuoteLoading(true)
     setQuoteError(null)
-    setQuoteData(null)
-    try {
-      const data = await getQuote({
-        fromTokenId,
-        toTokenId,
-        fromAmount,
-        userAddress: address!,
+
+    getQuote({
+      fromTokenId,
+      toTokenId,
+      fromAmount: debouncedFromAmount,
+      userAddress: address,
+    })
+      .then(data => {
+        if (!abort.signal.aborted) {
+          setQuoteData(data)
+          setToAmount(data.to_amount_estimate)
+        }
       })
-      setQuoteData(data)
-    } catch (err) {
-      setQuoteError(err instanceof Error ? err.message : 'Failed to fetch quote')
-    } finally {
-      setQuoteLoading(false)
+      .catch(err => {
+        if (!abort.signal.aborted) setQuoteError(err instanceof Error ? err.message : 'Failed to fetch quote')
+      })
+      .finally(() => {
+        if (!abort.signal.aborted) setQuoteLoading(false)
+      })
+
+    return () => abort.abort()
+  }, [fromTokenId, toTokenId, debouncedFromAmount, address, quoteRefetchKey, insufficientFunds])
+
+  useEffect(() => {
+    if (!quoteData) return
+    const msUntilExpiry = quoteData.expires_at * 1000 - Date.now()
+    if (msUntilExpiry <= 0) {
+      setQuoteData(null)
+      setToAmount('')
+      return
     }
-  }
+    const timer = setTimeout(() => {
+      setQuoteData(null)
+      setQuoteRefetchKey(k => k + 1)
+    }, msUntilExpiry)
+    return () => clearTimeout(timer)
+  }, [quoteData])
 
   const [swapLoading, setSwapLoading] = useState(false)
   const [swapError, setSwapError] = useState<string | null>(null)
@@ -104,6 +154,11 @@ export const SwapDashboard = () => {
       })
 
       setSwapResult(result)
+      setFromTokenId('')
+      setToTokenId('')
+      setFromAmount('')
+      setToAmount('')
+      setQuoteData(null)
     } catch (err) {
       setSwapError(err instanceof Error ? err.message : 'Swap failed')
     } finally {
@@ -127,7 +182,6 @@ export const SwapDashboard = () => {
 
   const handleToTokenChange = (tokenId: string) => {
     setToTokenId(tokenId)
-    setToAmount('')
   }
 
   return (
@@ -200,6 +254,7 @@ export const SwapDashboard = () => {
                   '-'
                 )}
               </div>
+              {insufficientFunds && <p className="text-xs text-destructive">Insufficient funds</p>}
             </div>
           </div>
 
@@ -221,14 +276,21 @@ export const SwapDashboard = () => {
             </div>
             <div className="flex flex-1 flex-col gap-2">
               <Label>Amount</Label>
-              <Input
-                className="h-8"
-                type="text"
-                inputMode="decimal"
-                placeholder={`0.00 ${toTokenId ? getTokenLabel(findToken(toTokenId)!) : ''}`}
-                value={toAmount}
-                onChange={e => setToAmount(e.target.value)}
-              />
+              <div className="relative">
+                <Input
+                  className={`h-8 ${quoteLoading ? 'opacity-50' : ''}`}
+                  type="text"
+                  inputMode="decimal"
+                  placeholder={`0.00 ${toTokenId ? getTokenLabel(findToken(toTokenId)!) : ''}`}
+                  value={toAmount}
+                  readOnly
+                />
+                {quoteLoading && (
+                  <div className="absolute right-2.5 top-1/2 -translate-y-1/2">
+                    <div className="size-3.5 animate-spin rounded-full border-2 border-muted-foreground border-t-transparent" />
+                  </div>
+                )}
+              </div>
               <p className="text-xs text-muted-foreground">
                 Available:{' '}
                 {toTokenId
@@ -279,21 +341,7 @@ export const SwapDashboard = () => {
           )}
 
           <div className="flex gap-5 w-full">
-            <Button
-              size="sm"
-              variant="secondary"
-              className="flex-1"
-              disabled={!canGetQuote || quoteLoading}
-              onClick={handleGetQuote}
-            >
-              {quoteLoading ? 'Getting quote...' : 'Get quote'}
-            </Button>
-            <Button
-              size="sm"
-              className="flex-1"
-              disabled={!canSwap || swapLoading}
-              onClick={handleSwap}
-            >
+            <Button size="sm" className="flex-1" disabled={!canSwap || swapLoading} onClick={handleSwap}>
               {swapLoading ? 'Signing & submitting...' : 'Swap'}
             </Button>
           </div>
