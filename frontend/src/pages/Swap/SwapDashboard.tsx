@@ -12,10 +12,12 @@ import { Label } from '@/components/ui/label'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Separator } from '@/components/ui/separator'
 import { PoweredByHyperliquid } from '@/components/PoweredByHyperliquid'
-import { useTokens } from '@/api/swap'
+import { getQuote, useTokens } from '@/api/swap'
+import type { QuoteResponse } from '@/api/swap'
 import { Skeleton } from '@/components/ui/skeleton'
 import { useBalance } from '@oasisprotocol/flexvaults-sdk'
 import { formatUnits } from 'viem'
+import { useAccount } from 'wagmi'
 
 const steps = ['1. Execute your private swap', '2. Review', '3. Enjoy']
 const DECIMALS = Number(import.meta.env.VITE_USDC_DECIMALS)
@@ -26,6 +28,7 @@ const SYMBOL_OVERRIDES: Record<string, string> = {
 export const SwapDashboard = () => {
   const [step] = useState(0)
   const { data, isLoading, error } = useTokens()
+  const { address } = useAccount()
 
   const [fromTokenId, setFromTokenId] = useState<string>('')
   const [toTokenId, setToTokenId] = useState<string>('')
@@ -34,6 +37,32 @@ export const SwapDashboard = () => {
 
   const fromBalance = useBalance({ tokenId: fromTokenId || undefined, enabled: !!fromTokenId })
   const toBalance = useBalance({ tokenId: toTokenId || undefined, enabled: !!toTokenId })
+
+  const [quoteData, setQuoteData] = useState<QuoteResponse | null>(null)
+  const [quoteLoading, setQuoteLoading] = useState(false)
+  const [quoteError, setQuoteError] = useState<string | null>(null)
+
+  const canGetQuote = !!fromTokenId && !!toTokenId && !!fromAmount && !!toAmount && !!address
+
+  const handleGetQuote = async () => {
+    if (!canGetQuote) return
+    setQuoteLoading(true)
+    setQuoteError(null)
+    setQuoteData(null)
+    try {
+      const data = await getQuote({
+        fromTokenId,
+        toTokenId,
+        fromAmount,
+        userAddress: address!,
+      })
+      setQuoteData(data)
+    } catch (err) {
+      setQuoteError(err instanceof Error ? err.message : 'Failed to fetch quote')
+    } finally {
+      setQuoteLoading(false)
+    }
+  }
 
   const tokens = data?.tokens ?? []
 
@@ -164,7 +193,54 @@ export const SwapDashboard = () => {
             </div>
           </div>
 
+          {(quoteLoading || quoteError || quoteData) && (
+            <div className="rounded-lg border bg-card p-4 text-sm">
+              {quoteLoading && (
+                <div className="flex flex-col gap-2">
+                  <Skeleton className="h-4 w-full" />
+                  <Skeleton className="h-4 w-3/4" />
+                  <Skeleton className="h-4 w-1/2" />
+                </div>
+              )}
+              {quoteError && <p className="text-destructive">Failed to fetch quote: {quoteError}</p>}
+              {quoteData && (
+                <div className="flex flex-col gap-4">
+                  <p>Raw quote data</p>
+                  <dl className="grid grid-cols-[auto_1fr] gap-x-4 gap-y-1 text-sm">
+                    <dt className="text-muted-foreground">Quote ID</dt>
+                    <dd className="truncate">{quoteData.quote_id}</dd>
+                    <dt className="text-muted-foreground">From amount</dt>
+                    <dd>{quoteData.from_amount}</dd>
+                    <dt className="text-muted-foreground">Estimated output</dt>
+                    <dd>{quoteData.to_amount_estimate}</dd>
+                    <dt className="text-muted-foreground">Gross output</dt>
+                    <dd>{quoteData.to_amount_gross}</dd>
+                    <dt className="text-muted-foreground">Min output</dt>
+                    <dd>{quoteData.to_amount_min}</dd>
+                    <dt className="text-muted-foreground">Fee</dt>
+                    <dd>
+                      {quoteData.fee_amount} ({quoteData.fee_bps} bps)
+                    </dd>
+                    <dt className="text-muted-foreground">Tool</dt>
+                    <dd>{quoteData.tool_used ?? '-'}</dd>
+                    <dt className="text-muted-foreground">Expires</dt>
+                    <dd>{new Date(quoteData.expires_at * 1000).toLocaleTimeString()}</dd>
+                  </dl>
+                </div>
+              )}
+            </div>
+          )}
+
           <div className="flex gap-5 w-full">
+            <Button
+              size="sm"
+              variant="secondary"
+              className="flex-1"
+              disabled={!canGetQuote || quoteLoading}
+              onClick={handleGetQuote}
+            >
+              {quoteLoading ? 'Getting quote...' : 'Get quote'}
+            </Button>
             <Button size="sm" className="flex-1">
               Swap
             </Button>
