@@ -12,12 +12,12 @@ import { Label } from '@/components/ui/label'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Separator } from '@/components/ui/separator'
 import { PoweredByHyperliquid } from '@/components/PoweredByHyperliquid'
-import { getQuote, useTokens } from '@/api/swap'
+import { executeSwap, getQuote, useTokens } from '@/api/swap'
 import type { QuoteResponse } from '@/api/swap'
 import { Skeleton } from '@/components/ui/skeleton'
-import { useBalance } from '@oasisprotocol/flexvaults-sdk'
-import { formatUnits } from 'viem'
-import { useAccount } from 'wagmi'
+import { signLockMessage, createLockExpiry, useBalance } from '@oasisprotocol/flexvaults-sdk'
+import { formatUnits, parseUnits } from 'viem'
+import { useAccount, useWalletClient } from 'wagmi'
 
 const steps = ['1. Execute your private swap', '2. Review', '3. Enjoy']
 const DECIMALS = Number(import.meta.env.VITE_USDC_DECIMALS)
@@ -25,10 +25,15 @@ const SYMBOL_OVERRIDES: Record<string, string> = {
   '0xc719650e9f4b0f27d956638c54518932ef9d15e720a1a2b2850250bcd0816514': 'USDC',
 }
 
+const CHAIN_ID = parseInt(import.meta.env.VITE_CHAIN_ID, 10)
+const ACCOUNTING_CONTRACT = import.meta.env.VITE_ACCOUNTING_CONTRACT_ADDRESS
+const SERVICE_ADDRESS = import.meta.env.VITE_SERVICE_ADDRESS
+
 export const SwapDashboard = () => {
   const [step] = useState(0)
   const { data, isLoading, error } = useTokens()
   const { address } = useAccount()
+  const { data: walletClient } = useWalletClient()
 
   const [fromTokenId, setFromTokenId] = useState<string>('')
   const [toTokenId, setToTokenId] = useState<string>('')
@@ -61,6 +66,48 @@ export const SwapDashboard = () => {
       setQuoteError(err instanceof Error ? err.message : 'Failed to fetch quote')
     } finally {
       setQuoteLoading(false)
+    }
+  }
+
+  const [swapLoading, setSwapLoading] = useState(false)
+  const [swapError, setSwapError] = useState<string | null>(null)
+  const [swapResult, setSwapResult] = useState<{ swap_id: string; status: string } | null>(null)
+
+  const canSwap = !!quoteData && !!walletClient && !!address
+
+  const handleSwap = async () => {
+    if (!canSwap) return
+    setSwapLoading(true)
+    setSwapError(null)
+    setSwapResult(null)
+    try {
+      const expiry = createLockExpiry(60)
+
+      const signature = await signLockMessage({
+        walletClient,
+        chainId: CHAIN_ID,
+        verifyingContract: ACCOUNTING_CONTRACT,
+        message: {
+          userAddress: address,
+          serviceAddress: SERVICE_ADDRESS,
+          tokenId: quoteData.from_token_id as `0x${string}`,
+          amount: parseUnits(quoteData.from_amount, DECIMALS),
+          expiry,
+        },
+      })
+
+      const result = await executeSwap({
+        quote_id: quoteData.quote_id,
+        user_address: address,
+        lock_signature: signature,
+        lock_expiry: Number(expiry),
+      })
+
+      setSwapResult(result)
+    } catch (err) {
+      setSwapError(err instanceof Error ? err.message : 'Swap failed')
+    } finally {
+      setSwapLoading(false)
     }
   }
 
@@ -241,10 +288,28 @@ export const SwapDashboard = () => {
             >
               {quoteLoading ? 'Getting quote...' : 'Get quote'}
             </Button>
-            <Button size="sm" className="flex-1">
-              Swap
+            <Button
+              size="sm"
+              className="flex-1"
+              disabled={!canSwap || swapLoading}
+              onClick={handleSwap}
+            >
+              {swapLoading ? 'Signing & submitting...' : 'Swap'}
             </Button>
           </div>
+
+          {swapError && <p className="text-sm text-destructive">{swapError}</p>}
+          {swapResult && (
+            <div className="rounded-lg border bg-card p-4 text-sm">
+              <p className="text-foreground font-medium">Swap initiated</p>
+              <dl className="grid grid-cols-[auto_1fr] gap-x-4 gap-y-1 mt-2 text-sm">
+                <dt className="text-muted-foreground">Swap ID</dt>
+                <dd className="truncate">{swapResult.swap_id}</dd>
+                <dt className="text-muted-foreground">Status</dt>
+                <dd>{swapResult.status}</dd>
+              </dl>
+            </div>
+          )}
         </div>
       )}
 
