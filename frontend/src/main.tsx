@@ -30,6 +30,7 @@ createRoot(document.getElementById('root')!).render(
           networkConfig={{
             chainId: parseInt(import.meta.env.VITE_CHAIN_ID, 10),
             accountingContract: import.meta.env.VITE_ACCOUNTING_CONTRACT_ADDRESS,
+            apiUrl: import.meta.env.VITE_ACCOUNTING_API_URL,
           }}
         >
           <RainbowKitProvider theme={rainbowKitTheme} modalSize="compact">
