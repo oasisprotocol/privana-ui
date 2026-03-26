@@ -172,13 +172,13 @@ export const SwapDashboard = () => {
   const formatBalance = (balanceWei: string, tokenId: string) =>
     Number(formatUnits(BigInt(balanceWei || '0'), getDecimals(tokenId))).toFixed(6)
 
-  const handleFromTokenChange = (tokenId: string) => {
-    setFromTokenId(tokenId)
+  const handleFromTokenChange = (value: string) => {
+    setFromTokenId(value === '__none__' ? '' : value)
     setFromAmount('')
   }
 
-  const handleToTokenChange = (tokenId: string) => {
-    setToTokenId(tokenId)
+  const handleToTokenChange = (value: string) => {
+    setToTokenId(value === '__none__' ? '' : value)
   }
 
   return (
@@ -216,13 +216,14 @@ export const SwapDashboard = () => {
           <div className="flex gap-4 items-start">
             <div className="flex flex-col gap-2">
               <Label>Asset</Label>
-              <Select value={fromTokenId} onValueChange={handleFromTokenChange}>
-                <SelectTrigger size="sm">
+              <Select value={fromTokenId || '__none__'} onValueChange={handleFromTokenChange}>
+                <SelectTrigger size="sm" className="min-w-28">
                   <SelectValue placeholder="Select" />
                 </SelectTrigger>
                 <SelectContent>
+                  <SelectItem value="__none__">—</SelectItem>
                   {tokens.map(token => (
-                    <SelectItem key={token.token_id} value={token.token_id}>
+                    <SelectItem key={token.token_id} value={token.token_id} disabled={token.token_id === toTokenId}>
                       {getTokenLabel(token)}
                     </SelectItem>
                   ))}
@@ -258,13 +259,14 @@ export const SwapDashboard = () => {
           <div className="flex gap-4 items-start">
             <div className="flex flex-col gap-2">
               <Label>Asset</Label>
-              <Select value={toTokenId} onValueChange={handleToTokenChange}>
-                <SelectTrigger size="sm">
+              <Select value={toTokenId || '__none__'} onValueChange={handleToTokenChange}>
+                <SelectTrigger size="sm" className="min-w-28">
                   <SelectValue placeholder="Select" />
                 </SelectTrigger>
                 <SelectContent>
+                  <SelectItem value="__none__">—</SelectItem>
                   {tokens.map(token => (
-                    <SelectItem key={token.token_id} value={token.token_id}>
+                    <SelectItem key={token.token_id} value={token.token_id} disabled={token.token_id === fromTokenId}>
                       {getTokenLabel(token)}
                     </SelectItem>
                   ))}
