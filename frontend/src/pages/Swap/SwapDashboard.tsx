@@ -15,7 +15,7 @@ import { PoweredByHyperliquid } from '@/components/PoweredByHyperliquid'
 import { executeSwap, getQuote, useTokens } from '@/api/swap'
 import type { QuoteResponse } from '@/api/swap'
 import { Skeleton } from '@/components/ui/skeleton'
-import { signLockMessage, createLockExpiry, useBalance } from '@oasisprotocol/flexvaults-sdk'
+import { signTransferMessage, useBalance } from '@oasisprotocol/flexvaults-sdk'
 import { formatUnits, parseUnits } from 'viem'
 import { useAccount, useWalletClient } from 'wagmi'
 import { useDebouncedValue } from '@/hooks/use-debounced-value'
@@ -25,7 +25,6 @@ import { SYMBOL_OVERRIDES, getDecimals } from '@/lib/tokens'
 
 const CHAIN_ID = parseInt(import.meta.env.VITE_CHAIN_ID, 10)
 const ACCOUNTING_CONTRACT = import.meta.env.VITE_ACCOUNTING_CONTRACT_ADDRESS
-const SERVICE_ADDRESS = import.meta.env.VITE_SERVICE_ADDRESS
 
 export const SwapDashboard = () => {
   const [step] = useState(0)
@@ -132,26 +131,24 @@ export const SwapDashboard = () => {
     setSwapError(null)
     setSwapResult(null)
     try {
-      const expiry = createLockExpiry(60)
-
-      const signature = await signLockMessage({
+      const signature = await signTransferMessage({
         walletClient,
         chainId: CHAIN_ID,
         verifyingContract: ACCOUNTING_CONTRACT,
         message: {
           userAddress: address,
-          serviceAddress: SERVICE_ADDRESS,
+          toAddress: quoteData.liquidity_provider as `0x${string}`,
           tokenId: quoteData.from_token_id as `0x${string}`,
-          amount: parseUnits(quoteData.from_amount, getDecimals(quoteData.from_token_id)),
-          expiry,
+          amount: BigInt(quoteData.from_amount),
+          nonce: BigInt(quoteData.transfer_nonce),
         },
       })
 
       const result = await executeSwap({
         quote_id: quoteData.quote_id,
         user_address: address,
-        lock_signature: signature,
-        lock_expiry: Number(expiry),
+        input_nonce: quoteData.transfer_nonce,
+        input_signature: signature,
       })
 
       setSwapResult(result)
@@ -302,14 +299,18 @@ export const SwapDashboard = () => {
                   </div>
                 )}
               </div>
-              <p className="text-xs text-muted-foreground">
+              <div className="text-xs text-muted-foreground flex gap-2">
                 Available:{' '}
-                {toTokenId
-                  ? toBalance.isLoading
-                    ? '...'
-                    : `${formatBalance(toBalance.balanceWei, toTokenId)} ${getTokenLabel(findToken(toTokenId)!)}`
-                  : '-'}
-              </p>
+                {toTokenId ? (
+                  toBalance.isLoading ? (
+                    <Skeleton className="h-4 w-24" />
+                  ) : (
+                    `${formatBalance(toBalance.balanceWei, toTokenId)} ${getTokenLabel(findToken(toTokenId)!)}`
+                  )
+                ) : (
+                  '-'
+                )}
+              </div>
             </div>
           </div>
 

@@ -19,15 +19,16 @@ export interface QuoteResponse {
   fee_bps: number
   fee_amount: string
   tool_used: string | null
-  approval_address: string | null
+  liquidity_provider: string
+  transfer_nonce: number
   expires_at: number
 }
 
 export interface SwapRequest {
   quote_id: string
   user_address: string
-  lock_signature: string
-  lock_expiry: number
+  input_nonce: number
+  input_signature: string
 }
 
 export interface SwapResponse {
