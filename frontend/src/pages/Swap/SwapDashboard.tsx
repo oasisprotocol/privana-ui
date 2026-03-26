@@ -50,17 +50,21 @@ export const SwapDashboard = () => {
   const [quoteError, setQuoteError] = useState<string | null>(null)
   const [quoteRefetchKey, setQuoteRefetchKey] = useState(0)
 
-  const insufficientFunds =
-    !!fromTokenId &&
-    !!debouncedFromAmount &&
-    !fromBalance.isLoading &&
-    (() => {
-      try {
-        return parseUnits(debouncedFromAmount, getDecimals(fromTokenId)) > BigInt(fromBalance.balanceWei || '0')
-      } catch {
-        return false
-      }
-    })()
+  // TODO: re-enable once backend SIWE auth is working for balance reads
+  const insufficientFunds = false
+  // &&
+  // !!fromTokenId &&
+  // !!debouncedFromAmount &&
+  // !fromBalance.isLoading &&
+  // (() => {
+  // try {
+  // return (
+  // parseUnits(debouncedFromAmount, getDecimals(fromTokenId)) > BigInt(fromBalance.balanceWei || '0')
+  // )
+  // } catch {
+  // return false
+  // }
+  // })()
 
   const quoteAbortRef = useRef<AbortController | null>(null)
 
@@ -223,7 +227,11 @@ export const SwapDashboard = () => {
                 <SelectContent>
                   <SelectItem value="__none__">—</SelectItem>
                   {tokens.map(token => (
-                    <SelectItem key={token.token_id} value={token.token_id} disabled={token.token_id === toTokenId}>
+                    <SelectItem
+                      key={token.token_id}
+                      value={token.token_id}
+                      disabled={token.token_id === toTokenId}
+                    >
                       {getTokenLabel(token)}
                     </SelectItem>
                   ))}
@@ -266,7 +274,11 @@ export const SwapDashboard = () => {
                 <SelectContent>
                   <SelectItem value="__none__">—</SelectItem>
                   {tokens.map(token => (
-                    <SelectItem key={token.token_id} value={token.token_id} disabled={token.token_id === fromTokenId}>
+                    <SelectItem
+                      key={token.token_id}
+                      value={token.token_id}
+                      disabled={token.token_id === fromTokenId}
+                    >
                       {getTokenLabel(token)}
                     </SelectItem>
                   ))}
