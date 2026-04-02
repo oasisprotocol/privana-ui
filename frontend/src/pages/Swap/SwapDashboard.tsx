@@ -17,7 +17,7 @@ import type { QuoteResponse } from '@/api/swap'
 import { Skeleton } from '@/components/ui/skeleton'
 import { signTransferMessage, useBalance } from '@oasisprotocol/flexvaults-sdk'
 import { formatUnits, parseUnits } from 'viem'
-import { useAccount, useWalletClient } from 'wagmi'
+import { useAccount, useWalletClient, useSwitchChain } from 'wagmi'
 import { useDebouncedValue } from '@/hooks/use-debounced-value'
 
 const steps = ['1. Execute your private swap', '2. Review', '3. Enjoy']
@@ -29,8 +29,9 @@ const ACCOUNTING_CONTRACT = import.meta.env.VITE_ACCOUNTING_CONTRACT_ADDRESS
 export const SwapDashboard = () => {
   const [step] = useState(0)
   const { data, isLoading, error } = useTokens()
-  const { address } = useAccount()
+  const { address, chainId } = useAccount()
   const { data: walletClient } = useWalletClient()
+  const { switchChain } = useSwitchChain()
   const [fromTokenId, setFromTokenId] = useState<string>('')
   const [toTokenId, setToTokenId] = useState<string>('')
   const [fromAmount, setFromAmount] = useState('')
@@ -123,7 +124,8 @@ export const SwapDashboard = () => {
   const [swapError, setSwapError] = useState<string | null>(null)
   const [swapResult, setSwapResult] = useState<{ swap_id: string; status: string } | null>(null)
 
-  const canSwap = !!quoteData && !!walletClient && !!address
+  const isCorrectChain = chainId === CHAIN_ID
+  const canSwap = !!quoteData && !!walletClient && !!address && isCorrectChain
 
   const handleSwap = async () => {
     if (!canSwap) return
@@ -353,9 +355,15 @@ export const SwapDashboard = () => {
           )}
 
           <div className="flex gap-5 w-full">
-            <Button size="sm" className="flex-1" disabled={!canSwap || swapLoading} onClick={handleSwap}>
-              {swapLoading ? 'Signing & submitting...' : 'Swap'}
-            </Button>
+            {!isCorrectChain ? (
+              <Button size="sm" className="flex-1" onClick={() => switchChain({ chainId: CHAIN_ID })}>
+                Switch Network
+              </Button>
+            ) : (
+              <Button size="sm" className="flex-1" disabled={!canSwap || swapLoading} onClick={handleSwap}>
+                {swapLoading ? 'Signing & submitting...' : 'Swap'}
+              </Button>
+            )}
           </div>
 
           {swapError && <p className="text-sm text-destructive">{swapError}</p>}
