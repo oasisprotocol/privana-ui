@@ -62,8 +62,6 @@ export interface TokenInfo {
   chain_name: string | null
   token_address: string | null
   symbol: string | null
-  decimals: number | null
-  name: string | null
 }
 
 export interface TokenListResponse {

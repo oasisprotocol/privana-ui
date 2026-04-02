@@ -21,6 +21,7 @@ import { useAccount, useWalletClient } from 'wagmi'
 import { useDebouncedValue } from '@/hooks/use-debounced-value'
 
 const steps = ['1. Execute your private swap', '2. Review', '3. Enjoy']
+import { SYMBOL_OVERRIDES, getDecimals } from '@/lib/tokens'
 
 const CHAIN_ID = parseInt(import.meta.env.VITE_CHAIN_ID, 10)
 const ACCOUNTING_CONTRACT = import.meta.env.VITE_ACCOUNTING_CONTRACT_ADDRESS
@@ -48,11 +49,6 @@ export const SwapDashboard = () => {
   const [quoteError, setQuoteError] = useState<string | null>(null)
   const [quoteRefetchKey, setQuoteRefetchKey] = useState(0)
 
-  const tokens = data?.tokens ?? []
-
-  const getTokenLabel = (token: (typeof tokens)[number]) => token.symbol ?? token.token_type_name
-  const getToken = (id: string) => tokens.find(t => t.token_id === id)
-
   // TODO: re-enable once backend SIWE auth is working for balance reads
   const insufficientFunds = false
   // &&
@@ -62,7 +58,7 @@ export const SwapDashboard = () => {
   // (() => {
   // try {
   // return (
-  // parseUnits(debouncedFromAmount, getToken(fromTokenId)!.decimals!) > BigInt(fromBalance.balanceWei || '0')
+  // parseUnits(debouncedFromAmount, getDecimals(fromTokenId)) > BigInt(fromBalance.balanceWei || '0')
   // )
   // } catch {
   // return false
@@ -89,13 +85,13 @@ export const SwapDashboard = () => {
     getQuote({
       fromTokenId,
       toTokenId,
-      fromAmount: parseUnits(debouncedFromAmount, getToken(fromTokenId)!.decimals!).toString(),
+      fromAmount: parseUnits(debouncedFromAmount, getDecimals(fromTokenId)).toString(),
       userAddress: address,
     })
       .then(data => {
         if (!abort.signal.aborted) {
           setQuoteData(data)
-          setToAmount(formatUnits(BigInt(data.to_amount_estimate), getToken(toTokenId)!.decimals!))
+          setToAmount(formatUnits(BigInt(data.to_amount_estimate), getDecimals(toTokenId)))
         }
       })
       .catch(err => {
@@ -106,7 +102,6 @@ export const SwapDashboard = () => {
       })
 
     return () => abort.abort()
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [fromTokenId, toTokenId, debouncedFromAmount, address, quoteRefetchKey, insufficientFunds])
 
   useEffect(() => {
@@ -169,10 +164,14 @@ export const SwapDashboard = () => {
     }
   }
 
-  const formatBalance = (balanceWei: string, tokenId: string) => {
-    const decimals = getToken(tokenId)!.decimals!
-    return formatUnits(BigInt(balanceWei || '0'), decimals)
-  }
+  const tokens = data?.tokens ?? []
+
+  const getTokenLabel = (token: (typeof tokens)[number]) =>
+    SYMBOL_OVERRIDES[token.token_id] ?? token.symbol ?? token.token_type_name
+  const findToken = (id: string) => tokens.find(t => t.token_id === id)
+
+  const formatBalance = (balanceWei: string, tokenId: string) =>
+    Number(formatUnits(BigInt(balanceWei || '0'), getDecimals(tokenId))).toFixed(6)
 
   const handleFromTokenChange = (value: string) => {
     setFromTokenId(value === '__none__' ? '' : value)
@@ -242,7 +241,7 @@ export const SwapDashboard = () => {
                 className="h-8"
                 type="text"
                 inputMode="decimal"
-                placeholder={`0.00 ${fromTokenId ? getTokenLabel(getToken(fromTokenId)!) : ''}`}
+                placeholder={`0.00 ${fromTokenId ? getTokenLabel(findToken(fromTokenId)!) : ''}`}
                 value={fromAmount}
                 onChange={e => setFromAmount(e.target.value)}
               />
@@ -252,7 +251,7 @@ export const SwapDashboard = () => {
                   fromBalance.isLoading ? (
                     <Skeleton className="h-4 w-24" />
                   ) : (
-                    `${formatBalance(fromBalance.balanceWei, fromTokenId)} ${getTokenLabel(getToken(fromTokenId)!)}`
+                    `${formatBalance(fromBalance.balanceWei, fromTokenId)} ${getTokenLabel(findToken(fromTokenId)!)}`
                   )
                 ) : (
                   '-'
@@ -290,7 +289,7 @@ export const SwapDashboard = () => {
                   className={`h-8 ${quoteLoading ? 'opacity-50' : ''}`}
                   type="text"
                   inputMode="decimal"
-                  placeholder={`0.00 ${toTokenId ? getTokenLabel(getToken(toTokenId)!) : ''}`}
+                  placeholder={`0.00 ${toTokenId ? getTokenLabel(findToken(toTokenId)!) : ''}`}
                   value={toAmount}
                   readOnly
                 />
@@ -306,7 +305,7 @@ export const SwapDashboard = () => {
                   toBalance.isLoading ? (
                     <Skeleton className="h-4 w-24" />
                   ) : (
-                    `${formatBalance(toBalance.balanceWei, toTokenId)} ${getTokenLabel(getToken(toTokenId)!)}`
+                    `${formatBalance(toBalance.balanceWei, toTokenId)} ${getTokenLabel(findToken(toTokenId)!)}`
                   )
                 ) : (
                   '-'
