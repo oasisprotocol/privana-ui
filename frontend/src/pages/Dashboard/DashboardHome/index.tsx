@@ -5,7 +5,6 @@ import { PortfolioChart } from './PortfolioChart'
 import { ComponentProps, useMemo, useState } from 'react'
 import {
   FlexvaultsModal,
-  useBalance,
   useBatchBalances,
   useFlexvaultsContext,
   useLockedFunds,
@@ -19,12 +18,9 @@ import { formatFiat } from '@/lib/tokens'
 
 export const DashboardHome = () => {
   const [modalOpen, setModalOpen] = useState<ComponentProps<typeof FlexvaultsModal>['defaultTab']>(undefined)
-  const { balanceWei, isLoading } = useBalance({
-    tokenId: '0x330ba47d00c7ce3018deee017b319fd7cc6473a2ddc9e6eba6ebb4207be15279',
-  })
   const { enabledTokens } = useFlexvaultsContext()
   const tokenIds = useMemo(() => enabledTokens.map(t => t.id), [enabledTokens])
-  const { balances } = useBatchBalances({ tokenIds })
+  const { balances, isLoading } = useBatchBalances({ tokenIds })
   const { locks } = useLockedFunds()
   const { data: prices } = useTokenPrices(tokenIds)
 
@@ -47,7 +43,7 @@ export const DashboardHome = () => {
     return { availableFiatValue: available, totalFiatValue: total }
   }, [balances, locks, prices])
   const [alertOpen, setAlertOpen] = useState(false)
-  const hasFunds = BigInt(balanceWei || 0) > 0
+  const hasFunds = balances.some(b => BigInt(b.balance || '0') > 0n)
   const handleStartWithoutFunds = () => {
     setAlertOpen(true)
   }
