@@ -73,7 +73,7 @@ export const DashboardHome = () => {
                   <span className="text-secondary-foreground">Available funds</span>
                   {pricesError ? (
                     <span className="text-foreground" title="Token prices are temporarily unavailable.">
-                      Prices unavailable
+                      -
                     </span>
                   ) : pricesPending || availableFiatValue === undefined ? (
                     <Skeleton className="h-5 w-20" />
@@ -101,20 +101,12 @@ export const DashboardHome = () => {
               <div className="flex flex-col gap-3">
                 <div className="flex flex-col">
                   <h3 className="text-xl font-semibold text-tertiary-foreground">Total balance</h3>
-                  {pricesError ? (
-                    <h2
-                      className="text-3xl font-medium text-card-foreground"
-                      title="Token prices are temporarily unavailable."
-                    >
-                      Prices unavailable
-                    </h2>
-                  ) : pricesPending || totalFiatValue === undefined ? (
-                    <Skeleton className="h-9 w-40" />
-                  ) : (
-                    <h2 className="text-3xl font-medium text-card-foreground">
-                      {formatFiat(totalFiatValue)}
-                    </h2>
-                  )}
+                  <h2
+                    className="text-3xl font-medium text-card-foreground"
+                    title={pricesError ? 'Token prices are temporarily unavailable.' : undefined}
+                  >
+                    {pricesError ? '-' : formatFiat(totalFiatValue ?? 0)}
+                  </h2>
                   <span className="text-lg font-semibold text-chart-positive">+$0.00 (+0%)</span>
                 </div>
               </div>
