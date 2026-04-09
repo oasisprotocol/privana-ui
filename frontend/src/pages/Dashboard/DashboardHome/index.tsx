@@ -89,21 +89,22 @@ export const DashboardHome = () => {
         <PortfolioCard
           amount="0$"
           buttonAction={hasFunds ? undefined : handleStartWithoutFunds}
-          buttonLabel="Create your first strategy"
           changePercentage="+0%"
-          disabled={isLoading}
-          icon={<GitCompareArrows />}
-          title="Copy trading"
-          to="/copy-trading/create"
+          icon={<GitCompare />}
+          title="Spot trading"
+          buttonLabel="Trade"
+          to="/swap"
         />
         <PortfolioCard
           amount="0$"
           buttonAction={hasFunds ? undefined : handleStartWithoutFunds}
+          buttonLabel="Create your first strategy"
           changePercentage="+0%"
+          icon={<GitCompareArrows />}
+          title="Copy trading"
           disabled
-          icon={<GitCompare />}
-          title="Spot trading"
         />
+
         <PortfolioCard title="AI trading" amount="0$" changePercentage="0%" icon={<Wand />} disabled />
       </div>
 
