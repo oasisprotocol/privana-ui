@@ -30,11 +30,16 @@ createRoot(document.getElementById('root')!).render(
           networkConfig={{
             chainId: parseInt(import.meta.env.VITE_CHAIN_ID, 10),
             accountingContract: import.meta.env.VITE_ACCOUNTING_CONTRACT_ADDRESS,
+            apiUrl: import.meta.env.VITE_FLEXVAULTS_API_URL,
           }}
           tokens={[
             '0x330ba47d00c7ce3018deee017b319fd7cc6473a2ddc9e6eba6ebb4207be15279',
             '0x335b5cccd1e63b2fe79863a0db73fce430e4e66902e2b78424f8662621e29fb7',
           ]}
+          hostedAuth={{
+            clientId: import.meta.env.VITE_FLEXVAULTS_CLIENT_ID,
+            redirectUri: `${window.location.origin}/auth/callback`,
+          }}
         >
           <RainbowKitProvider theme={rainbowKitTheme} modalSize="compact">
             <RouterProvider router={router} />
