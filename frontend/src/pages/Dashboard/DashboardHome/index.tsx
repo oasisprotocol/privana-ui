@@ -12,7 +12,7 @@ import { DepositAlertDialog } from './DepositAlertDialog'
 export const DashboardHome = () => {
   const [modalOpen, setModalOpen] = useState<ComponentProps<typeof FlexvaultsModal>['defaultTab']>(undefined)
   const { balanceWei, isLoading } = useBalance({
-    tokenId: import.meta.env.VITE_USDC_TOKEN_ID,
+    tokenId: '0x330ba47d00c7ce3018deee017b319fd7cc6473a2ddc9e6eba6ebb4207be15279',
   })
   const [alertOpen, setAlertOpen] = useState(false)
   const hasFunds = BigInt(balanceWei || 0) > 0

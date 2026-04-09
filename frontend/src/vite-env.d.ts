@@ -7,7 +7,6 @@ interface ViteTypeOptions {
 interface ImportMetaEnv {
   readonly VITE_WALLET_CONNECT_PROJECT_ID: string
   readonly VITE_CHAIN_ID: string
-  readonly VITE_USDC_TOKEN_ID: `0x${string}`
   readonly VITE_USDC_DECIMALS: string
   readonly VITE_ACCOUNTING_CONTRACT_ADDRESS: `0x${string}`
   readonly VITE_FLEXVAULTS_API_URL: string
