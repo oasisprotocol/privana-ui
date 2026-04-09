@@ -36,7 +36,7 @@ export const router = createBrowserRouter([
     ],
   },
   {
-    path: 'copy-trading',
+    path: '/copy-trading',
     children: [
       {
         element: <Dashboard />,
@@ -68,7 +68,7 @@ export const router = createBrowserRouter([
     ],
   },
   {
-    path: 'swap',
+    path: '/swap',
     children: [
       {
         element: <Dashboard />,
@@ -82,7 +82,7 @@ export const router = createBrowserRouter([
     ],
   },
   {
-    path: 'auth/callback',
+    path: '/auth/callback',
     element: <AuthCallback />,
   },
   {
