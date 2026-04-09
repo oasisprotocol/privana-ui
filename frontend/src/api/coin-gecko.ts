@@ -21,12 +21,12 @@ export function useTokenPrices(tokenIds: string[], fiatCurrency = 'usd') {
 
   return useQuery<PriceMap>({
     queryKey: ['coingecko-prices', geckoIds, fiatCurrency],
-    queryFn: async () => {
+    queryFn: async ({ signal }) => {
       const params = new URLSearchParams({
         ids: geckoIds.join(','),
         vs_currencies: fiatCurrency,
       })
-      const res = await fetch(`${COINGECKO_API}/simple/price?${params}`)
+      const res = await fetch(`${COINGECKO_API}/simple/price?${params}`, { signal })
       if (!res.ok) throw new Error(`CoinGecko API error: ${res.status}`)
       const data: GeckoResponse = await res.json()
 
@@ -40,7 +40,8 @@ export function useTokenPrices(tokenIds: string[], fiatCurrency = 'usd') {
       return result
     },
     enabled: geckoIds.length > 0,
-    staleTime: 1000 * 60 * 3,
-    refetchInterval: 1000 * 60 * 3,
+    staleTime: 1000 * 60 * 5,
+    refetchInterval: 1000 * 60 * 5,
+    retry: 1,
   })
 }

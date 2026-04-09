@@ -22,7 +22,7 @@ export const DashboardHome = () => {
   const tokenIds = useMemo(() => enabledTokens.map(t => t.id), [enabledTokens])
   const { balances, isLoading } = useBatchBalances({ tokenIds })
   const { locks } = useLockedFunds()
-  const { data: prices } = useTokenPrices(tokenIds)
+  const { data: prices, isError: pricesError } = useTokenPrices(tokenIds)
 
   const { availableFiatValue, totalFiatValue } = useMemo(() => {
     if (!prices) return { availableFiatValue: undefined, totalFiatValue: undefined }
@@ -71,7 +71,12 @@ export const DashboardHome = () => {
               <div className="flex flex-col md:flex-row md:items-center gap-2 md:gap-6 rounded-lg border bg-card p-3 w-full md:w-auto">
                 <div className="flex md:items-center gap-3 text-base font-medium">
                   <span className="text-secondary-foreground">Available funds</span>
-                  <span className="text-foreground">{formatFiat(availableFiatValue ?? 0)}</span>
+                  <span
+                    className="text-foreground"
+                    title={pricesError ? 'Token prices are temporarily unavailable.' : undefined}
+                  >
+                    {pricesError ? 'Prices unavailable' : formatFiat(availableFiatValue ?? 0)}
+                  </span>
                 </div>
                 <div className="flex items-center gap-3">
                   <Button variant="secondary" size="xs" onClick={() => setModalOpen('deposit')}>
@@ -93,8 +98,11 @@ export const DashboardHome = () => {
               <div className="flex flex-col gap-3">
                 <div className="flex flex-col">
                   <h3 className="text-xl font-semibold text-tertiary-foreground">Total balance</h3>
-                  <h2 className="text-3xl font-medium text-card-foreground">
-                    {formatFiat(totalFiatValue ?? 0)}
+                  <h2
+                    className="text-3xl font-medium text-card-foreground"
+                    title={pricesError ? 'Token prices are temporarily unavailable.' : undefined}
+                  >
+                    {pricesError ? 'Prices unavailable' : formatFiat(totalFiatValue ?? 0)}
                   </h2>
                   <span className="text-lg font-semibold text-chart-positive">+$0.00 (+0%)</span>
                 </div>
