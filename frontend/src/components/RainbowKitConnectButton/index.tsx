@@ -1,7 +1,8 @@
-import { useEffect, useRef, type FC } from 'react'
-import { useLocation, useNavigate } from 'react-router'
+import { useEffect, type FC } from 'react'
+import { useLocation } from 'react-router'
 import { ConnectButton } from '@rainbow-me/rainbowkit'
 import { useAccount, useDisconnect } from 'wagmi'
+import { useHostedRedirectAuth } from '@oasisprotocol/flexvaults-sdk'
 import { ChevronDown } from 'lucide-react'
 import { Button } from '../ui/button'
 import {
@@ -17,17 +18,49 @@ import { sapphire, sapphireTestnet, baseSepolia } from 'viem/chains'
 
 export const RainbowKitConnectButton: FC = () => {
   const { disconnect } = useDisconnect()
-  const { isConnected } = useAccount()
-  const navigate = useNavigate()
+  const { address: walletAddress, isConnected, status } = useAccount()
+  const { login, logout, isAuthenticated, isLoading: isAuthLoading, session } = useHostedRedirectAuth()
   const location = useLocation()
-  const wasConnected = useRef(isConnected)
 
   useEffect(() => {
-    if (!wasConnected.current && isConnected && location.pathname === '/') {
-      navigate('/portfolio')
+    // Auth callback owns its own session exchange
+    if (location.pathname === '/auth/callback') return
+
+    // Wagmi is rehydrating
+    if (status === 'connecting' || status === 'reconnecting') return
+
+    // Stale session
+    if (!isConnected && isAuthenticated) {
+      void logout()
+      return
     }
-    wasConnected.current = isConnected
-  }, [isConnected, navigate, location.pathname])
+
+    // Connected wallet and session address mismatch
+    if (
+      isConnected &&
+      walletAddress &&
+      session &&
+      walletAddress.toLowerCase() !== session.address.toLowerCase()
+    ) {
+      void logout()
+      return
+    }
+
+    // Wallet connected without a session
+    if (isConnected && !isAuthenticated && !isAuthLoading) {
+      void login()
+    }
+  }, [
+    status,
+    isConnected,
+    walletAddress,
+    session,
+    isAuthenticated,
+    isAuthLoading,
+    login,
+    logout,
+    location.pathname,
+  ])
 
   return (
     <ConnectButton.Custom>

@@ -9,6 +9,7 @@ import { CreateStrategy } from './pages/CreateStrategy'
 import { NotFound } from './components/NotFound'
 import { ProtectedLayout } from './components/ProtectedLayout'
 import { Swap } from './pages/Swap'
+import { AuthCallback } from './pages/AuthCallback'
 
 export const router = createBrowserRouter([
   {
@@ -35,7 +36,7 @@ export const router = createBrowserRouter([
     ],
   },
   {
-    path: 'copy-trading',
+    path: '/copy-trading',
     children: [
       {
         element: <Dashboard />,
@@ -67,7 +68,7 @@ export const router = createBrowserRouter([
     ],
   },
   {
-    path: 'swap',
+    path: '/swap',
     children: [
       {
         element: <Dashboard />,
@@ -79,6 +80,10 @@ export const router = createBrowserRouter([
         ],
       },
     ],
+  },
+  {
+    path: '/auth/callback',
+    element: <AuthCallback />,
   },
   {
     path: '*',
