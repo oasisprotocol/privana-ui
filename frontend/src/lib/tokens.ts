@@ -9,6 +9,14 @@ const fiatFormatter = new Intl.NumberFormat('en-US', {
 
 export const formatFiat = (value: number) => fiatFormatter.format(value)
 
-export const formatAmount = (amount: bigint, decimals: number) => {
-  return Number(formatUnits(amount, decimals)).toFixed(decimals <= 6 ? 2 : 6)
+export const formatAmount = (
+  amount: bigint,
+  tokenDecimals: number,
+  displayDecimals: number = tokenDecimals <= 6 ? 2 : 6,
+) => {
+  const value = formatUnits(amount, tokenDecimals)
+  return new Intl.NumberFormat('en-US', {
+    minimumFractionDigits: displayDecimals,
+    maximumFractionDigits: displayDecimals,
+  }).format(value as unknown as number)
 }
