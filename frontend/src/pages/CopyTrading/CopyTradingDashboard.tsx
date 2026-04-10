@@ -1,7 +1,6 @@
 import { useNavigate } from 'react-router'
 import { Skeleton } from '@/components/ui/skeleton'
 import { Button } from '@oasisprotocol/flexvaults-sdk'
-import { formatUnits } from 'viem'
 import { StrategiesSummary } from './StrategiesSummary'
 import { Separator } from '@/components/ui/separator'
 
@@ -20,9 +19,7 @@ export const CopyTradingDashboard = () => {
                 <div className="flex flex-col gap-6">
                   <div>
                     <h3 className="text-xl font-semibold text-tertiary-foreground uppercase">Copy Trading</h3>
-                    <h2 className="text-3xl font-medium text-card-foreground">
-                      ${Number(formatUnits(BigInt(0), Number(import.meta.env.VITE_USDC_DECIMALS))).toFixed(2)}
-                    </h2>
+                    <span className="flex text-3xl font-medium text-card-foreground">$0.00</span>
                     <span className="text-lg font-semibold text-chart-positive">+$0.00 (+0%)</span>
                   </div>
                   <Button size="lg" onClick={() => navigate('/copy-trading/create')}>

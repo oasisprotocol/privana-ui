@@ -2,20 +2,50 @@ import { Button } from '@/components/ui/button'
 import { GitCompareArrows, GitCompare, Wand, ArrowDownToLine, ArrowUpToLine, History } from 'lucide-react'
 import { PortfolioCard } from './PortfolioCard'
 import { PortfolioChart } from './PortfolioChart'
-import { ComponentProps, useState } from 'react'
-import { FlexvaultsModal, useBalance } from '@oasisprotocol/flexvaults-sdk'
+import { ComponentProps, useMemo, useState } from 'react'
+import {
+  FlexvaultsModal,
+  useBatchBalances,
+  useFlexvaultsContext,
+  useLockedFunds,
+} from '@oasisprotocol/flexvaults-sdk'
 import { formatUnits } from 'viem'
 import { Skeleton } from '@/components/ui/skeleton'
 import { PortfolioSummary } from './PortfolioSummary'
 import { DepositAlertDialog } from './DepositAlertDialog'
+import { useTokenPrices } from '@/api/coin-gecko'
+import { formatFiat } from '@/lib/tokens'
 
 export const DashboardHome = () => {
   const [modalOpen, setModalOpen] = useState<ComponentProps<typeof FlexvaultsModal>['defaultTab']>(undefined)
-  const { balanceWei, isLoading } = useBalance({
-    tokenId: import.meta.env.VITE_USDC_TOKEN_ID,
-  })
+  const { enabledTokens } = useFlexvaultsContext()
+  const tokenIds = useMemo(() => enabledTokens.map(t => t.id), [enabledTokens])
+  const { balances, isLoading } = useBatchBalances({ tokenIds })
+  const { locks } = useLockedFunds()
+  const { data: prices, isPending: pricesPending, isError: pricesError } = useTokenPrices(tokenIds)
+
+  const { availableFiatValue, totalFiatValue } = useMemo(() => {
+    // TODO: take into account yield, pending etc when API is ready
+    if (!prices) return { availableFiatValue: undefined, totalFiatValue: undefined }
+    let available = 0
+    let total = 0
+    for (const b of balances) {
+      const price = prices[b.token_id]
+      if (price == null) continue
+      // TODO: temporary workaround, remove once SDK returns decimals
+      const decimals = b.token_symbol === 'WETH' ? 18 : 6
+      const availableAmount = Number(formatUnits(BigInt(b.balance || '0'), decimals))
+      const lockedAmount = locks
+        .filter(l => l.token_id === b.token_id)
+        .reduce((sum, l) => sum + Number(formatUnits(BigInt(l.amount), decimals)), 0)
+      available += availableAmount * price
+      total += (availableAmount + lockedAmount) * price
+    }
+    return { availableFiatValue: available, totalFiatValue: total }
+  }, [balances, locks, prices])
   const [alertOpen, setAlertOpen] = useState(false)
-  const hasFunds = BigInt(balanceWei || 0) > 0
+  // TODO: take into account yield, pending etc when API is ready
+  const hasFunds = balances.some(b => BigInt(b.balance || '0') > 0n)
   const handleStartWithoutFunds = () => {
     setAlertOpen(true)
   }
@@ -43,12 +73,15 @@ export const DashboardHome = () => {
               <div className="flex flex-col md:flex-row md:items-center gap-2 md:gap-6 rounded-lg border bg-card p-3 w-full md:w-auto">
                 <div className="flex md:items-center gap-3 text-base font-medium">
                   <span className="text-secondary-foreground">Available funds</span>
-                  <span className="text-foreground">
-                    $
-                    {Number(
-                      formatUnits(BigInt(balanceWei), Number(import.meta.env.VITE_USDC_DECIMALS)),
-                    ).toFixed(2)}
-                  </span>
+                  {pricesError ? (
+                    <span className="text-foreground" title="Token prices are temporarily unavailable.">
+                      -
+                    </span>
+                  ) : pricesPending || availableFiatValue === undefined ? (
+                    <Skeleton className="h-5 w-20" />
+                  ) : (
+                    <span className="text-foreground">{formatFiat(availableFiatValue)}</span>
+                  )}
                 </div>
                 <div className="flex items-center gap-3">
                   <Button variant="secondary" size="xs" onClick={() => setModalOpen('deposit')}>
@@ -70,11 +103,11 @@ export const DashboardHome = () => {
               <div className="flex flex-col gap-3">
                 <div className="flex flex-col">
                   <h3 className="text-xl font-semibold text-tertiary-foreground">Total balance</h3>
-                  <h2 className="text-3xl font-medium text-card-foreground">
-                    $
-                    {Number(
-                      formatUnits(BigInt(balanceWei), Number(import.meta.env.VITE_USDC_DECIMALS)),
-                    ).toFixed(2)}
+                  <h2
+                    className="text-3xl font-medium text-card-foreground"
+                    title={pricesError ? 'Token prices are temporarily unavailable.' : undefined}
+                  >
+                    {pricesError ? '-' : formatFiat(totalFiatValue ?? 0)}
                   </h2>
                   <span className="text-lg font-semibold text-chart-positive">+$0.00 (+0%)</span>
                 </div>
@@ -89,21 +122,22 @@ export const DashboardHome = () => {
         <PortfolioCard
           amount="0$"
           buttonAction={hasFunds ? undefined : handleStartWithoutFunds}
-          buttonLabel="Create your first strategy"
           changePercentage="+0%"
-          disabled={isLoading}
-          icon={<GitCompareArrows />}
-          title="Copy trading"
-          to="/copy-trading/create"
+          icon={<GitCompare />}
+          title="Spot trading"
+          buttonLabel="Trade"
+          to="/swap"
         />
         <PortfolioCard
           amount="0$"
           buttonAction={hasFunds ? undefined : handleStartWithoutFunds}
+          buttonLabel="Create your first strategy"
           changePercentage="+0%"
+          icon={<GitCompareArrows />}
+          title="Copy trading"
           disabled
-          icon={<GitCompare />}
-          title="Spot trading"
         />
+
         <PortfolioCard title="AI trading" amount="0$" changePercentage="0%" icon={<Wand />} disabled />
       </div>
 

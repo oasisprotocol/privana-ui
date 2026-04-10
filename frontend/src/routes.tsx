@@ -3,13 +3,11 @@ import { Home } from './pages/Home'
 import { Dashboard } from './pages/Dashboard'
 import { DashboardHome } from './pages/Dashboard/DashboardHome'
 import { Deposit } from './pages/Dashboard/Deposit'
-import { CopyTrading } from './pages/CopyTrading'
-import { CopyTradingDetails } from './pages/CopyTradingDetails'
-import { CreateStrategy } from './pages/CreateStrategy'
 import { NotFound } from './components/NotFound'
 import { ProtectedLayout } from './components/ProtectedLayout'
 import { Swap } from './pages/Swap'
 import { AuthCallback } from './pages/AuthCallback'
+import { CopyTradingLanding } from './pages/CopyTrading/CopyTradingLanding'
 
 export const router = createBrowserRouter([
   {
@@ -43,25 +41,7 @@ export const router = createBrowserRouter([
         children: [
           {
             index: true,
-            element: <CopyTrading />,
-          },
-        ],
-      },
-      {
-        element: <ProtectedLayout />,
-        children: [
-          {
-            element: <Dashboard />,
-            children: [
-              {
-                path: 'create',
-                element: <CreateStrategy />,
-              },
-              {
-                path: ':id',
-                element: <CopyTradingDetails />,
-              },
-            ],
+            element: <CopyTradingLanding />,
           },
         ],
       },
