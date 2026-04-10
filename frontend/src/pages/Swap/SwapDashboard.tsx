@@ -21,12 +21,7 @@ import { useAccount, useWalletClient } from 'wagmi'
 import { useDebouncedValue } from '@/hooks/use-debounced-value'
 
 const steps = ['1. Execute your private swap', '2. Review', '3. Enjoy']
-const DECIMALS = Number(import.meta.env.VITE_USDC_DECIMALS)
-const SYMBOL_OVERRIDES: Record<string, string> = {
-  '0xc719650e9f4b0f27d956638c54518932ef9d15e720a1a2b2850250bcd0816514': 'USDC',
-  '0x330ba47d00c7ce3018deee017b319fd7cc6473a2ddc9e6eba6ebb4207be15279': 'USDC',
-  '0x335b5cccd1e63b2fe79863a0db73fce430e4e66902e2b78424f8662621e29fb7': 'WETH',
-}
+import { SYMBOL_OVERRIDES, getDecimals } from '@/lib/tokens'
 
 const CHAIN_ID = parseInt(import.meta.env.VITE_CHAIN_ID, 10)
 const ACCOUNTING_CONTRACT = import.meta.env.VITE_ACCOUNTING_CONTRACT_ADDRESS
@@ -61,7 +56,7 @@ export const SwapDashboard = () => {
     !fromBalance.isLoading &&
     (() => {
       try {
-        return parseUnits(debouncedFromAmount, DECIMALS) > BigInt(fromBalance.balanceWei || '0')
+        return parseUnits(debouncedFromAmount, getDecimals(fromTokenId)) > BigInt(fromBalance.balanceWei || '0')
       } catch {
         return false
       }
@@ -87,13 +82,13 @@ export const SwapDashboard = () => {
     getQuote({
       fromTokenId,
       toTokenId,
-      fromAmount: debouncedFromAmount,
+      fromAmount: parseUnits(debouncedFromAmount, getDecimals(fromTokenId)).toString(),
       userAddress: address,
     })
       .then(data => {
         if (!abort.signal.aborted) {
           setQuoteData(data)
-          setToAmount(data.to_amount_estimate)
+          setToAmount(formatUnits(BigInt(data.to_amount_estimate), getDecimals(toTokenId)))
         }
       })
       .catch(err => {
@@ -143,7 +138,7 @@ export const SwapDashboard = () => {
           userAddress: address,
           serviceAddress: SERVICE_ADDRESS,
           tokenId: quoteData.from_token_id as `0x${string}`,
-          amount: parseUnits(quoteData.from_amount, DECIMALS),
+          amount: parseUnits(quoteData.from_amount, getDecimals(quoteData.from_token_id)),
           expiry,
         },
       })
@@ -174,8 +169,8 @@ export const SwapDashboard = () => {
     SYMBOL_OVERRIDES[token.token_id] ?? token.symbol ?? token.token_type_name
   const findToken = (id: string) => tokens.find(t => t.token_id === id)
 
-  const formatBalance = (balanceWei: string) =>
-    Number(formatUnits(BigInt(balanceWei || '0'), DECIMALS)).toFixed(2)
+  const formatBalance = (balanceWei: string, tokenId: string) =>
+    Number(formatUnits(BigInt(balanceWei || '0'), getDecimals(tokenId))).toFixed(6)
 
   const handleFromTokenChange = (tokenId: string) => {
     setFromTokenId(tokenId)
@@ -250,7 +245,7 @@ export const SwapDashboard = () => {
                   fromBalance.isLoading ? (
                     <Skeleton className="h-4 w-24" />
                   ) : (
-                    `${formatBalance(fromBalance.balanceWei)} ${getTokenLabel(findToken(fromTokenId)!)}`
+                    `${formatBalance(fromBalance.balanceWei, fromTokenId)} ${getTokenLabel(findToken(fromTokenId)!)}`
                   )
                 ) : (
                   '-'
@@ -298,7 +293,7 @@ export const SwapDashboard = () => {
                 {toTokenId
                   ? toBalance.isLoading
                     ? '...'
-                    : `${formatBalance(toBalance.balanceWei)} ${getTokenLabel(findToken(toTokenId)!)}`
+                    : `${formatBalance(toBalance.balanceWei, toTokenId)} ${getTokenLabel(findToken(toTokenId)!)}`
                   : '-'}
               </p>
             </div>
