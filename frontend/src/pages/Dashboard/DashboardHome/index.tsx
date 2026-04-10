@@ -25,6 +25,7 @@ export const DashboardHome = () => {
   const { data: prices, isPending: pricesPending, isError: pricesError } = useTokenPrices(tokenIds)
 
   const { availableFiatValue, totalFiatValue } = useMemo(() => {
+    // TODO: take into account yield, pending etc when API is ready
     if (!prices) return { availableFiatValue: undefined, totalFiatValue: undefined }
     let available = 0
     let total = 0
@@ -43,6 +44,7 @@ export const DashboardHome = () => {
     return { availableFiatValue: available, totalFiatValue: total }
   }, [balances, locks, prices])
   const [alertOpen, setAlertOpen] = useState(false)
+  // TODO: take into account yield, pending etc when API is ready
   const hasFunds = balances.some(b => BigInt(b.balance || '0') > 0n)
   const handleStartWithoutFunds = () => {
     setAlertOpen(true)
