@@ -1,17 +1,9 @@
 import { useQuery } from '@tanstack/react-query'
+import { getGeckoId } from '../config/tokens'
 
 const COINGECKO_API = 'https://api.coingecko.com/api/v3'
 
-/**
- * Maps FlexVaults token IDs to CoinGecko IDs.
- * Test tokens are mapped to real tokens for testing
- */
-const TOKEN_ID_TO_GECKO_ID: Record<string, string> = {
-  '0x330ba47d00c7ce3018deee017b319fd7cc6473a2ddc9e6eba6ebb4207be15279': 'usd-coin',
-  '0x335b5cccd1e63b2fe79863a0db73fce430e4e66902e2b78424f8662621e29fb7': 'ethereum',
-}
-
-export const getGeckoId = (tokenId: string): string | undefined => TOKEN_ID_TO_GECKO_ID[tokenId]
+export { getGeckoId }
 
 type GeckoResponse = Record<string, Record<string, number>>
 type PriceMap = Record<string, number | undefined>

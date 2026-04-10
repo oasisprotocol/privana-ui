@@ -7,6 +7,7 @@ import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { darkTheme, RainbowKitProvider, Theme } from '@rainbow-me/rainbowkit'
 import { wagmiConfig } from './wagmi-config.ts'
 import { FlexvaultsProvider } from '@oasisprotocol/flexvaults-sdk'
+import { ALLOWED_TOKEN_IDS } from './config/tokens'
 import '@rainbow-me/rainbowkit/styles.css'
 import './index.css'
 import '@oasisprotocol/flexvaults-sdk/styles.css'
@@ -32,7 +33,7 @@ createRoot(document.getElementById('root')!).render(
             accountingContract: import.meta.env.VITE_ACCOUNTING_CONTRACT_ADDRESS,
             apiUrl: import.meta.env.VITE_FLEXVAULTS_API_URL,
           }}
-          tokens={import.meta.env.VITE_FLEXVAULTS_ALLOWED_TOKENS.split(',')}
+          tokens={ALLOWED_TOKEN_IDS}
           hostedAuth={{
             clientId: import.meta.env.VITE_FLEXVAULTS_CLIENT_ID,
             redirectUri: `${window.location.origin}/auth/callback`,
