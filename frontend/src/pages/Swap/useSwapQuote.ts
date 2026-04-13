@@ -45,22 +45,24 @@ export const useSwapQuote = ({
   useEffect(() => {
     if (!enabled) return
     const abort = new AbortController()
-    getQuote({
-      fromTokenId,
-      toTokenId,
-      fromAmount: parseUnits(debouncedFromAmount, fromDecimals).toString(),
-      userAddress: address,
-    })
+    getQuote(
+      {
+        fromTokenId,
+        toTokenId,
+        fromAmount: parseUnits(debouncedFromAmount, fromDecimals).toString(),
+        userAddress: address,
+      },
+      abort.signal,
+    )
       .then(quote => {
         if (!abort.signal.aborted) setResult({ key: inputKey, quote })
       })
       .catch(err => {
-        if (!abort.signal.aborted) {
-          setErrorState({
-            key: inputKey,
-            message: err instanceof Error ? err.message : 'Failed to fetch quote',
-          })
-        }
+        if (abort.signal.aborted) return
+        setErrorState({
+          key: inputKey,
+          message: err instanceof Error ? err.message : 'Failed to fetch quote',
+        })
       })
     return () => abort.abort()
   }, [enabled, inputKey, fromTokenId, toTokenId, debouncedFromAmount, address, fromDecimals])
