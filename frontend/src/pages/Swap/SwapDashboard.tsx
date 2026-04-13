@@ -13,7 +13,7 @@ import { useTokens } from '@/api/swap'
 import { Skeleton } from '@/components/ui/skeleton'
 import { useBalance } from '@oasisprotocol/flexvaults-sdk'
 import { parseUnits } from 'viem'
-import { useAccount, useWalletClient, useSwitchChain } from 'wagmi'
+import { useAccount, useWalletClient, useSwitchChain, useConfig } from 'wagmi'
 import { useDebouncedValue } from '@/hooks/use-debounced-value'
 import { ExternalLink } from 'lucide-react'
 import { AssetRow } from './AssetRow'
@@ -31,6 +31,8 @@ export const SwapDashboard = () => {
   const { address, chainId } = useAccount()
   const { data: walletClient } = useWalletClient()
   const { switchChain } = useSwitchChain()
+  const wagmiConfig = useConfig()
+  const explorerUrl = wagmiConfig.chains.find(c => c.id === CHAIN_ID)?.blockExplorers?.default.url
   const [fromTokenId, setFromTokenId] = useState('')
   const [toTokenId, setToTokenId] = useState('')
   const [fromAmount, setFromAmount] = useState('')
@@ -193,15 +195,19 @@ export const SwapDashboard = () => {
                   <>
                     <dt className="text-muted-foreground">Tx hash</dt>
                     <dd className="break-all">
-                      <a
-                        href={`https://explorer.dev.oasis.io/testnet/sapphire/tx/${swapResult.tx_hash}`}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="text-primary inline-flex items-center gap-2 mr-2"
-                      >
-                        {swapResult.tx_hash}
-                        <ExternalLink className="h-4 w-4" />
-                      </a>
+                      {explorerUrl ? (
+                        <a
+                          href={`${explorerUrl}/tx/${swapResult.tx_hash}`}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="text-primary inline-flex items-center gap-2 mr-2"
+                        >
+                          {swapResult.tx_hash}
+                          <ExternalLink className="h-4 w-4" />
+                        </a>
+                      ) : (
+                        swapResult.tx_hash
+                      )}
                     </dd>
                   </>
                 )}
