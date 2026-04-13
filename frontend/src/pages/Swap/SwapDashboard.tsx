@@ -90,7 +90,7 @@ export const SwapDashboard = () => {
   })
 
   const isCorrectChain = chainId === CHAIN_ID
-  const canSwap = !!quoteData && !!walletClient && !!address && isCorrectChain
+  const canSwap = !!quoteData && !!walletClient && !!address && isCorrectChain && !insufficientFunds
 
   const handleSwap = () => {
     if (!quoteData || !walletClient || !address || !isCorrectChain) return
