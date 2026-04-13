@@ -73,7 +73,13 @@ export const AssetRow = ({
             placeholder="0"
             value={amount}
             readOnly={readOnly}
-            onChange={e => onAmountChange?.(e.target.value)}
+            onChange={e => {
+              const next = e.target.value
+              if (next === '') return onAmountChange?.('')
+              const max = token?.token_decimals ?? 0
+              const pattern = max > 0 ? new RegExp(`^\\d*\\.?\\d{0,${max}}$`) : /^\d*$/
+              if (pattern.test(next)) onAmountChange?.(next)
+            }}
           />
           {loading && (
             <div className="absolute right-2.5 top-1/2 -translate-y-1/2">
