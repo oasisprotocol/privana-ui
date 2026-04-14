@@ -104,12 +104,7 @@ export const SwapDashboard = () => {
     }
   })()
   const canSwap =
-    !!quoteData &&
-    !!walletClient &&
-    !!address &&
-    isCorrectChain &&
-    !insufficientFunds &&
-    quoteMatchesInput
+    !!quoteData && !!walletClient && !!address && isCorrectChain && !insufficientFunds && quoteMatchesInput
 
   const handleSwap = () => {
     if (!canSwap || !quoteData || !walletClient || !address) return
