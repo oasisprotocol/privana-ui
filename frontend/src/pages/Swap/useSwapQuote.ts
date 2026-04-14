@@ -77,6 +77,7 @@ export const useSwapQuote = ({
   useEffect(() => {
     if (!data) return
     const msUntilExpiry = data.expires_at * 1000 - Date.now()
+    if (msUntilExpiry <= 0) return
     const timer = setTimeout(() => setRefetchKey(k => k + 1), msUntilExpiry)
     return () => clearTimeout(timer)
   }, [data])
