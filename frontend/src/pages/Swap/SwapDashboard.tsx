@@ -160,6 +160,7 @@ export const SwapDashboard = () => {
             onAmountChange={setFromAmount}
             balance={{ wei: fromBalance.balanceWei, loading: fromBalance.isLoading }}
             amountError={insufficientFunds ? 'Insufficient funds' : null}
+            disabled={swapLoading}
           />
 
           <AssetRow
@@ -171,6 +172,7 @@ export const SwapDashboard = () => {
             readOnly
             loading={quoteLoading}
             balance={{ wei: toBalance.balanceWei, loading: toBalance.isLoading }}
+            disabled={swapLoading}
           />
 
           {(quoteLoading || quoteError) && (

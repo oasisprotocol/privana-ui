@@ -19,6 +19,7 @@ type AssetRowProps = {
   onAmountChange?: (v: string) => void
   readOnly?: boolean
   loading?: boolean
+  disabled?: boolean
   balance?: { wei: string; loading: boolean }
   amountError?: string | null
 }
@@ -32,6 +33,7 @@ export const AssetRow = ({
   onAmountChange,
   readOnly,
   loading,
+  disabled,
   balance,
   amountError,
 }: AssetRowProps) => {
@@ -49,6 +51,7 @@ export const AssetRow = ({
         <Select
           value={token?.token_id ?? NONE}
           onValueChange={value => onTokenChange(value === NONE ? '' : value)}
+          disabled={disabled}
         >
           <SelectTrigger size="sm" className="w-28">
             <SelectValue placeholder="Select" />
@@ -73,6 +76,7 @@ export const AssetRow = ({
             placeholder="0"
             value={amount}
             readOnly={readOnly}
+            disabled={disabled}
             onChange={e => {
               const next = e.target.value
               if (next === '') return onAmountChange?.('')
