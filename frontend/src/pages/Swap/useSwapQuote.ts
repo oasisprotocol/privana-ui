@@ -55,7 +55,9 @@ export const useSwapQuote = ({
       abort.signal,
     )
       .then(quote => {
-        if (!abort.signal.aborted) setResult({ key: inputKey, quote })
+        if (abort.signal.aborted) return
+        setResult({ key: inputKey, quote })
+        setErrorState(null)
       })
       .catch(err => {
         if (abort.signal.aborted) return
