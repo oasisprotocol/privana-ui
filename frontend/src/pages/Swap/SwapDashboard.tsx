@@ -18,7 +18,7 @@ import { useDebouncedValue } from '@/hooks/use-debounced-value'
 import { ExternalLink } from 'lucide-react'
 import { AssetRow } from './AssetRow'
 import { useSwapQuote } from './useSwapQuote'
-import { useExecuteSwap } from './useExecuteSwap'
+import { useSubmitSwap } from './useSubmitSwap'
 
 // TODO: Validate once designs are ready if we need these steps
 const steps = ['1. Execute your private swap', '2. Review', '3. Enjoy']
@@ -80,7 +80,7 @@ export const SwapDashboard = () => {
     loading: swapLoading,
     error: swapError,
     result: swapResult,
-  } = useExecuteSwap({
+  } = useSubmitSwap({
     onSuccess: () => {
       setFromTokenId('')
       setToTokenId('')

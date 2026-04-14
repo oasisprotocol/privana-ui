@@ -11,7 +11,7 @@ type Params = {
   onSuccess?: () => void
 }
 
-export const useExecuteSwap = ({ onSuccess }: Params = {}) => {
+export const useSubmitSwap = ({ onSuccess }: Params = {}) => {
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [result, setResult] = useState<SwapResponse | null>(null)
