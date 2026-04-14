@@ -23,7 +23,7 @@ async function request<T>(path: string, init?: RequestInit): Promise<T> {
   return res.json()
 }
 
-export function getQuote(params: QuoteParams) {
+export function getQuote(params: QuoteParams, signal?: AbortSignal) {
   const search = new URLSearchParams({
     from_token_id: params.fromTokenId,
     to_token_id: params.toTokenId,
@@ -33,7 +33,7 @@ export function getQuote(params: QuoteParams) {
   if (params.slippage !== undefined) {
     search.set('slippage', String(params.slippage))
   }
-  return request<QuoteResponse>(`/v1/quote?${search}`)
+  return request<QuoteResponse>(`/v1/quote?${search}`, { signal })
 }
 
 export function executeSwap(body: SwapRequest) {
