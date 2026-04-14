@@ -15,6 +15,7 @@ import { useBalance } from '@oasisprotocol/flexvaults-sdk'
 import { parseUnits } from 'viem'
 import { useAccount, useWalletClient, useSwitchChain, useConfig } from 'wagmi'
 import { useDebouncedValue } from '@/hooks/use-debounced-value'
+import { useQueryClient } from '@tanstack/react-query'
 import { ExternalLink } from 'lucide-react'
 import { AssetRow } from './AssetRow'
 import { useSwapQuote } from './useSwapQuote'
@@ -32,6 +33,7 @@ export const SwapDashboard = () => {
   const { data: walletClient } = useWalletClient()
   const { switchChain } = useSwitchChain()
   const wagmiConfig = useConfig()
+  const queryClient = useQueryClient()
   const explorerUrl = wagmiConfig.chains.find(c => c.id === CHAIN_ID)?.blockExplorers?.default.url
   const [fromTokenId, setFromTokenId] = useState('')
   const [toTokenId, setToTokenId] = useState('')
@@ -86,6 +88,7 @@ export const SwapDashboard = () => {
       setToTokenId('')
       setFromAmount('')
       resetQuote()
+      queryClient.invalidateQueries({ queryKey: ['accounting-balance'] })
     },
   })
 
