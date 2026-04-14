@@ -90,10 +90,26 @@ export const SwapDashboard = () => {
   })
 
   const isCorrectChain = chainId === CHAIN_ID
-  const canSwap = !!quoteData && !!walletClient && !!address && isCorrectChain && !insufficientFunds
+  // Guard against submitting a stale quote while the user is still typing
+  // (debounce window) by requiring the quote's amount to match the current input.
+  const quoteMatchesInput = (() => {
+    if (!quoteData || fromToken?.token_decimals == null) return false
+    try {
+      return parseUnits(fromAmount, fromToken.token_decimals).toString() === quoteData.from_amount
+    } catch {
+      return false
+    }
+  })()
+  const canSwap =
+    !!quoteData &&
+    !!walletClient &&
+    !!address &&
+    isCorrectChain &&
+    !insufficientFunds &&
+    quoteMatchesInput
 
   const handleSwap = () => {
-    if (!quoteData || !walletClient || !address || !isCorrectChain) return
+    if (!canSwap || !quoteData || !walletClient || !address) return
     runSwap(quoteData, walletClient, address)
   }
 
