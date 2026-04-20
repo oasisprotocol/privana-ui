@@ -44,10 +44,12 @@ export const AssetRow = ({
   onMax,
 }: AssetRowProps) => {
   const renderBalance = () => {
-    if (!token || !balance) return '-'
-    if (balance.loading) return <Skeleton className="h-4 w-24" />
-    if (token.token_decimals == null) return '-'
-    return `${formatAmount(BigInt(balance.wei || '0'), token.token_decimals)} ${tokenLabel(token)}`
+    if (!token || !balance) return <span>Balance: -</span>
+    if (balance.loading) return <Skeleton className="h-4 w-32" />
+    if (token.token_decimals == null) return <span>Balance: -</span>
+    return (
+      <span>{`Balance: ${formatAmount(BigInt(balance.wei || '0'), token.token_decimals)} ${tokenLabel(token)}`}</span>
+    )
   }
 
   return (
@@ -97,15 +99,15 @@ export const AssetRow = ({
       <div className="text-xs font-medium text-muted-foreground flex gap-2 items-center justify-between px-0.5">
         <span>{fiatValue != null ? `≈ ${formatFiat(fiatValue)}` : ''}</span>
         <div className="flex items-center gap-2">
-          <span>{balanceLabel ?? <>Balance: {renderBalance()}</>}</span>
-          {onMax && (
+          {balanceLabel ? <span>{balanceLabel}</span> : renderBalance()}
+          {onMax && balance && !balance.loading && balance.wei != null && (
             <Button
               type="button"
               variant="outline"
               size="xs"
               className="h-6"
               onClick={onMax}
-              disabled={disabled || !token || !balance || balance.loading || !balance.wei}
+              disabled={disabled || !token}
             >
               MAX
             </Button>

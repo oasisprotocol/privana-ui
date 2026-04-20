@@ -152,7 +152,26 @@ export const SwapDashboard = () => {
 
       <Separator />
 
-      {isLoading && <Skeleton className="h-70 w-full" />}
+      {isLoading && (
+        <div className="flex flex-col gap-4 w-full max-w-145 mx-auto bg-card border p-6 rounded-[14px] shadow-[0_1px_2px_0_rgba(0,0,0,0.05)]">
+          <div className="flex flex-col gap-1.5">
+            <Skeleton className="h-8 w-40" />
+            <Skeleton className="h-5 w-full max-w-80" />
+          </div>
+          <div className="flex flex-col gap-2">
+            <Skeleton className="h-5 w-16" />
+            <Skeleton className="h-12 w-full" />
+          </div>
+          <div className="flex items-center justify-center py-1">
+            <Skeleton className="size-10 rounded-md" />
+          </div>
+          <div className="flex flex-col gap-2">
+            <Skeleton className="h-5 w-20" />
+            <Skeleton className="h-12 w-full" />
+          </div>
+          <Skeleton className="h-12 w-full" />
+        </div>
+      )}
       {error && <p>Failed to load tokens: {error.message}</p>}
 
       {data && (
@@ -180,12 +199,10 @@ export const SwapDashboard = () => {
               amountError={insufficientFunds ? 'Insufficient funds' : null}
               disabled={swapLoading}
               fiatValue={fromFiat}
-              onMax={
-                fromToken?.token_decimals != null && fromBalance.balanceWei
-                  ? () =>
-                      setFromAmount(formatUnits(BigInt(fromBalance.balanceWei), fromToken.token_decimals!))
-                  : undefined
-              }
+              onMax={() => {
+                if (fromToken?.token_decimals == null || !fromBalance.balanceWei) return
+                setFromAmount(formatUnits(BigInt(fromBalance.balanceWei), fromToken.token_decimals))
+              }}
             />
           </div>
 
