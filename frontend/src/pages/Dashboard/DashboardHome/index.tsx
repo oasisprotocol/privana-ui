@@ -1,5 +1,13 @@
 import { Button } from '@/components/ui/button'
-import { GitCompareArrows, GitCompare, Wand, ArrowDownToLine, ArrowUpToLine, History } from 'lucide-react'
+import {
+  GitCompareArrows,
+  GitCompare,
+  Wand,
+  ArrowDownToLine,
+  ArrowUpToLine,
+  History,
+  Percent,
+} from 'lucide-react'
 import { PortfolioCard } from './PortfolioCard'
 import { ComponentProps, useMemo, useState } from 'react'
 import {
@@ -125,6 +133,14 @@ export const DashboardHome = () => {
           title="Spot trading"
           buttonLabel="Trade"
           to="/swap"
+        />
+        <PortfolioCard
+          title="Earn"
+          amount="0$"
+          changePercentage="0%"
+          icon={<Percent />}
+          buttonLabel="Earn"
+          disabled
         />
         <PortfolioCard
           amount="0$"
