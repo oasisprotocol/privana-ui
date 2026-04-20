@@ -1,3 +1,4 @@
+import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Skeleton } from '@/components/ui/skeleton'
@@ -23,6 +24,7 @@ type AssetRowProps = {
   amountError?: string | null
   fiatValue?: number
   balanceLabel?: string
+  onMax?: () => void
 }
 
 export const AssetRow = ({
@@ -39,6 +41,7 @@ export const AssetRow = ({
   amountError,
   fiatValue,
   balanceLabel,
+  onMax,
 }: AssetRowProps) => {
   const renderBalance = () => {
     if (!token || !balance) return '-'
@@ -93,7 +96,21 @@ export const AssetRow = ({
       </div>
       <div className="text-xs font-medium text-muted-foreground flex gap-2 items-center justify-between px-0.5">
         <span>{fiatValue != null ? `≈ ${formatFiat(fiatValue)}` : ''}</span>
-        <span>{balanceLabel ?? <>Balance: {renderBalance()}</>}</span>
+        <div className="flex items-center gap-2">
+          <span>{balanceLabel ?? <>Balance: {renderBalance()}</>}</span>
+          {onMax && (
+            <Button
+              type="button"
+              variant="outline"
+              size="xs"
+              className="h-6"
+              onClick={onMax}
+              disabled={disabled || !token || !balance || balance.loading || !balance.wei}
+            >
+              MAX
+            </Button>
+          )}
+        </div>
       </div>
       {amountError && <p className="text-xs text-destructive">{amountError}</p>}
     </div>

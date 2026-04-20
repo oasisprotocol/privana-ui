@@ -12,7 +12,7 @@ import { useTokens } from '@/api/swap'
 import { useTokenPrices } from '@/api/coin-gecko'
 import { Skeleton } from '@/components/ui/skeleton'
 import { useBalance } from '@oasisprotocol/flexvaults-sdk'
-import { parseUnits } from 'viem'
+import { formatUnits, parseUnits } from 'viem'
 import { useAccount, useWalletClient, useSwitchChain, useConfig } from 'wagmi'
 import { useDebouncedValue } from '@/hooks/use-debounced-value'
 import { useQueryClient } from '@tanstack/react-query'
@@ -183,6 +183,12 @@ export const SwapDashboard = () => {
               amountError={insufficientFunds ? 'Insufficient funds' : null}
               disabled={swapLoading}
               fiatValue={fromFiat}
+              onMax={
+                fromToken?.token_decimals != null && fromBalance.balanceWei
+                  ? () =>
+                      setFromAmount(formatUnits(BigInt(fromBalance.balanceWei), fromToken.token_decimals!))
+                  : undefined
+              }
             />
           </div>
 
