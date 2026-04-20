@@ -1,12 +1,12 @@
+import { ChevronDown } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Skeleton } from '@/components/ui/skeleton'
 import type { TokenInfo } from '@/api/swap'
 import { formatAmount, formatFiat } from '@/lib/tokens'
-
-// Shadcn Select does not support "no selection"
-const NONE = '__none__'
+import { TokenSelectDialog } from './TokenSelectDialog'
+// TODO: uncomment when new SDK is published
+// import { getTokenIcon } from '@oasisprotocol/flexvaults-sdk'
 
 const tokenLabel = (token: TokenInfo) => token.token_symbol ?? token.token_type_name
 
@@ -55,23 +55,30 @@ export const AssetRow = ({
   return (
     <div className="flex flex-col gap-2">
       <div className="flex items-center w-full">
-        <Select
-          value={token?.token_id ?? NONE}
-          onValueChange={value => onTokenChange(value === NONE ? '' : value)}
+        <TokenSelectDialog
+          tokens={tokens}
+          value={token?.token_id}
+          onValueChange={onTokenChange}
+          disabledId={disabledId}
           disabled={disabled}
-        >
-          <SelectTrigger className="data-[size=default]:h-12 rounded-l-[10px] rounded-r-none border-transparent bg-secondary px-6 py-3 gap-2 text-base font-medium text-secondary-foreground shadow-none shrink-0 w-[120px] focus-visible:ring-0 focus-visible:border-transparent">
-            <SelectValue placeholder="Select" />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value={NONE}>—</SelectItem>
-            {tokens.map(t => (
-              <SelectItem key={t.token_id} value={t.token_id} disabled={t.token_id === disabledId}>
-                {tokenLabel(t)}
-              </SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
+          trigger={
+            <button
+              type="button"
+              disabled={disabled}
+              className="h-12 rounded-l-[10px] rounded-r-none bg-secondary px-4 py-3 flex items-center gap-2 text-base font-medium text-secondary-foreground shrink-0 w-[120px] cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed focus-visible:outline-none"
+            >
+              {/* TODO: uncomment when new SDK is published
+              {token?.token_symbol && (
+                <span className="shrink-0 size-5 overflow-hidden rounded-full">
+                  {getTokenIcon(token.token_symbol, 20)}
+                </span>
+              )}
+              */}
+              <span className="flex-1 truncate text-left">{token ? tokenLabel(token) : 'Select'}</span>
+              <ChevronDown className="size-4 shrink-0 opacity-50" />
+            </button>
+          }
+        />
         <div className="relative flex-1 min-w-0">
           <Input
             className={`h-12 rounded-l-none rounded-r-[10px] border-l-0 bg-background px-2.5 py-3 text-base shadow-none md:text-base ${loading ? 'opacity-50' : ''}`}
