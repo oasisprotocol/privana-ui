@@ -214,17 +214,9 @@ export const SwapDashboard = () => {
             />
           </div>
 
-          {(quoteLoading || quoteError) && (
+          {quoteError && (
             <div className="rounded-lg border bg-card p-4 text-sm">
-              {quoteLoading && (
-                <div className="flex flex-col gap-2">
-                  <Skeleton className="h-4 w-full" />
-                  <Skeleton className="h-4 w-3/4" />
-                  <Skeleton className="h-4 w-1/2" />
-                </div>
-              )}
-
-              {quoteError && <p className="text-destructive">Failed to fetch quote: {quoteError}</p>}
+              <p className="text-destructive">Failed to fetch quote: {quoteError}</p>
             </div>
           )}
 
