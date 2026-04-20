@@ -15,7 +15,7 @@ import { parseUnits } from 'viem'
 import { useAccount, useWalletClient, useSwitchChain, useConfig } from 'wagmi'
 import { useDebouncedValue } from '@/hooks/use-debounced-value'
 import { useQueryClient } from '@tanstack/react-query'
-import { ExternalLink } from 'lucide-react'
+import { ExternalLink, EyeOff } from 'lucide-react'
 import { AssetRow } from './AssetRow'
 import { useSwapQuote } from './useSwapQuote'
 import { useSubmitSwap } from './useSubmitSwap'
@@ -113,7 +113,6 @@ export const SwapDashboard = () => {
   return (
     <>
       <div>
-        <div className="text-foreground text-3xl font-semibold mb-3">Execute your private swap</div>
         <Breadcrumb className="py-2 h-10">
           <BreadcrumbList>
             {steps.map((label, i) => (
@@ -134,40 +133,46 @@ export const SwapDashboard = () => {
       {error && <p>Failed to load tokens: {error.message}</p>}
 
       {data && (
-        <div className="flex flex-col gap-6 w-full max-w-145">
+        <div className="flex flex-col gap-4 w-full max-w-145 mx-auto bg-card border p-6 rounded-[14px] shadow-[0_1px_2px_0_rgba(0,0,0,0.05)]">
           <div className="flex flex-col gap-1.5">
-            <h2 className="text-2xl font-medium text-foreground leading-8">Asset selection</h2>
+            <h2 className="text-2xl font-medium text-foreground leading-8">Make a swap</h2>
             <p className="text-sm text-muted-foreground">
               Choose asset you want to swap &amp; asset you wish to receive.
             </p>
           </div>
 
-          <AssetRow
-            tokens={tokens}
-            token={fromToken}
-            disabledId={toTokenId}
-            onTokenChange={id => {
-              setFromTokenId(id)
-              setFromAmount('')
-            }}
-            amount={fromAmount}
-            onAmountChange={setFromAmount}
-            balance={{ wei: fromBalance.balanceWei, loading: fromBalance.isLoading }}
-            amountError={insufficientFunds ? 'Insufficient funds' : null}
-            disabled={swapLoading}
-          />
+          <div className="flex flex-col gap-2">
+            <p className="text-sm font-medium text-foreground">You pay</p>
+            <AssetRow
+              tokens={tokens}
+              token={fromToken}
+              disabledId={toTokenId}
+              onTokenChange={id => {
+                setFromTokenId(id)
+                setFromAmount('')
+              }}
+              amount={fromAmount}
+              onAmountChange={setFromAmount}
+              balance={{ wei: fromBalance.balanceWei, loading: fromBalance.isLoading }}
+              amountError={insufficientFunds ? 'Insufficient funds' : null}
+              disabled={swapLoading}
+            />
+          </div>
 
-          <AssetRow
-            tokens={tokens}
-            token={toToken}
-            disabledId={fromTokenId}
-            onTokenChange={setToTokenId}
-            amount={toAmount}
-            readOnly
-            loading={quoteLoading}
-            balance={{ wei: toBalance.balanceWei, loading: toBalance.isLoading }}
-            disabled={swapLoading}
-          />
+          <div className="flex flex-col gap-2">
+            <p className="text-sm font-medium text-foreground">You receive</p>
+            <AssetRow
+              tokens={tokens}
+              token={toToken}
+              disabledId={fromTokenId}
+              onTokenChange={setToTokenId}
+              amount={toAmount}
+              readOnly
+              loading={quoteLoading}
+              balance={{ wei: toBalance.balanceWei, loading: toBalance.isLoading }}
+              disabled={swapLoading}
+            />
+          </div>
 
           {(quoteLoading || quoteError) && (
             <div className="rounded-lg border bg-card p-4 text-sm">
@@ -185,11 +190,20 @@ export const SwapDashboard = () => {
 
           <div className="flex gap-5 w-full">
             {!isCorrectChain ? (
-              <Button size="sm" className="flex-1" onClick={() => switchChain({ chainId: CHAIN_ID })}>
+              <Button
+                size="lg"
+                className="flex-1 h-12 text-base"
+                onClick={() => switchChain({ chainId: CHAIN_ID })}
+              >
                 Switch Network
               </Button>
             ) : (
-              <Button size="sm" className="flex-1" disabled={!canSwap || swapLoading} onClick={handleSwap}>
+              <Button
+                size="lg"
+                className="flex-1 h-12 text-base"
+                disabled={!canSwap || swapLoading}
+                onClick={handleSwap}
+              >
                 {swapLoading ? 'Signing & submitting...' : 'Swap'}
               </Button>
             )}
@@ -229,6 +243,11 @@ export const SwapDashboard = () => {
               </dl>
             </div>
           )}
+
+          <div className="flex items-center justify-center gap-2 px-0.5 text-xs font-medium text-muted-foreground">
+            <EyeOff className="size-4 shrink-0" />
+            <span>Private execution — no public trace</span>
+          </div>
         </div>
       )}
     </>
