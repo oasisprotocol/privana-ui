@@ -1,9 +1,9 @@
+import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
-import { Label } from '@/components/ui/label'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Skeleton } from '@/components/ui/skeleton'
 import type { TokenInfo } from '@/api/swap'
-import { formatAmount } from '@/lib/tokens'
+import { formatAmount, formatFiat } from '@/lib/tokens'
 
 // Shadcn Select does not support "no selection"
 const NONE = '__none__'
@@ -22,6 +22,9 @@ type AssetRowProps = {
   disabled?: boolean
   balance?: { wei: string; loading: boolean }
   amountError?: string | null
+  fiatValue?: number
+  balanceLabel?: string
+  onMax?: () => void
 }
 
 export const AssetRow = ({
@@ -36,24 +39,28 @@ export const AssetRow = ({
   disabled,
   balance,
   amountError,
+  fiatValue,
+  balanceLabel,
+  onMax,
 }: AssetRowProps) => {
   const renderBalance = () => {
-    if (!token || !balance) return '-'
-    if (balance.loading) return <Skeleton className="h-4 w-24" />
-    if (token.token_decimals == null) return '-'
-    return `${formatAmount(BigInt(balance.wei || '0'), token.token_decimals)} ${tokenLabel(token)}`
+    if (!token || !balance) return <span>Balance: -</span>
+    if (balance.loading) return <Skeleton className="h-4 w-32" />
+    if (token.token_decimals == null) return <span>Balance: -</span>
+    return (
+      <span>{`Balance: ${formatAmount(BigInt(balance.wei || '0'), token.token_decimals)} ${tokenLabel(token)}`}</span>
+    )
   }
 
   return (
-    <div className="flex gap-4 items-start">
-      <div className="flex flex-col gap-2">
-        <Label>Asset</Label>
+    <div className="flex flex-col gap-2">
+      <div className="flex items-center w-full">
         <Select
           value={token?.token_id ?? NONE}
           onValueChange={value => onTokenChange(value === NONE ? '' : value)}
           disabled={disabled}
         >
-          <SelectTrigger size="sm" className="w-28">
+          <SelectTrigger className="data-[size=default]:h-12 rounded-l-[10px] rounded-r-none border-transparent bg-secondary px-6 py-3 gap-2 text-base font-medium text-secondary-foreground shadow-none shrink-0 w-[120px] focus-visible:ring-0 focus-visible:border-transparent">
             <SelectValue placeholder="Select" />
           </SelectTrigger>
           <SelectContent>
@@ -65,12 +72,9 @@ export const AssetRow = ({
             ))}
           </SelectContent>
         </Select>
-      </div>
-      <div className="flex flex-1 flex-col gap-2">
-        <Label>Amount</Label>
-        <div className="relative">
+        <div className="relative flex-1 min-w-0">
           <Input
-            className={`h-8 ${loading ? 'opacity-50' : ''}`}
+            className={`h-12 rounded-l-none rounded-r-[10px] border-l-0 bg-background px-2.5 py-3 text-base shadow-none md:text-base ${loading ? 'opacity-50' : ''}`}
             type="text"
             inputMode="decimal"
             placeholder="0"
@@ -91,9 +95,26 @@ export const AssetRow = ({
             </div>
           )}
         </div>
-        <div className="text-xs text-muted-foreground flex gap-2">Available: {renderBalance()}</div>
-        {amountError && <p className="text-xs text-destructive">{amountError}</p>}
       </div>
+      <div className="text-xs font-medium text-muted-foreground flex gap-2 items-center justify-between px-0.5">
+        <span>{fiatValue != null ? `≈ ${formatFiat(fiatValue)}` : ''}</span>
+        <div className="flex items-center gap-2">
+          {balanceLabel ? <span>{balanceLabel}</span> : renderBalance()}
+          {onMax && balance && !balance.loading && balance.wei != null && (
+            <Button
+              type="button"
+              variant="outline"
+              size="xs"
+              className="h-6"
+              onClick={onMax}
+              disabled={disabled || !token}
+            >
+              MAX
+            </Button>
+          )}
+        </div>
+      </div>
+      {amountError && <p className="text-xs text-destructive">{amountError}</p>}
     </div>
   )
 }
