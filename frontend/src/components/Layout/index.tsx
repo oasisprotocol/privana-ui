@@ -47,7 +47,7 @@ export const Layout = ({ children, dashboard }: LayoutProps) => {
             {children}
           </div>
         )}
-        <div className="w-full max-w-7xl py-12 mx-auto flex flex-col justify-start items-center gap-16 text-xs text-muted-foreground ">
+        <div className="w-full max-w-7xl py-12 mx-auto flex flex-col justify-start items-center gap-16 text-xs text-muted-foreground px-6">
           <Separator className="data-[orientation=horizontal]:h-[0.5px]" />
           <div className="self-stretch inline-flex justify-between items-center">
             <div className="justify-start">
