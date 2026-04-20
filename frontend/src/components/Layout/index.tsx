@@ -21,7 +21,7 @@ export const Layout = ({ children, dashboard }: LayoutProps) => {
           backgroundPosition: 'top right',
         }}
       >
-        <nav className="flex items-center justify-between px-6 h-16 border-b border-border shadow-[0_10px_15px_-3px_rgba(0,0,0,0.20),0_4px_6px_-2px_rgba(0,0,0,0.20)] bg-background">
+        <nav className="flex items-center justify-between px-6 h-16 border-b border-border shadow-[0_1px_2px_0_rgba(0,0,0,0.05)] bg-background">
           <Link to="/" viewTransition className="text-xl font-bold">
             <img src={Logo} alt="FlexVaults" className="h-8" />
           </Link>
@@ -48,7 +48,7 @@ export const Layout = ({ children, dashboard }: LayoutProps) => {
           </div>
         )}
         <div className="w-full max-w-7xl py-12 mx-auto flex flex-col justify-start items-center gap-16 text-xs text-muted-foreground ">
-          <Separator />
+          <Separator className="data-[orientation=horizontal]:h-[0.5px]" />
           <div className="self-stretch inline-flex justify-between items-center">
             <div className="justify-start">
               Copyright © <span className="md:hidden">OPF</span>

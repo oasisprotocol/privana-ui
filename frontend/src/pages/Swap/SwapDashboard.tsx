@@ -8,7 +8,6 @@ import {
 } from '@/components/ui/breadcrumb'
 import { Button } from '@/components/ui/button'
 import { Separator } from '@/components/ui/separator'
-import { PoweredByHyperliquid } from '@/components/PoweredByHyperliquid'
 import { useTokens } from '@/api/swap'
 import { Skeleton } from '@/components/ui/skeleton'
 import { useBalance } from '@oasisprotocol/flexvaults-sdk'
@@ -232,8 +231,6 @@ export const SwapDashboard = () => {
           )}
         </div>
       )}
-
-      <PoweredByHyperliquid />
     </>
   )
 }

@@ -102,13 +102,15 @@ export const RainbowKitConnectButton: FC = () => {
                 <div className="flex gap-2 items-center">
                   <DropdownMenu>
                     <DropdownMenuTrigger asChild>
-                      <div className="flex items-center gap-2 p-1 pr-3 rounded-full bg-black/8 border border-black/15 hover:bg-black/15 transition-colors cursor-pointer">
-                        <AccountAvatar address={account.address as `0x${string}`} />
-                        <div className="hidden md:flex items-center gap-2">
-                          <span className="text-white text-sm font-normal">
-                            {trimLongString(account.address)}
-                          </span>
-                          <ChevronDown size={16} className="text-white" />
+                      <div className="flex h-10 items-center px-0.5 bg-white rounded-[14px] shadow-[0_4px_12px_0_rgba(0,0,0,0.1)] cursor-pointer">
+                        <div className="flex h-9 items-center gap-2 p-2 rounded-[13px]">
+                          <AccountAvatar address={account.address as `0x${string}`} />
+                          <div className="hidden md:flex items-center gap-0.5">
+                            <span className="text-[#25292e] text-base font-semibold leading-6">
+                              {trimLongString(account.address)}
+                            </span>
+                            <ChevronDown size={24} className="text-[#25292e]" />
+                          </div>
                         </div>
                       </div>
                     </DropdownMenuTrigger>

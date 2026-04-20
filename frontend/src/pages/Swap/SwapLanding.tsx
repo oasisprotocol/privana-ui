@@ -1,5 +1,4 @@
 import { BookCopy, KeySquare, Wand } from 'lucide-react'
-import { PoweredByHyperliquid } from '@/components/PoweredByHyperliquid'
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion'
 import { Separator } from '@/components/ui/separator'
 import { Button } from '@oasisprotocol/flexvaults-sdk'
@@ -86,7 +85,6 @@ export const SwapLanding = () => {
           </div>
         </div>
       </div>
-      <PoweredByHyperliquid />
     </>
   )
 }
