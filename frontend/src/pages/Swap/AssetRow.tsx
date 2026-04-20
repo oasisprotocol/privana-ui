@@ -2,7 +2,7 @@ import { Input } from '@/components/ui/input'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Skeleton } from '@/components/ui/skeleton'
 import type { TokenInfo } from '@/api/swap'
-import { formatAmount } from '@/lib/tokens'
+import { formatAmount, formatFiat } from '@/lib/tokens'
 
 // Shadcn Select does not support "no selection"
 const NONE = '__none__'
@@ -21,6 +21,8 @@ type AssetRowProps = {
   disabled?: boolean
   balance?: { wei: string; loading: boolean }
   amountError?: string | null
+  fiatValue?: number
+  balanceLabel?: string
 }
 
 export const AssetRow = ({
@@ -35,6 +37,8 @@ export const AssetRow = ({
   disabled,
   balance,
   amountError,
+  fiatValue,
+  balanceLabel,
 }: AssetRowProps) => {
   const renderBalance = () => {
     if (!token || !balance) return '-'
@@ -65,7 +69,7 @@ export const AssetRow = ({
         </Select>
         <div className="relative flex-1 min-w-0">
           <Input
-            className={`h-12 rounded-l-none rounded-r-[10px] border-l-0 px-2.5 py-3 text-base shadow-none md:text-base ${loading ? 'opacity-50' : ''}`}
+            className={`h-12 rounded-l-none rounded-r-[10px] border-l-0 bg-background px-2.5 py-3 text-base shadow-none md:text-base ${loading ? 'opacity-50' : ''}`}
             type="text"
             inputMode="decimal"
             placeholder="0"
@@ -87,7 +91,10 @@ export const AssetRow = ({
           )}
         </div>
       </div>
-      <div className="text-xs text-muted-foreground flex gap-2">Available: {renderBalance()}</div>
+      <div className="text-xs text-muted-foreground flex gap-2 items-center justify-between">
+        <span>{fiatValue != null ? `≈ ${formatFiat(fiatValue)}` : ''}</span>
+        <span>{balanceLabel ?? <>Available: {renderBalance()}</>}</span>
+      </div>
       {amountError && <p className="text-xs text-destructive">{amountError}</p>}
     </div>
   )

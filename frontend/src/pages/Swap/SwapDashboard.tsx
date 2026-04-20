@@ -9,6 +9,7 @@ import {
 import { Button } from '@/components/ui/button'
 import { Separator } from '@/components/ui/separator'
 import { useTokens } from '@/api/swap'
+import { useTokenPrices } from '@/api/coin-gecko'
 import { Skeleton } from '@/components/ui/skeleton'
 import { useBalance } from '@oasisprotocol/flexvaults-sdk'
 import { parseUnits } from 'viem'
@@ -40,6 +41,11 @@ export const SwapDashboard = () => {
   const tokens = useMemo(() => data?.tokens ?? [], [data])
   const fromToken = tokens.find(t => t.token_id === fromTokenId)
   const toToken = tokens.find(t => t.token_id === toTokenId)
+  const priceTokenIds = useMemo(
+    () => [fromTokenId, toTokenId].filter((id): id is string => !!id),
+    [fromTokenId, toTokenId],
+  )
+  const { data: prices } = useTokenPrices(priceTokenIds)
   const fromBalance = useBalance({
     tokenId: (fromTokenId || undefined) as `0x${string}` | undefined,
     enabled: !!fromTokenId,
@@ -90,6 +96,17 @@ export const SwapDashboard = () => {
       queryClient.invalidateQueries({ queryKey: ['accounting-balance'] })
     },
   })
+
+  const fromFiat = useMemo(() => {
+    if (!prices || !fromAmount || prices[fromTokenId] == null) return undefined
+    const parsed = Number(fromAmount)
+    return Number.isFinite(parsed) ? parsed * (prices[fromTokenId] as number) : undefined
+  }, [prices, fromTokenId, fromAmount])
+  const toFiat = useMemo(() => {
+    if (!prices || !toAmount || prices[toTokenId] == null) return undefined
+    const parsed = Number(toAmount)
+    return Number.isFinite(parsed) ? parsed * (prices[toTokenId] as number) : undefined
+  }, [prices, toTokenId, toAmount])
 
   const isCorrectChain = chainId === CHAIN_ID
   // Guard against submitting a stale quote while the user is still typing
@@ -164,6 +181,7 @@ export const SwapDashboard = () => {
               balance={{ wei: fromBalance.balanceWei, loading: fromBalance.isLoading }}
               amountError={insufficientFunds ? 'Insufficient funds' : null}
               disabled={swapLoading}
+              fiatValue={fromFiat}
             />
           </div>
 
@@ -191,6 +209,8 @@ export const SwapDashboard = () => {
               loading={quoteLoading}
               balance={{ wei: toBalance.balanceWei, loading: toBalance.isLoading }}
               disabled={swapLoading}
+              fiatValue={toFiat}
+              balanceLabel="Receive (incl. fees)"
             />
           </div>
 
