@@ -18,6 +18,7 @@ import { useDebouncedValue } from '@/hooks/use-debounced-value'
 import { useQueryClient } from '@tanstack/react-query'
 import { ArrowUpDown, ExternalLink, EyeOff } from 'lucide-react'
 import { AssetRow } from './AssetRow'
+import { QuoteInfo } from './QuoteInfo'
 import { useSwapQuote } from './useSwapQuote'
 import { useSubmitSwap } from './useSubmitSwap'
 
@@ -218,6 +219,10 @@ export const SwapDashboard = () => {
             <div className="rounded-lg border bg-card p-4 text-sm">
               <p className="text-destructive">Failed to fetch quote: {quoteError}</p>
             </div>
+          )}
+
+          {quoteData && (
+            <QuoteInfo quote={quoteData} fromToken={fromToken} toToken={toToken} prices={prices} />
           )}
 
           <div className="flex gap-5 w-full">
