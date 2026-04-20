@@ -129,7 +129,7 @@ export const SwapDashboard = () => {
     const prevFromId = fromTokenId
     setFromTokenId(toTokenId)
     setToTokenId(prevFromId)
-    setFromAmount(toAmount)
+    setFromAmount('')
     resetQuote()
   }
 
