@@ -58,7 +58,7 @@ export const AssetRow = ({
           onValueChange={value => onTokenChange(value === NONE ? '' : value)}
           disabled={disabled}
         >
-          <SelectTrigger className="data-[size=default]:h-12 rounded-l-[10px] rounded-r-none border-transparent bg-secondary px-6 py-3 gap-2 text-base font-medium text-secondary-foreground shadow-none shrink-0 w-auto focus-visible:ring-0 focus-visible:border-transparent">
+          <SelectTrigger className="data-[size=default]:h-12 rounded-l-[10px] rounded-r-none border-transparent bg-secondary px-6 py-3 gap-2 text-base font-medium text-secondary-foreground shadow-none shrink-0 w-[120px] focus-visible:ring-0 focus-visible:border-transparent">
             <SelectValue placeholder="Select" />
           </SelectTrigger>
           <SelectContent>
