@@ -42,11 +42,10 @@
   --color-chart-positive: var(--chart-positive);
   --color-chart-negative: var(--chart-negative);
 
-  /* Typography - FlexVaults uses Geist */
   --font-sans: 'Geist Variable', ui-sans-serif, system-ui, sans-serif;
 }
 
-/* FlexVaults GoldenHour Light Theme (default) */
+/* GoldenHour Theme */
 :root {
   --radius: 0.625rem;
   --background: #ffffff;
@@ -79,7 +78,6 @@
   --chart-negative: #ef4444;
 }
 
-/* FlexVaults GoldenHour Dark Theme */
 .dark {
   --background: #0a0a0a;
   --foreground: #fafafa;

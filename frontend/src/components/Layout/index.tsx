@@ -23,7 +23,7 @@ export const Layout = ({ children, dashboard }: LayoutProps) => {
       >
         <nav className="flex items-center justify-between px-6 h-16 border-b border-border shadow-[0_1px_2px_0_rgba(0,0,0,0.05)] bg-background">
           <Link to="/" viewTransition className="text-xl font-bold">
-            <img src={Logo} alt="FlexVaults" className="h-8" />
+            <img src={Logo} alt="Privana" className="h-8" />
           </Link>
           <div className="flex items-center gap-1">
             <MenuItem to="/portfolio" label="Portfolio" />
