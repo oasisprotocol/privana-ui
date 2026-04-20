@@ -91,9 +91,9 @@ export const AssetRow = ({
           )}
         </div>
       </div>
-      <div className="text-xs text-muted-foreground flex gap-2 items-center justify-between">
+      <div className="text-xs font-medium text-muted-foreground flex gap-2 items-center justify-between px-0.5">
         <span>{fiatValue != null ? `≈ ${formatFiat(fiatValue)}` : ''}</span>
-        <span>{balanceLabel ?? <>Available: {renderBalance()}</>}</span>
+        <span>{balanceLabel ?? <>Balance: {renderBalance()}</>}</span>
       </div>
       {amountError && <p className="text-xs text-destructive">{amountError}</p>}
     </div>
