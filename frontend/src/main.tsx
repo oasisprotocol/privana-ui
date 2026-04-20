@@ -4,7 +4,7 @@ import { RouterProvider } from 'react-router'
 import { router } from './routes'
 import { WagmiProvider } from 'wagmi'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
-import { darkTheme, RainbowKitProvider, Theme } from '@rainbow-me/rainbowkit'
+import { lightTheme, RainbowKitProvider, Theme } from '@rainbow-me/rainbowkit'
 import { wagmiConfig } from './wagmi-config.ts'
 import { FlexvaultsProvider } from '@oasisprotocol/flexvaults-sdk'
 import { ALLOWED_TOKEN_IDS } from './config/tokens'
@@ -15,8 +15,9 @@ import '@oasisprotocol/flexvaults-sdk/styles.css'
 const queryClient = new QueryClient()
 
 const rainbowKitTheme: Theme = {
-  ...darkTheme({
-    accentColor: 'rgba(255, 255, 255, 0.60)',
+  ...lightTheme({
+    accentColor: '#fcd34d',
+    accentColorForeground: '#25292e',
   }),
   fonts: {
     body: 'inherit',

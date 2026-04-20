@@ -1,4 +1,3 @@
-import { PoweredByHyperliquid } from '@/components/PoweredByHyperliquid'
 import { useBatchBalances, useFlexvaultsContext, useLockedFunds } from '@oasisprotocol/flexvaults-sdk'
 import { FC, useMemo } from 'react'
 import { Card } from '@/components/ui/card'
@@ -94,8 +93,6 @@ export const PortfolioSummary: FC = () => {
           </div>
         </div>
       )}
-
-      <PoweredByHyperliquid />
     </>
   )
 }

@@ -1,7 +1,14 @@
 import { Button } from '@/components/ui/button'
-import { GitCompareArrows, GitCompare, Wand, ArrowDownToLine, ArrowUpToLine, History } from 'lucide-react'
+import {
+  GitCompareArrows,
+  GitCompare,
+  Wand,
+  ArrowDownToLine,
+  ArrowUpToLine,
+  History,
+  Percent,
+} from 'lucide-react'
 import { PortfolioCard } from './PortfolioCard'
-import { PortfolioChart } from './PortfolioChart'
 import { ComponentProps, useMemo, useState } from 'react'
 import {
   FlexvaultsModal,
@@ -112,13 +119,12 @@ export const DashboardHome = () => {
                   <span className="text-lg font-semibold text-chart-positive">+$0.00 (+0%)</span>
                 </div>
               </div>
-              <PortfolioChart />
             </div>
           </div>
         )}
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
         <PortfolioCard
           amount="0$"
           buttonAction={hasFunds ? undefined : handleStartWithoutFunds}
@@ -127,6 +133,14 @@ export const DashboardHome = () => {
           title="Spot trading"
           buttonLabel="Trade"
           to="/swap"
+        />
+        <PortfolioCard
+          title="Earn"
+          amount="0$"
+          changePercentage="0%"
+          icon={<Percent />}
+          buttonLabel="Earn"
+          disabled
         />
         <PortfolioCard
           amount="0$"
