@@ -14,7 +14,6 @@ import { Skeleton } from '@/components/ui/skeleton'
 import { useBalance } from '@oasisprotocol/flexvaults-sdk'
 import { formatUnits, parseUnits } from 'viem'
 import { useAccount, useWalletClient, useSwitchChain, useConfig } from 'wagmi'
-import { useDebouncedValue } from '@/hooks/use-debounced-value'
 import { useQueryClient } from '@tanstack/react-query'
 import { ArrowUpDown, ExternalLink, EyeOff } from 'lucide-react'
 import { AssetRow } from './AssetRow'
@@ -56,16 +55,14 @@ export const SwapDashboard = () => {
     enabled: !!toTokenId,
   })
 
-  const debouncedFromAmount = useDebouncedValue(fromAmount)
-
   const insufficientFunds = useMemo(() => {
-    if (fromToken?.token_decimals == null || !debouncedFromAmount || fromBalance.isLoading) return false
+    if (fromToken?.token_decimals == null || !fromAmount || fromBalance.isLoading) return false
     try {
-      return parseUnits(debouncedFromAmount, fromToken.token_decimals) > BigInt(fromBalance.balanceWei || '0')
+      return parseUnits(fromAmount, fromToken.token_decimals) > BigInt(fromBalance.balanceWei || '0')
     } catch {
       return false
     }
-  }, [fromToken, debouncedFromAmount, fromBalance.isLoading, fromBalance.balanceWei])
+  }, [fromToken, fromAmount, fromBalance.isLoading, fromBalance.balanceWei])
 
   const {
     data: quoteData,
