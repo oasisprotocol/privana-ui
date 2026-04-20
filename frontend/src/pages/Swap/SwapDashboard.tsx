@@ -15,7 +15,7 @@ import { parseUnits } from 'viem'
 import { useAccount, useWalletClient, useSwitchChain, useConfig } from 'wagmi'
 import { useDebouncedValue } from '@/hooks/use-debounced-value'
 import { useQueryClient } from '@tanstack/react-query'
-import { ExternalLink, EyeOff } from 'lucide-react'
+import { ArrowUpDown, ExternalLink, EyeOff } from 'lucide-react'
 import { AssetRow } from './AssetRow'
 import { useSwapQuote } from './useSwapQuote'
 import { useSubmitSwap } from './useSubmitSwap'
@@ -110,6 +110,14 @@ export const SwapDashboard = () => {
     runSwap(quoteData, walletClient, address)
   }
 
+  const handleSwapDirection = () => {
+    const prevFromId = fromTokenId
+    setFromTokenId(toTokenId)
+    setToTokenId(prevFromId)
+    setFromAmount(toAmount)
+    resetQuote()
+  }
+
   return (
     <>
       <div>
@@ -157,6 +165,18 @@ export const SwapDashboard = () => {
               amountError={insufficientFunds ? 'Insufficient funds' : null}
               disabled={swapLoading}
             />
+          </div>
+
+          <div className="flex items-center justify-center py-1">
+            <button
+              type="button"
+              onClick={handleSwapDirection}
+              disabled={swapLoading || (!fromTokenId && !toTokenId)}
+              aria-label="Swap direction"
+              className="flex items-center justify-center size-10 rounded-md border bg-background hover:bg-accent transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              <ArrowUpDown className="size-4 text-primary" />
+            </button>
           </div>
 
           <div className="flex flex-col gap-2">
