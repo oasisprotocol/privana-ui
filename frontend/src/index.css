@@ -152,12 +152,3 @@
   --fv-input: var(--input);
   --fv-destructive: var(--destructive);
 }
-
-/* Force SDK buttons with bg-primary to use app's primary color */
-[data-flexvaults] .bg-primary {
-  background-color: var(--primary) !important;
-}
-
-[data-flexvaults] .bg-primary:hover {
-  background-color: color-mix(in srgb, var(--primary) 90%, transparent) !important;
-}

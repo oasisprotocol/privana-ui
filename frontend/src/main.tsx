@@ -9,8 +9,8 @@ import { wagmiConfig } from './wagmi-config.ts'
 import { FlexvaultsProvider } from '@oasisprotocol/flexvaults-sdk'
 import { ALLOWED_TOKEN_IDS } from './config/tokens'
 import '@rainbow-me/rainbowkit/styles.css'
-import './index.css'
 import '@oasisprotocol/flexvaults-sdk/styles.css'
+import './index.css'
 
 const queryClient = new QueryClient()
 
