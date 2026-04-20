@@ -96,15 +96,29 @@ export const SwapDashboard = () => {
   })
 
   const fromFiat = useMemo(() => {
-    if (!prices || !fromAmount || prices[fromTokenId] == null) return undefined
-    const parsed = Number(fromAmount)
-    return Number.isFinite(parsed) ? parsed * (prices[fromTokenId] as number) : undefined
-  }, [prices, fromTokenId, fromAmount])
+    if (!prices || !fromAmount || fromToken?.token_decimals == null) return undefined
+    const price = prices[fromTokenId]
+    if (price == null) return undefined
+    try {
+      const units = parseUnits(fromAmount, fromToken.token_decimals)
+      const asNum = Number(formatUnits(units, fromToken.token_decimals))
+      return Number.isFinite(asNum) ? asNum * price : undefined
+    } catch {
+      return undefined
+    }
+  }, [prices, fromTokenId, fromAmount, fromToken])
   const toFiat = useMemo(() => {
-    if (!prices || !toAmount || prices[toTokenId] == null) return undefined
-    const parsed = Number(toAmount)
-    return Number.isFinite(parsed) ? parsed * (prices[toTokenId] as number) : undefined
-  }, [prices, toTokenId, toAmount])
+    if (!prices || !toAmount || toToken?.token_decimals == null) return undefined
+    const price = prices[toTokenId]
+    if (price == null) return undefined
+    try {
+      const units = parseUnits(toAmount, toToken.token_decimals)
+      const asNum = Number(formatUnits(units, toToken.token_decimals))
+      return Number.isFinite(asNum) ? asNum * price : undefined
+    } catch {
+      return undefined
+    }
+  }, [prices, toTokenId, toAmount, toToken])
 
   const isCorrectChain = chainId === CHAIN_ID
   // Guard against submitting a stale quote while the user is still typing
