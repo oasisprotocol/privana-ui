@@ -3,6 +3,7 @@ import { ArrowRight, Check, ChevronDown } from 'lucide-react'
 import { getTokenIcon } from '@oasisprotocol/flexvaults-sdk'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
+import { Progress } from '@/components/ui/progress'
 import { Separator } from '@/components/ui/separator'
 import { cn } from '@/lib/utils'
 
@@ -61,17 +62,13 @@ export const SwapActivityCard = ({ status }: SwapActivityCardProps) => {
           <p className="text-xs font-medium text-muted-foreground leading-4">You receive</p>
           <div className="flex gap-1 items-center justify-end">
             <span className="text-xl font-semibold text-foreground leading-none">0.03459</span>
-            <span className="shrink-0 size-4 overflow-hidden rounded-full">{getTokenIcon('ETH', 16)}</span>
+            <span className="shrink-0 size-4 overflow-hidden rounded-full">{getTokenIcon('WETH', 16)}</span>
             <span className="text-sm font-semibold text-foreground leading-none">ETH</span>
           </div>
         </div>
       </div>
 
-      {status === 'in-progress' && (
-        <div className="h-1 w-full rounded-full bg-primary/20 overflow-hidden">
-          <div className="h-full w-3/4 bg-primary rounded-full" />
-        </div>
-      )}
+      {status === 'in-progress' && <Progress />}
 
       <Separator />
 
