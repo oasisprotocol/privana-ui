@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router'
 import { useHostedRedirectAuth } from '@oasisprotocol/flexvaults-sdk'
 import { Layout } from '../../components/Layout'
+import { dashboardPath } from '@/paths'
 
 export const AuthCallback = () => {
   const navigate = useNavigate()
@@ -15,7 +16,7 @@ export const AuthCallback = () => {
           setError('No hosted authentication response was found.')
           return
         }
-        navigate('/portfolio', { replace: true })
+        navigate(dashboardPath(), { replace: true })
       })
       .catch((err: unknown) => {
         setError(err instanceof Error ? err.message : 'Hosted authentication failed.')

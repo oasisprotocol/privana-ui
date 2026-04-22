@@ -15,6 +15,7 @@ import {
 import { AccountAvatar } from '../AccountAvatar'
 import { trimLongString } from '../../utils/trimLongString'
 import { sapphire, sapphireTestnet, baseSepolia } from 'viem/chains'
+import { authCallbackPath } from '@/paths'
 
 export const RainbowKitConnectButton: FC = () => {
   const { disconnect } = useDisconnect()
@@ -24,7 +25,7 @@ export const RainbowKitConnectButton: FC = () => {
 
   useEffect(() => {
     // Auth callback owns its own session exchange
-    if (location.pathname === '/auth/callback') return
+    if (location.pathname === authCallbackPath()) return
 
     // Wagmi is rehydrating
     if (status === 'connecting' || status === 'reconnecting') return

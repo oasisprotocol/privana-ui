@@ -8,6 +8,7 @@ import { lightTheme, RainbowKitProvider, Theme } from '@rainbow-me/rainbowkit'
 import { wagmiConfig } from './wagmi-config.ts'
 import { FlexvaultsProvider } from '@oasisprotocol/flexvaults-sdk'
 import { ALLOWED_TOKEN_IDS } from './config/tokens'
+import { authCallbackPath } from './paths'
 import '@rainbow-me/rainbowkit/styles.css'
 import '@oasisprotocol/flexvaults-sdk/styles.css'
 import './index.css'
@@ -37,7 +38,7 @@ createRoot(document.getElementById('root')!).render(
           tokens={ALLOWED_TOKEN_IDS}
           hostedAuth={{
             clientId: import.meta.env.VITE_FLEXVAULTS_CLIENT_ID,
-            redirectUri: `${window.location.origin}/auth/callback`,
+            redirectUri: `${window.location.origin}${authCallbackPath()}`,
           }}
         >
           <RainbowKitProvider theme={rainbowKitTheme} modalSize="compact">

@@ -3,6 +3,7 @@ import { Skeleton } from '@/components/ui/skeleton'
 import { Button } from '@oasisprotocol/flexvaults-sdk'
 import { StrategiesSummary } from './StrategiesSummary'
 import { Separator } from '@/components/ui/separator'
+import { copyTradingCreatePath } from '@/paths'
 
 export const CopyTradingDashboard = () => {
   const navigate = useNavigate()
@@ -22,7 +23,7 @@ export const CopyTradingDashboard = () => {
                     <span className="flex text-3xl font-medium text-card-foreground">$0.00</span>
                     <span className="text-lg font-semibold text-chart-positive">+$0.00 (+0%)</span>
                   </div>
-                  <Button size="lg" onClick={() => navigate('/copy-trading/create')}>
+                  <Button size="lg" onClick={() => navigate(copyTradingCreatePath())}>
                     Create new strategy
                   </Button>
                 </div>

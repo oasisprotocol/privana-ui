@@ -1,13 +1,5 @@
 import { Button } from '@/components/ui/button'
-import {
-  GitCompareArrows,
-  GitCompare,
-  Wand,
-  ArrowDownToLine,
-  ArrowUpToLine,
-  History,
-  Percent,
-} from 'lucide-react'
+import { GitCompare, ArrowDownToLine, ArrowUpToLine, History, Percent } from 'lucide-react'
 import { PortfolioCard } from './PortfolioCard'
 import { ComponentProps, useMemo, useState } from 'react'
 import {
@@ -22,6 +14,7 @@ import { PortfolioSummary } from './PortfolioSummary'
 import { DepositAlertDialog } from './DepositAlertDialog'
 import { useTokenPrices } from '@/api/coin-gecko'
 import { formatFiat } from '@/lib/tokens'
+import { tradePath } from '@/paths'
 
 export const DashboardHome = () => {
   const [modalOpen, setModalOpen] = useState<ComponentProps<typeof FlexvaultsModal>['defaultTab']>(undefined)
@@ -125,35 +118,15 @@ export const DashboardHome = () => {
         )}
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6 md:gap-12 lg:gap-24 w-full">
         <PortfolioCard
-          amount="0$"
           buttonAction={hasFunds ? undefined : handleStartWithoutFunds}
-          changePercentage="+0%"
           icon={<GitCompare />}
-          title="Spot trading"
-          buttonLabel="Trade"
-          to="/swap"
+          title="Swap"
+          buttonLabel="Make your private swap"
+          to={tradePath()}
         />
-        <PortfolioCard
-          title="Earn"
-          amount="0$"
-          changePercentage="0%"
-          icon={<Percent />}
-          buttonLabel="Earn"
-          disabled
-        />
-        <PortfolioCard
-          amount="0$"
-          buttonAction={hasFunds ? undefined : handleStartWithoutFunds}
-          buttonLabel="Create your first strategy"
-          changePercentage="+0%"
-          icon={<GitCompareArrows />}
-          title="Copy trading"
-          disabled
-        />
-
-        <PortfolioCard title="AI trading" amount="0$" changePercentage="0%" icon={<Wand />} disabled />
+        <PortfolioCard title="Earn" icon={<Percent />} buttonLabel="Check out earning strategies" disabled />
       </div>
 
       <PortfolioSummary />
