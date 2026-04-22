@@ -11,8 +11,7 @@ import {
 import { Input } from '@/components/ui/input'
 import type { TokenInfo } from '@/api/swap'
 import { cn } from '@/lib/utils'
-// TODO: uncomment when new SDK is published
-// import { getTokenIcon } from '@oasisprotocol/flexvaults-sdk'
+import { getTokenIcon } from '@oasisprotocol/flexvaults-sdk'
 
 const tokenLabel = (token: TokenInfo) => token.token_symbol ?? token.token_type_name
 
@@ -90,13 +89,11 @@ export const TokenSelectDialog = ({
                     isSelected && 'border-primary',
                   )}
                 >
-                  {/* TODO: uncomment when new SDK is published
                   {token.token_symbol && (
                     <span className="shrink-0 size-5 overflow-hidden rounded-full">
                       {getTokenIcon(token.token_symbol, 20)}
                     </span>
                   )}
-                  */}
                   <span className="text-base font-medium text-secondary-foreground">{tokenLabel(token)}</span>
                   {token.chain_name && (
                     <span className="text-xs font-medium text-muted-foreground flex-1 truncate">
