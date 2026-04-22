@@ -1,4 +1,4 @@
-import React, { useMemo, useState } from 'react'
+import React, { useEffect, useMemo, useState } from 'react'
 import {
   Breadcrumb,
   BreadcrumbList,
@@ -18,6 +18,7 @@ import { useQueryClient } from '@tanstack/react-query'
 import { ArrowUpDown, ExternalLink, EyeOff } from 'lucide-react'
 import { AssetRow } from './AssetRow'
 import { QuoteInfo } from './QuoteInfo'
+import { ReviewStep } from './ReviewStep'
 import { useSwapQuote } from './useSwapQuote'
 import { useSubmitSwap } from './useSubmitSwap'
 
@@ -27,7 +28,7 @@ const steps = ['1. Execute your private swap', '2. Review', '3. Enjoy']
 const CHAIN_ID = parseInt(import.meta.env.VITE_CHAIN_ID, 10)
 
 export const SwapDashboard = () => {
-  const step = 0
+  const [step, setStep] = useState(0)
   const { data, isLoading, error } = useTokens()
   const { address, chainId } = useAccount()
   const { data: walletClient } = useWalletClient()
@@ -91,6 +92,7 @@ export const SwapDashboard = () => {
       setToTokenId('')
       setFromAmount('')
       resetQuote()
+      setStep(0)
       queryClient.invalidateQueries({ queryKey: ['accounting-balance'] })
     },
   })
@@ -138,6 +140,10 @@ export const SwapDashboard = () => {
     if (!canSwap || !quoteData || !walletClient || !address) return
     runSwap(quoteData, walletClient, address)
   }
+
+  useEffect(() => {
+    if (step === 1 && !quoteData && !swapLoading) setStep(0)
+  }, [step, quoteData, swapLoading])
 
   const handleSwapDirection = () => {
     const prevFromId = fromTokenId
@@ -188,7 +194,7 @@ export const SwapDashboard = () => {
       )}
       {error && <p>Failed to load tokens: {error.message}</p>}
 
-      {data && (
+      {data && step === 0 && (
         <div className="flex flex-col gap-4 w-full max-w-145 mx-auto bg-card border p-6 rounded-[14px] shadow-[0_1px_2px_0_rgba(0,0,0,0.05)]">
           <div className="flex flex-col gap-1.5">
             <h2 className="text-2xl font-medium text-foreground leading-8">Make a swap</h2>
@@ -272,15 +278,13 @@ export const SwapDashboard = () => {
               <Button
                 size="lg"
                 className="flex-1 h-12 text-base"
-                disabled={!canSwap || swapLoading}
-                onClick={handleSwap}
+                disabled={!canSwap}
+                onClick={() => setStep(1)}
               >
-                {swapLoading ? 'Signing & submitting...' : 'Swap'}
+                Swap
               </Button>
             )}
           </div>
-
-          {swapError && <p className="text-sm text-destructive">{swapError}</p>}
 
           {/* TODO: temporary section until we have designs */}
           {swapResult && (
@@ -320,6 +324,21 @@ export const SwapDashboard = () => {
             <span>Private execution — no public trace</span>
           </div>
         </div>
+      )}
+
+      {data && step === 1 && quoteData && (
+        <ReviewStep
+          fromToken={fromToken}
+          toToken={toToken}
+          fromAmount={fromAmount}
+          toAmount={toAmount}
+          quote={quoteData}
+          prices={prices}
+          onBack={() => setStep(0)}
+          onConfirm={handleSwap}
+          loading={swapLoading}
+          error={swapError}
+        />
       )}
     </>
   )
