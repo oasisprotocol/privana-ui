@@ -6,9 +6,10 @@ import { Deposit } from './pages/Dashboard/Deposit'
 import { NotFound } from './components/NotFound'
 import { ProtectedLayout } from './components/ProtectedLayout'
 import { Swap } from './pages/Swap'
+import { Activity } from './pages/Activity'
 import { AuthCallback } from './pages/AuthCallback'
 import { CopyTradingLanding } from './pages/CopyTrading/CopyTradingLanding'
-import { authCallbackPath, copyTradingPath, homePath, dashboardPath, tradePath } from './paths'
+import { activityPath, authCallbackPath, copyTradingPath, homePath, dashboardPath, tradePath } from './paths'
 
 export const router = createBrowserRouter([
   {
@@ -57,6 +58,20 @@ export const router = createBrowserRouter([
           {
             index: true,
             element: <Swap />,
+          },
+        ],
+      },
+    ],
+  },
+  {
+    path: activityPath(),
+    children: [
+      {
+        element: <Dashboard />,
+        children: [
+          {
+            index: true,
+            element: <Activity />,
           },
         ],
       },
