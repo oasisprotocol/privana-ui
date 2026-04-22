@@ -1,13 +1,5 @@
-import React, { useMemo, useState } from 'react'
-import {
-  Breadcrumb,
-  BreadcrumbList,
-  BreadcrumbItem,
-  BreadcrumbPage,
-  BreadcrumbSeparator,
-} from '@/components/ui/breadcrumb'
+import { useMemo, useState } from 'react'
 import { Button } from '@/components/ui/button'
-import { Separator } from '@/components/ui/separator'
 import { useTokens } from '@/api/swap'
 import { useTokenPrices } from '@/api/coin-gecko'
 import { Skeleton } from '@/components/ui/skeleton'
@@ -15,7 +7,8 @@ import { useBalance } from '@oasisprotocol/flexvaults-sdk'
 import { formatUnits, parseUnits } from 'viem'
 import { useAccount, useWalletClient, useSwitchChain, useConfig } from 'wagmi'
 import { useQueryClient } from '@tanstack/react-query'
-import { ArrowUpDown, ExternalLink, EyeOff } from 'lucide-react'
+import { ArrowUpDown, ChevronRight, ExternalLink, EyeOff } from 'lucide-react'
+import { cn } from '@/lib/utils'
 import { AssetRow } from './AssetRow'
 import { QuoteInfo } from './QuoteInfo'
 import { ReviewStep } from './ReviewStep'
@@ -151,23 +144,22 @@ export const SwapDashboard = () => {
   }
 
   return (
-    <>
-      <div>
-        <Breadcrumb className="py-2 h-10">
-          <BreadcrumbList>
-            {steps.map((label, i) => (
-              <React.Fragment key={i}>
-                <BreadcrumbItem className="text-input-focused">
-                  {i === step ? <BreadcrumbPage className="underline">{label}</BreadcrumbPage> : label}
-                </BreadcrumbItem>
-                {i < steps.length - 1 && <BreadcrumbSeparator className="pl-4" />}
-              </React.Fragment>
-            ))}
-          </BreadcrumbList>
-        </Breadcrumb>
-      </div>
-
-      <Separator />
+    <div>
+      <nav aria-label="Swap progress" className="flex items-center justify-center gap-1 w-full mb-4">
+        {steps.map((label, i) => (
+          <div
+            key={label}
+            aria-current={i === step ? 'step' : undefined}
+            className={cn(
+              'flex items-center justify-center gap-1 h-8 pl-2.5 pr-4 py-2 rounded-md text-sm font-medium',
+              i === step ? 'text-foreground' : 'text-muted-foreground',
+            )}
+          >
+            {i > 0 && <ChevronRight className="size-4" />}
+            <span>{label}</span>
+          </div>
+        ))}
+      </nav>
 
       {isLoading && (
         <div className="flex flex-col gap-4 w-full max-w-145 mx-auto bg-card border p-6 rounded-[14px] shadow-[0_1px_2px_0_rgba(0,0,0,0.05)]">
@@ -338,6 +330,6 @@ export const SwapDashboard = () => {
           error={swapError}
         />
       )}
-    </>
+    </div>
   )
 }
