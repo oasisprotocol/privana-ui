@@ -5,8 +5,7 @@ import { Skeleton } from '@/components/ui/skeleton'
 import type { TokenInfo } from '@/api/swap'
 import { formatAmount, formatFiat } from '@/lib/tokens'
 import { TokenSelectDialog } from './TokenSelectDialog'
-// TODO: uncomment when new SDK is published
-// import { getTokenIcon } from '@oasisprotocol/flexvaults-sdk'
+import { getTokenIcon } from '@oasisprotocol/flexvaults-sdk'
 
 const tokenLabel = (token: TokenInfo) => token.token_symbol ?? token.token_type_name
 
@@ -67,13 +66,11 @@ export const AssetRow = ({
               disabled={disabled}
               className="h-12 rounded-l-[10px] rounded-r-none bg-secondary px-4 py-3 flex items-center gap-2 text-base font-medium text-secondary-foreground shrink-0 w-[120px] cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed focus-visible:outline-none"
             >
-              {/* TODO: uncomment when new SDK is published
               {token?.token_symbol && (
                 <span className="shrink-0 size-5 overflow-hidden rounded-full">
                   {getTokenIcon(token.token_symbol, 20)}
                 </span>
               )}
-              */}
               <span className="flex-1 truncate text-left">{token ? tokenLabel(token) : 'Select'}</span>
               <ChevronDown className="size-4 shrink-0 opacity-50" />
             </button>

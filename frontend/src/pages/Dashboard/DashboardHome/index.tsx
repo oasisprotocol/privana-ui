@@ -25,9 +25,10 @@ import { formatFiat } from '@/lib/tokens'
 
 export const DashboardHome = () => {
   const [modalOpen, setModalOpen] = useState<ComponentProps<typeof FlexvaultsModal>['defaultTab']>(undefined)
-  const { enabledTokens } = useFlexvaultsContext()
+  const { enabledTokens, tokensStatus } = useFlexvaultsContext()
   const tokenIds = useMemo(() => enabledTokens.map(t => t.id), [enabledTokens])
   const { balances, isLoading } = useBatchBalances({ tokenIds })
+  const pending = tokensStatus !== 'ready' || isLoading
   const { locks } = useLockedFunds()
   const { data: prices, isPending: pricesPending, isError: pricesError } = useTokenPrices(tokenIds)
 
@@ -60,8 +61,8 @@ export const DashboardHome = () => {
   return (
     <>
       <div className="flex flex-col gap-6 mb-8 md:mb-12">
-        {isLoading && <Skeleton className="h-70 w-full" />}
-        {!isLoading && !hasFunds && (
+        {pending && <Skeleton className="h-70 w-full" />}
+        {!pending && !hasFunds && (
           <>
             <div className="flex flex-col gap-0.5">
               <h3 className="text-xl font-semibold text-tertiary-foreground">Wallet connected</h3>
@@ -74,7 +75,7 @@ export const DashboardHome = () => {
             </Button>
           </>
         )}
-        {!isLoading && hasFunds && (
+        {!pending && hasFunds && (
           <div className="flex flex-col gap-6">
             <div className="flex md:justify-end">
               <div className="flex flex-col md:flex-row md:items-center gap-2 md:gap-6 rounded-lg border bg-card p-3 w-full md:w-auto">
