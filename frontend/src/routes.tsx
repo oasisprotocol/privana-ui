@@ -65,6 +65,7 @@ export const router = createBrowserRouter([
   },
   {
     path: activityPath(),
+    element: <ProtectedLayout />,
     children: [
       {
         element: <Dashboard />,
