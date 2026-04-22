@@ -275,10 +275,10 @@ export const SwapDashboard = () => {
             )}
           </div>
 
-          {/* TODO: temporary section until we have designs */}
+          {/* TODO: temporary section until we have Activity page designs */}
           {swapResult && (
             <div className="rounded-lg border bg-card p-4 text-sm">
-              <p className="text-foreground font-medium">Swap initiated</p>
+              <p className="text-foreground font-medium">Last swap state</p>
               <dl className="grid grid-cols-[auto_1fr] gap-x-4 gap-y-1 mt-2 text-sm">
                 <dt className="text-muted-foreground">Swap ID</dt>
                 <dd className="truncate">{swapResult.swap_id}</dd>
