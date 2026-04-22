@@ -5,7 +5,7 @@ import Logo from '../../assets/logo.svg'
 import DashboardBg from '../../assets/dashboard-bg.svg'
 import { MenuItem } from './menu-item'
 import { Separator } from '../ui/separator'
-import { copyTradingPath, homePath, portfolioPath, tradePath } from '@/paths'
+import { copyTradingPath, homePath, dashboardPath, tradePath } from '@/paths'
 
 const FOOTER_SECTIONS = [
   { title: 'Company', links: ['About Us', 'Partners'] },
@@ -37,7 +37,7 @@ export const Layout = ({ children, dashboard }: LayoutProps) => {
             <img src={Logo} alt="Privana" className="h-5 min-w-25" />
           </Link>
           <div className="flex items-center gap-1">
-            <MenuItem to={portfolioPath()} label="Dashboard" />
+            <MenuItem to={dashboardPath()} label="Dashboard" />
             <MenuItem to={tradePath()} label="Trade" />
             <MenuItem to={copyTradingPath()} label="Copy trading" />
           </div>

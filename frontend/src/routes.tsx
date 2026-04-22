@@ -8,7 +8,7 @@ import { ProtectedLayout } from './components/ProtectedLayout'
 import { Swap } from './pages/Swap'
 import { AuthCallback } from './pages/AuthCallback'
 import { CopyTradingLanding } from './pages/CopyTrading/CopyTradingLanding'
-import { authCallbackPath, copyTradingPath, homePath, portfolioPath, tradePath } from './paths'
+import { authCallbackPath, copyTradingPath, homePath, dashboardPath, tradePath } from './paths'
 
 export const router = createBrowserRouter([
   {
@@ -16,7 +16,7 @@ export const router = createBrowserRouter([
     element: <Home />,
   },
   {
-    path: portfolioPath(),
+    path: dashboardPath(),
     element: <ProtectedLayout />,
     children: [
       {

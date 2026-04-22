@@ -1,7 +1,6 @@
 export const homePath = () => '/'
 
-export const portfolioPath = () => '/portfolio'
-export const portfolioDepositPath = (address: string) => `/portfolio/${address}`
+export const dashboardPath = () => '/dashboard'
 
 export const tradePath = () => '/trade'
 
