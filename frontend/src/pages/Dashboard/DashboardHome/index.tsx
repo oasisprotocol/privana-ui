@@ -22,6 +22,7 @@ import { PortfolioSummary } from './PortfolioSummary'
 import { DepositAlertDialog } from './DepositAlertDialog'
 import { useTokenPrices } from '@/api/coin-gecko'
 import { formatFiat } from '@/lib/tokens'
+import { tradePath } from '@/paths'
 
 export const DashboardHome = () => {
   const [modalOpen, setModalOpen] = useState<ComponentProps<typeof FlexvaultsModal>['defaultTab']>(undefined)
@@ -133,7 +134,7 @@ export const DashboardHome = () => {
           icon={<GitCompare />}
           title="Spot trading"
           buttonLabel="Trade"
-          to="/swap"
+          to={tradePath()}
         />
         <PortfolioCard
           title="Earn"

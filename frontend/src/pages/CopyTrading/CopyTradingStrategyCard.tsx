@@ -6,6 +6,7 @@ import { FC } from 'react'
 import { useNavigate } from 'react-router'
 import { Area, AreaChart, XAxis, YAxis } from 'recharts'
 import { Button } from '@oasisprotocol/flexvaults-sdk'
+import { copyTradingStrategyPath } from '@/paths'
 
 export interface TraderInfo {
   address: string
@@ -107,7 +108,7 @@ export const CopyTradingStrategyCard: FC<CopyTradingStrategyInfo> = ({
             </div>
           </div>
 
-          <Button size="lg" onClick={() => navigate(`/copy-trading/${id}`)}>
+          <Button size="lg" onClick={() => navigate(copyTradingStrategyPath(id))}>
             Manage
           </Button>
         </div>

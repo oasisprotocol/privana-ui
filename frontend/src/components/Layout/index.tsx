@@ -5,6 +5,7 @@ import Logo from '../../assets/logo.svg'
 import DashboardBg from '../../assets/dashboard-bg.svg'
 import { MenuItem } from './menu-item'
 import { Separator } from '../ui/separator'
+import { copyTradingPath, homePath, portfolioPath, tradePath } from '@/paths'
 
 interface LayoutProps {
   children: ReactNode
@@ -22,13 +23,13 @@ export const Layout = ({ children, dashboard }: LayoutProps) => {
         }}
       >
         <nav className="flex items-center justify-between px-6 h-16 border-b border-border shadow-[0_1px_2px_0_rgba(0,0,0,0.05)] bg-background">
-          <Link to="/" viewTransition className="text-xl font-bold">
+          <Link to={homePath()} viewTransition className="text-xl font-bold">
             <img src={Logo} alt="Privana" className="h-5 min-w-25" />
           </Link>
           <div className="flex items-center gap-1">
-            <MenuItem to="/portfolio" label="Portfolio" />
-            <MenuItem to="/copy-trading" label="Copy trading" />
-            <MenuItem to="/swap" label="Trading" />
+            <MenuItem to={portfolioPath()} label="Portfolio" />
+            <MenuItem to={copyTradingPath()} label="Copy trading" />
+            <MenuItem to={tradePath()} label="Trading" />
           </div>
 
           <div className="flex items-center gap-4">
