@@ -16,6 +16,7 @@ type ReviewStepProps = {
   toAmount: string
   quote: QuoteResponse
   prices: Record<string, number | undefined> | undefined
+  expired?: boolean
   onBack: () => void
   onConfirm: () => void
   loading?: boolean
@@ -37,6 +38,7 @@ export const ReviewStep = ({
   toAmount,
   quote,
   prices,
+  expired,
   onBack,
   onConfirm,
   loading,
@@ -104,13 +106,18 @@ export const ReviewStep = ({
         </div>
       </div>
 
+      {expired && (
+        <div className="rounded-lg border bg-card p-4 text-sm">
+          <p className="text-destructive">Quote expired. Go back to fetch a new one.</p>
+        </div>
+      )}
       {error && <p className="text-sm text-destructive">{error}</p>}
 
       <div className="flex gap-5 w-full">
         <Button variant="secondary" size="lg" className="flex-1" onClick={onBack} disabled={loading}>
           Back
         </Button>
-        <Button size="lg" className="flex-1" onClick={onConfirm} disabled={loading}>
+        <Button size="lg" className="flex-1" onClick={onConfirm} disabled={loading || expired}>
           {loading ? 'Signing & submitting...' : 'Confirm swap'}
         </Button>
       </div>

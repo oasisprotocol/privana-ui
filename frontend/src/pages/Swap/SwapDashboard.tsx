@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useState } from 'react'
+import React, { useMemo, useState } from 'react'
 import {
   Breadcrumb,
   BreadcrumbList,
@@ -71,6 +71,7 @@ export const SwapDashboard = () => {
     error: quoteError,
     toAmount,
     reset: resetQuote,
+    expired: quoteExpired,
   } = useSwapQuote({
     fromTokenId,
     toTokenId,
@@ -79,6 +80,7 @@ export const SwapDashboard = () => {
     fromDecimals: fromToken?.token_decimals,
     toDecimals: toToken?.token_decimals,
     disabled: insufficientFunds,
+    pauseRefetch: step === 1,
   })
 
   const {
@@ -140,10 +142,6 @@ export const SwapDashboard = () => {
     if (!canSwap || !quoteData || !walletClient || !address) return
     runSwap(quoteData, walletClient, address)
   }
-
-  useEffect(() => {
-    if (step === 1 && !quoteData && !swapLoading) setStep(0)
-  }, [step, quoteData, swapLoading])
 
   const handleSwapDirection = () => {
     const prevFromId = fromTokenId
@@ -334,6 +332,7 @@ export const SwapDashboard = () => {
           toAmount={toAmount}
           quote={quoteData}
           prices={prices}
+          expired={quoteExpired}
           onBack={() => setStep(0)}
           onConfirm={handleSwap}
           loading={swapLoading}

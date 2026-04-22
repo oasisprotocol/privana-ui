@@ -12,6 +12,7 @@ type Params = {
   fromDecimals: number | null | undefined
   toDecimals: number | null | undefined
   disabled?: boolean
+  pauseRefetch?: boolean
 }
 
 export const useSwapQuote = ({
@@ -22,6 +23,7 @@ export const useSwapQuote = ({
   fromDecimals,
   toDecimals,
   disabled,
+  pauseRefetch,
 }: Params) => {
   const debouncedFromAmount = useDebouncedValue(fromAmount)
   const [refetchKey, setRefetchKey] = useState(0)
@@ -74,15 +76,32 @@ export const useSwapQuote = ({
   const loading = enabled && !data && !error
   const toAmount = data && toDecimals != null ? formatUnits(BigInt(data.to_amount_estimate), toDecimals) : ''
 
+  const [expired, setExpired] = useState(false)
+
   useEffect(() => {
     if (!data) return
+    setExpired(false)
     const msUntilExpiry = data.expires_at * 1000 - Date.now()
-    if (msUntilExpiry <= 0) return
-    const timer = setTimeout(() => setRefetchKey(k => k + 1), msUntilExpiry)
+    const onExpire = () => {
+      if (pauseRefetch) setExpired(true)
+      else setRefetchKey(k => k + 1)
+    }
+    if (msUntilExpiry <= 0) {
+      onExpire()
+      return
+    }
+    const timer = setTimeout(onExpire, msUntilExpiry)
     return () => clearTimeout(timer)
-  }, [data])
+  }, [data, pauseRefetch])
+
+  useEffect(() => {
+    if (!pauseRefetch && expired) {
+      setRefetchKey(k => k + 1)
+      setExpired(false)
+    }
+  }, [pauseRefetch, expired])
 
   const reset = () => setRefetchKey(k => k + 1)
 
-  return { data, loading, error, toAmount, reset }
+  return { data, loading, error, toAmount, reset, expired }
 }
