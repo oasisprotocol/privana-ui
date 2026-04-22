@@ -22,8 +22,7 @@ import { ReviewStep } from './ReviewStep'
 import { useSwapQuote } from './useSwapQuote'
 import { useSubmitSwap } from './useSubmitSwap'
 
-// TODO: Validate once designs are ready if we need these steps
-const steps = ['1. Execute your private swap', '2. Review', '3. Enjoy']
+const steps = ['1. Configure', '2. Review', '3. Done']
 
 const CHAIN_ID = parseInt(import.meta.env.VITE_CHAIN_ID, 10)
 
