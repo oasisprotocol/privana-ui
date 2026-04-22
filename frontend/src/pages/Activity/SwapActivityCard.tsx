@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { ArrowRight, ChevronDown } from 'lucide-react'
+import { ArrowRight, Check, ChevronDown } from 'lucide-react'
 import { getTokenIcon } from '@oasisprotocol/flexvaults-sdk'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
@@ -14,14 +14,35 @@ const Row = ({ label, value }: RowProps) => (
   </div>
 )
 
-export const SwapActivityCard = () => {
+export type SwapStatus = 'in-progress' | 'completed' | 'failed'
+
+const StatusBadge = ({ status }: { status: SwapStatus }) => {
+  if (status === 'completed') {
+    return (
+      <Badge className="bg-chart-positive text-white">
+        <Check />
+        Completed
+      </Badge>
+    )
+  }
+  if (status === 'failed') {
+    return <Badge variant="destructive">Failed</Badge>
+  }
+  return <Badge>In progress</Badge>
+}
+
+type SwapActivityCardProps = {
+  status: SwapStatus
+}
+
+export const SwapActivityCard = ({ status }: SwapActivityCardProps) => {
   const [detailsOpen, setDetailsOpen] = useState(false)
 
   return (
     <div className="flex flex-col gap-4 bg-card border p-6 rounded-[14px] shadow-[0_1px_2px_0_rgba(0,0,0,0.05)]">
       <div className="flex items-center justify-between">
         <p className="text-lg font-semibold text-foreground leading-7">Swap</p>
-        <Badge>In progress</Badge>
+        <StatusBadge status={status} />
       </div>
 
       <div className="flex gap-4 items-center justify-center">
@@ -46,9 +67,11 @@ export const SwapActivityCard = () => {
         </div>
       </div>
 
-      <div className="h-1 w-full rounded-full bg-primary/20 overflow-hidden">
-        <div className="h-full w-3/4 bg-primary rounded-full" />
-      </div>
+      {status === 'in-progress' && (
+        <div className="h-1 w-full rounded-full bg-primary/20 overflow-hidden">
+          <div className="h-full w-3/4 bg-primary rounded-full" />
+        </div>
+      )}
 
       <Separator />
 

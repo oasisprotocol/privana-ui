@@ -49,7 +49,7 @@ export const Activity = () => {
           })}
         </div>
 
-        <SwapActivityCard />
+        <SwapActivityCard status="in-progress" />
       </div>
     </div>
   )
