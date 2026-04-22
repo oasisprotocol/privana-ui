@@ -1,4 +1,9 @@
-import { useBatchBalances, useFlexvaultsContext, useLockedFunds } from '@oasisprotocol/flexvaults-sdk'
+import {
+  getTokenIcon,
+  useBatchBalances,
+  useFlexvaultsContext,
+  useLockedFunds,
+} from '@oasisprotocol/flexvaults-sdk'
 import { FC, useMemo } from 'react'
 import { Card } from '@/components/ui/card'
 import { Skeleton } from '@/components/ui/skeleton'
@@ -68,6 +73,11 @@ export const PortfolioSummary: FC = () => {
               .map(token => (
                 <Card key={token.tokenId} className="flex-row items-center justify-between p-6">
                   <div className="flex items-center gap-3">
+                    {token.symbol && (
+                      <span className="shrink-0 size-6 overflow-hidden rounded-full">
+                        {getTokenIcon(token.symbol, 24)}
+                      </span>
+                    )}
                     <span className="text-lg font-medium text-foreground">{token.symbol}</span>
                   </div>
                   <div className="flex flex-col md:flex-row gap-2 md:gap-8 text-sm font-medium">
