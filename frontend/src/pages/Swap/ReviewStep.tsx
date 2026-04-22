@@ -1,5 +1,6 @@
 import { useMemo } from 'react'
 import { ArrowRight } from 'lucide-react'
+import { getTokenIcon } from '@oasisprotocol/flexvaults-sdk'
 import { Button } from '@/components/ui/button'
 import { Separator } from '@/components/ui/separator'
 import type { QuoteResponse, TokenInfo } from '@/api/swap'
@@ -60,6 +61,11 @@ export const ReviewStep = ({
             <p className="text-xs font-medium text-muted-foreground leading-4">You pay</p>
             <div className="flex gap-1 items-center">
               <span className="text-xl font-semibold text-foreground leading-none">{fromAmount}</span>
+              {fromToken?.token_symbol && (
+                <span className="shrink-0 size-4 overflow-hidden rounded-full">
+                  {getTokenIcon(fromToken.token_symbol, 16)}
+                </span>
+              )}
               {fromToken && (
                 <span className="text-sm font-semibold text-foreground leading-none">
                   {tokenLabel(fromToken)}
@@ -74,6 +80,11 @@ export const ReviewStep = ({
             <p className="text-xs font-medium text-muted-foreground leading-4">You receive</p>
             <div className="flex gap-1 items-center justify-end">
               <span className="text-xl font-semibold text-foreground leading-none">{toAmount}</span>
+              {toToken?.token_symbol && (
+                <span className="shrink-0 size-4 overflow-hidden rounded-full">
+                  {getTokenIcon(toToken.token_symbol, 16)}
+                </span>
+              )}
               {toToken && (
                 <span className="text-sm font-semibold text-foreground leading-none">
                   {tokenLabel(toToken)}
