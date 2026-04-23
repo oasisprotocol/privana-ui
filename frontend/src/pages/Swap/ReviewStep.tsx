@@ -44,10 +44,7 @@ export const ReviewStep = ({
   loading,
   error,
 }: ReviewStepProps) => {
-  const rateLabel = useMemo(
-    () => computeRate(quote, fromToken, toToken)?.label ?? '—',
-    [quote, fromToken, toToken],
-  )
+  const rateLabel = useMemo(() => computeRate(quote, fromToken, toToken) ?? '-', [quote, fromToken, toToken])
   const feeFiat = useMemo(() => computeFeeFiat(quote, toToken, prices), [quote, toToken, prices])
 
   return (

@@ -17,7 +17,7 @@ export const QuoteInfo = ({ quote, fromToken, toToken, prices }: QuoteInfoProps)
     if (!rate || !fromToken) return null
     const fromPrice = prices?.[fromToken.token_id]
     const suffix = fromPrice != null ? ` (≈${formatFiat(fromPrice)})` : ''
-    return `${rate.label}${suffix}`
+    return `${rate}${suffix}`
   }, [quote, fromToken, toToken, prices])
 
   const feeFiat = useMemo(() => computeFeeFiat(quote, toToken, prices), [quote, toToken, prices])

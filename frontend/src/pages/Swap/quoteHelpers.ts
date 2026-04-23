@@ -1,17 +1,11 @@
 import { formatUnits } from 'viem'
 import type { QuoteResponse, TokenInfo } from '@/api/swap'
 
-export type RateParts = {
-  label: string
-  fromSymbol: string
-  toSymbol: string
-}
-
 export const computeRate = (
   quote: QuoteResponse,
   fromToken: TokenInfo | undefined,
   toToken: TokenInfo | undefined,
-): RateParts | null => {
+): string | null => {
   if (fromToken?.token_decimals == null || toToken?.token_decimals == null) return null
   try {
     const fromAmountNum = Number(formatUnits(BigInt(quote.from_amount), fromToken.token_decimals))
@@ -20,11 +14,7 @@ export const computeRate = (
     const rate = toAmountNum / fromAmountNum
     const fromSymbol = fromToken.token_symbol ?? fromToken.token_type_name
     const toSymbol = toToken.token_symbol ?? toToken.token_type_name
-    return {
-      label: `1 ${fromSymbol} = ${rate.toLocaleString('en-US', { maximumSignificantDigits: 6 })} ${toSymbol}`,
-      fromSymbol,
-      toSymbol,
-    }
+    return `1 ${fromSymbol} = ${rate.toLocaleString('en-US', { maximumSignificantDigits: 6 })} ${toSymbol}`
   } catch {
     return null
   }
