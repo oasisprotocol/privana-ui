@@ -1,19 +1,22 @@
 import { useMemo, useState } from 'react'
+import { useNavigate } from 'react-router'
 import { Button } from '@/components/ui/button'
 import { useTokens } from '@/api/swap'
 import { useTokenPrices } from '@/api/coin-gecko'
 import { Skeleton } from '@/components/ui/skeleton'
 import { useBalance } from '@oasisprotocol/flexvaults-sdk'
 import { formatUnits, parseUnits } from 'viem'
-import { useAccount, useWalletClient, useSwitchChain, useConfig } from 'wagmi'
+import { useAccount, useWalletClient, useSwitchChain } from 'wagmi'
 import { useQueryClient } from '@tanstack/react-query'
-import { ArrowUpDown, ChevronRight, ExternalLink, EyeOff } from 'lucide-react'
+import { ArrowUpDown, ChevronRight, EyeOff } from 'lucide-react'
 import { cn } from '@/lib/utils'
+import { activityPath } from '@/paths'
 import { AssetRow } from './AssetRow'
 import { QuoteInfo } from './QuoteInfo'
 import { ReviewStep } from './ReviewStep'
 import { useSwapQuote } from './useSwapQuote'
 import { useSubmitSwap } from './useSubmitSwap'
+import { computeFeeFiat, computeRate } from './quoteHelpers'
 
 const steps = ['1. Configure', '2. Review', '3. Done']
 
@@ -25,9 +28,8 @@ export const SwapDashboard = () => {
   const { address, chainId } = useAccount()
   const { data: walletClient } = useWalletClient()
   const { switchChain } = useSwitchChain()
-  const wagmiConfig = useConfig()
   const queryClient = useQueryClient()
-  const explorerUrl = wagmiConfig.chains.find(c => c.id === CHAIN_ID)?.blockExplorers?.default.url
+  const navigate = useNavigate()
   const [fromTokenId, setFromTokenId] = useState('')
   const [toTokenId, setToTokenId] = useState('')
   const [fromAmount, setFromAmount] = useState('')
@@ -79,16 +81,8 @@ export const SwapDashboard = () => {
     execute: runSwap,
     loading: swapLoading,
     error: swapError,
-    result: swapResult,
   } = useSubmitSwap({
-    onSuccess: () => {
-      setFromTokenId('')
-      setToTokenId('')
-      setFromAmount('')
-      resetQuote()
-      setStep(0)
-      queryClient.invalidateQueries({ queryKey: ['accounting-balance'] })
-    },
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: ['accounting-balance'] }),
   })
 
   const fromFiat = useMemo(() => {
@@ -130,9 +124,18 @@ export const SwapDashboard = () => {
   const canSwap =
     !!quoteData && !!walletClient && !!address && isCorrectChain && !insufficientFunds && quoteMatchesInput
 
-  const handleSwap = () => {
-    if (!canSwap || !quoteData || !walletClient || !address) return
-    runSwap(quoteData, walletClient, address)
+  const handleSwap = async () => {
+    if (!canSwap || !quoteData || !walletClient || !address || !fromToken || !toToken) return
+    const signed = await runSwap({
+      quote: quoteData,
+      walletClient,
+      address,
+      fromToken,
+      toToken,
+      rateLabel: computeRate(quoteData, fromToken, toToken) ?? '',
+      feeFiat: computeFeeFiat(quoteData, toToken, prices),
+    })
+    if (signed) navigate(activityPath())
   }
 
   const handleSwapDirection = () => {
@@ -206,7 +209,6 @@ export const SwapDashboard = () => {
               onAmountChange={setFromAmount}
               balance={{ wei: fromBalance.balanceWei, loading: fromBalance.isLoading }}
               amountError={insufficientFunds ? 'Insufficient funds' : null}
-              disabled={swapLoading}
               fiatValue={fromFiat}
               onMax={() => {
                 if (fromToken?.token_decimals == null || !fromBalance.balanceWei) return
@@ -219,7 +221,7 @@ export const SwapDashboard = () => {
             <button
               type="button"
               onClick={handleSwapDirection}
-              disabled={swapLoading || (!fromTokenId && !toTokenId)}
+              disabled={!fromTokenId && !toTokenId}
               aria-label="Swap direction"
               className="flex items-center justify-center size-10 rounded-md border bg-background hover:bg-accent transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
             >
@@ -238,7 +240,6 @@ export const SwapDashboard = () => {
               readOnly
               loading={quoteLoading}
               balance={{ wei: toBalance.balanceWei, loading: toBalance.isLoading }}
-              disabled={swapLoading}
               fiatValue={toFiat}
               balanceLabel="Receive (incl. fees)"
             />
@@ -274,39 +275,6 @@ export const SwapDashboard = () => {
               </Button>
             )}
           </div>
-
-          {/* TODO: temporary section until we have Activity page designs */}
-          {swapResult && (
-            <div className="rounded-lg border bg-card p-4 text-sm">
-              <p className="text-foreground font-medium">Last swap state</p>
-              <dl className="grid grid-cols-[auto_1fr] gap-x-4 gap-y-1 mt-2 text-sm">
-                <dt className="text-muted-foreground">Swap ID</dt>
-                <dd className="truncate">{swapResult.swap_id}</dd>
-                <dt className="text-muted-foreground">Status</dt>
-                <dd>{swapResult.status}</dd>
-                {swapResult.tx_hash && (
-                  <>
-                    <dt className="text-muted-foreground">Tx hash</dt>
-                    <dd className="break-all">
-                      {explorerUrl ? (
-                        <a
-                          href={`${explorerUrl}/tx/${swapResult.tx_hash}`}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="text-primary inline-flex items-center gap-2 mr-2"
-                        >
-                          {swapResult.tx_hash}
-                          <ExternalLink className="h-4 w-4" />
-                        </a>
-                      ) : (
-                        swapResult.tx_hash
-                      )}
-                    </dd>
-                  </>
-                )}
-              </dl>
-            </div>
-          )}
 
           <div className="flex items-center justify-center gap-2 px-0.5 text-xs font-medium text-muted-foreground">
             <EyeOff className="size-4 shrink-0" />

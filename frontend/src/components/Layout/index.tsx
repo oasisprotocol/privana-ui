@@ -6,6 +6,7 @@ import DashboardBg from '../../assets/dashboard-bg.svg'
 import { MenuItem } from './menu-item'
 import { Separator } from '../ui/separator'
 import { activityPath, copyTradingPath, homePath, dashboardPath, tradePath } from '@/paths'
+import { useActivity } from '@/contexts/ActivityProvider/useActivity'
 
 const FOOTER_SECTIONS = [
   { title: 'Company', links: ['About Us', 'Partners'] },
@@ -23,6 +24,7 @@ interface LayoutProps {
 }
 
 export const Layout = ({ children, dashboard }: LayoutProps) => {
+  const { pendingCount } = useActivity()
   return (
     <div className="min-h-screen bg-background text-foreground">
       <div
@@ -39,7 +41,7 @@ export const Layout = ({ children, dashboard }: LayoutProps) => {
           <div className="flex items-center gap-1">
             <MenuItem to={dashboardPath()} label="Dashboard" />
             <MenuItem to={tradePath()} label="Trade" />
-            <MenuItem to={activityPath()} label="Activity" />
+            <MenuItem to={activityPath()} label="Activity" badge={pendingCount} />
             <MenuItem to={copyTradingPath()} label="Copy trading" />
           </div>
 

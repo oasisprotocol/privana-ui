@@ -9,6 +9,7 @@ import { wagmiConfig } from './wagmi-config.ts'
 import { FlexvaultsProvider } from '@oasisprotocol/flexvaults-sdk'
 import { ALLOWED_TOKEN_IDS } from './config/tokens'
 import { authCallbackPath } from './paths'
+import { ActivityProvider } from './contexts/ActivityProvider'
 import '@rainbow-me/rainbowkit/styles.css'
 import '@oasisprotocol/flexvaults-sdk/styles.css'
 import './index.css'
@@ -42,7 +43,9 @@ createRoot(document.getElementById('root')!).render(
           }}
         >
           <RainbowKitProvider theme={rainbowKitTheme} modalSize="compact">
-            <RouterProvider router={router} />
+            <ActivityProvider>
+              <RouterProvider router={router} />
+            </ActivityProvider>
           </RainbowKitProvider>
         </FlexvaultsProvider>
       </QueryClientProvider>
