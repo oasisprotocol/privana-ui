@@ -1,5 +1,9 @@
 import { useCallback, useEffect, useMemo, useState, type ReactNode } from 'react'
-import { ActivityContext, type Activity } from './context'
+import { ActivityContext, type Activity, type SwapActivity } from './context'
+import { SwapStatusPoller } from './SwapStatusPoller'
+
+const isPollableSwap = (a: Activity): a is SwapActivity & { swapId: string } =>
+  a.type === 'swap' && a.status === 'in-progress' && a.swapId != null
 
 const STORAGE_KEY = 'flexvaults-activities'
 
@@ -43,5 +47,12 @@ export const ActivityProvider = ({ children }: { children: ReactNode }) => {
     [activities, pendingCount, addActivity, updateActivity],
   )
 
-  return <ActivityContext value={value}>{children}</ActivityContext>
+  return (
+    <ActivityContext value={value}>
+      {activities.filter(isPollableSwap).map(a => (
+        <SwapStatusPoller key={a.id} activity={a} />
+      ))}
+      {children}
+    </ActivityContext>
+  )
 }
