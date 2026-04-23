@@ -1,13 +1,5 @@
-import React, { useMemo, useState } from 'react'
-import {
-  Breadcrumb,
-  BreadcrumbList,
-  BreadcrumbItem,
-  BreadcrumbPage,
-  BreadcrumbSeparator,
-} from '@/components/ui/breadcrumb'
+import { useMemo, useState } from 'react'
 import { Button } from '@/components/ui/button'
-import { Separator } from '@/components/ui/separator'
 import { useTokens } from '@/api/swap'
 import { useTokenPrices } from '@/api/coin-gecko'
 import { Skeleton } from '@/components/ui/skeleton'
@@ -15,19 +7,20 @@ import { useBalance } from '@oasisprotocol/flexvaults-sdk'
 import { formatUnits, parseUnits } from 'viem'
 import { useAccount, useWalletClient, useSwitchChain, useConfig } from 'wagmi'
 import { useQueryClient } from '@tanstack/react-query'
-import { ArrowUpDown, ExternalLink, EyeOff } from 'lucide-react'
+import { ArrowUpDown, ChevronRight, ExternalLink, EyeOff } from 'lucide-react'
+import { cn } from '@/lib/utils'
 import { AssetRow } from './AssetRow'
 import { QuoteInfo } from './QuoteInfo'
+import { ReviewStep } from './ReviewStep'
 import { useSwapQuote } from './useSwapQuote'
 import { useSubmitSwap } from './useSubmitSwap'
 
-// TODO: Validate once designs are ready if we need these steps
-const steps = ['1. Execute your private swap', '2. Review', '3. Enjoy']
+const steps = ['1. Configure', '2. Review', '3. Done']
 
 const CHAIN_ID = parseInt(import.meta.env.VITE_CHAIN_ID, 10)
 
 export const SwapDashboard = () => {
-  const step = 0
+  const [step, setStep] = useState(0)
   const { data, isLoading, error } = useTokens()
   const { address, chainId } = useAccount()
   const { data: walletClient } = useWalletClient()
@@ -70,6 +63,7 @@ export const SwapDashboard = () => {
     error: quoteError,
     toAmount,
     reset: resetQuote,
+    expired: quoteExpired,
   } = useSwapQuote({
     fromTokenId,
     toTokenId,
@@ -78,6 +72,7 @@ export const SwapDashboard = () => {
     fromDecimals: fromToken?.token_decimals,
     toDecimals: toToken?.token_decimals,
     disabled: insufficientFunds,
+    pauseRefetch: step === 1,
   })
 
   const {
@@ -91,6 +86,7 @@ export const SwapDashboard = () => {
       setToTokenId('')
       setFromAmount('')
       resetQuote()
+      setStep(0)
       queryClient.invalidateQueries({ queryKey: ['accounting-balance'] })
     },
   })
@@ -148,23 +144,22 @@ export const SwapDashboard = () => {
   }
 
   return (
-    <>
-      <div>
-        <Breadcrumb className="py-2 h-10">
-          <BreadcrumbList>
-            {steps.map((label, i) => (
-              <React.Fragment key={i}>
-                <BreadcrumbItem className="text-input-focused">
-                  {i === step ? <BreadcrumbPage className="underline">{label}</BreadcrumbPage> : label}
-                </BreadcrumbItem>
-                {i < steps.length - 1 && <BreadcrumbSeparator className="pl-4" />}
-              </React.Fragment>
-            ))}
-          </BreadcrumbList>
-        </Breadcrumb>
-      </div>
-
-      <Separator />
+    <div>
+      <nav aria-label="Swap progress" className="flex items-center justify-center gap-1 w-full mb-4">
+        {steps.map((label, i) => (
+          <div
+            key={label}
+            aria-current={i === step ? 'step' : undefined}
+            className={cn(
+              'flex items-center justify-center gap-1 h-8 pl-2.5 pr-4 py-2 rounded-md text-sm font-medium',
+              i === step ? 'text-foreground' : 'text-muted-foreground',
+            )}
+          >
+            {i > 0 && <ChevronRight className="size-4" />}
+            <span>{label}</span>
+          </div>
+        ))}
+      </nav>
 
       {isLoading && (
         <div className="flex flex-col gap-4 w-full max-w-145 mx-auto bg-card border p-6 rounded-[14px] shadow-[0_1px_2px_0_rgba(0,0,0,0.05)]">
@@ -188,7 +183,7 @@ export const SwapDashboard = () => {
       )}
       {error && <p>Failed to load tokens: {error.message}</p>}
 
-      {data && (
+      {data && step === 0 && (
         <div className="flex flex-col gap-4 w-full max-w-145 mx-auto bg-card border p-6 rounded-[14px] shadow-[0_1px_2px_0_rgba(0,0,0,0.05)]">
           <div className="flex flex-col gap-1.5">
             <h2 className="text-2xl font-medium text-foreground leading-8">Make a swap</h2>
@@ -272,20 +267,18 @@ export const SwapDashboard = () => {
               <Button
                 size="lg"
                 className="flex-1 h-12 text-base"
-                disabled={!canSwap || swapLoading}
-                onClick={handleSwap}
+                disabled={!canSwap}
+                onClick={() => setStep(1)}
               >
-                {swapLoading ? 'Signing & submitting...' : 'Swap'}
+                Swap
               </Button>
             )}
           </div>
 
-          {swapError && <p className="text-sm text-destructive">{swapError}</p>}
-
-          {/* TODO: temporary section until we have designs */}
+          {/* TODO: temporary section until we have Activity page designs */}
           {swapResult && (
             <div className="rounded-lg border bg-card p-4 text-sm">
-              <p className="text-foreground font-medium">Swap initiated</p>
+              <p className="text-foreground font-medium">Last swap state</p>
               <dl className="grid grid-cols-[auto_1fr] gap-x-4 gap-y-1 mt-2 text-sm">
                 <dt className="text-muted-foreground">Swap ID</dt>
                 <dd className="truncate">{swapResult.swap_id}</dd>
@@ -321,6 +314,22 @@ export const SwapDashboard = () => {
           </div>
         </div>
       )}
-    </>
+
+      {data && step === 1 && quoteData && (
+        <ReviewStep
+          fromToken={fromToken}
+          toToken={toToken}
+          fromAmount={fromAmount}
+          toAmount={toAmount}
+          quote={quoteData}
+          prices={prices}
+          expired={quoteExpired}
+          onBack={() => setStep(0)}
+          onConfirm={handleSwap}
+          loading={swapLoading}
+          error={swapError}
+        />
+      )}
+    </div>
   )
 }
