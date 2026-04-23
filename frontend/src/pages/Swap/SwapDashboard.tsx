@@ -81,6 +81,7 @@ export const SwapDashboard = () => {
     execute: runSwap,
     loading: swapLoading,
     error: swapError,
+    reset: resetSubmit,
   } = useSubmitSwap({
     onSuccess: () => queryClient.removeQueries({ queryKey: ['accounting-balance'] }),
   })
@@ -292,7 +293,10 @@ export const SwapDashboard = () => {
           quote={quoteData}
           prices={prices}
           expired={quoteExpired}
-          onBack={() => setStep(0)}
+          onBack={() => {
+            resetSubmit()
+            setStep(0)
+          }}
           onConfirm={handleSwap}
           loading={swapLoading}
           error={swapError}
