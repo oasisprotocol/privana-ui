@@ -82,7 +82,7 @@ export const SwapDashboard = () => {
     loading: swapLoading,
     error: swapError,
   } = useSubmitSwap({
-    onSuccess: () => queryClient.invalidateQueries({ queryKey: ['accounting-balance'] }),
+    onSuccess: () => queryClient.removeQueries({ queryKey: ['accounting-balance'] }),
   })
 
   const fromFiat = useMemo(() => {
