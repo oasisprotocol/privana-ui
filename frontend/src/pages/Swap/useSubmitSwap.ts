@@ -3,6 +3,8 @@ import { signTransferMessage } from '@oasisprotocol/flexvaults-sdk'
 import type { WalletClient } from 'viem'
 import { executeSwap } from '@/api/swap'
 import type { QuoteResponse, SwapResponse } from '@/api/swap'
+import { useActivity } from '@/contexts/ActivityProvider/useActivity'
+import type { ActivityTokenInfo } from '@/contexts/ActivityProvider/context'
 
 const CHAIN_ID = parseInt(import.meta.env.VITE_CHAIN_ID, 10)
 const ACCOUNTING_CONTRACT = import.meta.env.VITE_ACCOUNTING_CONTRACT_ADDRESS
@@ -11,12 +13,41 @@ type Params = {
   onSuccess?: () => void
 }
 
+export type SubmitSwapParams = {
+  quote: QuoteResponse
+  walletClient: WalletClient
+  address: `0x${string}`
+  fromToken: ActivityTokenInfo
+  toToken: ActivityTokenInfo
+  fromAmount: string
+  toAmount: string
+  rateLabel: string
+  feeFiat?: number
+}
+
 export const useSubmitSwap = ({ onSuccess }: Params = {}) => {
+  const { addActivity, updateActivity } = useActivity()
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [result, setResult] = useState<SwapResponse | null>(null)
 
-  const execute = async (quote: QuoteResponse, walletClient: WalletClient, address: `0x${string}`) => {
+  const execute = async (params: SubmitSwapParams) => {
+    const { quote, walletClient, address, fromToken, toToken, fromAmount, toAmount, rateLabel, feeFiat } =
+      params
+    const id = crypto.randomUUID()
+    addActivity({
+      id,
+      type: 'swap',
+      status: 'in-progress',
+      createdAt: Date.now(),
+      fromToken,
+      toToken,
+      fromAmount,
+      toAmount,
+      rateLabel,
+      feeFiat,
+    })
+
     setLoading(true)
     setError(null)
     setResult(null)
@@ -41,10 +72,16 @@ export const useSubmitSwap = ({ onSuccess }: Params = {}) => {
         input_signature: signature,
       })
 
+      updateActivity(id, {
+        swapId: swap.swap_id,
+        txHash: swap.tx_hash ?? undefined,
+      })
       setResult(swap)
       onSuccess?.()
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Swap failed')
+      const message = err instanceof Error ? err.message : 'Swap failed'
+      updateActivity(id, { status: 'failed', error: message })
+      setError(message)
     } finally {
       setLoading(false)
     }

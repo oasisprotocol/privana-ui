@@ -2,13 +2,15 @@ import { createContext } from 'react'
 
 export type SwapActivityStatus = 'in-progress' | 'completed' | 'failed'
 
+export type ActivityTokenInfo = { id: string; symbol: string; decimals: number }
+
 export type SwapActivity = {
   id: string
   type: 'swap'
   status: SwapActivityStatus
   createdAt: number
-  fromToken: { id: string; symbol: string; decimals: number }
-  toToken: { id: string; symbol: string; decimals: number }
+  fromToken: ActivityTokenInfo
+  toToken: ActivityTokenInfo
   fromAmount: string
   toAmount: string
   rateLabel: string

@@ -14,6 +14,7 @@ import { QuoteInfo } from './QuoteInfo'
 import { ReviewStep } from './ReviewStep'
 import { useSwapQuote } from './useSwapQuote'
 import { useSubmitSwap } from './useSubmitSwap'
+import { computeFeeFiat, computeRate } from './quoteHelpers'
 
 const steps = ['1. Configure', '2. Review', '3. Done']
 
@@ -132,7 +133,27 @@ export const SwapDashboard = () => {
 
   const handleSwap = () => {
     if (!canSwap || !quoteData || !walletClient || !address) return
-    runSwap(quoteData, walletClient, address)
+    if (!fromToken || !toToken) return
+    if (fromToken.token_decimals == null || toToken.token_decimals == null) return
+    runSwap({
+      quote: quoteData,
+      walletClient,
+      address,
+      fromToken: {
+        id: fromToken.token_id,
+        symbol: fromToken.token_symbol ?? fromToken.token_type_name,
+        decimals: fromToken.token_decimals,
+      },
+      toToken: {
+        id: toToken.token_id,
+        symbol: toToken.token_symbol ?? toToken.token_type_name,
+        decimals: toToken.token_decimals,
+      },
+      fromAmount,
+      toAmount,
+      rateLabel: computeRate(quoteData, fromToken, toToken) ?? '',
+      feeFiat: computeFeeFiat(quoteData, toToken, prices),
+    })
   }
 
   const handleSwapDirection = () => {
