@@ -18,7 +18,7 @@ import { useSwapQuote } from './useSwapQuote'
 import { useSubmitSwap } from './useSubmitSwap'
 import { computeFeeFiat, computeRate } from './quoteHelpers'
 
-const steps = ['1. Configure', '2. Review', '3. Done']
+const steps = ['1. Configure', '2. Review']
 
 const CHAIN_ID = parseInt(import.meta.env.VITE_CHAIN_ID, 10)
 
