@@ -2,7 +2,7 @@ import { useState } from 'react'
 import { signTransferMessage } from '@oasisprotocol/flexvaults-sdk'
 import type { WalletClient } from 'viem'
 import { executeSwap } from '@/api/swap'
-import type { QuoteResponse, SwapResponse } from '@/api/swap'
+import type { QuoteResponse } from '@/api/swap'
 import { useActivity } from '@/contexts/ActivityProvider/useActivity'
 import type { ActivityTokenInfo } from '@/contexts/ActivityProvider/context'
 
@@ -29,7 +29,6 @@ export const useSubmitSwap = ({ onSuccess }: Params = {}) => {
   const { addActivity, updateActivity } = useActivity()
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
-  const [result, setResult] = useState<SwapResponse | null>(null)
 
   const execute = async (params: SubmitSwapParams) => {
     const { quote, walletClient, address, fromToken, toToken, fromAmount, toAmount, rateLabel, feeFiat } =
@@ -50,7 +49,6 @@ export const useSubmitSwap = ({ onSuccess }: Params = {}) => {
 
     setLoading(true)
     setError(null)
-    setResult(null)
     try {
       const signature = await signTransferMessage({
         walletClient,
@@ -76,7 +74,6 @@ export const useSubmitSwap = ({ onSuccess }: Params = {}) => {
         swapId: swap.swap_id,
         txHash: swap.tx_hash ?? undefined,
       })
-      setResult(swap)
       onSuccess?.()
     } catch (err) {
       const message = err instanceof Error ? err.message : 'Swap failed'
@@ -87,5 +84,5 @@ export const useSubmitSwap = ({ onSuccess }: Params = {}) => {
     }
   }
 
-  return { execute, loading, error, result }
+  return { execute, loading, error }
 }
