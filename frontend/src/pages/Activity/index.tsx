@@ -1,6 +1,7 @@
-import { useState } from 'react'
+import { useMemo, useState } from 'react'
 import { Separator } from '@/components/ui/separator'
 import { cn } from '@/lib/utils'
+import { useActivity } from '@/contexts/ActivityProvider/useActivity'
 import { SwapActivityCard } from './SwapActivityCard'
 
 const TABS = [
@@ -13,6 +14,13 @@ type TabId = (typeof TABS)[number]['id']
 
 export const Activity = () => {
   const [activeTab, setActiveTab] = useState<TabId>('all')
+  const { activities } = useActivity()
+
+  const filtered = useMemo(() => {
+    if (activeTab === 'all') return activities
+    if (activeTab === 'swaps') return activities.filter(a => a.type === 'swap')
+    return []
+  }, [activities, activeTab])
 
   return (
     <div className="flex flex-col gap-8 w-full">
@@ -49,7 +57,11 @@ export const Activity = () => {
           })}
         </div>
 
-        <SwapActivityCard status="in-progress" />
+        {filtered.length === 0 ? (
+          <p className="text-center text-sm text-muted-foreground py-8">No activity yet.</p>
+        ) : (
+          filtered.map(activity => <SwapActivityCard key={activity.id} activity={activity} />)
+        )}
       </div>
     </div>
   )

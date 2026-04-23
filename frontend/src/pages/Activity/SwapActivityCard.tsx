@@ -6,6 +6,8 @@ import { Button } from '@/components/ui/button'
 import { Progress } from '@/components/ui/progress'
 import { Separator } from '@/components/ui/separator'
 import { cn } from '@/lib/utils'
+import { formatAmount, formatFiat } from '@/lib/tokens'
+import type { SwapActivity, SwapActivityStatus } from '@/contexts/ActivityProvider/context'
 
 type RowProps = { label: string; value: string }
 const Row = ({ label, value }: RowProps) => (
@@ -15,9 +17,7 @@ const Row = ({ label, value }: RowProps) => (
   </div>
 )
 
-export type SwapStatus = 'in-progress' | 'completed' | 'failed'
-
-const StatusBadge = ({ status }: { status: SwapStatus }) => {
+const StatusBadge = ({ status }: { status: SwapActivityStatus }) => {
   if (status === 'completed') {
     return (
       <Badge className="bg-chart-positive text-white">
@@ -33,11 +33,12 @@ const StatusBadge = ({ status }: { status: SwapStatus }) => {
 }
 
 type SwapActivityCardProps = {
-  status: SwapStatus
+  activity: SwapActivity
 }
 
-export const SwapActivityCard = ({ status }: SwapActivityCardProps) => {
+export const SwapActivityCard = ({ activity }: SwapActivityCardProps) => {
   const [detailsOpen, setDetailsOpen] = useState(false)
+  const { status, fromToken, toToken, fromAmount, toAmount, rateLabel, feeFiat } = activity
 
   return (
     <div className="flex flex-col gap-4 bg-card border p-6 rounded-[14px] shadow-[0_1px_2px_0_rgba(0,0,0,0.05)]">
@@ -50,9 +51,13 @@ export const SwapActivityCard = ({ status }: SwapActivityCardProps) => {
         <div className="flex-1 flex flex-col gap-1 min-w-0 overflow-hidden">
           <p className="text-xs font-medium text-muted-foreground leading-4">You pay</p>
           <div className="flex gap-1 items-center">
-            <span className="text-xl font-semibold text-foreground leading-none">100.00</span>
-            <span className="shrink-0 size-4 overflow-hidden rounded-full">{getTokenIcon('USDC', 16)}</span>
-            <span className="text-sm font-semibold text-foreground leading-none">USDC</span>
+            <span className="text-xl font-semibold text-foreground leading-none">
+              {formatAmount(BigInt(fromAmount), fromToken.decimals)}
+            </span>
+            <span className="shrink-0 size-4 overflow-hidden rounded-full">
+              {getTokenIcon(fromToken.symbol, 16)}
+            </span>
+            <span className="text-sm font-semibold text-foreground leading-none">{fromToken.symbol}</span>
           </div>
         </div>
         <div className="bg-secondary p-3 rounded-md flex items-center justify-center shrink-0">
@@ -61,9 +66,13 @@ export const SwapActivityCard = ({ status }: SwapActivityCardProps) => {
         <div className="flex-1 flex flex-col gap-1 items-end min-w-0 overflow-hidden">
           <p className="text-xs font-medium text-muted-foreground leading-4">You receive</p>
           <div className="flex gap-1 items-center justify-end">
-            <span className="text-xl font-semibold text-foreground leading-none">0.03459</span>
-            <span className="shrink-0 size-4 overflow-hidden rounded-full">{getTokenIcon('WETH', 16)}</span>
-            <span className="text-sm font-semibold text-foreground leading-none">ETH</span>
+            <span className="text-xl font-semibold text-foreground leading-none">
+              {formatAmount(BigInt(toAmount), toToken.decimals)}
+            </span>
+            <span className="shrink-0 size-4 overflow-hidden rounded-full">
+              {getTokenIcon(toToken.symbol, 16)}
+            </span>
+            <span className="text-sm font-semibold text-foreground leading-none">{toToken.symbol}</span>
           </div>
         </div>
       </div>
@@ -74,9 +83,9 @@ export const SwapActivityCard = ({ status }: SwapActivityCardProps) => {
 
       {detailsOpen && (
         <div className="flex flex-col gap-4">
-          <Row label="Rate" value="1 USDC = 0.000346 ETH" />
+          <Row label="Rate" value={rateLabel || '—'} />
           <Row label="Privacy" value="🔒 No public trace" />
-          <Row label="Fee" value="~$0.02" />
+          <Row label="Fee" value={feeFiat != null ? `~${formatFiat(feeFiat)}` : '—'} />
           <Row label="Estimated time" value="<2 seconds" />
         </div>
       )}

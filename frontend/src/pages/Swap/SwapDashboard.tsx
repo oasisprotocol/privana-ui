@@ -142,8 +142,6 @@ export const SwapDashboard = () => {
         symbol: toToken.token_symbol ?? toToken.token_type_name,
         decimals: toToken.token_decimals,
       },
-      fromAmount,
-      toAmount,
       rateLabel: computeRate(quoteData, fromToken, toToken) ?? '',
       feeFiat: computeFeeFiat(quoteData, toToken, prices),
     })

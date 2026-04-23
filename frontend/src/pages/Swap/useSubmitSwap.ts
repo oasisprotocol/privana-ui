@@ -19,8 +19,6 @@ export type SubmitSwapParams = {
   address: `0x${string}`
   fromToken: ActivityTokenInfo
   toToken: ActivityTokenInfo
-  fromAmount: string
-  toAmount: string
   rateLabel: string
   feeFiat?: number
 }
@@ -31,8 +29,7 @@ export const useSubmitSwap = ({ onSuccess }: Params = {}) => {
   const [error, setError] = useState<string | null>(null)
 
   const execute = async (params: SubmitSwapParams) => {
-    const { quote, walletClient, address, fromToken, toToken, fromAmount, toAmount, rateLabel, feeFiat } =
-      params
+    const { quote, walletClient, address, fromToken, toToken, rateLabel, feeFiat } = params
     const id = crypto.randomUUID()
     addActivity({
       id,
@@ -41,8 +38,8 @@ export const useSubmitSwap = ({ onSuccess }: Params = {}) => {
       createdAt: Date.now(),
       fromToken,
       toToken,
-      fromAmount,
-      toAmount,
+      fromAmount: quote.from_amount,
+      toAmount: quote.to_amount_estimate,
       rateLabel,
       feeFiat,
     })
