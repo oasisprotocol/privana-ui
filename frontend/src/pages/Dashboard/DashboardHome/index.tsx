@@ -14,7 +14,8 @@ import { PortfolioSummary } from './PortfolioSummary'
 import { DepositAlertDialog } from './DepositAlertDialog'
 import { useTokenPrices } from '@/api/coin-gecko'
 import { formatFiat } from '@/lib/tokens'
-import { tradePath } from '@/paths'
+import { activityPath, tradePath } from '@/paths'
+import { Link } from 'react-router'
 
 export const DashboardHome = () => {
   const [modalOpen, setModalOpen] = useState<ComponentProps<typeof FlexvaultsModal>['defaultTab']>(undefined)
@@ -93,9 +94,11 @@ export const DashboardHome = () => {
                     <ArrowUpToLine />
                     Withdraw
                   </Button>
-                  <Button variant="secondary" size="xs">
-                    <History />
-                    See activity
+                  <Button variant="secondary" size="xs" asChild>
+                    <Link to={activityPath()} viewTransition>
+                      <History />
+                      See activity
+                    </Link>
                   </Button>
                 </div>
               </div>
