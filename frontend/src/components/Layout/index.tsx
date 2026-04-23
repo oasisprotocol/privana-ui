@@ -5,7 +5,7 @@ import Logo from '../../assets/logo.svg'
 import DashboardBg from '../../assets/dashboard-bg.svg'
 import { MenuItem } from './menu-item'
 import { Separator } from '../ui/separator'
-import { copyTradingPath, homePath, dashboardPath, tradePath } from '@/paths'
+import { activityPath, copyTradingPath, homePath, dashboardPath, tradePath } from '@/paths'
 
 const FOOTER_SECTIONS = [
   { title: 'Company', links: ['About Us', 'Partners'] },
@@ -39,6 +39,7 @@ export const Layout = ({ children, dashboard }: LayoutProps) => {
           <div className="flex items-center gap-1">
             <MenuItem to={dashboardPath()} label="Dashboard" />
             <MenuItem to={tradePath()} label="Trade" />
+            <MenuItem to={activityPath()} label="Activity" />
             <MenuItem to={copyTradingPath()} label="Copy trading" />
           </div>
 

@@ -43,6 +43,17 @@
   --color-chart-negative: var(--chart-negative);
 
   --font-sans: 'Geist Variable', ui-sans-serif, system-ui, sans-serif;
+
+  --animate-progress-indeterminate: progress-indeterminate 1.6s ease-in-out infinite alternate;
+
+  @keyframes progress-indeterminate {
+    from {
+      transform: translateX(-100%);
+    }
+    to {
+      transform: translateX(200%);
+    }
+  }
 }
 
 /* GoldenHour Theme */
