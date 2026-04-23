@@ -124,28 +124,18 @@ export const SwapDashboard = () => {
   const canSwap =
     !!quoteData && !!walletClient && !!address && isCorrectChain && !insufficientFunds && quoteMatchesInput
 
-  const handleSwap = () => {
-    if (!canSwap || !quoteData || !walletClient || !address) return
-    if (!fromToken || !toToken) return
-    if (fromToken.token_decimals == null || toToken.token_decimals == null) return
-    runSwap({
+  const handleSwap = async () => {
+    if (!canSwap || !quoteData || !walletClient || !address || !fromToken || !toToken) return
+    const signed = await runSwap({
       quote: quoteData,
       walletClient,
       address,
-      fromToken: {
-        id: fromToken.token_id,
-        symbol: fromToken.token_symbol ?? fromToken.token_type_name,
-        decimals: fromToken.token_decimals,
-      },
-      toToken: {
-        id: toToken.token_id,
-        symbol: toToken.token_symbol ?? toToken.token_type_name,
-        decimals: toToken.token_decimals,
-      },
+      fromToken,
+      toToken,
       rateLabel: computeRate(quoteData, fromToken, toToken) ?? '',
       feeFiat: computeFeeFiat(quoteData, toToken, prices),
     })
-    navigate(activityPath())
+    if (signed) navigate(activityPath())
   }
 
   const handleSwapDirection = () => {
@@ -219,7 +209,6 @@ export const SwapDashboard = () => {
               onAmountChange={setFromAmount}
               balance={{ wei: fromBalance.balanceWei, loading: fromBalance.isLoading }}
               amountError={insufficientFunds ? 'Insufficient funds' : null}
-              disabled={swapLoading}
               fiatValue={fromFiat}
               onMax={() => {
                 if (fromToken?.token_decimals == null || !fromBalance.balanceWei) return
@@ -232,7 +221,7 @@ export const SwapDashboard = () => {
             <button
               type="button"
               onClick={handleSwapDirection}
-              disabled={swapLoading || (!fromTokenId && !toTokenId)}
+              disabled={!fromTokenId && !toTokenId}
               aria-label="Swap direction"
               className="flex items-center justify-center size-10 rounded-md border bg-background hover:bg-accent transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
             >
@@ -251,7 +240,6 @@ export const SwapDashboard = () => {
               readOnly
               loading={quoteLoading}
               balance={{ wei: toBalance.balanceWei, loading: toBalance.isLoading }}
-              disabled={swapLoading}
               fiatValue={toFiat}
               balanceLabel="Receive (incl. fees)"
             />

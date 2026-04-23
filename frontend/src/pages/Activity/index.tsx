@@ -15,12 +15,7 @@ type TabId = (typeof TABS)[number]['id']
 export const Activity = () => {
   const [activeTab, setActiveTab] = useState<TabId>('all')
   const { activities } = useActivity()
-
-  const filtered = useMemo(() => {
-    if (activeTab === 'all') return activities
-    if (activeTab === 'swaps') return activities.filter(a => a.type === 'swap')
-    return []
-  }, [activities, activeTab])
+  const filtered = useMemo(() => (activeTab === 'earn' ? [] : activities), [activities, activeTab])
 
   return (
     <div className="flex flex-col gap-8 w-full">

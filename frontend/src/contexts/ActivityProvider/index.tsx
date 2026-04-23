@@ -3,7 +3,7 @@ import { ActivityContext, type Activity, type SwapActivity } from './context'
 import { SwapStatusPoller } from './SwapStatusPoller'
 
 const isPollableSwap = (a: Activity): a is SwapActivity & { swapId: string } =>
-  a.type === 'swap' && a.status === 'in-progress' && a.swapId != null
+  a.status === 'in-progress' && a.swapId != null
 
 const STORAGE_KEY = 'flexvaults-activities'
 
