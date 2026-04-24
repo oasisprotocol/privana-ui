@@ -3,7 +3,7 @@ import { PoweredByHyperliquid } from '@/components/PoweredByHyperliquid'
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion'
 import { Separator } from '@/components/ui/separator'
 import { Button } from '@oasisprotocol/flexvaults-sdk'
-import HeroImage from '../../assets/hero-create-strategy.svg'
+import HeroImage from '../../assets/dashboard-hero.svg'
 import { useConnectModal } from '@rainbow-me/rainbowkit'
 
 const features = [
