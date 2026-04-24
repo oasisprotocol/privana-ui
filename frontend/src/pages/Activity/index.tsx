@@ -3,6 +3,7 @@ import { Separator } from '@/components/ui/separator'
 import { cn } from '@/lib/utils'
 import { useActivity } from '@/contexts/ActivityProvider/useActivity'
 import { SwapActivityCard } from './SwapActivityCard'
+import { EarnActivityCard } from './EarnActivityCard'
 
 const TABS = [
   { id: 'all', label: 'All' },
@@ -15,7 +16,11 @@ type TabId = (typeof TABS)[number]['id']
 export const Activity = () => {
   const [activeTab, setActiveTab] = useState<TabId>('all')
   const { activities } = useActivity()
-  const filtered = useMemo(() => (activeTab === 'earn' ? [] : activities), [activities, activeTab])
+  const filtered = useMemo(() => {
+    if (activeTab === 'swaps') return activities.filter(a => a.type === 'swap')
+    if (activeTab === 'earn') return activities.filter(a => a.type === 'earn')
+    return activities
+  }, [activities, activeTab])
   const isEmpty = activities.length === 0
 
   return (
@@ -62,7 +67,13 @@ export const Activity = () => {
             {filtered.length === 0 ? (
               <p className="text-base text-muted-foreground">No matching activity</p>
             ) : (
-              filtered.map(activity => <SwapActivityCard key={activity.id} activity={activity} />)
+              filtered.map(activity =>
+                activity.type === 'swap' ? (
+                  <SwapActivityCard key={activity.id} activity={activity} />
+                ) : (
+                  <EarnActivityCard key={activity.id} activity={activity} />
+                ),
+              )
             )}
           </div>
         </>

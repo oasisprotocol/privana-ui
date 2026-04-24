@@ -3,7 +3,10 @@ import { ActivityContext, type Activity, type SwapActivity } from './context'
 import { SwapStatusPoller } from './SwapStatusPoller'
 
 const isPollableSwap = (a: Activity): a is SwapActivity & { swapId: string } =>
-  a.status === 'in-progress' && a.swapId != null
+  a.type === 'swap' && a.status === 'in-progress' && a.swapId != null
+
+const isPersistable = (a: Activity): boolean =>
+  (a.type === 'swap' && a.swapId != null) || (a.type === 'earn' && a.depositId != null)
 
 const STORAGE_KEY = 'flexvaults-activities'
 
@@ -22,10 +25,10 @@ const loadFromStorage = (): Activity[] => {
 export const ActivityProvider = ({ children }: { children: ReactNode }) => {
   const [activities, setActivities] = useState<Activity[]>(loadFromStorage)
 
-  // Only persist entries that reached the backend (have a swapId)
+  // Only persist entries that reached the backend
   useEffect(() => {
     try {
-      const persistable = activities.filter(a => a.swapId != null)
+      const persistable = activities.filter(isPersistable)
       localStorage.setItem(STORAGE_KEY, JSON.stringify(persistable))
     } catch {
       // ignore quota / serialization errors

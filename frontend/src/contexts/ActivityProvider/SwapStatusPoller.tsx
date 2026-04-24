@@ -1,7 +1,7 @@
 import { useEffect } from 'react'
 import { useSwapStatus } from '@/api/swap'
 import { useActivity } from './useActivity'
-import type { SwapActivity, SwapActivityStatus } from './context'
+import type { ActivityStatus, SwapActivity } from './context'
 
 type Props = { activity: SwapActivity & { swapId: string } }
 
@@ -11,7 +11,7 @@ export const SwapStatusPoller = ({ activity }: Props) => {
 
   useEffect(() => {
     if (!data) return
-    const nextStatus: SwapActivityStatus =
+    const nextStatus: ActivityStatus =
       data.status === 'completed' || data.status === 'failed' ? data.status : 'in-progress'
     const nextTxHash = data.swap_tx_hash ?? undefined
     const nextError = data.error ?? undefined
