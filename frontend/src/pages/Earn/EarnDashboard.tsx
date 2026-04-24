@@ -59,22 +59,24 @@ const YieldCardSkeleton = () => (
 
 export const EarnDashboard = () => {
   const { data: poolsData, isLoading: poolsLoading, error: poolsError } = useEarnPools()
-  const { data: tokensData, isLoading: tokensLoading } = useTokens()
+  const { data: tokensData, isLoading: tokensLoading, error: tokensError } = useTokens()
   const isLoading = poolsLoading || tokensLoading
 
   const { strategies, protocols } = useMemo(() => {
     if (!poolsData || !tokensData) return { strategies: [], protocols: [] }
     const tokensById = new Map(tokensData.tokens.map(t => [t.token_id, t]))
-    const items = poolsData.pools.map(p => {
-      const token = tokensById.get(p.token_id)
-      return {
-        id: p.pool_id,
-        strategyKey: p.strategy,
-        apyLabel: p.apy_bps > 0 ? `+${(p.apy_bps / 100).toFixed(2)}%` : '—',
-        asset: token?.token_symbol ?? '—',
-        chain: token?.chain_name ?? '—',
-      }
-    })
+    const items = poolsData.pools
+      .filter(p => p.status === 'active')
+      .map(p => {
+        const token = tokensById.get(p.token_id)
+        return {
+          id: p.pool_id,
+          strategyKey: p.strategy,
+          apyLabel: p.apy_bps > 0 ? `+${(p.apy_bps / 100).toFixed(2)}%` : '-',
+          asset: token?.token_symbol ?? '—',
+          chain: token?.chain_name ?? '—',
+        }
+      })
     return {
       strategies: items.map(i => ({ ...i, name: STRATEGY_LABELS[i.strategyKey] ?? i.strategyKey })),
       protocols: items.map(i => ({ ...i, name: PROTOCOL_LABELS[i.strategyKey] ?? i.strategyKey })),
@@ -91,7 +93,7 @@ export const EarnDashboard = () => {
         }
       />
 
-      {poolsError && <p className="text-destructive">Unable to load earn pools</p>}
+      {(poolsError || tokensError) && <p className="text-destructive">Unable to load earn pools</p>}
 
       {(isLoading || strategies.length > 0) && (
         <div className="flex flex-col gap-6">
