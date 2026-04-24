@@ -7,7 +7,7 @@ import { Progress } from '@/components/ui/progress'
 import { Separator } from '@/components/ui/separator'
 import { cn } from '@/lib/utils'
 import { formatAmount, formatFiat } from '@/lib/tokens'
-import type { ActivityTokenInfo, SwapActivity, SwapActivityStatus } from '@/contexts/ActivityProvider/context'
+import type { ActivityStatus, ActivityTokenInfo, SwapActivity } from '@/contexts/ActivityProvider/context'
 
 type RowProps = { label: string; value: string }
 const Row = ({ label, value }: RowProps) => (
@@ -17,7 +17,7 @@ const Row = ({ label, value }: RowProps) => (
   </div>
 )
 
-const StatusBadge = ({ status }: { status: SwapActivityStatus }) => {
+const StatusBadge = ({ status }: { status: ActivityStatus }) => {
   if (status === 'completed') {
     return (
       <Badge className="bg-chart-positive text-white">

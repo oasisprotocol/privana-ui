@@ -4,7 +4,7 @@ import type { WalletClient } from 'viem'
 import { executeSwap } from '@/api/swap'
 import type { QuoteResponse, TokenInfo } from '@/api/swap'
 import { useActivity } from '@/contexts/ActivityProvider/useActivity'
-import type { SwapActivityStatus } from '@/contexts/ActivityProvider/context'
+import type { ActivityStatus } from '@/contexts/ActivityProvider/context'
 
 const CHAIN_ID = parseInt(import.meta.env.VITE_CHAIN_ID, 10)
 const ACCOUNTING_CONTRACT = import.meta.env.VITE_ACCOUNTING_CONTRACT_ADDRESS
@@ -83,7 +83,7 @@ export const useSubmitSwap = ({ onSuccess }: Params = {}) => {
         input_signature: signature,
       })
         .then(swap => {
-          const status: SwapActivityStatus =
+          const status: ActivityStatus =
             swap.status === 'completed' || swap.status === 'failed' ? swap.status : 'in-progress'
           updateActivity(id, {
             swapId: swap.swap_id,
