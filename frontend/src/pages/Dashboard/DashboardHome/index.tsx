@@ -14,7 +14,8 @@ import { PortfolioSummary } from './PortfolioSummary'
 import { DepositAlertDialog } from './DepositAlertDialog'
 import { useTokenPrices } from '@/api/coin-gecko'
 import { formatFiat } from '@/lib/tokens'
-import { tradePath } from '@/paths'
+import { activityPath, tradePath } from '@/paths'
+import { Link } from 'react-router'
 
 export const DashboardHome = () => {
   const [modalOpen, setModalOpen] = useState<ComponentProps<typeof FlexvaultsModal>['defaultTab']>(undefined)
@@ -54,7 +55,7 @@ export const DashboardHome = () => {
   return (
     <>
       <div className="flex flex-col gap-6 mb-8 md:mb-12">
-        {pending && <Skeleton className="h-70 w-full" />}
+        {pending && <Skeleton className="h-40 w-full" />}
         {!pending && !hasFunds && (
           <>
             <div className="flex flex-col gap-0.5">
@@ -93,9 +94,11 @@ export const DashboardHome = () => {
                     <ArrowUpToLine />
                     Withdraw
                   </Button>
-                  <Button variant="secondary" size="xs">
-                    <History />
-                    See activity
+                  <Button variant="secondary" size="xs" asChild>
+                    <Link to={activityPath()} viewTransition>
+                      <History />
+                      See activity
+                    </Link>
                   </Button>
                 </div>
               </div>
@@ -125,6 +128,7 @@ export const DashboardHome = () => {
           title="Swap"
           buttonLabel="Make your private swap"
           to={tradePath()}
+          disabled={pending}
         />
         <PortfolioCard title="Earn" icon={<Percent />} buttonLabel="Check out earning strategies" disabled />
       </div>

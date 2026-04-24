@@ -107,5 +107,10 @@ export const useSubmitSwap = ({ onSuccess }: Params = {}) => {
     }
   }
 
-  return { execute, loading, error }
+  const reset = () => {
+    setLoading(false)
+    setError(null)
+  }
+
+  return { execute, loading, error, reset }
 }

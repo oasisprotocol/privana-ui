@@ -18,7 +18,7 @@ import { useSwapQuote } from './useSwapQuote'
 import { useSubmitSwap } from './useSubmitSwap'
 import { computeFeeFiat, computeRate } from './quoteHelpers'
 
-const steps = ['1. Configure', '2. Review', '3. Done']
+const steps = ['1. Configure', '2. Review']
 
 const CHAIN_ID = parseInt(import.meta.env.VITE_CHAIN_ID, 10)
 
@@ -81,8 +81,9 @@ export const SwapDashboard = () => {
     execute: runSwap,
     loading: swapLoading,
     error: swapError,
+    reset: resetSubmit,
   } = useSubmitSwap({
-    onSuccess: () => queryClient.invalidateQueries({ queryKey: ['accounting-balance'] }),
+    onSuccess: () => queryClient.removeQueries({ queryKey: ['accounting-balance'] }),
   })
 
   const fromFiat = useMemo(() => {
@@ -292,7 +293,10 @@ export const SwapDashboard = () => {
           quote={quoteData}
           prices={prices}
           expired={quoteExpired}
-          onBack={() => setStep(0)}
+          onBack={() => {
+            resetSubmit()
+            setStep(0)
+          }}
           onConfirm={handleSwap}
           loading={swapLoading}
           error={swapError}
