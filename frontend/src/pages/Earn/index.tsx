@@ -1,6 +1,7 @@
 import { useAccount } from 'wagmi'
 import { useHostedRedirectAuth } from '@oasisprotocol/flexvaults-sdk'
 import { EarnDashboard } from './EarnDashboard'
+import { EarnLanding } from './EarnLanding'
 
 export const Earn = () => {
   const { isConnected } = useAccount()
@@ -10,5 +11,5 @@ export const Earn = () => {
     return <EarnDashboard />
   }
 
-  return <h1 className="text-3xl font-medium text-foreground">Earn</h1>
+  return <EarnLanding />
 }
