@@ -59,9 +59,11 @@ export const Activity = () => {
               })}
             </div>
 
-            {filtered.map(activity => (
-              <SwapActivityCard key={activity.id} activity={activity} />
-            ))}
+            {filtered.length === 0 ? (
+              <p className="text-base text-muted-foreground">No matching activity</p>
+            ) : (
+              filtered.map(activity => <SwapActivityCard key={activity.id} activity={activity} />)
+            )}
           </div>
         </>
       )}
