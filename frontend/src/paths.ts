@@ -4,6 +4,8 @@ export const dashboardPath = () => '/dashboard'
 
 export const tradePath = () => '/trade'
 
+export const earnPath = () => '/earn'
+
 export const activityPath = () => '/activity'
 
 export const copyTradingPath = () => '/copy-trading'
