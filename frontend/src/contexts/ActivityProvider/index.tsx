@@ -6,7 +6,8 @@ const isPollableSwap = (a: Activity): a is SwapActivity & { swapId: string } =>
   a.type === 'swap' && a.status === 'in-progress' && a.swapId != null
 
 const isPersistable = (a: Activity): boolean =>
-  (a.type === 'swap' && a.swapId != null) || (a.type === 'earn' && a.depositId != null)
+  (a.type === 'swap' && a.swapId != null) ||
+  (a.type === 'earn' && (a.depositId != null || a.withdrawId != null))
 
 const STORAGE_KEY = 'flexvaults-activities'
 
