@@ -6,6 +6,7 @@ export const tradePath = () => '/trade'
 
 export const earnPath = () => '/earn'
 export const earnCreatePath = (poolId?: string) => (poolId ? `/earn/create/${poolId}` : '/earn/create')
+export const earnWithdrawPath = (poolId: string) => `/earn/withdraw/${poolId}`
 
 export const activityPath = () => '/activity'
 

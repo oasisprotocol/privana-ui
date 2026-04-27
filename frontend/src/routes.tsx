@@ -8,6 +8,7 @@ import { ProtectedLayout } from './components/ProtectedLayout'
 import { Swap } from './pages/Swap'
 import { Earn } from './pages/Earn'
 import { EarnCreate } from './pages/Earn/EarnCreate'
+import { EarnWithdraw } from './pages/Earn/EarnWithdraw'
 import { Activity } from './pages/Activity'
 import { AuthCallback } from './pages/AuthCallback'
 import { CopyTradingLanding } from './pages/CopyTrading/CopyTradingLanding'
@@ -95,6 +96,10 @@ export const router = createBrowserRouter([
                 element: <EarnCreate />,
               },
             ],
+          },
+          {
+            path: 'withdraw/:poolId',
+            element: <EarnWithdraw />,
           },
         ],
       },
