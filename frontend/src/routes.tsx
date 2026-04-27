@@ -84,22 +84,32 @@ export const router = createBrowserRouter([
             index: true,
             element: <Earn />,
           },
+        ],
+      },
+      {
+        element: <ProtectedLayout />,
+        children: [
           {
-            path: 'create',
+            element: <Dashboard />,
             children: [
               {
-                index: true,
-                element: <EarnCreate />,
+                path: 'create',
+                children: [
+                  {
+                    index: true,
+                    element: <EarnCreate />,
+                  },
+                  {
+                    path: ':poolId',
+                    element: <EarnCreate />,
+                  },
+                ],
               },
               {
-                path: ':poolId',
-                element: <EarnCreate />,
+                path: 'withdraw/:poolId',
+                element: <EarnWithdraw />,
               },
             ],
-          },
-          {
-            path: 'withdraw/:poolId',
-            element: <EarnWithdraw />,
           },
         ],
       },
