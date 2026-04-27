@@ -52,9 +52,9 @@ export const ReviewStep = ({ poolId, amount, onBack, onConfirm }: ReviewStepProp
   const pool = pools.find(p => p.pool_id === poolId)
   const token = pool ? tokensData?.tokens.find(t => t.token_id === pool.token_id) : undefined
 
-  const decimals = token?.token_decimals ?? 0
+  const decimals = token?.token_decimals
   const amountBaseUnits = useMemo(() => {
-    if (!amount || decimals === 0) return ''
+    if (!amount || decimals == null) return ''
     try {
       return parseUnits(amount, decimals).toString()
     } catch {
@@ -92,7 +92,7 @@ export const ReviewStep = ({ poolId, amount, onBack, onConfirm }: ReviewStepProp
     return <p className="text-destructive">Pool not found</p>
   }
 
-  const sharesLabel = quote && decimals > 0 ? formatAmount(BigInt(quote.shares_estimate), decimals) : '-'
+  const sharesLabel = quote && decimals != null ? formatAmount(BigInt(quote.shares_estimate), decimals) : '-'
   const exchangeRateLabel = quote
     ? `1 ${token?.token_symbol ?? 'token'} ≈ ${Number(formatUnits(BigInt(quote.exchange_rate), 18)).toFixed(4)} shares`
     : '-'

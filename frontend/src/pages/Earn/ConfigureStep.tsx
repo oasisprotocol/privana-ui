@@ -35,7 +35,7 @@ const formatApy = (bps: number) => (bps > 0 ? `${(bps / 100).toFixed(2)}% APY` :
 type ConfigureStepProps = {
   poolId: string | undefined
   amount: string
-  onPoolIdChange: (id: string) => void
+  onPoolIdChange: (id: string | undefined) => void
   onAmountChange: (v: string) => void
   onReview: () => void
 }
@@ -81,7 +81,7 @@ export const ConfigureStep = ({
   useEffect(() => {
     if (isLoading || !poolId) return
     if (!activePools.some(p => p.pool_id === poolId)) {
-      onPoolIdChange('')
+      onPoolIdChange(undefined)
     }
   }, [isLoading, poolId, activePools, onPoolIdChange])
 
@@ -106,7 +106,7 @@ export const ConfigureStep = ({
     onAmountChange(formatUnits(portion, selectedToken.token_decimals))
   }
 
-  const canReview = !!selectedPool && !!amount
+  const canReview = !!selectedPool && parseFloat(amount) > 0
 
   if (isLoading) {
     return (
