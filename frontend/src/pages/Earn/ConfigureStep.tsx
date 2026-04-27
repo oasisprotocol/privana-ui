@@ -1,4 +1,4 @@
-import { Fragment, useMemo } from 'react'
+import { Fragment, useEffect, useMemo } from 'react'
 import { formatUnits, parseUnits } from 'viem'
 import { getTokenIcon, useBalance } from '@oasisprotocol/flexvaults-sdk'
 import { useTokenPrices } from '@/api/coin-gecko'
@@ -76,6 +76,14 @@ export const ConfigureStep = ({
       return undefined
     }
   }, [prices, amount, selectedToken])
+
+  // Drop a stale URL poolId if it isn't present in the loaded pools/mock
+  useEffect(() => {
+    if (isLoading || !poolId) return
+    if (!activePools.some(p => p.pool_id === poolId)) {
+      onPoolIdChange('')
+    }
+  }, [isLoading, poolId, activePools, onPoolIdChange])
 
   const renderBalance = () => {
     if (!selectedToken) return <span>Balance: -</span>
