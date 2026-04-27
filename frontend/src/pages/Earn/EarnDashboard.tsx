@@ -16,13 +16,14 @@ const PROTOCOL_LABELS: Record<string, string> = {
 }
 
 type YieldCardProps = {
+  id: string
   name: string
   apyLabel: string
   asset: string
   chain: string
 }
 
-const YieldCard = ({ name, apyLabel, asset, chain }: YieldCardProps) => (
+const YieldCard = ({ id, name, apyLabel, asset, chain }: YieldCardProps) => (
   <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 bg-card border p-8 rounded-lg">
     <div className="flex flex-col gap-3 min-w-0">
       <div className="flex flex-col gap-1">
@@ -43,8 +44,8 @@ const YieldCard = ({ name, apyLabel, asset, chain }: YieldCardProps) => (
         </div>
       </div>
     </div>
-    <Button size="lg" className="w-full md:w-35">
-      Select
+    <Button asChild size="lg" className="w-full md:w-35">
+      <Link to={earnCreatePath(id)}>Select</Link>
     </Button>
   </div>
 )
