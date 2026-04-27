@@ -1,8 +1,10 @@
 import { useMemo } from 'react'
+import { Link } from 'react-router'
 import { Button } from '@/components/ui/button'
 import { Skeleton } from '@/components/ui/skeleton'
 import { useEarnPools } from '@/api/earn'
 import { useTokens } from '@/api/swap'
+import { earnCreatePath } from '@/paths'
 import { EarnHeader } from './EarnHeader'
 
 const STRATEGY_LABELS: Record<string, string> = {
@@ -87,8 +89,8 @@ export const EarnDashboard = () => {
     <>
       <EarnHeader
         action={
-          <Button size="lg" className="w-full md:w-auto">
-            Select your strategy
+          <Button asChild size="lg" className="w-full md:w-auto">
+            <Link to={earnCreatePath()}>Select your strategy</Link>
           </Button>
         }
       />
