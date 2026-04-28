@@ -8,7 +8,7 @@ import { useTokens } from '@/api/swap'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Skeleton } from '@/components/ui/skeleton'
-import { formatAmount, formatFiat } from '@/lib/tokens'
+import { formatAmount, formatFiat, isPositiveAmount } from '@/lib/tokens'
 import { cn } from '@/lib/utils'
 import { STRATEGY_LABELS } from './labels'
 
@@ -114,7 +114,7 @@ export const WithdrawConfigureStep = ({
     }
   }, [amount, decimals, positionWei])
 
-  const canReview = !!position && parseFloat(amount) > 0 && !exceedsBalance
+  const canReview = !!position && isPositiveAmount(amount, decimals) && !exceedsBalance
 
   if (isLoading) {
     return (

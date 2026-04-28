@@ -1,4 +1,13 @@
-import { formatUnits } from 'viem'
+import { formatUnits, parseUnits } from 'viem'
+
+export const isPositiveAmount = (amount: string, decimals: number | null | undefined): boolean => {
+  if (!amount || decimals == null) return false
+  try {
+    return parseUnits(amount, decimals) > 0n
+  } catch {
+    return false
+  }
+}
 
 const fiatFormatter = new Intl.NumberFormat('en-US', {
   style: 'currency',
