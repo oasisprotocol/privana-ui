@@ -1,26 +1,26 @@
 import { useMemo } from 'react'
+import { Link } from 'react-router'
 import { Button } from '@/components/ui/button'
 import { Skeleton } from '@/components/ui/skeleton'
 import { useEarnPools } from '@/api/earn'
 import { useTokens } from '@/api/swap'
+import { earnCreatePath } from '@/paths'
 import { EarnHeader } from './EarnHeader'
-
-const STRATEGY_LABELS: Record<string, string> = {
-  'aave-v3': 'Max Yield Strategy',
-}
+import { STRATEGY_LABELS } from './labels'
 
 const PROTOCOL_LABELS: Record<string, string> = {
   'aave-v3': 'AAVE',
 }
 
 type YieldCardProps = {
+  id: string
   name: string
   apyLabel: string
   asset: string
   chain: string
 }
 
-const YieldCard = ({ name, apyLabel, asset, chain }: YieldCardProps) => (
+const YieldCard = ({ id, name, apyLabel, asset, chain }: YieldCardProps) => (
   <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 bg-card border p-8 rounded-lg">
     <div className="flex flex-col gap-3 min-w-0">
       <div className="flex flex-col gap-1">
@@ -41,8 +41,8 @@ const YieldCard = ({ name, apyLabel, asset, chain }: YieldCardProps) => (
         </div>
       </div>
     </div>
-    <Button size="lg" className="w-full md:w-35">
-      Select
+    <Button asChild size="lg" className="w-full md:w-35">
+      <Link to={earnCreatePath(id)}>Select</Link>
     </Button>
   </div>
 )
@@ -87,8 +87,8 @@ export const EarnDashboard = () => {
     <>
       <EarnHeader
         action={
-          <Button size="lg" className="w-full md:w-auto">
-            Select your strategy
+          <Button asChild size="lg" className="w-full md:w-auto">
+            <Link to={earnCreatePath()}>Select your strategy</Link>
           </Button>
         }
       />

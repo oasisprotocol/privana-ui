@@ -8,8 +8,8 @@ import { useBalance } from '@oasisprotocol/flexvaults-sdk'
 import { formatUnits, parseUnits } from 'viem'
 import { useAccount, useWalletClient, useSwitchChain } from 'wagmi'
 import { useQueryClient } from '@tanstack/react-query'
-import { ArrowUpDown, ChevronRight, EyeOff } from 'lucide-react'
-import { cn } from '@/lib/utils'
+import { ArrowUpDown, EyeOff } from 'lucide-react'
+import { StepsNav } from '@/components/StepsNav'
 import { activityPath } from '@/paths'
 import { AssetRow } from './AssetRow'
 import { QuoteInfo } from './QuoteInfo'
@@ -149,21 +149,7 @@ export const SwapDashboard = () => {
 
   return (
     <div>
-      <nav aria-label="Swap progress" className="flex items-center justify-center gap-1 w-full mb-4">
-        {steps.map((label, i) => (
-          <div
-            key={label}
-            aria-current={i === step ? 'step' : undefined}
-            className={cn(
-              'flex items-center justify-center gap-1 h-8 pl-2.5 pr-4 py-2 rounded-md text-sm font-medium',
-              i === step ? 'text-foreground' : 'text-muted-foreground',
-            )}
-          >
-            {i > 0 && <ChevronRight className="size-4" />}
-            <span>{label}</span>
-          </div>
-        ))}
-      </nav>
+      <StepsNav steps={steps} activeIndex={step} ariaLabel="Swap progress" />
 
       {isLoading && (
         <div className="flex flex-col gap-4 w-full max-w-145 mx-auto bg-card border p-6 rounded-[14px] shadow-[0_1px_2px_0_rgba(0,0,0,0.05)]">
