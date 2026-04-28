@@ -10,13 +10,10 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Skeleton } from '@/components/ui/skeleton'
 import { formatAmount, formatFiat } from '@/lib/tokens'
 import { cn } from '@/lib/utils'
+import { STRATEGY_LABELS } from './labels'
 
 const PERCENTS = [25, 50, 75, 100] as const
 const percentLabel = (pct: number) => (pct === 100 ? 'Max' : `${pct}%`)
-
-const STRATEGY_LABELS: Record<string, string> = {
-  'aave-v3': 'Max Yield Strategy',
-}
 
 // TODO: remove once earn contract is deployed
 const MOCK_POOLS: EarnPool[] = [

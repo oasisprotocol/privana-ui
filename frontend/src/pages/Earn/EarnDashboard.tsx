@@ -6,10 +6,7 @@ import { useEarnPools } from '@/api/earn'
 import { useTokens } from '@/api/swap'
 import { earnCreatePath } from '@/paths'
 import { EarnHeader } from './EarnHeader'
-
-const STRATEGY_LABELS: Record<string, string> = {
-  'aave-v3': 'Max Yield Strategy',
-}
+import { STRATEGY_LABELS } from './labels'
 
 const PROTOCOL_LABELS: Record<string, string> = {
   'aave-v3': 'AAVE',

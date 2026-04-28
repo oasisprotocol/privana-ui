@@ -8,10 +8,7 @@ import { Button } from '@/components/ui/button'
 import { Separator } from '@/components/ui/separator'
 import { Skeleton } from '@/components/ui/skeleton'
 import { formatAmount } from '@/lib/tokens'
-
-const STRATEGY_LABELS: Record<string, string> = {
-  'aave-v3': 'Max Yield Strategy',
-}
+import { STRATEGY_LABELS } from './labels'
 
 // TODO: remove once earn contract is deployed
 const MOCK_POOLS: EarnPool[] = [
