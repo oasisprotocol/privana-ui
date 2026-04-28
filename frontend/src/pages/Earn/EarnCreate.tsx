@@ -1,16 +1,21 @@
 import { useState } from 'react'
-import { useParams } from 'react-router'
+import { useNavigate, useParams } from 'react-router'
 import { StepsNav } from '@/components/StepsNav'
+import { earnCreatePath } from '@/paths'
 import { ConfigureStep } from './ConfigureStep'
 import { ReviewStep } from './ReviewStep'
 
 const steps = ['1. Configure', '2. Review']
 
 export const EarnCreate = () => {
-  const { poolId: initialPoolId } = useParams<{ poolId?: string }>()
-  const [poolId, setPoolId] = useState<string | undefined>(initialPoolId)
+  const { poolId } = useParams<{ poolId?: string }>()
+  const navigate = useNavigate()
   const [amount, setAmount] = useState('')
   const [step, setStep] = useState(0)
+
+  const handlePoolIdChange = (id: string | undefined) => {
+    navigate(earnCreatePath(id), { replace: true })
+  }
 
   return (
     <div>
@@ -20,7 +25,7 @@ export const EarnCreate = () => {
         <ConfigureStep
           poolId={poolId}
           amount={amount}
-          onPoolIdChange={setPoolId}
+          onPoolIdChange={handlePoolIdChange}
           onAmountChange={setAmount}
           onReview={() => setStep(1)}
         />
