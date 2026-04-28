@@ -10,10 +10,7 @@ import { Input } from '@/components/ui/input'
 import { Skeleton } from '@/components/ui/skeleton'
 import { formatAmount, formatFiat } from '@/lib/tokens'
 import { cn } from '@/lib/utils'
-
-const STRATEGY_LABELS: Record<string, string> = {
-  'aave-v3': 'Max Yield Strategy',
-}
+import { STRATEGY_LABELS } from './labels'
 
 const PERCENTS = [25, 50, 75, 100] as const
 const percentLabel = (pct: number) => (pct === 100 ? 'Max' : `${pct}%`)

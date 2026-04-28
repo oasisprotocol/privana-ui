@@ -6,14 +6,7 @@ import { Button } from '@/components/ui/button'
 import { Skeleton } from '@/components/ui/skeleton'
 import { formatAmount } from '@/lib/tokens'
 import { earnCreatePath, earnWithdrawPath } from '@/paths'
-
-const STRATEGY_LABELS: Record<string, string> = {
-  'aave-v3': 'Max Yield Strategy',
-}
-
-const PROTOCOL_LABELS: Record<string, string> = {
-  'aave-v3': 'AAVE',
-}
+import { PROTOCOL_LABELS, STRATEGY_LABELS } from './labels'
 
 const formatApy = (bps: number) => (bps > 0 ? `+${(bps / 100).toFixed(2)}%` : '-')
 
