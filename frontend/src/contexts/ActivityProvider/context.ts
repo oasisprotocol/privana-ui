@@ -23,6 +23,7 @@ export type SwapActivity = {
 export type EarnActivity = {
   id: string
   type: 'earn'
+  direction: 'deposit' | 'withdraw'
   status: ActivityStatus
   createdAt: number
   token: ActivityTokenInfo
@@ -31,6 +32,7 @@ export type EarnActivity = {
   protocol: string
   apyLabel?: string
   depositId?: string
+  withdrawId?: string
   txHash?: string
   error?: string
 }

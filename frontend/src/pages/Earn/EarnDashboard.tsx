@@ -5,12 +5,9 @@ import { Skeleton } from '@/components/ui/skeleton'
 import { useEarnPools } from '@/api/earn'
 import { useTokens } from '@/api/swap'
 import { earnCreatePath } from '@/paths'
+import { ActiveStrategies } from './ActiveStrategies'
 import { EarnHeader } from './EarnHeader'
-import { STRATEGY_LABELS } from './labels'
-
-const PROTOCOL_LABELS: Record<string, string> = {
-  'aave-v3': 'AAVE',
-}
+import { PROTOCOL_LABELS, STRATEGY_LABELS } from './labels'
 
 type YieldCardProps = {
   id: string
@@ -92,6 +89,8 @@ export const EarnDashboard = () => {
           </Button>
         }
       />
+
+      <ActiveStrategies />
 
       {(poolsError || tokensError) && <p className="text-destructive">Unable to load earn pools</p>}
 

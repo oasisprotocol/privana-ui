@@ -8,7 +8,7 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Skeleton } from '@/components/ui/skeleton'
-import { formatAmount, formatFiat } from '@/lib/tokens'
+import { formatAmount, formatFiat, isPositiveAmount } from '@/lib/tokens'
 import { cn } from '@/lib/utils'
 import { STRATEGY_LABELS } from './labels'
 
@@ -103,15 +103,7 @@ export const ConfigureStep = ({
     onAmountChange(formatUnits(portion, selectedToken.token_decimals))
   }
 
-  const hasPositiveAmount = useMemo(() => {
-    if (!amount || selectedToken?.token_decimals == null) return false
-    try {
-      return parseUnits(amount, selectedToken.token_decimals) > 0n
-    } catch {
-      return false
-    }
-  }, [amount, selectedToken])
-  const canReview = !!selectedPool && hasPositiveAmount
+  const canReview = !!selectedPool && isPositiveAmount(amount, selectedToken?.token_decimals)
 
   if (isLoading) {
     return (
