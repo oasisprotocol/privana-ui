@@ -103,7 +103,15 @@ export const ConfigureStep = ({
     onAmountChange(formatUnits(portion, selectedToken.token_decimals))
   }
 
-  const canReview = !!selectedPool && parseFloat(amount) > 0
+  const hasPositiveAmount = useMemo(() => {
+    if (!amount || selectedToken?.token_decimals == null) return false
+    try {
+      return parseUnits(amount, selectedToken.token_decimals) > 0n
+    } catch {
+      return false
+    }
+  }, [amount, selectedToken])
+  const canReview = !!selectedPool && hasPositiveAmount
 
   if (isLoading) {
     return (
