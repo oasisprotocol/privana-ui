@@ -5,7 +5,7 @@ import { Button } from '@/components/ui/button'
 import { Separator } from '@/components/ui/separator'
 import type { QuoteResponse, TokenInfo } from '@/api/swap'
 import { formatFiat } from '@/lib/tokens'
-import { computeFeeFiat, computeRate } from './quoteHelpers'
+import { computeFeeFiat, computeRate, computeRouteCostFiat } from './quoteHelpers'
 
 const tokenLabel = (token: TokenInfo) => token.token_symbol ?? token.token_type_name
 
@@ -46,6 +46,10 @@ export const ReviewStep = ({
 }: ReviewStepProps) => {
   const rateLabel = useMemo(() => computeRate(quote, fromToken, toToken) ?? '-', [quote, fromToken, toToken])
   const feeFiat = useMemo(() => computeFeeFiat(quote, toToken, prices), [quote, toToken, prices])
+  const routeCostFiat = useMemo(
+    () => computeRouteCostFiat(quote, fromToken, toToken, prices),
+    [quote, fromToken, toToken, prices],
+  )
 
   return (
     <div className="flex flex-col gap-6 w-full max-w-145 mx-auto bg-card border p-6 rounded-[14px] shadow-[0_1px_2px_0_rgba(0,0,0,0.05)]">
@@ -98,7 +102,11 @@ export const ReviewStep = ({
         <div className="flex flex-col gap-4">
           <Row label="Rate" value={rateLabel} />
           <Row label="Privacy" value="🔒 No public trace" />
-          <Row label="Fee" value={feeFiat != null ? `~${formatFiat(feeFiat)}` : '—'} />
+          <Row
+            label="Network & route fee"
+            value={routeCostFiat != null ? `~${formatFiat(routeCostFiat)}` : '-'}
+          />
+          <Row label="Service fee" value={feeFiat != null ? `~${formatFiat(feeFiat)}` : '-'} />
           <Row label="Estimated time" value="<20s" />
         </div>
       </div>

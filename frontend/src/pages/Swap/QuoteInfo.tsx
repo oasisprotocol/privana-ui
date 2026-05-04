@@ -33,11 +33,11 @@ export const QuoteInfo = ({ quote, fromToken, toToken, prices }: QuoteInfoProps)
         <Badge variant="secondary">⚡ Best route</Badge>
       </div>
       <div className="flex items-center justify-between px-0.5">
-        <p className="text-muted-foreground">Network &amp; route</p>
+        <p className="text-muted-foreground">Network &amp; route fee</p>
         <p className="text-foreground">{routeCostFiat != null ? `~${formatFiat(routeCostFiat)}` : '—'}</p>
       </div>
       <div className="flex items-center justify-between px-0.5">
-        <p className="text-muted-foreground">Privana fee</p>
+        <p className="text-muted-foreground">Service fee</p>
         <p className="text-foreground">{feeFiat != null ? `~${formatFiat(feeFiat)}` : '—'}</p>
       </div>
     </div>
