@@ -1,4 +1,3 @@
-import { formatUnits } from 'viem'
 import { getTokenIcon } from '@oasisprotocol/flexvaults-sdk'
 import type { DepositQuoteResponse, EarnPool } from '@/api/earn'
 import type { TokenInfo } from '@/api/swap'
@@ -60,7 +59,7 @@ export const ReviewStep = ({
   const decimals = token?.token_decimals
   const sharesLabel = quote && decimals != null ? formatAmount(BigInt(quote.shares_estimate), decimals) : '-'
   const exchangeRateLabel = quote
-    ? `1 ${token?.token_symbol ?? 'token'} ≈ ${Number(formatUnits(BigInt(quote.exchange_rate), 18)).toFixed(4)} shares`
+    ? `1 ${token?.token_symbol ?? 'token'} ≈ ${Number(quote.exchange_rate).toFixed(4)} shares`
     : '-'
 
   return (
