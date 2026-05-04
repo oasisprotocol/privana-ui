@@ -17,7 +17,7 @@ import { QuoteInfo } from './QuoteInfo'
 import { ReviewStep } from './ReviewStep'
 import { useSwapQuote } from './useSwapQuote'
 import { useSubmitSwap } from './useSubmitSwap'
-import { computeFeeFiat, computeRate } from './quoteHelpers'
+import { useQuoteSummary } from './useQuoteSummary'
 
 const steps = ['1. Configure', '2. Review']
 
@@ -90,6 +90,8 @@ export const SwapDashboard = () => {
     onSuccess: () => queryClient.removeQueries({ queryKey: ['accounting-balance'] }),
   })
 
+  const summary = useQuoteSummary(quoteData, fromToken, toToken, prices)
+
   const fromFiat = useMemo(() => {
     if (!prices || !fromAmount || fromToken?.token_decimals == null) return undefined
     const price = prices[fromTokenId]
@@ -137,8 +139,8 @@ export const SwapDashboard = () => {
       address,
       fromToken,
       toToken,
-      rateLabel: computeRate(quoteData, fromToken, toToken) ?? '',
-      feeFiat: computeFeeFiat(quoteData, toToken, prices),
+      rateLabel: summary.rateLabel,
+      feeFiat: summary.feeFiat,
     })
     if (signed) navigate(activityPath())
   }
@@ -242,9 +244,7 @@ export const SwapDashboard = () => {
             </div>
           )}
 
-          {quoteData && (
-            <QuoteInfo quote={quoteData} fromToken={fromToken} toToken={toToken} prices={prices} />
-          )}
+          {quoteData && <QuoteInfo summary={summary} />}
 
           <div className="flex gap-5 w-full">
             {!isCorrectChain ? (
@@ -280,8 +280,7 @@ export const SwapDashboard = () => {
           toToken={toToken}
           fromAmount={fromAmount}
           toAmount={toAmount}
-          quote={quoteData}
-          prices={prices}
+          summary={summary}
           expired={quoteExpired}
           onBack={() => {
             resetSubmit()
