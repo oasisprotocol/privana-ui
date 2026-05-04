@@ -11,7 +11,7 @@ import { useQueryClient } from '@tanstack/react-query'
 import { ArrowUpDown, EyeOff } from 'lucide-react'
 import { StepsNav } from '@/components/StepsNav'
 import { activityPath } from '@/paths'
-import { ALLOWED_TOKEN_IDS } from '@/config/tokens'
+import { SWAPPABLE_TOKEN_IDS } from '@/config/tokens'
 import { AssetRow } from './AssetRow'
 import { QuoteInfo } from './QuoteInfo'
 import { ReviewStep } from './ReviewStep'
@@ -35,7 +35,7 @@ export const SwapDashboard = () => {
   const [toTokenId, setToTokenId] = useState('')
   const [fromAmount, setFromAmount] = useState('')
   const tokens = useMemo(
-    () => (data?.tokens ?? []).filter(t => (ALLOWED_TOKEN_IDS as string[]).includes(t.token_id)),
+    () => (data?.tokens ?? []).filter(t => (SWAPPABLE_TOKEN_IDS as string[]).includes(t.token_id)),
     [data],
   )
   const fromToken = tokens.find(t => t.token_id === fromTokenId)
