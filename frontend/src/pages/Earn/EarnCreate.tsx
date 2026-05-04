@@ -3,13 +3,14 @@ import { useNavigate, useParams } from 'react-router'
 import { useAccount, useSwitchChain, useWalletClient } from 'wagmi'
 import { useQueryClient } from '@tanstack/react-query'
 import { parseUnits } from 'viem'
-import { earnKeys, useDepositQuote, useEarnPools } from '@/api/earn'
+import { earnKeys, useEarnPools } from '@/api/earn'
 import { useTokens } from '@/api/swap'
 import { StepsNav } from '@/components/StepsNav'
 import { activityPath, earnCreatePath } from '@/paths'
 import { ConfigureStep } from './ConfigureStep'
 import { formatApyBps, PROTOCOL_LABELS } from './labels'
 import { ReviewStep } from './ReviewStep'
+import { useEarnDepositQuote } from './useEarnDepositQuote'
 import { useSubmitEarnDeposit } from './useSubmitEarnDeposit'
 
 const CHAIN_ID = parseInt(import.meta.env.VITE_CHAIN_ID, 10)
@@ -48,10 +49,17 @@ export const EarnCreate = () => {
   }, [amount, decimals])
 
   const onReview = step === 1
-  const { data: quote, isLoading: quoteLoading } = useDepositQuote(
-    { poolId: poolId ?? '', amount: amountBaseUnits, userAddress: address ?? '' },
-    onReview && !!address && !!amountBaseUnits && !!pool,
-  )
+  const {
+    data: quote,
+    loading: quoteLoading,
+    expired: quoteExpired,
+  } = useEarnDepositQuote({
+    poolId: poolId ?? '',
+    amount: amountBaseUnits,
+    userAddress: address,
+    enabled: onReview && !!address && !!amountBaseUnits && !!pool,
+    pauseRefetch: true,
+  })
 
   const {
     execute: runDeposit,
@@ -97,9 +105,10 @@ export const EarnCreate = () => {
           pool={pool}
           token={token}
           amount={amount}
-          quote={quote}
+          quote={quote ?? undefined}
           isLoading={poolsLoading || tokensLoading}
           quoteLoading={quoteLoading}
+          quoteExpired={quoteExpired}
           isCorrectChain={chainId === CHAIN_ID}
           onSwitchChain={() => switchChain({ chainId: CHAIN_ID })}
           onBack={handleBack}

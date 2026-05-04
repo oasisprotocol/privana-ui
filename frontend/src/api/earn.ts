@@ -36,6 +36,7 @@ export interface DepositQuoteParams {
 }
 
 export interface DepositQuoteResponse {
+  quote_id: string
   pool_id: string
   token_id: string
   amount: string
@@ -43,6 +44,7 @@ export interface DepositQuoteResponse {
   exchange_rate: string
   pool_address: string
   transfer_nonce: number
+  expires_at: number
 }
 
 export interface DepositRequest {
@@ -78,7 +80,6 @@ export interface EarnBalanceListResponse {
 export const earnKeys = {
   all: ['earn'] as const,
   pools: () => [...earnKeys.all, 'pools'] as const,
-  quote: (params: DepositQuoteParams) => [...earnKeys.all, 'quote', params] as const,
   balance: (userAddress: string) => [...earnKeys.all, 'balance', userAddress] as const,
 }
 
@@ -111,15 +112,6 @@ export function useEarnPools() {
   return useQuery({
     queryKey: earnKeys.pools(),
     queryFn: getEarnPools,
-    staleTime: 30_000,
-  })
-}
-
-export function useDepositQuote(params: DepositQuoteParams, enabled = true) {
-  return useQuery({
-    queryKey: earnKeys.quote(params),
-    queryFn: ({ signal }) => getDepositQuote(params, signal),
-    enabled,
     staleTime: 30_000,
   })
 }

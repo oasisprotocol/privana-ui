@@ -23,6 +23,7 @@ type ReviewStepProps = {
   quote: DepositQuoteResponse | undefined
   isLoading: boolean
   quoteLoading: boolean
+  quoteExpired?: boolean
   isCorrectChain: boolean
   onSwitchChain: () => void
   onBack: () => void
@@ -38,6 +39,7 @@ export const ReviewStep = ({
   quote,
   isLoading,
   quoteLoading,
+  quoteExpired,
   isCorrectChain,
   onSwitchChain,
   onBack,
@@ -107,6 +109,11 @@ export const ReviewStep = ({
         <Row label="Privacy" value="🔒 No public trace" />
       </div>
 
+      {quoteExpired && (
+        <div className="rounded-lg border bg-card p-4 text-sm">
+          <p className="text-destructive">Quote expired. Go back to fetch a new one.</p>
+        </div>
+      )}
       {error && <p className="text-sm text-destructive">{error}</p>}
 
       <div className="flex gap-5 w-full">
@@ -118,7 +125,12 @@ export const ReviewStep = ({
             Switch Network
           </Button>
         ) : (
-          <Button size="lg" className="flex-1" onClick={onConfirm} disabled={loading || !quote}>
+          <Button
+            size="lg"
+            className="flex-1"
+            onClick={onConfirm}
+            disabled={loading || !quote || quoteExpired}
+          >
             {loading ? 'Signing & submitting...' : 'Activate yield'}
           </Button>
         )}

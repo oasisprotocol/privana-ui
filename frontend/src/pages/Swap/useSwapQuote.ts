@@ -3,6 +3,7 @@ import { formatUnits, parseUnits } from 'viem'
 import { getQuote } from '@/api/swap'
 import type { QuoteResponse } from '@/api/swap'
 import { useDebouncedValue } from '@/hooks/use-debounced-value'
+import { useQuoteExpiry } from '@/hooks/use-quote-expiry'
 
 type Params = {
   fromTokenId: string
@@ -76,30 +77,11 @@ export const useSwapQuote = ({
   const loading = enabled && !data && !error
   const toAmount = data && toDecimals != null ? formatUnits(BigInt(data.to_amount_estimate), toDecimals) : ''
 
-  const [expired, setExpired] = useState(false)
-
-  useEffect(() => {
-    if (!data) return
-    setExpired(false)
-    const msUntilExpiry = data.expires_at * 1000 - Date.now()
-    const onExpire = () => {
-      if (pauseRefetch) setExpired(true)
-      else setRefetchKey(k => k + 1)
-    }
-    if (msUntilExpiry <= 0) {
-      onExpire()
-      return
-    }
-    const timer = setTimeout(onExpire, msUntilExpiry)
-    return () => clearTimeout(timer)
-  }, [data, pauseRefetch])
-
-  useEffect(() => {
-    if (!pauseRefetch && expired) {
-      setRefetchKey(k => k + 1)
-      setExpired(false)
-    }
-  }, [pauseRefetch, expired])
+  const { expired } = useQuoteExpiry({
+    data,
+    pauseRefetch,
+    onRefetch: () => setRefetchKey(k => k + 1),
+  })
 
   const reset = () => setRefetchKey(k => k + 1)
 
