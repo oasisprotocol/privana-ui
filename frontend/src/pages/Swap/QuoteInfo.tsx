@@ -2,7 +2,7 @@ import { useMemo } from 'react'
 import { Badge } from '@/components/ui/badge'
 import type { QuoteResponse, TokenInfo } from '@/api/swap'
 import { formatFiat } from '@/lib/tokens'
-import { computeFeeFiat, computeRate } from './quoteHelpers'
+import { computeFeeFiat, computeRate, computeRouteCostFiat } from './quoteHelpers'
 
 type QuoteInfoProps = {
   quote: QuoteResponse
@@ -21,6 +21,10 @@ export const QuoteInfo = ({ quote, fromToken, toToken, prices }: QuoteInfoProps)
   }, [quote, fromToken, toToken, prices])
 
   const feeFiat = useMemo(() => computeFeeFiat(quote, toToken, prices), [quote, toToken, prices])
+  const routeCostFiat = useMemo(
+    () => computeRouteCostFiat(quote, fromToken, toToken, prices),
+    [quote, fromToken, toToken, prices],
+  )
 
   return (
     <div className="flex flex-col gap-2.5 py-1 text-xs font-medium">
@@ -29,7 +33,11 @@ export const QuoteInfo = ({ quote, fromToken, toToken, prices }: QuoteInfoProps)
         <Badge variant="secondary">⚡ Best route</Badge>
       </div>
       <div className="flex items-center justify-between px-0.5">
-        <p className="text-muted-foreground">Estimated fee</p>
+        <p className="text-muted-foreground">Network &amp; route</p>
+        <p className="text-foreground">{routeCostFiat != null ? `~${formatFiat(routeCostFiat)}` : '—'}</p>
+      </div>
+      <div className="flex items-center justify-between px-0.5">
+        <p className="text-muted-foreground">Privana fee</p>
         <p className="text-foreground">{feeFiat != null ? `~${formatFiat(feeFiat)}` : '—'}</p>
       </div>
     </div>
