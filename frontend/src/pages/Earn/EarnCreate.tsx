@@ -1,6 +1,6 @@
 import { useMemo, useState } from 'react'
 import { useNavigate, useParams } from 'react-router'
-import { useAccount, useWalletClient } from 'wagmi'
+import { useAccount, useSwitchChain, useWalletClient } from 'wagmi'
 import { useQueryClient } from '@tanstack/react-query'
 import { parseUnits } from 'viem'
 import { earnKeys, useDepositQuote, useEarnPools } from '@/api/earn'
@@ -12,14 +12,17 @@ import { formatApyBps, PROTOCOL_LABELS } from './labels'
 import { ReviewStep } from './ReviewStep'
 import { useSubmitEarnDeposit } from './useSubmitEarnDeposit'
 
+const CHAIN_ID = parseInt(import.meta.env.VITE_CHAIN_ID, 10)
+
 const steps = ['1. Configure', '2. Review']
 
 export const EarnCreate = () => {
   const { poolId } = useParams<{ poolId?: string }>()
   const navigate = useNavigate()
   const queryClient = useQueryClient()
-  const { address } = useAccount()
+  const { address, chainId } = useAccount()
   const { data: walletClient } = useWalletClient()
+  const { switchChain } = useSwitchChain()
   const [amount, setAmount] = useState('')
   const [step, setStep] = useState(0)
 
@@ -97,6 +100,8 @@ export const EarnCreate = () => {
           quote={quote}
           isLoading={poolsLoading || tokensLoading}
           quoteLoading={quoteLoading}
+          isCorrectChain={chainId === CHAIN_ID}
+          onSwitchChain={() => switchChain({ chainId: CHAIN_ID })}
           onBack={handleBack}
           onConfirm={handleConfirm}
           loading={depositLoading}

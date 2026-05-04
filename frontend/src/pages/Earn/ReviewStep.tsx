@@ -23,6 +23,8 @@ type ReviewStepProps = {
   quote: DepositQuoteResponse | undefined
   isLoading: boolean
   quoteLoading: boolean
+  isCorrectChain: boolean
+  onSwitchChain: () => void
   onBack: () => void
   onConfirm: () => void
   loading?: boolean
@@ -36,6 +38,8 @@ export const ReviewStep = ({
   quote,
   isLoading,
   quoteLoading,
+  isCorrectChain,
+  onSwitchChain,
   onBack,
   onConfirm,
   loading,
@@ -109,9 +113,15 @@ export const ReviewStep = ({
         <Button variant="secondary" size="lg" className="flex-1" onClick={onBack} disabled={loading}>
           Back
         </Button>
-        <Button size="lg" className="flex-1" onClick={onConfirm} disabled={loading || !quote}>
-          {loading ? 'Signing & submitting...' : 'Activate yield'}
-        </Button>
+        {!isCorrectChain ? (
+          <Button size="lg" className="flex-1" onClick={onSwitchChain}>
+            Switch Network
+          </Button>
+        ) : (
+          <Button size="lg" className="flex-1" onClick={onConfirm} disabled={loading || !quote}>
+            {loading ? 'Signing & submitting...' : 'Activate yield'}
+          </Button>
+        )}
       </div>
     </div>
   )
