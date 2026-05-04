@@ -1,6 +1,6 @@
 import { useAccount } from 'wagmi'
 import { getTokenIcon } from '@oasisprotocol/flexvaults-sdk'
-import { useEarnBalance, useEarnPools, type EarnBalance, type EarnPool } from '@/api/earn'
+import { useEarnBalance, useEarnPools } from '@/api/earn'
 import { useTokens } from '@/api/swap'
 import { Button } from '@/components/ui/button'
 import { Separator } from '@/components/ui/separator'
@@ -10,28 +10,6 @@ import { Skeleton } from '@/components/ui/skeleton'
 const MOCK_YIELD_CAPTURED_LABEL = '+$9.60 USDC'
 const MOCK_NEW_ALLOWANCE_LABEL = '$14,489.80'
 const MOCK_NEXT_UNLOCK_LABEL = '01:22:34'
-
-// TODO: remove once earn contract is deployed
-const MOCK_POSITIONS: EarnBalance[] = [
-  {
-    pool_id: 'mock-aave-v3-usdc',
-    token_id: '0x330ba47d00c7ce3018deee017b319fd7cc6473a2ddc9e6eba6ebb4207be15279',
-    shares: '5000000000',
-    underlying_amount: '5000000000',
-    exchange_rate: '1000000000000000000',
-  },
-]
-
-const MOCK_POOLS: EarnPool[] = [
-  {
-    pool_id: 'mock-aave-v3-usdc',
-    token_id: '0x330ba47d00c7ce3018deee017b319fd7cc6473a2ddc9e6eba6ebb4207be15279',
-    strategy: 'aave-v3',
-    total_assets: '0',
-    apy_bps: 480,
-    status: 'active',
-  },
-]
 
 const Row = ({ label, value, valueClassName }: { label: string; value: string; valueClassName?: string }) => (
   <div className="flex items-center justify-between text-xs font-medium leading-4">
@@ -49,16 +27,14 @@ type WithdrawReviewStepProps = {
 
 export const WithdrawReviewStep = ({ poolId, amount, onBack, onConfirm }: WithdrawReviewStepProps) => {
   const { address } = useAccount()
-  const { data: balanceData, isLoading: balanceLoading, error: balanceError } = useEarnBalance(address)
-  const { data: poolsData, isLoading: poolsLoading, error: poolsError } = useEarnPools()
+  const { data: balanceData, isLoading: balanceLoading } = useEarnBalance(address)
+  const { data: poolsData, isLoading: poolsLoading } = useEarnPools()
   const { data: tokensData, isLoading: tokensLoading } = useTokens()
 
   const isLoading = balanceLoading || poolsLoading || tokensLoading
 
-  const useMockBalance = import.meta.env.DEV && !!balanceError
-  const useMockPools = import.meta.env.DEV && (useMockBalance || !!poolsError)
-  const positions = useMockBalance ? MOCK_POSITIONS : (balanceData?.positions ?? [])
-  const pools = useMockPools ? MOCK_POOLS : (poolsData?.pools ?? [])
+  const positions = balanceData?.positions ?? []
+  const pools = poolsData?.pools ?? []
 
   const position = positions.find(p => p.pool_id === poolId)
   const pool = pools.find(p => p.pool_id === poolId)

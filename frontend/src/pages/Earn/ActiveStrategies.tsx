@@ -1,6 +1,6 @@
 import { Link } from 'react-router'
 import { useAccount } from 'wagmi'
-import { useEarnBalance, useEarnPools, type EarnBalance, type EarnPool } from '@/api/earn'
+import { useEarnBalance, useEarnPools } from '@/api/earn'
 import { useTokens } from '@/api/swap'
 import { Button } from '@/components/ui/button'
 import { Skeleton } from '@/components/ui/skeleton'
@@ -9,28 +9,6 @@ import { earnCreatePath, earnWithdrawPath } from '@/paths'
 import { PROTOCOL_LABELS, STRATEGY_LABELS } from './labels'
 
 const formatApy = (bps: number) => (bps > 0 ? `+${(bps / 100).toFixed(2)}%` : '-')
-
-// TODO: remove once earn contract is deployed
-const MOCK_POSITIONS: EarnBalance[] = [
-  {
-    pool_id: 'mock-aave-v3-usdc',
-    token_id: '0x330ba47d00c7ce3018deee017b319fd7cc6473a2ddc9e6eba6ebb4207be15279',
-    shares: '2000000000',
-    underlying_amount: '2000000000',
-    exchange_rate: '1000000000000000000',
-  },
-]
-
-const MOCK_POOLS: EarnPool[] = [
-  {
-    pool_id: 'mock-aave-v3-usdc',
-    token_id: '0x330ba47d00c7ce3018deee017b319fd7cc6473a2ddc9e6eba6ebb4207be15279',
-    strategy: 'aave-v3',
-    total_assets: '0',
-    apy_bps: 480,
-    status: 'active',
-  },
-]
 
 type StrategyCardProps = {
   poolId: string
@@ -89,18 +67,14 @@ const StrategyCardSkeleton = () => (
 
 export const ActiveStrategies = () => {
   const { address } = useAccount()
-  const { data: balanceData, isLoading: balanceLoading, error: balanceError } = useEarnBalance(address)
-  const { data: poolsData, isLoading: poolsLoading, error: poolsError } = useEarnPools()
+  const { data: balanceData, isLoading: balanceLoading } = useEarnBalance(address)
+  const { data: poolsData, isLoading: poolsLoading } = useEarnPools()
   const { data: tokensData, isLoading: tokensLoading } = useTokens()
 
   const isLoading = balanceLoading || poolsLoading || tokensLoading
 
-  const useMockBalance = import.meta.env.DEV && !!balanceError
-  // Use mock pools whenever mock balance kicks in so the position→pool join works.
-  const useMockPools = import.meta.env.DEV && (useMockBalance || !!poolsError)
-
-  const positions = useMockBalance ? MOCK_POSITIONS : (balanceData?.positions ?? [])
-  const pools = useMockPools ? MOCK_POOLS : (poolsData?.pools ?? [])
+  const positions = balanceData?.positions ?? []
+  const pools = poolsData?.pools ?? []
   const tokensById = new Map((tokensData?.tokens ?? []).map(t => [t.token_id, t]))
   const poolsById = new Map(pools.map(p => [p.pool_id, p]))
 
