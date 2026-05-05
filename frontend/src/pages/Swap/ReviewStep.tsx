@@ -17,6 +17,7 @@ type ReviewStepProps = {
   toAmountExact?: string
   summary: QuoteSummary
   quoteLoading?: boolean
+  canConfirm?: boolean
   expiresAt?: number
   onBack: () => void
   onConfirm: () => void
@@ -42,6 +43,7 @@ export const ReviewStep = ({
   toAmountExact,
   summary,
   quoteLoading,
+  canConfirm = true,
   expiresAt,
   onBack,
   onConfirm,
@@ -140,7 +142,12 @@ export const ReviewStep = ({
         <Button variant="secondary" size="lg" className="flex-1" onClick={onBack} disabled={loading}>
           Back
         </Button>
-        <Button size="lg" className="flex-1" onClick={onConfirm} disabled={loading || quoteLoading}>
+        <Button
+          size="lg"
+          className="flex-1"
+          onClick={onConfirm}
+          disabled={loading || quoteLoading || !canConfirm}
+        >
           {loading ? 'Signing & submitting...' : 'Confirm swap'}
         </Button>
       </div>

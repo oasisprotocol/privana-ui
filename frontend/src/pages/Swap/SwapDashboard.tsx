@@ -282,6 +282,7 @@ export const SwapDashboard = () => {
           toAmount={toAmount}
           summary={summary}
           quoteLoading={quoteLoading}
+          canConfirm={canSwap}
           expiresAt={quoteData?.expires_at}
           toAmountExact={toAmountExact}
           onBack={() => {
