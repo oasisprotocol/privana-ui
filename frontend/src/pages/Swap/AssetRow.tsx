@@ -64,7 +64,7 @@ export const AssetRow = ({
             <button
               type="button"
               disabled={disabled}
-              className="h-12 rounded-l-[10px] rounded-r-none bg-secondary px-4 py-3 flex items-center gap-2 text-base font-medium text-secondary-foreground shrink-0 w-[120px] cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed focus-visible:outline-none"
+              className="h-12 rounded-l-[10px] rounded-r-none bg-secondary px-4 py-3 flex items-center gap-2 text-base font-medium text-secondary-foreground shrink-0 w-33 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed focus-visible:outline-none"
             >
               {token?.token_symbol && (
                 <span className="shrink-0 size-5 overflow-hidden rounded-full">
