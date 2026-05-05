@@ -281,6 +281,7 @@ export const SwapDashboard = () => {
           toAmount={toAmount}
           summary={summary}
           quoteLoading={quoteLoading}
+          expiresAt={quoteData?.expires_at}
           onBack={() => {
             resetSubmit()
             setStep(0)

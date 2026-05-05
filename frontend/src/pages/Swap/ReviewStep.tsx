@@ -1,4 +1,5 @@
-import { ArrowRight } from 'lucide-react'
+import { useEffect, useState, type ReactNode } from 'react'
+import { ArrowRight, Loader2 } from 'lucide-react'
 import { getTokenIcon } from '@oasisprotocol/flexvaults-sdk'
 import { Button } from '@/components/ui/button'
 import { Separator } from '@/components/ui/separator'
@@ -14,17 +15,20 @@ type ReviewStepProps = {
   toAmount: string
   summary: QuoteSummary
   quoteLoading?: boolean
+  expiresAt?: number
   onBack: () => void
   onConfirm: () => void
   loading?: boolean
   error?: string | null
 }
 
-type RowProps = { label: string; value: string }
+const remainingSeconds = (expiresAt: number) => Math.max(0, expiresAt - Math.floor(Date.now() / 1000))
+
+type RowProps = { label: string; value: ReactNode }
 const Row = ({ label, value }: RowProps) => (
   <div className="flex items-center justify-between text-xs font-medium leading-4">
     <p className="text-muted-foreground">{label}</p>
-    <p className="text-foreground">{value}</p>
+    <div className="text-foreground">{value}</div>
   </div>
 )
 
@@ -35,11 +39,20 @@ export const ReviewStep = ({
   toAmount,
   summary,
   quoteLoading,
+  expiresAt,
   onBack,
   onConfirm,
   loading,
   error,
 }: ReviewStepProps) => {
+  const [, setTick] = useState(0)
+  useEffect(() => {
+    if (!expiresAt) return
+    const id = setInterval(() => setTick(n => n + 1), 1000)
+    return () => clearInterval(id)
+  }, [expiresAt])
+  const remaining = expiresAt ? remainingSeconds(expiresAt) : 0
+
   return (
     <div className="flex flex-col gap-6 w-full max-w-145 mx-auto bg-card border p-6 rounded-[14px] shadow-[0_1px_2px_0_rgba(0,0,0,0.05)]">
       <div className="flex flex-col gap-1.5">
@@ -94,6 +107,14 @@ export const ReviewStep = ({
           <Row label="Network & route fee" value={summary.routeCostFiatLabel} />
           <Row label="Service fee" value={summary.feeFiatLabel} />
           <Row label="Estimated time" value="<20s" />
+          {expiresAt && (
+            <Row
+              label="Quote refreshes in"
+              value={
+                quoteLoading ? <Loader2 className="size-3 animate-spin text-muted-foreground" /> : `${remaining}s`
+              }
+            />
+          )}
         </div>
       </div>
 
