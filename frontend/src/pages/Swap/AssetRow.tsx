@@ -105,14 +105,7 @@ export const AssetRow = ({
         <div className="flex items-center gap-2">
           {balanceLabel ? <span>{balanceLabel}</span> : renderBalance()}
           {onMax && balance && !balance.loading && balance.wei != null && (
-            <Button
-              type="button"
-              variant="outline"
-              size="xs"
-              className="h-6"
-              onClick={onMax}
-              disabled={disabled || !token}
-            >
+            <Button type="button" variant="secondary" size="xs" onClick={onMax} disabled={disabled || !token}>
               MAX
             </Button>
           )}

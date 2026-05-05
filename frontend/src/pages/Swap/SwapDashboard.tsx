@@ -211,15 +211,16 @@ export const SwapDashboard = () => {
           </div>
 
           <div className="flex items-center justify-center py-1">
-            <button
+            <Button
               type="button"
+              variant="secondary"
+              size="icon-lg"
               onClick={handleSwapDirection}
               disabled={!fromTokenId && !toTokenId}
               aria-label="Swap direction"
-              className="flex items-center justify-center size-10 rounded-md border bg-background hover:bg-accent transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
             >
-              <ArrowUpDown className="size-4 text-primary" />
-            </button>
+              <ArrowUpDown className="size-4" />
+            </Button>
           </div>
 
           <div className="flex flex-col gap-2">
