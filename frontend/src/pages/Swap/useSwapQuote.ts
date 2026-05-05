@@ -4,6 +4,7 @@ import { getQuote } from '@/api/swap'
 import type { QuoteResponse } from '@/api/swap'
 import { useDebouncedValue } from '@/hooks/use-debounced-value'
 import { useQuoteExpiry } from '@/hooks/use-quote-expiry'
+import { formatAmountTrimmed } from '@/lib/tokens'
 
 type Params = {
   fromTokenId: string
@@ -74,7 +75,10 @@ export const useSwapQuote = ({
   const data = enabled && result?.inputId === inputId ? result.quote : null
   const error = errorState?.key === inputKey ? errorState.message : null
   const loading = enabled && (!result || result.key !== inputKey) && !error
-  const toAmount = data && toDecimals != null ? formatUnits(BigInt(data.to_amount_estimate), toDecimals) : ''
+  const toAmount =
+    data && toDecimals != null ? formatAmountTrimmed(BigInt(data.to_amount_estimate), toDecimals) : ''
+  const toAmountExact =
+    data && toDecimals != null ? formatUnits(BigInt(data.to_amount_estimate), toDecimals) : ''
 
   const { expired } = useQuoteExpiry({
     data,
@@ -84,5 +88,5 @@ export const useSwapQuote = ({
 
   const reset = () => setRefetchKey(k => k + 1)
 
-  return { data, loading, error, toAmount, reset, expired }
+  return { data, loading, error, toAmount, toAmountExact, reset, expired }
 }

@@ -10,6 +10,7 @@ import { FlexvaultsProvider } from '@oasisprotocol/flexvaults-sdk'
 import { ALLOWED_TOKEN_IDS } from './config/tokens'
 import { authCallbackPath } from './paths'
 import { ActivityProvider } from './contexts/ActivityProvider'
+import { TooltipProvider } from './components/ui/tooltip'
 import '@rainbow-me/rainbowkit/styles.css'
 import '@oasisprotocol/flexvaults-sdk/styles.css'
 import './index.css'
@@ -44,7 +45,9 @@ createRoot(document.getElementById('root')!).render(
         >
           <RainbowKitProvider theme={rainbowKitTheme} modalSize="compact">
             <ActivityProvider>
-              <RouterProvider router={router} />
+              <TooltipProvider>
+                <RouterProvider router={router} />
+              </TooltipProvider>
             </ActivityProvider>
           </RainbowKitProvider>
         </FlexvaultsProvider>

@@ -68,6 +68,7 @@ export const SwapDashboard = () => {
     loading: quoteLoading,
     error: quoteError,
     toAmount,
+    toAmountExact,
     reset: resetQuote,
   } = useSwapQuote({
     fromTokenId,
@@ -282,6 +283,7 @@ export const SwapDashboard = () => {
           summary={summary}
           quoteLoading={quoteLoading}
           expiresAt={quoteData?.expires_at}
+          toAmountExact={toAmountExact}
           onBack={() => {
             resetSubmit()
             setStep(0)

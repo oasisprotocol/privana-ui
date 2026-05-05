@@ -3,6 +3,7 @@ import { ArrowRight, Loader2 } from 'lucide-react'
 import { getTokenIcon } from '@oasisprotocol/flexvaults-sdk'
 import { Button } from '@/components/ui/button'
 import { Separator } from '@/components/ui/separator'
+import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip'
 import type { TokenInfo } from '@/api/swap'
 import type { QuoteSummary } from './useQuoteSummary'
 
@@ -13,6 +14,7 @@ type ReviewStepProps = {
   toToken: TokenInfo | undefined
   fromAmount: string
   toAmount: string
+  toAmountExact?: string
   summary: QuoteSummary
   quoteLoading?: boolean
   expiresAt?: number
@@ -37,6 +39,7 @@ export const ReviewStep = ({
   toToken,
   fromAmount,
   toAmount,
+  toAmountExact,
   summary,
   quoteLoading,
   expiresAt,
@@ -84,7 +87,18 @@ export const ReviewStep = ({
           <div className="flex-1 flex flex-col gap-1 items-end min-w-0 overflow-hidden">
             <p className="text-xs font-medium text-muted-foreground leading-4">You receive</p>
             <div className="flex gap-1 items-center justify-end">
-              <span className="text-xl font-semibold text-foreground leading-none">{toAmount}</span>
+              {toAmountExact && toAmountExact !== toAmount ? (
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <span className="text-xl font-semibold text-foreground leading-none cursor-help">
+                      {toAmount}
+                    </span>
+                  </TooltipTrigger>
+                  <TooltipContent>{toAmountExact}</TooltipContent>
+                </Tooltip>
+              ) : (
+                <span className="text-xl font-semibold text-foreground leading-none">{toAmount}</span>
+              )}
               {toToken?.token_symbol && (
                 <span className="shrink-0 size-4 overflow-hidden rounded-full">
                   {getTokenIcon(toToken.token_symbol, 16)}
