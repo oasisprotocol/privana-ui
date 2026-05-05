@@ -40,7 +40,6 @@ export const ReviewStep = ({
   loading,
   error,
 }: ReviewStepProps) => {
-  const navDisabled = loading || quoteLoading
   return (
     <div className="flex flex-col gap-6 w-full max-w-145 mx-auto bg-card border p-6 rounded-[14px] shadow-[0_1px_2px_0_rgba(0,0,0,0.05)]">
       <div className="flex flex-col gap-1.5">
@@ -101,11 +100,11 @@ export const ReviewStep = ({
       {error && <p className="text-sm text-destructive">{error}</p>}
 
       <div className="flex gap-5 w-full">
-        <Button variant="secondary" size="lg" className="flex-1" onClick={onBack} disabled={navDisabled}>
+        <Button variant="secondary" size="lg" className="flex-1" onClick={onBack} disabled={loading}>
           Back
         </Button>
-        <Button size="lg" className="flex-1" onClick={onConfirm} disabled={navDisabled}>
-          {loading ? 'Signing & submitting...' : quoteLoading ? 'Refreshing quote...' : 'Confirm swap'}
+        <Button size="lg" className="flex-1" onClick={onConfirm} disabled={loading || quoteLoading}>
+          {loading ? 'Signing & submitting...' : 'Confirm swap'}
         </Button>
       </div>
     </div>

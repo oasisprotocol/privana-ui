@@ -258,10 +258,10 @@ export const SwapDashboard = () => {
               <Button
                 size="lg"
                 className="flex-1 h-12 text-base"
-                disabled={!canSwap}
+                disabled={!canSwap || quoteLoading}
                 onClick={() => setStep(1)}
               >
-                Swap
+                Review swap
               </Button>
             )}
           </div>
