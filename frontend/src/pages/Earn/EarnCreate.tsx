@@ -53,6 +53,7 @@ export const EarnCreate = () => {
     data: quote,
     loading: quoteLoading,
     expired: quoteExpired,
+    reset: resetQuote,
   } = useEarnDepositQuote({
     poolId: poolId ?? '',
     amount: amountBaseUnits,
@@ -83,6 +84,7 @@ export const EarnCreate = () => {
 
   const handleBack = () => {
     resetDeposit()
+    resetQuote()
     setStep(0)
   }
 
