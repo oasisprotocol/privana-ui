@@ -1,26 +1,11 @@
 import { Link } from 'react-router'
-import { useAccount } from 'wagmi'
-import { useEarnBalance, useEarnPools } from '@/api/earn'
-import { useTokens } from '@/api/swap'
 import { Button } from '@/components/ui/button'
 import { Skeleton } from '@/components/ui/skeleton'
-import { formatAmount } from '@/lib/tokens'
 import { earnCreatePath, earnWithdrawPath } from '@/paths'
-import { STRATEGY_LABELS } from './labels'
 import { ProtocolLabel } from './ProtocolLabel'
+import { useActiveStrategies, type ActiveStrategy } from './useActiveStrategies'
 
-const formatApy = (bps: number) => (bps > 0 ? `+${(bps / 100).toFixed(2)}%` : '-')
-
-type StrategyCardProps = {
-  poolId: string
-  name: string
-  earning: string
-  apyLabel: string
-  asset: string
-  strategyKey: string | null
-}
-
-const StrategyCard = ({ poolId, name, earning, apyLabel, asset, strategyKey }: StrategyCardProps) => (
+export const StrategyCard = ({ poolId, name, earning, apyLabel, asset, strategyKey }: ActiveStrategy) => (
   <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 bg-card border p-8 rounded-lg">
     <div className="flex flex-col gap-3 min-w-0">
       <p className="text-xl font-medium text-foreground">{name}</p>
@@ -58,7 +43,7 @@ const StrategyCard = ({ poolId, name, earning, apyLabel, asset, strategyKey }: S
   </div>
 )
 
-const StrategyCardSkeleton = () => (
+export const StrategyCardSkeleton = () => (
   <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 bg-card border p-8 rounded-lg">
     <div className="flex flex-col gap-3 min-w-0 flex-1">
       <Skeleton className="h-7 w-40" />
@@ -69,42 +54,7 @@ const StrategyCardSkeleton = () => (
 )
 
 export const ActiveStrategies = () => {
-  const { address } = useAccount()
-  const { data: balanceData, isLoading: balanceLoading } = useEarnBalance(address)
-  const { data: poolsData, isLoading: poolsLoading } = useEarnPools()
-  const { data: tokensData, isLoading: tokensLoading } = useTokens()
-
-  const isLoading = balanceLoading || poolsLoading || tokensLoading
-
-  const positions = balanceData?.positions ?? []
-  const pools = poolsData?.pools ?? []
-  const tokensById = new Map((tokensData?.tokens ?? []).map(t => [t.token_id, t]))
-  const poolsById = new Map(pools.map(p => [p.pool_id, p]))
-
-  const strategies = positions
-    .filter(p => {
-      try {
-        return BigInt(p.shares ?? '0') > 0n
-      } catch {
-        return false
-      }
-    })
-    .map(pos => {
-      const pool = poolsById.get(pos.pool_id)
-      const token = pool ? tokensById.get(pool.token_id) : tokensById.get(pos.token_id)
-      const decimals = token?.token_decimals
-      return {
-        poolId: pos.pool_id,
-        name: pool ? (STRATEGY_LABELS[pool.strategy] ?? pool.strategy) : pos.pool_id,
-        earning:
-          decimals != null
-            ? `${formatAmount(BigInt(pos.underlying_amount), decimals)} ${token?.token_symbol ?? ''}`
-            : '-',
-        apyLabel: pool ? formatApy(pool.apy_bps) : '-',
-        asset: token?.token_symbol ?? '—',
-        strategyKey: pool?.strategy ?? null,
-      }
-    })
+  const { strategies, isLoading } = useActiveStrategies()
 
   if (!isLoading && strategies.length === 0) return null
 
