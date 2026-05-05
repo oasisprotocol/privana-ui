@@ -23,6 +23,7 @@ type ReviewStepProps = {
   quote: DepositQuoteResponse | undefined
   isLoading: boolean
   quoteLoading: boolean
+  quoteError?: string | null
   quoteExpired?: boolean
   isCorrectChain: boolean
   onSwitchChain: () => void
@@ -39,6 +40,7 @@ export const ReviewStep = ({
   quote,
   isLoading,
   quoteLoading,
+  quoteError,
   quoteExpired,
   isCorrectChain,
   onSwitchChain,
@@ -100,6 +102,8 @@ export const ReviewStep = ({
             <Skeleton className="h-4 w-full" />
             <Skeleton className="h-4 w-full" />
           </>
+        ) : quoteError ? (
+          <p className="text-sm text-destructive">Failed to fetch quote: {quoteError}</p>
         ) : (
           <>
             <Row label="Estimated shares" value={sharesLabel} />
