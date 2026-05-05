@@ -6,7 +6,8 @@ import { Button } from '@/components/ui/button'
 import { Skeleton } from '@/components/ui/skeleton'
 import { formatAmount } from '@/lib/tokens'
 import { earnCreatePath, earnWithdrawPath } from '@/paths'
-import { PROTOCOL_LABELS, STRATEGY_LABELS } from './labels'
+import { STRATEGY_LABELS } from './labels'
+import { ProtocolLabel } from './ProtocolLabel'
 
 const formatApy = (bps: number) => (bps > 0 ? `+${(bps / 100).toFixed(2)}%` : '-')
 
@@ -16,10 +17,10 @@ type StrategyCardProps = {
   earning: string
   apyLabel: string
   asset: string
-  protocol: string
+  strategyKey: string | null
 }
 
-const StrategyCard = ({ poolId, name, earning, apyLabel, asset, protocol }: StrategyCardProps) => (
+const StrategyCard = ({ poolId, name, earning, apyLabel, asset, strategyKey }: StrategyCardProps) => (
   <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 bg-card border p-8 rounded-lg">
     <div className="flex flex-col gap-3 min-w-0">
       <p className="text-xl font-medium text-foreground">{name}</p>
@@ -40,7 +41,9 @@ const StrategyCard = ({ poolId, name, earning, apyLabel, asset, protocol }: Stra
         </div>
         <div className="flex items-center gap-2">
           <span className="text-muted-foreground">Protocol</span>
-          <span className="text-foreground">{protocol}</span>
+          <span className="text-foreground">
+            {strategyKey ? <ProtocolLabel strategy={strategyKey} /> : '—'}
+          </span>
         </div>
       </div>
     </div>
@@ -99,7 +102,7 @@ export const ActiveStrategies = () => {
             : '-',
         apyLabel: pool ? formatApy(pool.apy_bps) : '-',
         asset: token?.token_symbol ?? '—',
-        protocol: pool ? (PROTOCOL_LABELS[pool.strategy] ?? pool.strategy) : '—',
+        strategyKey: pool?.strategy ?? null,
       }
     })
 
