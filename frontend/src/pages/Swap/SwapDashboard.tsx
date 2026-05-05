@@ -165,7 +165,7 @@ export const SwapDashboard = () => {
             <Skeleton className="h-5 w-16" />
             <Skeleton className="h-12 w-full" />
           </div>
-          <div className="flex items-center justify-center py-1">
+          <div className="-my-4 flex items-center justify-center py-1">
             <Skeleton className="size-10 rounded-md" />
           </div>
           <div className="flex flex-col gap-2">
@@ -208,7 +208,7 @@ export const SwapDashboard = () => {
             />
           </div>
 
-          <div className="flex items-center justify-center py-1">
+          <div className="-my-4 flex items-center justify-center py-1">
             <Button
               type="button"
               variant="secondary"
