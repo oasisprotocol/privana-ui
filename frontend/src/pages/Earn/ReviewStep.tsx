@@ -118,8 +118,6 @@ export const ReviewStep = ({
           <p className="text-destructive">Quote expired. Go back to fetch a new one.</p>
         </div>
       )}
-      {error && <p className="text-sm text-destructive">{error}</p>}
-
       <div className="flex gap-5 w-full">
         <Button variant="secondary" size="lg" className="flex-1" onClick={onBack} disabled={loading}>
           Back
@@ -139,6 +137,8 @@ export const ReviewStep = ({
           </Button>
         )}
       </div>
+
+      {error && <p className="text-sm text-center text-destructive">{error}</p>}
     </div>
   )
 }

@@ -132,8 +132,6 @@ export const ReviewStep = ({
         </div>
       </div>
 
-      {error && <p className="text-sm text-destructive">{error}</p>}
-
       <div className="flex gap-5 w-full">
         <Button variant="secondary" size="lg" className="flex-1" onClick={onBack} disabled={loading}>
           Back
@@ -142,6 +140,8 @@ export const ReviewStep = ({
           {loading ? 'Signing & submitting...' : 'Confirm swap'}
         </Button>
       </div>
+
+      {error && <p className="text-sm text-center text-destructive">{error}</p>}
     </div>
   )
 }
