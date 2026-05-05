@@ -104,8 +104,8 @@ export const AssetRow = ({
         <span>{fiatValue != null ? `≈ ${formatFiat(fiatValue)}` : ''}</span>
         <div className="flex items-center gap-2">
           {balanceLabel ? <span>{balanceLabel}</span> : renderBalance()}
-          {onMax && balance && !balance.loading && balance.wei != null && (
-            <Button type="button" variant="secondary" size="xs" onClick={onMax} disabled={disabled || !token}>
+          {onMax && token && balance && !balance.loading && balance.wei != null && (
+            <Button type="button" variant="secondary" size="xs" onClick={onMax} disabled={disabled}>
               MAX
             </Button>
           )}

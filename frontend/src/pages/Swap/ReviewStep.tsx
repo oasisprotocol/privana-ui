@@ -125,7 +125,11 @@ export const ReviewStep = ({
             <Row
               label="Quote refreshes in"
               value={
-                quoteLoading ? <Loader2 className="size-3 animate-spin text-muted-foreground" /> : `${remaining}s`
+                quoteLoading ? (
+                  <Loader2 className="size-3 animate-spin text-muted-foreground" />
+                ) : (
+                  `${remaining}s`
+                )
               }
             />
           )}
