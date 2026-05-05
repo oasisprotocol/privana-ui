@@ -43,7 +43,7 @@ export const AssetRow = ({
   onMax,
 }: AssetRowProps) => {
   const renderBalance = () => {
-    if (!token || !balance) return <span>Balance: -</span>
+    if (!token || !balance) return null
     if (balance.loading) return <Skeleton className="h-4 w-32" />
     if (token.token_decimals == null) return <span>Balance: -</span>
     return (
@@ -100,7 +100,7 @@ export const AssetRow = ({
           )}
         </div>
       </div>
-      <div className="text-xs font-medium text-muted-foreground flex gap-2 items-center justify-between px-0.5">
+      <div className="min-h-6 text-xs font-medium text-muted-foreground flex gap-2 items-center justify-between px-0.5">
         <span>{fiatValue != null ? `≈ ${formatFiat(fiatValue)}` : ''}</span>
         <div className="flex items-center gap-2">
           {balanceLabel ? <span>{balanceLabel}</span> : renderBalance()}
