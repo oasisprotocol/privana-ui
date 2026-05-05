@@ -69,7 +69,6 @@ export const SwapDashboard = () => {
     error: quoteError,
     toAmount,
     reset: resetQuote,
-    expired: quoteExpired,
   } = useSwapQuote({
     fromTokenId,
     toTokenId,
@@ -78,7 +77,6 @@ export const SwapDashboard = () => {
     fromDecimals: fromToken?.token_decimals,
     toDecimals: toToken?.token_decimals,
     disabled: insufficientFunds,
-    pauseRefetch: step === 1,
   })
 
   const {
@@ -275,14 +273,14 @@ export const SwapDashboard = () => {
         </div>
       )}
 
-      {data && step === 1 && quoteData && (
+      {data && step === 1 && (
         <ReviewStep
           fromToken={fromToken}
           toToken={toToken}
           fromAmount={fromAmount}
           toAmount={toAmount}
           summary={summary}
-          expired={quoteExpired}
+          quoteLoading={quoteLoading}
           onBack={() => {
             resetSubmit()
             setStep(0)

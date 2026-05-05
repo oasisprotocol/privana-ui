@@ -13,7 +13,7 @@ type ReviewStepProps = {
   fromAmount: string
   toAmount: string
   summary: QuoteSummary
-  expired?: boolean
+  quoteLoading?: boolean
   onBack: () => void
   onConfirm: () => void
   loading?: boolean
@@ -34,12 +34,13 @@ export const ReviewStep = ({
   fromAmount,
   toAmount,
   summary,
-  expired,
+  quoteLoading,
   onBack,
   onConfirm,
   loading,
   error,
 }: ReviewStepProps) => {
+  const navDisabled = loading || quoteLoading
   return (
     <div className="flex flex-col gap-6 w-full max-w-145 mx-auto bg-card border p-6 rounded-[14px] shadow-[0_1px_2px_0_rgba(0,0,0,0.05)]">
       <div className="flex flex-col gap-1.5">
@@ -97,19 +98,14 @@ export const ReviewStep = ({
         </div>
       </div>
 
-      {expired && (
-        <div className="rounded-lg border bg-card p-4 text-sm">
-          <p className="text-destructive">Quote expired. Go back to fetch a new one.</p>
-        </div>
-      )}
       {error && <p className="text-sm text-destructive">{error}</p>}
 
       <div className="flex gap-5 w-full">
-        <Button variant="secondary" size="lg" className="flex-1" onClick={onBack} disabled={loading}>
+        <Button variant="secondary" size="lg" className="flex-1" onClick={onBack} disabled={navDisabled}>
           Back
         </Button>
-        <Button size="lg" className="flex-1" onClick={onConfirm} disabled={loading || expired}>
-          {loading ? 'Signing & submitting...' : 'Confirm swap'}
+        <Button size="lg" className="flex-1" onClick={onConfirm} disabled={navDisabled}>
+          {loading ? 'Signing & submitting...' : quoteLoading ? 'Refreshing quote...' : 'Confirm swap'}
         </Button>
       </div>
     </div>

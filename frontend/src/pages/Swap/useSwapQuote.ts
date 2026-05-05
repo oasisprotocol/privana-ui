@@ -38,11 +38,10 @@ export const useSwapQuote = ({
     fromDecimals != null &&
     toDecimals != null
 
-  const inputKey = enabled
-    ? `${fromTokenId}|${toTokenId}|${debouncedFromAmount}|${address}|${refetchKey}`
-    : ''
+  const inputId = enabled ? `${fromTokenId}|${toTokenId}|${debouncedFromAmount}|${address}` : ''
+  const inputKey = enabled ? `${inputId}|${refetchKey}` : ''
 
-  const [result, setResult] = useState<{ key: string; quote: QuoteResponse } | null>(null)
+  const [result, setResult] = useState<{ inputId: string; key: string; quote: QuoteResponse } | null>(null)
   const [errorState, setErrorState] = useState<{ key: string; message: string } | null>(null)
 
   useEffect(() => {
@@ -59,7 +58,7 @@ export const useSwapQuote = ({
     )
       .then(quote => {
         if (abort.signal.aborted) return
-        setResult({ key: inputKey, quote })
+        setResult({ inputId, key: inputKey, quote })
         setErrorState(null)
       })
       .catch(err => {
@@ -70,11 +69,11 @@ export const useSwapQuote = ({
         })
       })
     return () => abort.abort()
-  }, [enabled, inputKey, fromTokenId, toTokenId, debouncedFromAmount, address, fromDecimals])
+  }, [enabled, inputKey, inputId, fromTokenId, toTokenId, debouncedFromAmount, address, fromDecimals])
 
-  const data = result?.key === inputKey ? result.quote : null
+  const data = enabled && result?.inputId === inputId ? result.quote : null
   const error = errorState?.key === inputKey ? errorState.message : null
-  const loading = enabled && !data && !error
+  const loading = enabled && (!result || result.key !== inputKey) && !error
   const toAmount = data && toDecimals != null ? formatUnits(BigInt(data.to_amount_estimate), toDecimals) : ''
 
   const { expired } = useQuoteExpiry({
