@@ -1,11 +1,9 @@
-import { useMemo } from 'react'
 import { ArrowRight } from 'lucide-react'
 import { getTokenIcon } from '@oasisprotocol/flexvaults-sdk'
 import { Button } from '@/components/ui/button'
 import { Separator } from '@/components/ui/separator'
-import type { QuoteResponse, TokenInfo } from '@/api/swap'
-import { formatFiat } from '@/lib/tokens'
-import { computeFeeFiat, computeRate } from './quoteHelpers'
+import type { TokenInfo } from '@/api/swap'
+import type { QuoteSummary } from './useQuoteSummary'
 
 const tokenLabel = (token: TokenInfo) => token.token_symbol ?? token.token_type_name
 
@@ -14,8 +12,7 @@ type ReviewStepProps = {
   toToken: TokenInfo | undefined
   fromAmount: string
   toAmount: string
-  quote: QuoteResponse
-  prices: Record<string, number | undefined> | undefined
+  summary: QuoteSummary
   expired?: boolean
   onBack: () => void
   onConfirm: () => void
@@ -36,17 +33,13 @@ export const ReviewStep = ({
   toToken,
   fromAmount,
   toAmount,
-  quote,
-  prices,
+  summary,
   expired,
   onBack,
   onConfirm,
   loading,
   error,
 }: ReviewStepProps) => {
-  const rateLabel = useMemo(() => computeRate(quote, fromToken, toToken) ?? '-', [quote, fromToken, toToken])
-  const feeFiat = useMemo(() => computeFeeFiat(quote, toToken, prices), [quote, toToken, prices])
-
   return (
     <div className="flex flex-col gap-6 w-full max-w-145 mx-auto bg-card border p-6 rounded-[14px] shadow-[0_1px_2px_0_rgba(0,0,0,0.05)]">
       <div className="flex flex-col gap-1.5">
@@ -96,9 +89,10 @@ export const ReviewStep = ({
         <Separator />
 
         <div className="flex flex-col gap-4">
-          <Row label="Rate" value={rateLabel} />
+          <Row label="Rate" value={summary.rateLabel || '-'} />
           <Row label="Privacy" value="🔒 No public trace" />
-          <Row label="Fee" value={feeFiat != null ? `~${formatFiat(feeFiat)}` : '—'} />
+          <Row label="Network & route fee" value={summary.routeCostFiatLabel} />
+          <Row label="Service fee" value={summary.feeFiatLabel} />
           <Row label="Estimated time" value="<20s" />
         </div>
       </div>

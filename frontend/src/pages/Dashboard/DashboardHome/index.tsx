@@ -14,7 +14,7 @@ import { PortfolioSummary } from './PortfolioSummary'
 import { DepositAlertDialog } from './DepositAlertDialog'
 import { useTokenPrices } from '@/api/coin-gecko'
 import { formatFiat } from '@/lib/tokens'
-import { activityPath, tradePath } from '@/paths'
+import { activityPath, earnPath, tradePath } from '@/paths'
 import { Link } from 'react-router'
 
 export const DashboardHome = () => {
@@ -130,7 +130,14 @@ export const DashboardHome = () => {
           to={tradePath()}
           disabled={pending}
         />
-        <PortfolioCard title="Earn" icon={<Percent />} buttonLabel="Check out earning strategies" disabled />
+        <PortfolioCard
+          buttonAction={hasFunds ? undefined : handleStartWithoutFunds}
+          icon={<Percent />}
+          title="Earn"
+          buttonLabel="Check out earning strategies"
+          to={earnPath()}
+          disabled={pending}
+        />
       </div>
 
       <PortfolioSummary />

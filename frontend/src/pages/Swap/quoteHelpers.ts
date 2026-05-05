@@ -36,3 +36,35 @@ export const computeFeeFiat = (
     return undefined
   }
 }
+
+const tokenFiat = (
+  amountWei: string,
+  token: TokenInfo | undefined,
+  prices: Record<string, number | undefined> | undefined,
+): number | undefined => {
+  if (token?.token_decimals == null) return undefined
+  const price = prices?.[token.token_id]
+  if (price == null) return undefined
+  try {
+    const asNum = Number(formatUnits(BigInt(amountWei), token.token_decimals))
+    return Number.isFinite(asNum) ? asNum * price : undefined
+  } catch {
+    return undefined
+  }
+}
+
+// Slippage + LP fee + chain-mapping spread baked into LiFi's route, expressed
+// in fiat. = input − (net output + Privana fee).
+export const computeRouteCostFiat = (
+  quote: QuoteResponse,
+  fromToken: TokenInfo | undefined,
+  toToken: TokenInfo | undefined,
+  prices: Record<string, number | undefined> | undefined,
+): number | undefined => {
+  const inputFiat = tokenFiat(quote.from_amount, fromToken, prices)
+  const outputFiat = tokenFiat(quote.to_amount_estimate, toToken, prices)
+  const feeFiat = computeFeeFiat(quote, toToken, prices)
+  if (inputFiat == null || outputFiat == null || feeFiat == null) return undefined
+  const cost = inputFiat - (outputFiat + feeFiat)
+  return cost > 0 ? cost : undefined
+}

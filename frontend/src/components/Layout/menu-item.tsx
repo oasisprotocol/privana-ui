@@ -16,7 +16,7 @@ export const MenuItem = ({ label, to, badge }: MenuItemProps) => {
       className={({ isActive }) =>
         cn(
           'inline-flex items-center gap-1.5 text-sm px-3 py-2.5 rounded-md hover:bg-accent/30 transition-colors duration-250',
-          isActive ? 'text-primary' : 'text-muted-foreground',
+          isActive ? 'text-foreground' : 'text-muted-foreground',
         )
       }
     >

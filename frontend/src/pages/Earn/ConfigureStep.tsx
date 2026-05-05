@@ -2,7 +2,7 @@ import { Fragment, useEffect, useMemo } from 'react'
 import { formatUnits, parseUnits } from 'viem'
 import { getTokenIcon, useBalance } from '@oasisprotocol/flexvaults-sdk'
 import { useTokenPrices } from '@/api/coin-gecko'
-import { useEarnPools, type EarnPool } from '@/api/earn'
+import { useEarnPools } from '@/api/earn'
 import { useTokens } from '@/api/swap'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -14,18 +14,6 @@ import { STRATEGY_LABELS } from './labels'
 
 const PERCENTS = [25, 50, 75, 100] as const
 const percentLabel = (pct: number) => (pct === 100 ? 'Max' : `${pct}%`)
-
-// TODO: remove once earn contract is deployed
-const MOCK_POOLS: EarnPool[] = [
-  {
-    pool_id: 'mock-aave-v3-usdc',
-    token_id: '0x330ba47d00c7ce3018deee017b319fd7cc6473a2ddc9e6eba6ebb4207be15279',
-    strategy: 'aave-v3',
-    total_assets: '0',
-    apy_bps: 480,
-    status: 'active',
-  },
-]
 
 const formatApy = (bps: number) => (bps > 0 ? `${(bps / 100).toFixed(2)}% APY` : '- APY')
 
@@ -47,8 +35,7 @@ export const ConfigureStep = ({
   const { data: poolsData, isLoading: poolsLoading, error: poolsError } = useEarnPools()
   const { data: tokensData, isLoading: tokensLoading, error: tokensError } = useTokens()
   const isLoading = poolsLoading || tokensLoading
-  const useMockPools = import.meta.env.DEV && !!poolsError
-  const pools = useMockPools ? MOCK_POOLS : (poolsData?.pools ?? [])
+  const pools = poolsData?.pools ?? []
 
   const activePools = pools.filter(p => p.status === 'active')
   const tokensById = new Map((tokensData?.tokens ?? []).map(t => [t.token_id, t]))
@@ -74,7 +61,7 @@ export const ConfigureStep = ({
     }
   }, [prices, amount, selectedToken])
 
-  // Drop a stale URL poolId if it isn't present in the loaded pools/mock
+  // Drop a stale URL poolId if it isn't present in the loaded pools
   useEffect(() => {
     if (isLoading || !poolId) return
     if (!activePools.some(p => p.pool_id === poolId)) {
@@ -117,7 +104,7 @@ export const ConfigureStep = ({
     )
   }
 
-  if ((poolsError && !useMockPools) || tokensError) {
+  if (poolsError || tokensError) {
     return <p className="text-destructive">Unable to load earn pools</p>
   }
 

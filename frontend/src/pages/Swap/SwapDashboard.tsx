@@ -11,12 +11,13 @@ import { useQueryClient } from '@tanstack/react-query'
 import { ArrowUpDown, EyeOff } from 'lucide-react'
 import { StepsNav } from '@/components/StepsNav'
 import { activityPath } from '@/paths'
+import { SWAPPABLE_TOKEN_IDS } from '@/config/tokens'
 import { AssetRow } from './AssetRow'
 import { QuoteInfo } from './QuoteInfo'
 import { ReviewStep } from './ReviewStep'
 import { useSwapQuote } from './useSwapQuote'
 import { useSubmitSwap } from './useSubmitSwap'
-import { computeFeeFiat, computeRate } from './quoteHelpers'
+import { useQuoteSummary } from './useQuoteSummary'
 
 const steps = ['1. Configure', '2. Review']
 
@@ -33,7 +34,10 @@ export const SwapDashboard = () => {
   const [fromTokenId, setFromTokenId] = useState('')
   const [toTokenId, setToTokenId] = useState('')
   const [fromAmount, setFromAmount] = useState('')
-  const tokens = useMemo(() => data?.tokens ?? [], [data])
+  const tokens = useMemo(
+    () => (data?.tokens ?? []).filter(t => (SWAPPABLE_TOKEN_IDS as string[]).includes(t.token_id)),
+    [data],
+  )
   const fromToken = tokens.find(t => t.token_id === fromTokenId)
   const toToken = tokens.find(t => t.token_id === toTokenId)
   const priceTokenIds = useMemo(
@@ -86,6 +90,8 @@ export const SwapDashboard = () => {
     onSuccess: () => queryClient.removeQueries({ queryKey: ['accounting-balance'] }),
   })
 
+  const summary = useQuoteSummary(quoteData, fromToken, toToken, prices)
+
   const fromFiat = useMemo(() => {
     if (!prices || !fromAmount || fromToken?.token_decimals == null) return undefined
     const price = prices[fromTokenId]
@@ -133,8 +139,8 @@ export const SwapDashboard = () => {
       address,
       fromToken,
       toToken,
-      rateLabel: computeRate(quoteData, fromToken, toToken) ?? '',
-      feeFiat: computeFeeFiat(quoteData, toToken, prices),
+      rateLabel: summary.rateLabel,
+      feeFiat: summary.feeFiat,
     })
     if (signed) navigate(activityPath())
   }
@@ -205,15 +211,16 @@ export const SwapDashboard = () => {
           </div>
 
           <div className="flex items-center justify-center py-1">
-            <button
+            <Button
               type="button"
+              variant="secondary"
+              size="icon-lg"
               onClick={handleSwapDirection}
               disabled={!fromTokenId && !toTokenId}
               aria-label="Swap direction"
-              className="flex items-center justify-center size-10 rounded-md border bg-background hover:bg-accent transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
             >
-              <ArrowUpDown className="size-4 text-primary" />
-            </button>
+              <ArrowUpDown className="size-4" />
+            </Button>
           </div>
 
           <div className="flex flex-col gap-2">
@@ -238,9 +245,7 @@ export const SwapDashboard = () => {
             </div>
           )}
 
-          {quoteData && (
-            <QuoteInfo quote={quoteData} fromToken={fromToken} toToken={toToken} prices={prices} />
-          )}
+          {quoteData && <QuoteInfo summary={summary} />}
 
           <div className="flex gap-5 w-full">
             {!isCorrectChain ? (
@@ -276,8 +281,7 @@ export const SwapDashboard = () => {
           toToken={toToken}
           fromAmount={fromAmount}
           toAmount={toAmount}
-          quote={quoteData}
-          prices={prices}
+          summary={summary}
           expired={quoteExpired}
           onBack={() => {
             resetSubmit()

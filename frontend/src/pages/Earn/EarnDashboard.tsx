@@ -1,4 +1,4 @@
-import { useMemo } from 'react'
+import { useMemo, type ReactNode } from 'react'
 import { Link } from 'react-router'
 import { Button } from '@/components/ui/button'
 import { Skeleton } from '@/components/ui/skeleton'
@@ -7,11 +7,12 @@ import { useTokens } from '@/api/swap'
 import { earnCreatePath } from '@/paths'
 import { ActiveStrategies } from './ActiveStrategies'
 import { EarnHeader } from './EarnHeader'
-import { PROTOCOL_LABELS, STRATEGY_LABELS } from './labels'
+import { STRATEGY_LABELS } from './labels'
+import { ProtocolLabel } from './ProtocolLabel'
 
 type YieldCardProps = {
   id: string
-  name: string
+  name: ReactNode
   apyLabel: string
   asset: string
   chain: string
@@ -76,7 +77,7 @@ export const EarnDashboard = () => {
       })
     return {
       strategies: items.map(i => ({ ...i, name: STRATEGY_LABELS[i.strategyKey] ?? i.strategyKey })),
-      protocols: items.map(i => ({ ...i, name: PROTOCOL_LABELS[i.strategyKey] ?? i.strategyKey })),
+      protocols: items.map(i => ({ ...i, name: <ProtocolLabel strategy={i.strategyKey} iconSize={24} /> })),
     }
   }, [poolsData, tokensData])
 

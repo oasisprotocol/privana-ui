@@ -1,47 +1,11 @@
 import { Link } from 'react-router'
-import { useAccount } from 'wagmi'
-import { useEarnBalance, useEarnPools, type EarnBalance, type EarnPool } from '@/api/earn'
-import { useTokens } from '@/api/swap'
 import { Button } from '@/components/ui/button'
 import { Skeleton } from '@/components/ui/skeleton'
-import { formatAmount } from '@/lib/tokens'
 import { earnCreatePath, earnWithdrawPath } from '@/paths'
-import { PROTOCOL_LABELS, STRATEGY_LABELS } from './labels'
+import { ProtocolLabel } from './ProtocolLabel'
+import { useActiveStrategies, type ActiveStrategy } from './useActiveStrategies'
 
-const formatApy = (bps: number) => (bps > 0 ? `+${(bps / 100).toFixed(2)}%` : '-')
-
-// TODO: remove once earn contract is deployed
-const MOCK_POSITIONS: EarnBalance[] = [
-  {
-    pool_id: 'mock-aave-v3-usdc',
-    token_id: '0x330ba47d00c7ce3018deee017b319fd7cc6473a2ddc9e6eba6ebb4207be15279',
-    shares: '2000000000',
-    underlying_amount: '2000000000',
-    exchange_rate: '1000000000000000000',
-  },
-]
-
-const MOCK_POOLS: EarnPool[] = [
-  {
-    pool_id: 'mock-aave-v3-usdc',
-    token_id: '0x330ba47d00c7ce3018deee017b319fd7cc6473a2ddc9e6eba6ebb4207be15279',
-    strategy: 'aave-v3',
-    total_assets: '0',
-    apy_bps: 480,
-    status: 'active',
-  },
-]
-
-type StrategyCardProps = {
-  poolId: string
-  name: string
-  earning: string
-  apyLabel: string
-  asset: string
-  protocol: string
-}
-
-const StrategyCard = ({ poolId, name, earning, apyLabel, asset, protocol }: StrategyCardProps) => (
+export const StrategyCard = ({ poolId, name, earning, apyLabel, asset, strategyKey }: ActiveStrategy) => (
   <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 bg-card border p-8 rounded-lg">
     <div className="flex flex-col gap-3 min-w-0">
       <p className="text-xl font-medium text-foreground">{name}</p>
@@ -62,7 +26,9 @@ const StrategyCard = ({ poolId, name, earning, apyLabel, asset, protocol }: Stra
         </div>
         <div className="flex items-center gap-2">
           <span className="text-muted-foreground">Protocol</span>
-          <span className="text-foreground">{protocol}</span>
+          <span className="text-foreground">
+            {strategyKey ? <ProtocolLabel strategy={strategyKey} /> : '—'}
+          </span>
         </div>
       </div>
     </div>
@@ -77,7 +43,7 @@ const StrategyCard = ({ poolId, name, earning, apyLabel, asset, protocol }: Stra
   </div>
 )
 
-const StrategyCardSkeleton = () => (
+export const StrategyCardSkeleton = () => (
   <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 bg-card border p-8 rounded-lg">
     <div className="flex flex-col gap-3 min-w-0 flex-1">
       <Skeleton className="h-7 w-40" />
@@ -88,46 +54,7 @@ const StrategyCardSkeleton = () => (
 )
 
 export const ActiveStrategies = () => {
-  const { address } = useAccount()
-  const { data: balanceData, isLoading: balanceLoading, error: balanceError } = useEarnBalance(address)
-  const { data: poolsData, isLoading: poolsLoading, error: poolsError } = useEarnPools()
-  const { data: tokensData, isLoading: tokensLoading } = useTokens()
-
-  const isLoading = balanceLoading || poolsLoading || tokensLoading
-
-  const useMockBalance = import.meta.env.DEV && !!balanceError
-  // Use mock pools whenever mock balance kicks in so the position→pool join works.
-  const useMockPools = import.meta.env.DEV && (useMockBalance || !!poolsError)
-
-  const positions = useMockBalance ? MOCK_POSITIONS : (balanceData?.positions ?? [])
-  const pools = useMockPools ? MOCK_POOLS : (poolsData?.pools ?? [])
-  const tokensById = new Map((tokensData?.tokens ?? []).map(t => [t.token_id, t]))
-  const poolsById = new Map(pools.map(p => [p.pool_id, p]))
-
-  const strategies = positions
-    .filter(p => {
-      try {
-        return BigInt(p.shares ?? '0') > 0n
-      } catch {
-        return false
-      }
-    })
-    .map(pos => {
-      const pool = poolsById.get(pos.pool_id)
-      const token = pool ? tokensById.get(pool.token_id) : tokensById.get(pos.token_id)
-      const decimals = token?.token_decimals
-      return {
-        poolId: pos.pool_id,
-        name: pool ? (STRATEGY_LABELS[pool.strategy] ?? pool.strategy) : pos.pool_id,
-        earning:
-          decimals != null
-            ? `${formatAmount(BigInt(pos.underlying_amount), decimals)} ${token?.token_symbol ?? ''}`
-            : '-',
-        apyLabel: pool ? formatApy(pool.apy_bps) : '-',
-        asset: token?.token_symbol ?? '—',
-        protocol: pool ? (PROTOCOL_LABELS[pool.strategy] ?? pool.strategy) : '—',
-      }
-    })
+  const { strategies, isLoading } = useActiveStrategies()
 
   if (!isLoading && strategies.length === 0) return null
 

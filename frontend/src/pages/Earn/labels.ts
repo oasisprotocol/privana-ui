@@ -5,3 +5,5 @@ export const STRATEGY_LABELS: Record<string, string> = {
 export const PROTOCOL_LABELS: Record<string, string> = {
   'aave-v3': 'AAVE',
 }
+
+export const formatApyBps = (bps: number): string => (bps > 0 ? `${(bps / 100).toFixed(2)}%` : '-')
