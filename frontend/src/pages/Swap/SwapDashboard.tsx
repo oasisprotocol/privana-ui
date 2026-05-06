@@ -10,6 +10,7 @@ import { useAccount, useWalletClient, useSwitchChain } from 'wagmi'
 import { useQueryClient } from '@tanstack/react-query'
 import { ArrowUpDown, EyeOff } from 'lucide-react'
 import { StepsNav } from '@/components/StepsNav'
+import { extractErrorMessage } from '@/lib/errors'
 import { activityPath } from '@/paths'
 import { SWAPPABLE_TOKEN_IDS } from '@/config/tokens'
 import { AssetRow } from './AssetRow'
@@ -28,7 +29,7 @@ export const SwapDashboard = () => {
   const { data, isLoading, error } = useTokens()
   const { address, chainId } = useAccount()
   const { data: walletClient } = useWalletClient()
-  const { switchChain } = useSwitchChain()
+  const { switchChain, error: switchChainError } = useSwitchChain()
   const queryClient = useQueryClient()
   const navigate = useNavigate()
   const [fromTokenId, setFromTokenId] = useState('')
@@ -261,6 +262,10 @@ export const SwapDashboard = () => {
               </Button>
             )}
           </div>
+
+          {switchChainError && (
+            <p className="text-sm text-center text-destructive">{extractErrorMessage(switchChainError)}</p>
+          )}
 
           <div className="flex items-center justify-center gap-2 px-0.5 text-xs font-medium text-muted-foreground">
             <EyeOff className="size-4 shrink-0" />

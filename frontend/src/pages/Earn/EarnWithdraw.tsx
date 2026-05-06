@@ -6,6 +6,7 @@ import { parseUnits } from 'viem'
 import { earnKeys, useEarnBalance, useEarnPools } from '@/api/earn'
 import { useTokens } from '@/api/swap'
 import { StepsNav } from '@/components/StepsNav'
+import { extractErrorMessage } from '@/lib/errors'
 import { activityPath } from '@/paths'
 import { formatApyBps, PROTOCOL_LABELS } from './labels'
 import { WithdrawConfigureStep } from './WithdrawConfigureStep'
@@ -21,7 +22,7 @@ export const EarnWithdraw = () => {
   const navigate = useNavigate()
   const queryClient = useQueryClient()
   const { address, chainId } = useAccount()
-  const { switchChain } = useSwitchChain()
+  const { switchChain, error: switchChainError } = useSwitchChain()
   const [amount, setAmount] = useState('')
   const [step, setStep] = useState(0)
 
@@ -73,6 +74,8 @@ export const EarnWithdraw = () => {
     setStep(0)
   }
 
+  const reviewError = withdrawError ?? (switchChainError ? extractErrorMessage(switchChainError) : null)
+
   if (!poolId) return null
 
   return (
@@ -104,7 +107,7 @@ export const EarnWithdraw = () => {
           onBack={handleBack}
           onConfirm={handleConfirm}
           loading={withdrawLoading}
-          error={withdrawError}
+          error={reviewError}
         />
       )}
     </div>
