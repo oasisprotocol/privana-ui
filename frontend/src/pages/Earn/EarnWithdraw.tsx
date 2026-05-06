@@ -1,6 +1,6 @@
 import { useMemo, useState } from 'react'
 import { useNavigate, useParams } from 'react-router'
-import { useAccount, useSwitchChain } from 'wagmi'
+import { useAccount, useSwitchChain, useWalletClient } from 'wagmi'
 import { useQueryClient } from '@tanstack/react-query'
 import { parseUnits } from 'viem'
 import { earnKeys, useEarnBalance, useEarnPools } from '@/api/earn'
@@ -22,6 +22,7 @@ export const EarnWithdraw = () => {
   const navigate = useNavigate()
   const queryClient = useQueryClient()
   const { address, chainId } = useAccount()
+  const { data: walletClient } = useWalletClient()
   const { switchChain, error: switchChainError } = useSwitchChain()
   const [amount, setAmount] = useState('')
   const [step, setStep] = useState(0)
@@ -62,11 +63,20 @@ export const EarnWithdraw = () => {
     },
   })
 
-  const canConfirm = !!address && !!token && !!position && !!poolId && !!amountBaseUnits
+  const canConfirm =
+    !!address && !!walletClient && !!token && !!position && !!poolId && !!amountBaseUnits
 
   const handleConfirm = async () => {
-    if (!canConfirm || !address || !token || !poolId) return
-    const ok = await runWithdraw({ amount: amountBaseUnits, address, token, poolId, protocol, apyLabel })
+    if (!canConfirm || !address || !walletClient || !token || !poolId) return
+    const ok = await runWithdraw({
+      amount: amountBaseUnits,
+      walletClient,
+      address,
+      token,
+      poolId,
+      protocol,
+      apyLabel,
+    })
     if (ok) navigate(activityPath())
   }
 

@@ -69,6 +69,13 @@ export interface WithdrawRequest {
   pool_id: string
   user_address: string
   amount: string
+  nonce: number
+  signature: string
+}
+
+export interface WithdrawNonceResponse {
+  user_address: string
+  nonce: number
 }
 
 export interface WithdrawResponse {
@@ -124,6 +131,11 @@ export function withdrawEarn(body: WithdrawRequest) {
     method: 'POST',
     body: JSON.stringify(body),
   })
+}
+
+export function getWithdrawNonce(userAddress: string) {
+  const search = new URLSearchParams({ user_address: userAddress })
+  return request<WithdrawNonceResponse>(`/v1/earn/withdraw/nonce?${search}`)
 }
 
 export function getEarnBalance(userAddress: string) {
