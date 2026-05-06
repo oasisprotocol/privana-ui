@@ -104,17 +104,12 @@ export const SwapDashboard = () => {
     }
   }, [prices, fromTokenId, fromAmount, fromToken])
   const toFiat = useMemo(() => {
-    if (!prices || !toAmount || toToken?.token_decimals == null) return undefined
+    if (!prices || !toAmountExact || toToken?.token_decimals == null) return undefined
     const price = prices[toTokenId]
     if (price == null) return undefined
-    try {
-      const units = parseUnits(toAmount, toToken.token_decimals)
-      const asNum = Number(formatUnits(units, toToken.token_decimals))
-      return Number.isFinite(asNum) ? asNum * price : undefined
-    } catch {
-      return undefined
-    }
-  }, [prices, toTokenId, toAmount, toToken])
+    const asNum = Number(toAmountExact)
+    return Number.isFinite(asNum) ? asNum * price : undefined
+  }, [prices, toTokenId, toAmountExact, toToken])
 
   const isCorrectChain = chainId === CHAIN_ID
   // Guard against submitting a stale quote while the user is still typing
