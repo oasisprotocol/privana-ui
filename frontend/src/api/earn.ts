@@ -65,6 +65,22 @@ export interface DepositResponse {
   status: string
 }
 
+export interface WithdrawRequest {
+  pool_id: string
+  user_address: string
+  amount: string
+}
+
+export interface WithdrawResponse {
+  withdraw_id: string
+  pool_id: string
+  amount: string
+  shares_burned: string | null
+  exchange_rate: string | null
+  tx_hash: string | null
+  status: string
+}
+
 export interface EarnBalance {
   pool_id: string
   token_id: string
@@ -98,6 +114,13 @@ export function getDepositQuote(params: DepositQuoteParams, signal?: AbortSignal
 
 export function depositEarn(body: DepositRequest) {
   return request<DepositResponse>('/v1/earn/deposit', {
+    method: 'POST',
+    body: JSON.stringify(body),
+  })
+}
+
+export function withdrawEarn(body: WithdrawRequest) {
+  return request<WithdrawResponse>('/v1/earn/withdraw', {
     method: 'POST',
     body: JSON.stringify(body),
   })
