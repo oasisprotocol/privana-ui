@@ -285,6 +285,8 @@ export const SwapDashboard = () => {
           canConfirm={canSwap}
           expiresAt={quoteData?.expires_at}
           toAmountExact={toAmountExact}
+          isCorrectChain={isCorrectChain}
+          onSwitchChain={() => switchChain({ chainId: CHAIN_ID })}
           onBack={() => {
             resetSubmit()
             setStep(0)

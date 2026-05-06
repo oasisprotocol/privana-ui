@@ -19,6 +19,8 @@ type ReviewStepProps = {
   quoteLoading?: boolean
   canConfirm?: boolean
   expiresAt?: number
+  isCorrectChain: boolean
+  onSwitchChain: () => void
   onBack: () => void
   onConfirm: () => void
   loading?: boolean
@@ -45,6 +47,8 @@ export const ReviewStep = ({
   quoteLoading,
   canConfirm = true,
   expiresAt,
+  isCorrectChain,
+  onSwitchChain,
   onBack,
   onConfirm,
   loading,
@@ -142,14 +146,20 @@ export const ReviewStep = ({
         <Button variant="secondary" size="lg" className="flex-1" onClick={onBack} disabled={loading}>
           Back
         </Button>
-        <Button
-          size="lg"
-          className="flex-1"
-          onClick={onConfirm}
-          disabled={loading || quoteLoading || !canConfirm}
-        >
-          {loading ? 'Signing & submitting...' : 'Confirm swap'}
-        </Button>
+        {!isCorrectChain ? (
+          <Button size="lg" className="flex-1" onClick={onSwitchChain} disabled={loading}>
+            Switch Network
+          </Button>
+        ) : (
+          <Button
+            size="lg"
+            className="flex-1"
+            onClick={onConfirm}
+            disabled={loading || quoteLoading || !canConfirm}
+          >
+            {loading ? 'Signing & submitting...' : 'Confirm swap'}
+          </Button>
+        )}
       </div>
 
       {error && <p className="text-sm text-center text-destructive">{error}</p>}
