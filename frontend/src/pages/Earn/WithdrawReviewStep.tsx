@@ -3,20 +3,7 @@ import { getTokenIcon } from '@oasisprotocol/flexvaults-sdk'
 import { useEarnBalance, useEarnPools } from '@/api/earn'
 import { useTokens } from '@/api/swap'
 import { Button } from '@/components/ui/button'
-import { Separator } from '@/components/ui/separator'
 import { Skeleton } from '@/components/ui/skeleton'
-
-// TODO: replace with backend values once earn endpoints expose them
-const MOCK_YIELD_CAPTURED_LABEL = '+$9.60 USDC'
-const MOCK_NEW_ALLOWANCE_LABEL = '$14,489.80'
-const MOCK_NEXT_UNLOCK_LABEL = '01:22:34'
-
-const Row = ({ label, value, valueClassName }: { label: string; value: string; valueClassName?: string }) => (
-  <div className="flex items-center justify-between text-xs font-medium leading-4">
-    <p className="text-muted-foreground">{label}</p>
-    <p className={valueClassName ?? 'text-foreground'}>{value}</p>
-  </div>
-)
 
 type WithdrawReviewStepProps = {
   poolId: string
@@ -74,14 +61,6 @@ export const WithdrawReviewStep = ({ poolId, amount, onBack, onConfirm }: Withdr
           )}
           <span className="text-sm font-semibold text-foreground leading-none">{tokenSymbol}</span>
         </div>
-      </div>
-
-      <Separator />
-
-      <div className="flex flex-col gap-4">
-        <Row label="Yield captured" value={MOCK_YIELD_CAPTURED_LABEL} valueClassName="text-chart-positive" />
-        <Row label="New liquid allowance" value={MOCK_NEW_ALLOWANCE_LABEL} />
-        <Row label="Next unlock epoch in:" value={MOCK_NEXT_UNLOCK_LABEL} />
       </div>
 
       <div className="flex gap-5 w-full">

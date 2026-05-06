@@ -15,9 +15,6 @@ import { STRATEGY_LABELS } from './labels'
 const PERCENTS = [25, 50, 75, 100] as const
 const percentLabel = (pct: number) => (pct === 100 ? 'Max' : `${pct}%`)
 
-// TODO: replace with backend value once earn endpoints expose it
-const MOCK_CAPTURED_YIELD_FIAT = 34.45
-
 type WithdrawConfigureStepProps = {
   poolId: string
   amount: string
@@ -125,13 +122,6 @@ export const WithdrawConfigureStep = ({
           )}
           <span className="text-sm font-semibold text-foreground leading-none">{tokenSymbol}</span>
         </div>
-      </div>
-
-      <div className="flex flex-col gap-1">
-        <p className="text-xs font-medium text-muted-foreground">Captured yield</p>
-        <p className="text-xl font-semibold text-chart-positive leading-none">
-          +{formatFiat(MOCK_CAPTURED_YIELD_FIAT)}
-        </p>
       </div>
 
       <div className="flex flex-col gap-2">
