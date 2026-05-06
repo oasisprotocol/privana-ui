@@ -71,7 +71,7 @@ export const EarnCreate = () => {
     reset: resetDeposit,
   } = useSubmitEarnDeposit({
     onSuccess: () => {
-      if (address) queryClient.invalidateQueries({ queryKey: earnKeys.balance(address) })
+      if (address) queryClient.removeQueries({ queryKey: earnKeys.balance(address) })
       queryClient.removeQueries({ queryKey: ['accounting-balance'] })
     },
   })
