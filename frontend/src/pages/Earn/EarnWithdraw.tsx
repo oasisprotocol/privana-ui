@@ -60,8 +60,10 @@ export const EarnWithdraw = () => {
     },
   })
 
+  const canConfirm = !!address && !!token && !!position && !!poolId && !!amountBaseUnits
+
   const handleConfirm = async () => {
-    if (!amountBaseUnits || !address || !token || !poolId) return
+    if (!canConfirm || !address || !token || !poolId) return
     const ok = await runWithdraw({ amount: amountBaseUnits, address, token, poolId, protocol, apyLabel })
     if (ok) navigate(activityPath())
   }
@@ -97,6 +99,7 @@ export const EarnWithdraw = () => {
           amount={amount}
           isLoading={isLoading}
           isCorrectChain={chainId === CHAIN_ID}
+          canConfirm={canConfirm}
           onSwitchChain={() => switchChain({ chainId: CHAIN_ID })}
           onBack={handleBack}
           onConfirm={handleConfirm}

@@ -11,6 +11,7 @@ type WithdrawReviewStepProps = {
   amount: string
   isLoading: boolean
   isCorrectChain: boolean
+  canConfirm?: boolean
   onSwitchChain: () => void
   onBack: () => void
   onConfirm: () => void
@@ -25,6 +26,7 @@ export const WithdrawReviewStep = ({
   amount,
   isLoading,
   isCorrectChain,
+  canConfirm = true,
   onSwitchChain,
   onBack,
   onConfirm,
@@ -77,7 +79,7 @@ export const WithdrawReviewStep = ({
             Switch Network
           </Button>
         ) : (
-          <Button size="lg" className="flex-1" onClick={onConfirm} disabled={loading}>
+          <Button size="lg" className="flex-1" onClick={onConfirm} disabled={loading || !canConfirm}>
             {loading ? 'Submitting...' : 'Confirm'}
           </Button>
         )}
