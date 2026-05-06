@@ -10,6 +10,11 @@ import { signWithdrawConsent } from './signWithdrawConsent'
 const CHAIN_ID = parseInt(import.meta.env.VITE_CHAIN_ID, 10)
 const EARN_MANAGER_CONTRACT = import.meta.env.VITE_EARN_MANAGER_CONTRACT_ADDRESS
 
+// Backend returns a 400 with this prefix when the submitted nonce no longer
+// matches EarnManager.withdrawNonces[user] — see vault_service.withdraw.
+const isStaleNonceError = (err: unknown): boolean =>
+  err instanceof Error && err.message.startsWith('Stale withdraw nonce')
+
 type Params = {
   onSuccess?: () => void
 }
@@ -38,19 +43,21 @@ export const useSubmitEarnWithdraw = ({ onSuccess }: Params = {}) => {
     setLoading(true)
     setError(null)
     try {
-      const { nonce } = await getWithdrawNonce(address)
+      const signAt = (nonce: number) =>
+        signWithdrawConsent({
+          walletClient,
+          chainId: CHAIN_ID,
+          earnManagerAddress: EARN_MANAGER_CONTRACT,
+          message: {
+            user: address,
+            poolId: poolId as `0x${string}`,
+            amount: BigInt(amount),
+            nonce: BigInt(nonce),
+          },
+        })
 
-      const signature = await signWithdrawConsent({
-        walletClient,
-        chainId: CHAIN_ID,
-        earnManagerAddress: EARN_MANAGER_CONTRACT,
-        message: {
-          user: address,
-          poolId: poolId as `0x${string}`,
-          amount: BigInt(amount),
-          nonce: BigInt(nonce),
-        },
-      })
+      const { nonce } = await getWithdrawNonce(address)
+      const signature = await signAt(nonce)
 
       const id = crypto.randomUUID()
       addActivity({
@@ -70,11 +77,31 @@ export const useSubmitEarnWithdraw = ({ onSuccess }: Params = {}) => {
         apyLabel,
       })
 
+      // Submit, retrying once if the server rejects with a stale-nonce 400 (e.g.
+      // the on-chain nonce advanced between fetch and submit). Re-prompts the
+      // wallet for a fresh signature against the current nonce.
+      const submit = async () => {
+        try {
+          return await withdrawEarn({ pool_id: poolId, user_address: address, amount, nonce, signature })
+        } catch (err) {
+          if (!isStaleNonceError(err)) throw err
+          const { nonce: freshNonce } = await getWithdrawNonce(address)
+          const freshSignature = await signAt(freshNonce)
+          return withdrawEarn({
+            pool_id: poolId,
+            user_address: address,
+            amount,
+            nonce: freshNonce,
+            signature: freshSignature,
+          })
+        }
+      }
+
       // Fire-and-forget: backend withdraw may take seconds. Caller navigates away
       // once this returns true; the result flows back to the activity entry via
       // updateActivity. `loading` stays true until the POST resolves so the
       // Confirm button remains disabled during the in-flight window.
-      withdrawEarn({ pool_id: poolId, user_address: address, amount, nonce, signature })
+      submit()
         .then(withdraw => {
           const status: ActivityStatus =
             withdraw.status === 'completed' || withdraw.status === 'failed' ? withdraw.status : 'in-progress'
