@@ -49,11 +49,11 @@ export const useSubmitEarnWithdraw = ({ onSuccess }: Params = {}) => {
       protocol,
       apyLabel,
     })
-    setLoading(false)
 
     // Fire-and-forget: backend withdraw may take seconds. Caller navigates away
     // once this returns true; the result flows back to the activity entry via
-    // updateActivity.
+    // updateActivity. `loading` stays true until the POST resolves so the
+    // Confirm button remains disabled during the in-flight window.
     withdrawEarn({ pool_id: poolId, user_address: address, amount })
       .then(withdraw => {
         const status: ActivityStatus =
@@ -71,6 +71,7 @@ export const useSubmitEarnWithdraw = ({ onSuccess }: Params = {}) => {
           error: extractErrorMessage(err, 'Withdraw failed'),
         })
       })
+      .finally(() => setLoading(false))
 
     return true
   }
