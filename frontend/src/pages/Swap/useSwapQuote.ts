@@ -70,7 +70,7 @@ export const useSwapQuote = ({
     return () => abort.abort()
   }, [enabled, inputKey, inputId, fromTokenId, toTokenId, debouncedFromAmount, address, fromDecimals])
 
-  const data = enabled && result?.inputId === inputId ? result.quote : null
+  const data = enabled && result?.key === inputKey ? result.quote : null
   const error = errorState?.key === inputKey ? errorState.message : null
   const loading = enabled && (!result || result.key !== inputKey) && !error
   const toAmount =
