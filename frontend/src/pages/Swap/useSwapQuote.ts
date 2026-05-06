@@ -14,7 +14,6 @@ type Params = {
   fromDecimals: number | null | undefined
   toDecimals: number | null | undefined
   disabled?: boolean
-  pauseRefetch?: boolean
 }
 
 export const useSwapQuote = ({
@@ -25,7 +24,6 @@ export const useSwapQuote = ({
   fromDecimals,
   toDecimals,
   disabled,
-  pauseRefetch,
 }: Params) => {
   const debouncedFromAmount = useDebouncedValue(fromAmount)
   const [refetchKey, setRefetchKey] = useState(0)
@@ -82,7 +80,6 @@ export const useSwapQuote = ({
 
   const { expired } = useQuoteExpiry({
     data,
-    pauseRefetch,
     onRefetch: () => setRefetchKey(k => k + 1),
   })
 
