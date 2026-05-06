@@ -68,8 +68,8 @@ export const SwapDashboard = () => {
     loading: quoteLoading,
     error: quoteError,
     toAmount,
+    toAmountExact,
     reset: resetQuote,
-    expired: quoteExpired,
   } = useSwapQuote({
     fromTokenId,
     toTokenId,
@@ -78,7 +78,6 @@ export const SwapDashboard = () => {
     fromDecimals: fromToken?.token_decimals,
     toDecimals: toToken?.token_decimals,
     disabled: insufficientFunds,
-    pauseRefetch: step === 1,
   })
 
   const {
@@ -105,17 +104,12 @@ export const SwapDashboard = () => {
     }
   }, [prices, fromTokenId, fromAmount, fromToken])
   const toFiat = useMemo(() => {
-    if (!prices || !toAmount || toToken?.token_decimals == null) return undefined
+    if (!prices || !toAmountExact || toToken?.token_decimals == null) return undefined
     const price = prices[toTokenId]
     if (price == null) return undefined
-    try {
-      const units = parseUnits(toAmount, toToken.token_decimals)
-      const asNum = Number(formatUnits(units, toToken.token_decimals))
-      return Number.isFinite(asNum) ? asNum * price : undefined
-    } catch {
-      return undefined
-    }
-  }, [prices, toTokenId, toAmount, toToken])
+    const asNum = Number(toAmountExact)
+    return Number.isFinite(asNum) ? asNum * price : undefined
+  }, [prices, toTokenId, toAmountExact, toToken])
 
   const isCorrectChain = chainId === CHAIN_ID
   // Guard against submitting a stale quote while the user is still typing
@@ -167,7 +161,7 @@ export const SwapDashboard = () => {
             <Skeleton className="h-5 w-16" />
             <Skeleton className="h-12 w-full" />
           </div>
-          <div className="flex items-center justify-center py-1">
+          <div className="-my-4 flex items-center justify-center py-1">
             <Skeleton className="size-10 rounded-md" />
           </div>
           <div className="flex flex-col gap-2">
@@ -210,7 +204,7 @@ export const SwapDashboard = () => {
             />
           </div>
 
-          <div className="flex items-center justify-center py-1">
+          <div className="-my-4 flex items-center justify-center py-1">
             <Button
               type="button"
               variant="secondary"
@@ -260,10 +254,10 @@ export const SwapDashboard = () => {
               <Button
                 size="lg"
                 className="flex-1 h-12 text-base"
-                disabled={!canSwap}
+                disabled={!canSwap || quoteLoading}
                 onClick={() => setStep(1)}
               >
-                Swap
+                Review swap
               </Button>
             )}
           </div>
@@ -275,14 +269,17 @@ export const SwapDashboard = () => {
         </div>
       )}
 
-      {data && step === 1 && quoteData && (
+      {data && step === 1 && (
         <ReviewStep
           fromToken={fromToken}
           toToken={toToken}
           fromAmount={fromAmount}
           toAmount={toAmount}
           summary={summary}
-          expired={quoteExpired}
+          quoteLoading={quoteLoading}
+          canConfirm={canSwap}
+          expiresAt={quoteData?.expires_at}
+          toAmountExact={toAmountExact}
           onBack={() => {
             resetSubmit()
             setStep(0)

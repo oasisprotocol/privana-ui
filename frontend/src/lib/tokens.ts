@@ -29,3 +29,18 @@ export const formatAmount = (
     maximumFractionDigits: displayDecimals,
   }).format(value as unknown as number)
 }
+
+// Truncate at maxDecimals (no rounding — never shows more than the user gets)
+// and drop trailing zeros. Examples: "0.002063317108728893" → "0.002063",
+// "1.000000" → "1", "0" → "0", for small amounts "<0.000001".
+export const formatAmountTrimmed = (
+  amount: bigint,
+  tokenDecimals: number,
+  maxDecimals: number = 6,
+): string => {
+  if (amount === 0n) return '0'
+  const [intPart, decPart = ''] = formatUnits(amount, tokenDecimals).split('.')
+  const truncated = decPart.slice(0, maxDecimals).replace(/0+$/, '')
+  if (truncated) return `${intPart}.${truncated}`
+  return intPart === '0' ? `<0.${'0'.repeat(maxDecimals - 1)}1` : intPart
+}

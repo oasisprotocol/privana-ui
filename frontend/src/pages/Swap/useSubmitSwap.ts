@@ -5,6 +5,7 @@ import { executeSwap } from '@/api/swap'
 import type { QuoteResponse, TokenInfo } from '@/api/swap'
 import { useActivity } from '@/contexts/ActivityProvider/useActivity'
 import type { ActivityStatus } from '@/contexts/ActivityProvider/context'
+import { extractErrorMessage } from '@/lib/errors'
 
 const CHAIN_ID = parseInt(import.meta.env.VITE_CHAIN_ID, 10)
 const ACCOUNTING_CONTRACT = import.meta.env.VITE_ACCOUNTING_CONTRACT_ADDRESS
@@ -95,13 +96,13 @@ export const useSubmitSwap = ({ onSuccess }: Params = {}) => {
         .catch(err => {
           updateActivity(id, {
             status: 'failed',
-            error: err instanceof Error ? err.message : 'Swap failed',
+            error: extractErrorMessage(err, 'Swap failed'),
           })
         })
 
       return true
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Swap failed')
+      setError(extractErrorMessage(err, 'Swap failed'))
       setLoading(false)
       return false
     }

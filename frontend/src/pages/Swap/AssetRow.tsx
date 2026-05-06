@@ -43,7 +43,7 @@ export const AssetRow = ({
   onMax,
 }: AssetRowProps) => {
   const renderBalance = () => {
-    if (!token || !balance) return <span>Balance: -</span>
+    if (!token || !balance) return null
     if (balance.loading) return <Skeleton className="h-4 w-32" />
     if (token.token_decimals == null) return <span>Balance: -</span>
     return (
@@ -64,7 +64,7 @@ export const AssetRow = ({
             <button
               type="button"
               disabled={disabled}
-              className="h-12 rounded-l-[10px] rounded-r-none bg-secondary px-4 py-3 flex items-center gap-2 text-base font-medium text-secondary-foreground shrink-0 w-[120px] cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed focus-visible:outline-none"
+              className="h-12 rounded-l-[10px] rounded-r-none bg-secondary px-4 py-3 flex items-center gap-2 text-base font-medium text-secondary-foreground shrink-0 w-33 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed focus-visible:outline-none"
             >
               {token?.token_symbol && (
                 <span className="shrink-0 size-5 overflow-hidden rounded-full">
@@ -100,12 +100,12 @@ export const AssetRow = ({
           )}
         </div>
       </div>
-      <div className="text-xs font-medium text-muted-foreground flex gap-2 items-center justify-between px-0.5">
+      <div className="min-h-6 text-xs font-medium text-muted-foreground flex gap-2 items-center justify-between px-0.5">
         <span>{fiatValue != null ? `≈ ${formatFiat(fiatValue)}` : ''}</span>
         <div className="flex items-center gap-2">
           {balanceLabel ? <span>{balanceLabel}</span> : renderBalance()}
-          {onMax && balance && !balance.loading && balance.wei != null && (
-            <Button type="button" variant="secondary" size="xs" onClick={onMax} disabled={disabled || !token}>
+          {onMax && token && balance && !balance.loading && balance.wei != null && (
+            <Button type="button" variant="secondary" size="xs" onClick={onMax} disabled={disabled}>
               MAX
             </Button>
           )}
