@@ -21,7 +21,7 @@ interface TokenEntry {
 }
 
 export const PortfolioSummary: FC = () => {
-  const { enabledTokens } = useFlexvaultsContext()
+  const { enabledTokens, getTokenById } = useFlexvaultsContext()
   const tokenIds = useMemo(() => enabledTokens.map(t => t.id), [enabledTokens])
   const { balances, isLoading: balancesLoading } = useBatchBalances({ tokenIds })
   const { locks, isLoading: locksLoading } = useLockedFunds()
@@ -39,11 +39,10 @@ export const PortfolioSummary: FC = () => {
         available,
         locked: lockedAmount,
         total: available + lockedAmount,
-        // TODO: temporary workaround, remove once SDK returns decimals
-        decimals: b.token_symbol === 'WETH' ? 18 : 6,
+        decimals: getTokenById(b.token_id)?.decimals ?? 0,
       }
     })
-  }, [balances, locks])
+  }, [balances, locks, getTokenById])
   const hasTokens = tokens.some(t => t.total > 0n)
   const hasStrategies = strategies.length > 0
 

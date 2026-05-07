@@ -19,7 +19,7 @@ import { Link } from 'react-router'
 
 export const DashboardHome = () => {
   const [modalOpen, setModalOpen] = useState<ComponentProps<typeof FlexvaultsModal>['defaultTab']>(undefined)
-  const { enabledTokens, tokensStatus } = useFlexvaultsContext()
+  const { enabledTokens, tokensStatus, getTokenById } = useFlexvaultsContext()
   const tokenIds = useMemo(() => enabledTokens.map(t => t.id), [enabledTokens])
   const { balances, isLoading } = useBatchBalances({ tokenIds })
   const pending = tokensStatus !== 'ready' || isLoading
@@ -34,8 +34,8 @@ export const DashboardHome = () => {
     for (const b of balances) {
       const price = prices[b.token_id]
       if (price == null) continue
-      // TODO: temporary workaround, remove once SDK returns decimals
-      const decimals = b.token_symbol === 'WETH' ? 18 : 6
+      const decimals = getTokenById(b.token_id)?.decimals
+      if (decimals == null) continue
       const availableAmount = Number(formatUnits(BigInt(b.balance || '0'), decimals))
       const lockedAmount = locks
         .filter(l => l.token_id === b.token_id)
@@ -44,7 +44,7 @@ export const DashboardHome = () => {
       total += (availableAmount + lockedAmount) * price
     }
     return { availableFiatValue: available, totalFiatValue: total }
-  }, [balances, locks, prices])
+  }, [balances, locks, prices, getTokenById])
   const [alertOpen, setAlertOpen] = useState(false)
   // TODO: take into account yield, pending etc when API is ready
   const hasFunds = balances.some(b => BigInt(b.balance || '0') > 0n)
