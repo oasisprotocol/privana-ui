@@ -7,12 +7,12 @@ import { Skeleton } from '@/components/ui/skeleton'
 import { useBalance } from '@oasisprotocol/flexvaults-sdk'
 import { formatUnits, parseUnits } from 'viem'
 import { useAccount, useWalletClient, useSwitchChain } from 'wagmi'
-import { useQueryClient } from '@tanstack/react-query'
 import { ArrowUpDown, EyeOff } from 'lucide-react'
 import { StepsNav } from '@/components/StepsNav'
 import { extractErrorMessage } from '@/lib/errors'
 import { activityPath } from '@/paths'
 import { SWAPPABLE_TOKEN_IDS } from '@/config/tokens'
+import { useResetBalanceCaches } from '@/hooks/use-reset-balance-caches'
 import { AssetRow } from './AssetRow'
 import { QuoteInfo } from './QuoteInfo'
 import { ReviewStep } from './ReviewStep'
@@ -30,7 +30,7 @@ export const SwapDashboard = () => {
   const { address, chainId } = useAccount()
   const { data: walletClient } = useWalletClient()
   const { switchChain, error: switchChainError } = useSwitchChain()
-  const queryClient = useQueryClient()
+  const resetBalanceCaches = useResetBalanceCaches()
   const navigate = useNavigate()
   const [fromTokenId, setFromTokenId] = useState('')
   const [toTokenId, setToTokenId] = useState('')
@@ -87,7 +87,7 @@ export const SwapDashboard = () => {
     error: swapError,
     reset: resetSubmit,
   } = useSubmitSwap({
-    onSuccess: () => queryClient.removeQueries({ queryKey: ['accounting-balance'] }),
+    onSuccess: resetBalanceCaches,
   })
 
   const summary = useQuoteSummary(quoteData, fromToken, toToken, prices)

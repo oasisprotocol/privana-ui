@@ -1,11 +1,11 @@
 import { useMemo, useState } from 'react'
 import { useNavigate, useParams } from 'react-router'
 import { useAccount, useSwitchChain, useWalletClient } from 'wagmi'
-import { useQueryClient } from '@tanstack/react-query'
 import { parseUnits } from 'viem'
-import { earnKeys, useEarnBalance, useEarnPools } from '@/api/earn'
+import { useEarnBalance, useEarnPools } from '@/api/earn'
 import { useTokens } from '@/api/swap'
 import { StepsNav } from '@/components/StepsNav'
+import { useResetBalanceCaches } from '@/hooks/use-reset-balance-caches'
 import { extractErrorMessage } from '@/lib/errors'
 import { activityPath } from '@/paths'
 import { formatApyBps, PROTOCOL_LABELS } from './labels'
@@ -20,7 +20,7 @@ const steps = ['1. Configure', '2. Review']
 export const EarnWithdraw = () => {
   const { poolId } = useParams<{ poolId: string }>()
   const navigate = useNavigate()
-  const queryClient = useQueryClient()
+  const resetBalanceCaches = useResetBalanceCaches()
   const { address, chainId } = useAccount()
   const { data: walletClient } = useWalletClient()
   const { switchChain, error: switchChainError } = useSwitchChain()
@@ -57,10 +57,7 @@ export const EarnWithdraw = () => {
     error: withdrawError,
     reset: resetWithdraw,
   } = useSubmitEarnWithdraw({
-    onSuccess: () => {
-      if (address) queryClient.removeQueries({ queryKey: earnKeys.balance(address) })
-      queryClient.removeQueries({ queryKey: ['accounting-balance'] })
-    },
+    onSuccess: resetBalanceCaches,
   })
 
   const canConfirm = !!address && !!walletClient && !!token && !!position && !!poolId && !!amountBaseUnits
