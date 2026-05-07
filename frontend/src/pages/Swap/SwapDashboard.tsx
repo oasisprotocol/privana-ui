@@ -152,6 +152,10 @@ export const SwapDashboard = () => {
     <div>
       <StepsNav steps={steps} activeIndex={step} ariaLabel="Swap progress" />
 
+      {switchChainError && (
+        <p className="text-sm text-center text-destructive mb-4">{extractErrorMessage(switchChainError)}</p>
+      )}
+
       {isLoading && (
         <div className="flex flex-col gap-4 w-full max-w-145 mx-auto bg-card border p-6 rounded-[14px] shadow-[0_1px_2px_0_rgba(0,0,0,0.05)]">
           <div className="flex flex-col gap-1.5">
@@ -262,10 +266,6 @@ export const SwapDashboard = () => {
               </Button>
             )}
           </div>
-
-          {switchChainError && (
-            <p className="text-sm text-center text-destructive">{extractErrorMessage(switchChainError)}</p>
-          )}
 
           <div className="flex items-center justify-center gap-2 px-0.5 text-xs font-medium text-muted-foreground">
             <EyeOff className="size-4 shrink-0" />

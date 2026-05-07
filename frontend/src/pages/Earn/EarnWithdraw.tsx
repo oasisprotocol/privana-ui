@@ -63,8 +63,7 @@ export const EarnWithdraw = () => {
     },
   })
 
-  const canConfirm =
-    !!address && !!walletClient && !!token && !!position && !!poolId && !!amountBaseUnits
+  const canConfirm = !!address && !!walletClient && !!token && !!position && !!poolId && !!amountBaseUnits
 
   const handleConfirm = async () => {
     if (!canConfirm || !address || !walletClient || !token || !poolId) return
