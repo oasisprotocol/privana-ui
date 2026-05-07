@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import type { WalletClient } from 'viem'
-import { getWithdrawNonce, withdrawEarn } from '@/api/earn'
+import { ApiError, getWithdrawNonce, withdrawEarn } from '@/api/earn'
 import type { TokenInfo } from '@/api/swap'
 import type { ActivityStatus } from '@/contexts/ActivityProvider/context'
 import { useActivity } from '@/contexts/ActivityProvider/useActivity'
@@ -9,11 +9,6 @@ import { signWithdrawConsent } from './signWithdrawConsent'
 
 const CHAIN_ID = parseInt(import.meta.env.VITE_CHAIN_ID, 10)
 const EARN_MANAGER_CONTRACT = import.meta.env.VITE_EARN_MANAGER_CONTRACT_ADDRESS
-
-// Backend returns a 400 with this prefix when the submitted nonce no longer
-// matches EarnManager.withdrawNonces[user] — see vault_service.withdraw.
-const isStaleNonceError = (err: unknown): boolean =>
-  err instanceof Error && err.message.startsWith('Stale withdraw nonce')
 
 type Params = {
   onSuccess?: () => void
@@ -77,15 +72,18 @@ export const useSubmitEarnWithdraw = ({ onSuccess }: Params = {}) => {
         apyLabel,
       })
 
-      // Submit, retrying once if the server rejects with a stale-nonce 400 (e.g.
-      // the on-chain nonce advanced between fetch and submit). Re-prompts the
-      // wallet for a fresh signature against the current nonce.
+      // Submit, retrying once if the on-chain nonce advanced between fetch and
+      // submit. On any 400 we refetch the nonce and only retry (re-prompting
+      // the wallet for a fresh signature) if it actually moved — that's what
+      // makes the original signature stale. Other 400s (e.g. insufficient
+      // shares) leave the nonce unchanged and surface to the caller as-is.
       const submit = async () => {
         try {
           return await withdrawEarn({ pool_id: poolId, user_address: address, amount, nonce, signature })
         } catch (err) {
-          if (!isStaleNonceError(err)) throw err
+          if (!(err instanceof ApiError) || err.status !== 400) throw err
           const { nonce: freshNonce } = await getWithdrawNonce(address)
+          if (freshNonce === nonce) throw err
           const freshSignature = await signAt(freshNonce)
           return withdrawEarn({
             pool_id: poolId,

@@ -2,6 +2,17 @@ import { useQuery } from '@tanstack/react-query'
 
 const BASE_URL = import.meta.env.VITE_SWAP_API_URL ?? 'http://localhost:8001'
 
+export class ApiError extends Error {
+  readonly status: number
+  readonly detail: string | null
+  constructor(status: number, detail: string | null) {
+    super(detail ?? `Request failed: ${status}`)
+    this.name = 'ApiError'
+    this.status = status
+    this.detail = detail
+  }
+}
+
 async function request<T>(path: string, init?: RequestInit): Promise<T> {
   const res = await fetch(`${BASE_URL}${path}`, {
     headers: { 'Content-Type': 'application/json' },
@@ -9,7 +20,7 @@ async function request<T>(path: string, init?: RequestInit): Promise<T> {
   })
   if (!res.ok) {
     const body = await res.json().catch(() => null)
-    throw new Error(body?.detail ?? `Request failed: ${res.status}`)
+    throw new ApiError(res.status, body?.detail ?? null)
   }
   return res.json()
 }
