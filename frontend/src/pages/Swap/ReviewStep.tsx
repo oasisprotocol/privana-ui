@@ -119,6 +119,17 @@ export const ReviewStep = ({
           </div>
         </div>
 
+        {(quoteLoading || expiresAt) && (
+          <p className="text-xs font-medium leading-4 text-muted-foreground">
+            Quote will update in{' '}
+            {quoteLoading || !expiresAt ? (
+              <Loader2 className="inline size-3 animate-spin align-[-2px]" />
+            ) : (
+              <span className="font-bold">{remaining}s</span>
+            )}
+          </p>
+        )}
+
         <Separator />
 
         <div className="flex flex-col gap-4">
@@ -127,18 +138,6 @@ export const ReviewStep = ({
           <Row label="Network & route fee" value={summary.routeCostFiatLabel} />
           <Row label="Service fee" value={summary.feeFiatLabel} />
           <Row label="Estimated time" value="<20s" />
-          {expiresAt && (
-            <Row
-              label="Quote refreshes in"
-              value={
-                quoteLoading ? (
-                  <Loader2 className="size-3 animate-spin text-muted-foreground" />
-                ) : (
-                  `${remaining}s`
-                )
-              }
-            />
-          )}
         </div>
       </div>
 
