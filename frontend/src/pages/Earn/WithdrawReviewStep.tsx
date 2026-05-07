@@ -3,6 +3,7 @@ import type { EarnBalance, EarnPool } from '@/api/earn'
 import type { TokenInfo } from '@/api/swap'
 import { Button } from '@/components/ui/button'
 import { Skeleton } from '@/components/ui/skeleton'
+import { StepCard } from '@/components/StepCard'
 
 type WithdrawReviewStepProps = {
   pool: EarnPool | undefined
@@ -37,12 +38,12 @@ export const WithdrawReviewStep = ({
 
   if (isLoading) {
     return (
-      <div className="flex flex-col gap-4 w-full max-w-120 mx-auto bg-card border p-6 rounded-[14px] shadow-[0_1px_2px_0_rgba(0,0,0,0.05)]">
+      <StepCard>
         <Skeleton className="h-8 w-40" />
         <Skeleton className="h-5 w-full max-w-80" />
         <Skeleton className="h-12 w-full" />
         <Skeleton className="h-12 w-full" />
-      </div>
+      </StepCard>
     )
   }
 
@@ -51,7 +52,7 @@ export const WithdrawReviewStep = ({
   }
 
   return (
-    <div className="flex flex-col gap-6 w-full max-w-120 mx-auto bg-card border p-6 rounded-[14px] shadow-[0_1px_2px_0_rgba(0,0,0,0.05)]">
+    <StepCard className="gap-6">
       <div className="flex flex-col gap-1.5">
         <h2 className="text-2xl font-medium text-foreground leading-8">Review withdrawal</h2>
         <p className="text-sm text-muted-foreground">Confirm before executing.</p>
@@ -86,6 +87,6 @@ export const WithdrawReviewStep = ({
       </div>
 
       {error && <p className="text-sm text-center text-destructive">{error}</p>}
-    </div>
+    </StepCard>
   )
 }

@@ -7,6 +7,7 @@ import type { TokenInfo } from '@/api/swap'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Skeleton } from '@/components/ui/skeleton'
+import { StepCard } from '@/components/StepCard'
 import { formatAmount, formatFiat, isPositiveAmount } from '@/lib/tokens'
 import { cn } from '@/lib/utils'
 import { STRATEGY_LABELS } from './labels'
@@ -82,13 +83,13 @@ export const WithdrawConfigureStep = ({
 
   if (isLoading) {
     return (
-      <div className="flex flex-col gap-4 w-full max-w-120 mx-auto bg-card border p-6 rounded-[14px] shadow-[0_1px_2px_0_rgba(0,0,0,0.05)]">
+      <StepCard>
         <Skeleton className="h-8 w-64" />
         <Skeleton className="h-5 w-full max-w-80" />
         <Skeleton className="h-12 w-full" />
         <Skeleton className="h-12 w-full" />
         <Skeleton className="h-12 w-full" />
-      </div>
+      </StepCard>
     )
   }
 
@@ -97,7 +98,7 @@ export const WithdrawConfigureStep = ({
   }
 
   return (
-    <div className="flex flex-col gap-4 w-full max-w-120 mx-auto bg-card border p-6 rounded-[14px] shadow-[0_1px_2px_0_rgba(0,0,0,0.05)]">
+    <StepCard>
       <div className="flex flex-col gap-1.5">
         <h2 className="text-2xl font-medium text-foreground leading-8">Withdraw from {strategyName}</h2>
         <p className="text-sm text-muted-foreground">Move yield earnings back to your allowance.</p>
@@ -174,6 +175,6 @@ export const WithdrawConfigureStep = ({
       <Button size="lg" className="w-full h-12 text-base" disabled={!canReview} onClick={onReview}>
         Review withdrawal
       </Button>
-    </div>
+    </StepCard>
   )
 }

@@ -4,6 +4,7 @@ import { getTokenIcon } from '@oasisprotocol/flexvaults-sdk'
 import { Button } from '@/components/ui/button'
 import { Separator } from '@/components/ui/separator'
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip'
+import { StepCard } from '@/components/StepCard'
 import type { TokenInfo } from '@/api/swap'
 import type { QuoteSummary } from './useQuoteSummary'
 
@@ -63,7 +64,7 @@ export const ReviewStep = ({
   const remaining = expiresAt ? remainingSeconds(expiresAt) : 0
 
   return (
-    <div className="flex flex-col gap-6 w-full max-w-145 mx-auto bg-card border p-6 rounded-[14px] shadow-[0_1px_2px_0_rgba(0,0,0,0.05)]">
+    <StepCard className="gap-6">
       <div className="flex flex-col gap-1.5">
         <h2 className="text-2xl font-medium text-foreground leading-8">Review swap</h2>
         <p className="text-sm text-muted-foreground">Confirm before executing.</p>
@@ -162,6 +163,6 @@ export const ReviewStep = ({
       </div>
 
       {error && <p className="text-sm text-center text-destructive">{error}</p>}
-    </div>
+    </StepCard>
   )
 }

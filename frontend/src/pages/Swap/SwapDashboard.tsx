@@ -12,6 +12,7 @@ import { StepsNav } from '@/components/StepsNav'
 import { extractErrorMessage } from '@/lib/errors'
 import { activityPath } from '@/paths'
 import { SWAPPABLE_TOKEN_IDS } from '@/config/tokens'
+import { StepCard } from '@/components/StepCard'
 import { useResetBalanceCaches } from '@/hooks/use-reset-balance-caches'
 import { AssetRow } from './AssetRow'
 import { QuoteInfo } from './QuoteInfo'
@@ -157,7 +158,7 @@ export const SwapDashboard = () => {
       )}
 
       {isLoading && (
-        <div className="flex flex-col gap-4 w-full max-w-145 mx-auto bg-card border p-6 rounded-[14px] shadow-[0_1px_2px_0_rgba(0,0,0,0.05)]">
+        <StepCard>
           <div className="flex flex-col gap-1.5">
             <Skeleton className="h-8 w-40" />
             <Skeleton className="h-5 w-full max-w-80" />
@@ -174,12 +175,12 @@ export const SwapDashboard = () => {
             <Skeleton className="h-12 w-full" />
           </div>
           <Skeleton className="h-12 w-full" />
-        </div>
+        </StepCard>
       )}
       {error && <p>Failed to load tokens: {error.message}</p>}
 
       {data && step === 0 && (
-        <div className="flex flex-col gap-4 w-full max-w-145 mx-auto bg-card border p-6 rounded-[14px] shadow-[0_1px_2px_0_rgba(0,0,0,0.05)]">
+        <StepCard>
           <div className="flex flex-col gap-1.5">
             <h2 className="text-2xl font-medium text-foreground leading-8">Make a swap</h2>
             <p className="text-sm text-muted-foreground">
@@ -271,7 +272,7 @@ export const SwapDashboard = () => {
             <EyeOff className="size-4 shrink-0" />
             <span>Private execution — no public trace</span>
           </div>
-        </div>
+        </StepCard>
       )}
 
       {data && step === 1 && (
