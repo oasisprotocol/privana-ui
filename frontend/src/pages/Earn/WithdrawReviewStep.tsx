@@ -1,44 +1,38 @@
-import { useAccount } from 'wagmi'
 import { getTokenIcon } from '@oasisprotocol/flexvaults-sdk'
-import { useEarnBalance, useEarnPools } from '@/api/earn'
-import { useTokens } from '@/api/swap'
+import type { EarnBalance, EarnPool } from '@/api/earn'
+import type { TokenInfo } from '@/api/swap'
 import { Button } from '@/components/ui/button'
-import { Separator } from '@/components/ui/separator'
 import { Skeleton } from '@/components/ui/skeleton'
 
-// TODO: replace with backend values once earn endpoints expose them
-const MOCK_YIELD_CAPTURED_LABEL = '+$9.60 USDC'
-const MOCK_NEW_ALLOWANCE_LABEL = '$14,489.80'
-const MOCK_NEXT_UNLOCK_LABEL = '01:22:34'
-
-const Row = ({ label, value, valueClassName }: { label: string; value: string; valueClassName?: string }) => (
-  <div className="flex items-center justify-between text-xs font-medium leading-4">
-    <p className="text-muted-foreground">{label}</p>
-    <p className={valueClassName ?? 'text-foreground'}>{value}</p>
-  </div>
-)
-
 type WithdrawReviewStepProps = {
-  poolId: string
+  pool: EarnPool | undefined
+  position: EarnBalance | undefined
+  token: TokenInfo | undefined
   amount: string
+  isLoading: boolean
+  isCorrectChain: boolean
+  canConfirm?: boolean
+  onSwitchChain: () => void
   onBack: () => void
   onConfirm: () => void
+  loading?: boolean
+  error?: string | null
 }
 
-export const WithdrawReviewStep = ({ poolId, amount, onBack, onConfirm }: WithdrawReviewStepProps) => {
-  const { address } = useAccount()
-  const { data: balanceData, isLoading: balanceLoading } = useEarnBalance(address)
-  const { data: poolsData, isLoading: poolsLoading } = useEarnPools()
-  const { data: tokensData, isLoading: tokensLoading } = useTokens()
-
-  const isLoading = balanceLoading || poolsLoading || tokensLoading
-
-  const positions = balanceData?.positions ?? []
-  const pools = poolsData?.pools ?? []
-
-  const position = positions.find(p => p.pool_id === poolId)
-  const pool = pools.find(p => p.pool_id === poolId)
-  const token = pool ? tokensData?.tokens.find(t => t.token_id === pool.token_id) : undefined
+export const WithdrawReviewStep = ({
+  pool,
+  position,
+  token,
+  amount,
+  isLoading,
+  isCorrectChain,
+  canConfirm = true,
+  onSwitchChain,
+  onBack,
+  onConfirm,
+  loading,
+  error,
+}: WithdrawReviewStepProps) => {
   const tokenSymbol = token?.token_symbol ?? token?.token_type_name ?? ''
 
   if (isLoading) {
@@ -76,22 +70,22 @@ export const WithdrawReviewStep = ({ poolId, amount, onBack, onConfirm }: Withdr
         </div>
       </div>
 
-      <Separator />
-
-      <div className="flex flex-col gap-4">
-        <Row label="Yield captured" value={MOCK_YIELD_CAPTURED_LABEL} valueClassName="text-chart-positive" />
-        <Row label="New liquid allowance" value={MOCK_NEW_ALLOWANCE_LABEL} />
-        <Row label="Next unlock epoch in:" value={MOCK_NEXT_UNLOCK_LABEL} />
-      </div>
-
       <div className="flex gap-5 w-full">
-        <Button variant="secondary" size="lg" className="flex-1" onClick={onBack}>
+        <Button variant="secondary" size="lg" className="flex-1" onClick={onBack} disabled={loading}>
           Back
         </Button>
-        <Button size="lg" className="flex-1" onClick={onConfirm}>
-          Confirm
-        </Button>
+        {!isCorrectChain ? (
+          <Button size="lg" className="flex-1" onClick={onSwitchChain} disabled={loading}>
+            Switch Network
+          </Button>
+        ) : (
+          <Button size="lg" className="flex-1" onClick={onConfirm} disabled={loading || !canConfirm}>
+            {loading ? 'Submitting...' : 'Confirm'}
+          </Button>
+        )}
       </div>
+
+      {error && <p className="text-sm text-center text-destructive">{error}</p>}
     </div>
   )
 }

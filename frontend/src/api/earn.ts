@@ -2,6 +2,17 @@ import { useQuery } from '@tanstack/react-query'
 
 const BASE_URL = import.meta.env.VITE_SWAP_API_URL ?? 'http://localhost:8001'
 
+export class ApiError extends Error {
+  readonly status: number
+  readonly detail: string | null
+  constructor(status: number, detail: string | null) {
+    super(detail ?? `Request failed: ${status}`)
+    this.name = 'ApiError'
+    this.status = status
+    this.detail = detail
+  }
+}
+
 async function request<T>(path: string, init?: RequestInit): Promise<T> {
   const res = await fetch(`${BASE_URL}${path}`, {
     headers: { 'Content-Type': 'application/json' },
@@ -9,7 +20,7 @@ async function request<T>(path: string, init?: RequestInit): Promise<T> {
   })
   if (!res.ok) {
     const body = await res.json().catch(() => null)
-    throw new Error(body?.detail ?? `Request failed: ${res.status}`)
+    throw new ApiError(res.status, body?.detail ?? null)
   }
   return res.json()
 }
@@ -65,6 +76,29 @@ export interface DepositResponse {
   status: string
 }
 
+export interface WithdrawRequest {
+  pool_id: string
+  user_address: string
+  amount: string
+  nonce: number
+  signature: string
+}
+
+export interface WithdrawNonceResponse {
+  user_address: string
+  nonce: number
+}
+
+export interface WithdrawResponse {
+  withdraw_id: string
+  pool_id: string
+  amount: string
+  shares_burned: string | null
+  exchange_rate: string | null
+  tx_hash: string | null
+  status: string
+}
+
 export interface EarnBalance {
   pool_id: string
   token_id: string
@@ -101,6 +135,18 @@ export function depositEarn(body: DepositRequest) {
     method: 'POST',
     body: JSON.stringify(body),
   })
+}
+
+export function withdrawEarn(body: WithdrawRequest) {
+  return request<WithdrawResponse>('/v1/earn/withdraw', {
+    method: 'POST',
+    body: JSON.stringify(body),
+  })
+}
+
+export function getWithdrawNonce(userAddress: string) {
+  const search = new URLSearchParams({ user_address: userAddress })
+  return request<WithdrawNonceResponse>(`/v1/earn/withdraw/nonce?${search}`)
 }
 
 export function getEarnBalance(userAddress: string) {

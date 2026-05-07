@@ -1,10 +1,9 @@
 import { Fragment, useMemo } from 'react'
 import { formatUnits, parseUnits } from 'viem'
-import { useAccount } from 'wagmi'
 import { getTokenIcon } from '@oasisprotocol/flexvaults-sdk'
 import { useTokenPrices } from '@/api/coin-gecko'
-import { useEarnBalance, useEarnPools } from '@/api/earn'
-import { useTokens } from '@/api/swap'
+import type { EarnBalance, EarnPool } from '@/api/earn'
+import type { TokenInfo } from '@/api/swap'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Skeleton } from '@/components/ui/skeleton'
@@ -15,35 +14,25 @@ import { STRATEGY_LABELS } from './labels'
 const PERCENTS = [25, 50, 75, 100] as const
 const percentLabel = (pct: number) => (pct === 100 ? 'Max' : `${pct}%`)
 
-// TODO: replace with backend value once earn endpoints expose it
-const MOCK_CAPTURED_YIELD_FIAT = 34.45
-
 type WithdrawConfigureStepProps = {
-  poolId: string
+  pool: EarnPool | undefined
+  position: EarnBalance | undefined
+  token: TokenInfo | undefined
+  isLoading: boolean
   amount: string
   onAmountChange: (v: string) => void
   onReview: () => void
 }
 
 export const WithdrawConfigureStep = ({
-  poolId,
+  pool,
+  position,
+  token,
+  isLoading,
   amount,
   onAmountChange,
   onReview,
 }: WithdrawConfigureStepProps) => {
-  const { address } = useAccount()
-  const { data: balanceData, isLoading: balanceLoading } = useEarnBalance(address)
-  const { data: poolsData, isLoading: poolsLoading } = useEarnPools()
-  const { data: tokensData, isLoading: tokensLoading } = useTokens()
-
-  const isLoading = balanceLoading || poolsLoading || tokensLoading
-
-  const positions = balanceData?.positions ?? []
-  const pools = poolsData?.pools ?? []
-
-  const position = positions.find(p => p.pool_id === poolId)
-  const pool = pools.find(p => p.pool_id === poolId)
-  const token = pool ? tokensData?.tokens.find(t => t.token_id === pool.token_id) : undefined
   const decimals = token?.token_decimals
   const strategyName = pool ? (STRATEGY_LABELS[pool.strategy] ?? pool.strategy) : ''
   const tokenSymbol = token?.token_symbol ?? token?.token_type_name ?? ''
@@ -125,13 +114,6 @@ export const WithdrawConfigureStep = ({
           )}
           <span className="text-sm font-semibold text-foreground leading-none">{tokenSymbol}</span>
         </div>
-      </div>
-
-      <div className="flex flex-col gap-1">
-        <p className="text-xs font-medium text-muted-foreground">Captured yield</p>
-        <p className="text-xl font-semibold text-chart-positive leading-none">
-          +{formatFiat(MOCK_CAPTURED_YIELD_FIAT)}
-        </p>
       </div>
 
       <div className="flex flex-col gap-2">

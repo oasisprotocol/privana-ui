@@ -123,7 +123,7 @@ export const ReviewStep = ({
           Back
         </Button>
         {!isCorrectChain ? (
-          <Button size="lg" className="flex-1" onClick={onSwitchChain}>
+          <Button size="lg" className="flex-1" onClick={onSwitchChain} disabled={loading}>
             Switch Network
           </Button>
         ) : (

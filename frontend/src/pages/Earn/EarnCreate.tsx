@@ -6,6 +6,7 @@ import { parseUnits } from 'viem'
 import { earnKeys, useEarnPools } from '@/api/earn'
 import { useTokens } from '@/api/swap'
 import { StepsNav } from '@/components/StepsNav'
+import { extractErrorMessage } from '@/lib/errors'
 import { activityPath, earnCreatePath } from '@/paths'
 import { ConfigureStep } from './ConfigureStep'
 import { formatApyBps, PROTOCOL_LABELS } from './labels'
@@ -23,7 +24,7 @@ export const EarnCreate = () => {
   const queryClient = useQueryClient()
   const { address, chainId } = useAccount()
   const { data: walletClient } = useWalletClient()
-  const { switchChain } = useSwitchChain()
+  const { switchChain, error: switchChainError } = useSwitchChain()
   const [amount, setAmount] = useState('')
   const [step, setStep] = useState(0)
 
@@ -71,6 +72,7 @@ export const EarnCreate = () => {
   } = useSubmitEarnDeposit({
     onSuccess: () => {
       if (address) queryClient.removeQueries({ queryKey: earnKeys.balance(address) })
+      queryClient.removeQueries({ queryKey: ['accounting-balance'] })
     },
   })
 
@@ -88,6 +90,8 @@ export const EarnCreate = () => {
     resetQuote()
     setStep(0)
   }
+
+  const reviewError = depositError ?? (switchChainError ? extractErrorMessage(switchChainError) : null)
 
   return (
     <div>
@@ -118,7 +122,7 @@ export const EarnCreate = () => {
           onBack={handleBack}
           onConfirm={handleConfirm}
           loading={depositLoading}
-          error={depositError}
+          error={reviewError}
         />
       )}
     </div>

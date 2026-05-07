@@ -10,6 +10,7 @@ import { useAccount, useWalletClient, useSwitchChain } from 'wagmi'
 import { useQueryClient } from '@tanstack/react-query'
 import { ArrowUpDown, EyeOff } from 'lucide-react'
 import { StepsNav } from '@/components/StepsNav'
+import { extractErrorMessage } from '@/lib/errors'
 import { activityPath } from '@/paths'
 import { SWAPPABLE_TOKEN_IDS } from '@/config/tokens'
 import { AssetRow } from './AssetRow'
@@ -28,7 +29,7 @@ export const SwapDashboard = () => {
   const { data, isLoading, error } = useTokens()
   const { address, chainId } = useAccount()
   const { data: walletClient } = useWalletClient()
-  const { switchChain } = useSwitchChain()
+  const { switchChain, error: switchChainError } = useSwitchChain()
   const queryClient = useQueryClient()
   const navigate = useNavigate()
   const [fromTokenId, setFromTokenId] = useState('')
@@ -150,6 +151,10 @@ export const SwapDashboard = () => {
   return (
     <div>
       <StepsNav steps={steps} activeIndex={step} ariaLabel="Swap progress" />
+
+      {switchChainError && (
+        <p className="text-sm text-center text-destructive mb-4">{extractErrorMessage(switchChainError)}</p>
+      )}
 
       {isLoading && (
         <div className="flex flex-col gap-4 w-full max-w-145 mx-auto bg-card border p-6 rounded-[14px] shadow-[0_1px_2px_0_rgba(0,0,0,0.05)]">
@@ -280,6 +285,8 @@ export const SwapDashboard = () => {
           canConfirm={canSwap}
           expiresAt={quoteData?.expires_at}
           toAmountExact={toAmountExact}
+          isCorrectChain={isCorrectChain}
+          onSwitchChain={() => switchChain({ chainId: CHAIN_ID })}
           onBack={() => {
             resetSubmit()
             setStep(0)
