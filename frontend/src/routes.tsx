@@ -11,16 +11,7 @@ import { EarnCreate } from './pages/Earn/EarnCreate'
 import { EarnWithdraw } from './pages/Earn/EarnWithdraw'
 import { Activity } from './pages/Activity'
 import { AuthCallback } from './pages/AuthCallback'
-import { CopyTradingLanding } from './pages/CopyTrading/CopyTradingLanding'
-import {
-  activityPath,
-  authCallbackPath,
-  copyTradingPath,
-  earnPath,
-  homePath,
-  dashboardPath,
-  tradePath,
-} from './paths'
+import { activityPath, authCallbackPath, earnPath, homePath, dashboardPath, tradePath } from './paths'
 
 export const router = createBrowserRouter([
   {
@@ -41,20 +32,6 @@ export const router = createBrowserRouter([
           {
             path: ':address',
             element: <Deposit />,
-          },
-        ],
-      },
-    ],
-  },
-  {
-    path: copyTradingPath(),
-    children: [
-      {
-        element: <Dashboard />,
-        children: [
-          {
-            index: true,
-            element: <CopyTradingLanding />,
           },
         ],
       },
