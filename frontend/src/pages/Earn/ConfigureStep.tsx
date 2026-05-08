@@ -115,13 +115,16 @@ export const ConfigureStep = ({
       </div>
 
       <Select value={poolId} onValueChange={onPoolIdChange}>
-        <SelectTrigger className="w-full h-12 bg-secondary text-secondary-foreground">
+        <SelectTrigger className="w-full data-[size=default]:h-12 px-4 py-3 rounded-[10px] border-0 bg-secondary text-secondary-foreground text-base font-medium *:data-[slot=select-value]:flex-1 *:data-[slot=select-value]:justify-center [&>svg]:size-5 [&>svg]:opacity-100 [&>svg]:!text-secondary-foreground">
           <SelectValue placeholder="Select strategy" />
         </SelectTrigger>
         <SelectContent>
           {activePools.map(p => (
             <SelectItem key={p.pool_id} value={p.pool_id}>
-              {STRATEGY_LABELS[p.strategy] ?? p.strategy} {formatApyBps(p.apy_bps)} APY
+              <span>
+                {STRATEGY_LABELS[p.strategy] ?? p.strategy}{' '}
+                <span className="text-chart-positive">{formatApyBps(p.apy_bps)} APY</span>
+              </span>
             </SelectItem>
           ))}
         </SelectContent>
