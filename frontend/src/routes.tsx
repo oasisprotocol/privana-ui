@@ -9,9 +9,18 @@ import { Swap } from './pages/Swap'
 import { Earn } from './pages/Earn'
 import { EarnCreate } from './pages/Earn/EarnCreate'
 import { EarnWithdraw } from './pages/Earn/EarnWithdraw'
+import { Apps } from './pages/Apps'
 import { Activity } from './pages/Activity'
 import { AuthCallback } from './pages/AuthCallback'
-import { activityPath, authCallbackPath, earnPath, homePath, dashboardPath, tradePath } from './paths'
+import {
+  activityPath,
+  appsPath,
+  authCallbackPath,
+  earnPath,
+  homePath,
+  dashboardPath,
+  tradePath,
+} from './paths'
 
 export const router = createBrowserRouter([
   {
@@ -87,6 +96,20 @@ export const router = createBrowserRouter([
                 element: <EarnWithdraw />,
               },
             ],
+          },
+        ],
+      },
+    ],
+  },
+  {
+    path: appsPath(),
+    children: [
+      {
+        element: <Dashboard />,
+        children: [
+          {
+            index: true,
+            element: <Apps />,
           },
         ],
       },
