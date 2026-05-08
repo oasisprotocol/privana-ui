@@ -1,3 +1,4 @@
+import type { ReactNode } from 'react'
 import { getTokenIcon } from '@oasisprotocol/flexvaults-sdk'
 import type { DepositQuoteResponse, EarnPool } from '@/api/earn'
 import type { TokenInfo } from '@/api/swap'
@@ -5,15 +6,14 @@ import { Button } from '@/components/ui/button'
 import { Separator } from '@/components/ui/separator'
 import { Skeleton } from '@/components/ui/skeleton'
 import { StepCard } from '@/components/StepCard'
-import { formatAmount } from '@/lib/tokens'
 import { formatApyBps, STRATEGY_LABELS } from './labels'
 
 const tokenLabel = (token: TokenInfo) => token.token_symbol ?? token.token_type_name
 
-const Row = ({ label, value }: { label: string; value: string }) => (
+const Row = ({ label, value }: { label: string; value: ReactNode }) => (
   <div className="flex items-center justify-between text-xs font-medium leading-4">
     <p className="text-muted-foreground">{label}</p>
-    <p className="text-foreground">{value}</p>
+    <div className="text-foreground">{value}</div>
   </div>
 )
 
@@ -40,7 +40,7 @@ export const ReviewStep = ({
   amount,
   quote,
   isLoading,
-  quoteLoading,
+  quoteLoading: _quoteLoading,
   quoteError,
   quoteExpired,
   isCorrectChain,
@@ -64,12 +64,6 @@ export const ReviewStep = ({
   if (!pool) {
     return <p className="text-destructive">Pool not found</p>
   }
-
-  const decimals = token?.token_decimals
-  const sharesLabel = quote && decimals != null ? formatAmount(BigInt(quote.shares_estimate), decimals) : '-'
-  const exchangeRateLabel = quote
-    ? `1 ${token?.token_symbol ?? 'token'} ≈ ${Number(quote.exchange_rate).toFixed(4)} shares`
-    : '-'
 
   return (
     <StepCard className="gap-6">
@@ -97,26 +91,18 @@ export const ReviewStep = ({
 
       <div className="flex flex-col gap-4">
         <Row label="Strategy" value={STRATEGY_LABELS[pool.strategy] ?? pool.strategy} />
-        <Row label="APY" value={formatApyBps(pool.apy_bps)} />
-        {quoteLoading ? (
-          <>
-            <Skeleton className="h-4 w-full" />
-            <Skeleton className="h-4 w-full" />
-          </>
-        ) : quoteError ? (
-          <p className="text-sm text-destructive">Failed to fetch quote: {quoteError}</p>
-        ) : (
-          <>
-            <Row label="Estimated shares" value={sharesLabel} />
-            <Row label="Exchange rate" value={exchangeRateLabel} />
-          </>
-        )}
-        <Row label="Privacy" value="🔒 No public trace" />
+        <Row label="APY" value={<span className="text-chart-positive">{formatApyBps(pool.apy_bps)}</span>} />
+        {/* TODO: replace once backend `performance_fee_bps` is available */}
+        <Row label="Performance fee" value="n/a" />
+        {/* Aave V3 doesn't lock supplied funds; revisit if a strategy with a lockup is added */}
+        <Row label="Lock-up period" value="None — recall anytime" />
+        {/* All earn withdrawals route through the vault allowance; revisit if a strategy ever pays out to an external address */}
+        <Row label="Withdraws to" value="Your allowance (not external wallet)" />
       </div>
 
-      {quoteExpired && (
+      {(quoteError || quoteExpired) && (
         <div className="rounded-lg border bg-card p-4 text-sm">
-          <p className="text-destructive">Quote expired. Go back to fetch a new one.</p>
+          <p className="text-destructive">{quoteError ?? 'Quote expired. Go back to fetch a new one.'}</p>
         </div>
       )}
       <div className="flex gap-5 w-full">
