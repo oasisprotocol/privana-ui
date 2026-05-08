@@ -5,6 +5,7 @@ import type { TokenInfo } from '@/api/swap'
 import { Button } from '@/components/ui/button'
 import { Separator } from '@/components/ui/separator'
 import { Skeleton } from '@/components/ui/skeleton'
+import { QuoteCountdown } from '@/components/QuoteCountdown'
 import { StepCard } from '@/components/StepCard'
 import { formatApyBps, STRATEGY_LABELS } from './labels'
 
@@ -25,7 +26,7 @@ type ReviewStepProps = {
   isLoading: boolean
   quoteLoading: boolean
   quoteError?: string | null
-  quoteExpired?: boolean
+  expiresAt?: number
   isCorrectChain: boolean
   onSwitchChain: () => void
   onBack: () => void
@@ -40,9 +41,9 @@ export const ReviewStep = ({
   amount,
   quote,
   isLoading,
-  quoteLoading: _quoteLoading,
+  quoteLoading,
   quoteError,
-  quoteExpired,
+  expiresAt,
   isCorrectChain,
   onSwitchChain,
   onBack,
@@ -87,6 +88,8 @@ export const ReviewStep = ({
         </div>
       </div>
 
+      <QuoteCountdown quoteLoading={quoteLoading} expiresAt={expiresAt} />
+
       <Separator />
 
       <div className="flex flex-col gap-4">
@@ -100,9 +103,9 @@ export const ReviewStep = ({
         <Row label="Withdraws to" value="Your allowance (not external wallet)" />
       </div>
 
-      {(quoteError || quoteExpired) && (
+      {quoteError && (
         <div className="rounded-lg border bg-card p-4 text-sm">
-          <p className="text-destructive">{quoteError ?? 'Quote expired. Go back to fetch a new one.'}</p>
+          <p className="text-destructive">Failed to fetch quote: {quoteError}</p>
         </div>
       )}
       <div className="flex gap-5 w-full">
@@ -118,7 +121,7 @@ export const ReviewStep = ({
             size="lg"
             className="flex-1"
             onClick={onConfirm}
-            disabled={loading || !quote || quoteExpired}
+            disabled={loading || quoteLoading || !quote}
           >
             {loading ? 'Signing & submitting...' : 'Activate yield'}
           </Button>

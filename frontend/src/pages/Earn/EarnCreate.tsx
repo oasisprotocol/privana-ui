@@ -54,14 +54,12 @@ export const EarnCreate = () => {
     data: quote,
     loading: quoteLoading,
     error: quoteError,
-    expired: quoteExpired,
     reset: resetQuote,
   } = useEarnDepositQuote({
     poolId: poolId ?? '',
     amount: amountBaseUnits,
     userAddress: address,
     enabled: onReview && !!address && !!amountBaseUnits && !!pool,
-    pauseRefetch: true,
   })
 
   const {
@@ -113,7 +111,7 @@ export const EarnCreate = () => {
           isLoading={poolsLoading || tokensLoading}
           quoteLoading={quoteLoading}
           quoteError={quoteError}
-          quoteExpired={quoteExpired}
+          expiresAt={quote?.expires_at}
           isCorrectChain={chainId === CHAIN_ID}
           onSwitchChain={() => switchChain({ chainId: CHAIN_ID })}
           onBack={handleBack}

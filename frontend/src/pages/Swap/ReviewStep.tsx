@@ -1,9 +1,10 @@
-import { useEffect, useState, type ReactNode } from 'react'
-import { ArrowRight, Loader2 } from 'lucide-react'
+import type { ReactNode } from 'react'
+import { ArrowRight } from 'lucide-react'
 import { getTokenIcon } from '@oasisprotocol/flexvaults-sdk'
 import { Button } from '@/components/ui/button'
 import { Separator } from '@/components/ui/separator'
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip'
+import { QuoteCountdown } from '@/components/QuoteCountdown'
 import { StepCard } from '@/components/StepCard'
 import type { TokenInfo } from '@/api/swap'
 import type { QuoteSummary } from './useQuoteSummary'
@@ -27,8 +28,6 @@ type ReviewStepProps = {
   loading?: boolean
   error?: string | null
 }
-
-const remainingSeconds = (expiresAt: number) => Math.max(0, expiresAt - Math.floor(Date.now() / 1000))
 
 type RowProps = { label: string; value: ReactNode }
 const Row = ({ label, value }: RowProps) => (
@@ -55,14 +54,6 @@ export const ReviewStep = ({
   loading,
   error,
 }: ReviewStepProps) => {
-  const [, setTick] = useState(0)
-  useEffect(() => {
-    if (!expiresAt) return
-    const id = setInterval(() => setTick(n => n + 1), 1000)
-    return () => clearInterval(id)
-  }, [expiresAt])
-  const remaining = expiresAt ? remainingSeconds(expiresAt) : 0
-
   return (
     <StepCard className="gap-6">
       <div className="flex flex-col gap-1.5">
@@ -120,16 +111,7 @@ export const ReviewStep = ({
           </div>
         </div>
 
-        {(quoteLoading || expiresAt) && (
-          <p className="text-xs font-medium leading-4 text-muted-foreground">
-            Quote will update in{' '}
-            {quoteLoading || !expiresAt ? (
-              <Loader2 className="inline size-3 animate-spin align-[-2px]" />
-            ) : (
-              <span className="font-bold">{remaining}s</span>
-            )}
-          </p>
-        )}
+        <QuoteCountdown quoteLoading={quoteLoading} expiresAt={expiresAt} />
 
         <Separator />
 
