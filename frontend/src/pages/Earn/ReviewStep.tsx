@@ -1,4 +1,3 @@
-import type { ReactNode } from 'react'
 import { getTokenIcon } from '@oasisprotocol/flexvaults-sdk'
 import type { DepositQuoteResponse, EarnPool } from '@/api/earn'
 import type { TokenInfo } from '@/api/swap'
@@ -6,17 +5,11 @@ import { Button } from '@/components/ui/button'
 import { Separator } from '@/components/ui/separator'
 import { Skeleton } from '@/components/ui/skeleton'
 import { QuoteCountdown } from '@/components/QuoteCountdown'
+import { Row } from '@/components/Row'
 import { StepCard } from '@/components/StepCard'
 import { formatApyBps, STRATEGY_LABELS } from './labels'
 
 const tokenLabel = (token: TokenInfo) => token.token_symbol ?? token.token_type_name
-
-const Row = ({ label, value }: { label: string; value: ReactNode }) => (
-  <div className="flex items-center justify-between text-xs font-medium leading-4">
-    <p className="text-muted-foreground">{label}</p>
-    <div className="text-foreground">{value}</div>
-  </div>
-)
 
 type ReviewStepProps = {
   pool: EarnPool | undefined

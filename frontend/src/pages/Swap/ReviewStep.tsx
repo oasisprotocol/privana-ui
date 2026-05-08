@@ -1,10 +1,10 @@
-import type { ReactNode } from 'react'
 import { ArrowRight } from 'lucide-react'
 import { getTokenIcon } from '@oasisprotocol/flexvaults-sdk'
 import { Button } from '@/components/ui/button'
 import { Separator } from '@/components/ui/separator'
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip'
 import { QuoteCountdown } from '@/components/QuoteCountdown'
+import { Row } from '@/components/Row'
 import { StepCard } from '@/components/StepCard'
 import type { TokenInfo } from '@/api/swap'
 import type { QuoteSummary } from './useQuoteSummary'
@@ -28,14 +28,6 @@ type ReviewStepProps = {
   loading?: boolean
   error?: string | null
 }
-
-type RowProps = { label: string; value: ReactNode }
-const Row = ({ label, value }: RowProps) => (
-  <div className="flex items-center justify-between text-xs font-medium leading-4">
-    <p className="text-muted-foreground">{label}</p>
-    <div className="text-foreground">{value}</div>
-  </div>
-)
 
 export const ReviewStep = ({
   fromToken,

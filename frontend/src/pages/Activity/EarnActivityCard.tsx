@@ -5,7 +5,8 @@ import { Progress } from '@/components/ui/progress'
 import { Separator } from '@/components/ui/separator'
 import { cn } from '@/lib/utils'
 import type { EarnActivity } from '@/contexts/ActivityProvider/context'
-import { Row, StatusBadge, TokenAmount } from './ActivityCardParts'
+import { Row } from '@/components/Row'
+import { StatusBadge, TokenAmount } from './ActivityCardParts'
 
 type EarnActivityCardProps = {
   activity: EarnActivity
