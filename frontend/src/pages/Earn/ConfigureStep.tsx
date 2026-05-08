@@ -19,6 +19,7 @@ const percentLabel = (pct: number) => (pct === 100 ? 'Max' : `${pct}%`)
 type ConfigureStepProps = {
   poolId: string | undefined
   amount: string
+  strategyLocked?: boolean
   onPoolIdChange: (id: string | undefined) => void
   onAmountChange: (v: string) => void
   onReview: () => void
@@ -27,6 +28,7 @@ type ConfigureStepProps = {
 export const ConfigureStep = ({
   poolId,
   amount,
+  strategyLocked,
   onPoolIdChange,
   onAmountChange,
   onReview,
@@ -114,8 +116,13 @@ export const ConfigureStep = ({
         <p className="text-sm text-muted-foreground">Select amount and protocol. Recall anytime.</p>
       </div>
 
-      <Select value={poolId} onValueChange={onPoolIdChange}>
-        <SelectTrigger className="w-full data-[size=default]:h-12 px-4 py-3 rounded-[10px] border-0 bg-secondary text-secondary-foreground text-base font-medium *:data-[slot=select-value]:flex-1 *:data-[slot=select-value]:justify-center [&>svg]:size-5 [&>svg]:opacity-100 [&>svg]:!text-secondary-foreground">
+      <Select value={poolId} onValueChange={onPoolIdChange} disabled={strategyLocked}>
+        <SelectTrigger
+          className={cn(
+            'w-full data-[size=default]:h-12 px-4 py-3 rounded-[10px] border-0 bg-secondary text-secondary-foreground text-base font-medium *:data-[slot=select-value]:flex-1 *:data-[slot=select-value]:justify-center [&>svg]:size-5 [&>svg]:opacity-100 [&>svg]:!text-secondary-foreground',
+            strategyLocked && 'disabled:opacity-100 disabled:cursor-default [&>svg]:hidden',
+          )}
+        >
           <SelectValue placeholder="Select strategy" />
         </SelectTrigger>
         <SelectContent>

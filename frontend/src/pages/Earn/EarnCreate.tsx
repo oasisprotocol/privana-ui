@@ -27,6 +27,10 @@ export const EarnCreate = () => {
   const { switchChain, error: switchChainError } = useSwitchChain()
   const [amount, setAmount] = useState('')
   const [step, setStep] = useState(0)
+  // At mount: if poolId came in via URL (e.g., "Add to active strategy"),
+  // the user shouldn't be able to switch strategies. Picking a pool on /create
+  // afterwards still navigates to /create/:poolId but mustn't flip this back to locked.
+  const [strategyLocked] = useState(() => !!poolId)
 
   const handlePoolIdChange = (id: string | undefined) => {
     navigate(earnCreatePath(id), { replace: true })
@@ -96,6 +100,7 @@ export const EarnCreate = () => {
         <ConfigureStep
           poolId={poolId}
           amount={amount}
+          strategyLocked={strategyLocked}
           onPoolIdChange={handlePoolIdChange}
           onAmountChange={setAmount}
           onReview={() => setStep(1)}
