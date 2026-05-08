@@ -28,19 +28,24 @@ export const PortfolioSummary: FC = () => {
   const { strategies, isLoading: strategiesLoading } = useActiveStrategies()
   const isLoading = balancesLoading || locksLoading || strategiesLoading
   const tokens: TokenEntry[] = useMemo(() => {
-    return balances.map(b => {
+    return balances.flatMap(b => {
+      const decimals = getTokenById(b.token_id)?.decimals
+      // Guards against a backend regression where decimals goes missing. Without it we'd render base units as whole units.
+      if (decimals == null) return []
       const lockedAmount = locks
         .filter(l => l.token_id === b.token_id)
         .reduce((sum, l) => sum + BigInt(l.amount), 0n)
       const available = BigInt(b.balance || '0')
-      return {
-        tokenId: b.token_id,
-        symbol: b.token_symbol,
-        available,
-        locked: lockedAmount,
-        total: available + lockedAmount,
-        decimals: getTokenById(b.token_id)?.decimals ?? 0,
-      }
+      return [
+        {
+          tokenId: b.token_id,
+          symbol: b.token_symbol,
+          available,
+          locked: lockedAmount,
+          total: available + lockedAmount,
+          decimals,
+        },
+      ]
     })
   }, [balances, locks, getTokenById])
   const hasTokens = tokens.some(t => t.total > 0n)
