@@ -2,9 +2,7 @@ import { useAccount } from 'wagmi'
 import { useEarnBalance, useEarnPools } from '@/api/earn'
 import { useTokens } from '@/api/swap'
 import { formatAmount } from '@/lib/tokens'
-import { STRATEGY_LABELS } from './labels'
-
-const formatApy = (bps: number) => (bps > 0 ? `+${(bps / 100).toFixed(2)}%` : '-')
+import { formatApyBps, STRATEGY_LABELS } from './labels'
 
 export type ActiveStrategy = {
   poolId: string
@@ -47,7 +45,7 @@ export const useActiveStrategies = (): { strategies: ActiveStrategy[]; isLoading
           decimals != null
             ? `${formatAmount(BigInt(pos.underlying_amount), decimals)} ${token?.token_symbol ?? ''}`
             : '-',
-        apyLabel: pool ? formatApy(pool.apy_bps) : '-',
+        apyLabel: pool ? `+${formatApyBps(pool.apy_bps)}` : '-',
         asset: token?.token_symbol ?? '—',
         strategyKey: pool?.strategy ?? null,
       }

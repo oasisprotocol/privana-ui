@@ -7,7 +7,7 @@ import { useTokens } from '@/api/swap'
 import { earnCreatePath } from '@/paths'
 import { ActiveStrategies } from './ActiveStrategies'
 import { EarnHeader } from './EarnHeader'
-import { STRATEGY_LABELS } from './labels'
+import { formatApyBps, STRATEGY_LABELS } from './labels'
 import { ProtocolLabel } from './ProtocolLabel'
 
 type YieldCardProps = {
@@ -70,7 +70,7 @@ export const EarnDashboard = () => {
         return {
           id: p.pool_id,
           strategyKey: p.strategy,
-          apyLabel: p.apy_bps > 0 ? `+${(p.apy_bps / 100).toFixed(2)}%` : '-',
+          apyLabel: `+${formatApyBps(p.apy_bps)}`,
           asset: token?.token_symbol ?? '—',
           chain: token?.chain_name ?? '—',
         }
