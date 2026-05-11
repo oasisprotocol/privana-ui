@@ -43,7 +43,6 @@ export const useSubmitEarnDeposit = ({ onSuccess }: Params = {}) => {
         chainId: CHAIN_ID,
         verifyingContract: ACCOUNTING_CONTRACT,
         message: {
-          userAddress: address,
           toAddress: quote.pool_address as `0x${string}`,
           tokenId: quote.token_id as `0x${string}`,
           amount: BigInt(quote.amount),

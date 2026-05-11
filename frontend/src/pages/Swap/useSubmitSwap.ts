@@ -43,7 +43,6 @@ export const useSubmitSwap = ({ onSuccess }: Params = {}) => {
         chainId: CHAIN_ID,
         verifyingContract: ACCOUNTING_CONTRACT,
         message: {
-          userAddress: address,
           toAddress: quote.liquidity_provider as `0x${string}`,
           tokenId: quote.from_token_id as `0x${string}`,
           amount: BigInt(quote.from_amount),
