@@ -9,13 +9,13 @@ import { Swap } from './pages/Swap'
 import { Earn } from './pages/Earn'
 import { EarnCreate } from './pages/Earn/EarnCreate'
 import { EarnWithdraw } from './pages/Earn/EarnWithdraw'
+import { Apps } from './pages/Apps'
 import { Activity } from './pages/Activity'
 import { AuthCallback } from './pages/AuthCallback'
-import { CopyTradingLanding } from './pages/CopyTrading/CopyTradingLanding'
 import {
   activityPath,
+  appsPath,
   authCallbackPath,
-  copyTradingPath,
   earnPath,
   homePath,
   dashboardPath,
@@ -41,20 +41,6 @@ export const router = createBrowserRouter([
           {
             path: ':address',
             element: <Deposit />,
-          },
-        ],
-      },
-    ],
-  },
-  {
-    path: copyTradingPath(),
-    children: [
-      {
-        element: <Dashboard />,
-        children: [
-          {
-            index: true,
-            element: <CopyTradingLanding />,
           },
         ],
       },
@@ -110,6 +96,20 @@ export const router = createBrowserRouter([
                 element: <EarnWithdraw />,
               },
             ],
+          },
+        ],
+      },
+    ],
+  },
+  {
+    path: appsPath(),
+    children: [
+      {
+        element: <Dashboard />,
+        children: [
+          {
+            index: true,
+            element: <Apps />,
           },
         ],
       },

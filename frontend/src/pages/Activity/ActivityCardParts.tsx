@@ -5,14 +5,6 @@ import { cn } from '@/lib/utils'
 import { formatAmount } from '@/lib/tokens'
 import type { ActivityStatus, ActivityTokenInfo } from '@/contexts/ActivityProvider/context'
 
-type RowProps = { label: string; value: string }
-export const Row = ({ label, value }: RowProps) => (
-  <div className="flex items-center justify-between text-xs font-medium leading-4">
-    <p className="text-muted-foreground">{label}</p>
-    <p className="text-foreground">{value}</p>
-  </div>
-)
-
 export const StatusBadge = ({ status }: { status: ActivityStatus }) => {
   if (status === 'completed') {
     return (

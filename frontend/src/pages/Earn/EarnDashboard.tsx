@@ -6,6 +6,7 @@ import { useEarnPools } from '@/api/earn'
 import { useTokens } from '@/api/swap'
 import { earnCreatePath } from '@/paths'
 import { ActiveStrategies } from './ActiveStrategies'
+import { ApyValue } from './ApyValue'
 import { EarnHeader } from './EarnHeader'
 import { STRATEGY_LABELS } from './labels'
 import { ProtocolLabel } from './ProtocolLabel'
@@ -13,19 +14,19 @@ import { ProtocolLabel } from './ProtocolLabel'
 type YieldCardProps = {
   id: string
   name: ReactNode
-  apyLabel: string
+  apyBps: number
   asset: string
   chain: string
 }
 
-const YieldCard = ({ id, name, apyLabel, asset, chain }: YieldCardProps) => (
+const YieldCard = ({ id, name, apyBps, asset, chain }: YieldCardProps) => (
   <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 bg-card border p-8 rounded-lg">
     <div className="flex flex-col gap-3 min-w-0">
       <div className="flex flex-col gap-1">
         <p className="text-xl font-medium text-foreground">{name}</p>
         <div className="flex items-center gap-2 text-sm font-medium">
           <span className="text-muted-foreground">APY</span>
-          <span className="text-chart-positive text-lg">{apyLabel}</span>
+          <ApyValue bps={apyBps} signed className="text-lg" />
         </div>
       </div>
       <div className="flex flex-wrap gap-3 text-sm font-medium">
@@ -70,7 +71,7 @@ export const EarnDashboard = () => {
         return {
           id: p.pool_id,
           strategyKey: p.strategy,
-          apyLabel: p.apy_bps > 0 ? `+${(p.apy_bps / 100).toFixed(2)}%` : '-',
+          apyBps: p.apy_bps,
           asset: token?.token_symbol ?? '—',
           chain: token?.chain_name ?? '—',
         }

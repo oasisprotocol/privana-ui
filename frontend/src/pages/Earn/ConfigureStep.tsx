@@ -8,18 +8,19 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Skeleton } from '@/components/ui/skeleton'
+import { StepCard } from '@/components/StepCard'
 import { formatAmount, formatFiat, isPositiveAmount } from '@/lib/tokens'
 import { cn } from '@/lib/utils'
+import { ApyValue } from './ApyValue'
 import { STRATEGY_LABELS } from './labels'
 
 const PERCENTS = [25, 50, 75, 100] as const
 const percentLabel = (pct: number) => (pct === 100 ? 'Max' : `${pct}%`)
 
-const formatApy = (bps: number) => (bps > 0 ? `${(bps / 100).toFixed(2)}% APY` : '- APY')
-
 type ConfigureStepProps = {
   poolId: string | undefined
   amount: string
+  strategyLocked?: boolean
   onPoolIdChange: (id: string | undefined) => void
   onAmountChange: (v: string) => void
   onReview: () => void
@@ -28,6 +29,7 @@ type ConfigureStepProps = {
 export const ConfigureStep = ({
   poolId,
   amount,
+  strategyLocked,
   onPoolIdChange,
   onAmountChange,
   onReview,
@@ -94,13 +96,13 @@ export const ConfigureStep = ({
 
   if (isLoading) {
     return (
-      <div className="flex flex-col gap-4 w-full max-w-120 mx-auto bg-card border p-6 rounded-[14px] shadow-[0_1px_2px_0_rgba(0,0,0,0.05)]">
+      <StepCard>
         <Skeleton className="h-8 w-40" />
         <Skeleton className="h-5 w-full max-w-80" />
         <Skeleton className="h-12 w-full" />
         <Skeleton className="h-12 w-full" />
         <Skeleton className="h-12 w-full" />
-      </div>
+      </StepCard>
     )
   }
 
@@ -109,20 +111,27 @@ export const ConfigureStep = ({
   }
 
   return (
-    <div className="flex flex-col gap-4 w-full max-w-120 mx-auto bg-card border p-6 rounded-[14px] shadow-[0_1px_2px_0_rgba(0,0,0,0.05)]">
+    <StepCard>
       <div className="flex flex-col gap-1.5">
         <h2 className="text-2xl font-medium text-foreground leading-8">Activate yield</h2>
         <p className="text-sm text-muted-foreground">Select amount and protocol. Recall anytime.</p>
       </div>
 
-      <Select value={poolId} onValueChange={onPoolIdChange}>
-        <SelectTrigger className="w-full h-12 bg-secondary text-secondary-foreground">
+      <Select value={poolId} onValueChange={onPoolIdChange} disabled={strategyLocked}>
+        <SelectTrigger
+          className={cn(
+            'w-full data-[size=default]:h-12 px-4 py-3 rounded-[10px] border-0 bg-secondary text-secondary-foreground text-base font-medium *:data-[slot=select-value]:flex-1 *:data-[slot=select-value]:justify-center [&>svg]:size-5 [&>svg]:opacity-100 [&>svg]:!text-secondary-foreground',
+            strategyLocked && 'disabled:opacity-100 disabled:cursor-default [&>svg]:hidden',
+          )}
+        >
           <SelectValue placeholder="Select strategy" />
         </SelectTrigger>
         <SelectContent>
           {activePools.map(p => (
             <SelectItem key={p.pool_id} value={p.pool_id}>
-              {STRATEGY_LABELS[p.strategy] ?? p.strategy} {formatApy(p.apy_bps)}
+              <span>
+                {STRATEGY_LABELS[p.strategy] ?? p.strategy} <ApyValue bps={p.apy_bps} /> APY
+              </span>
             </SelectItem>
           ))}
         </SelectContent>
@@ -187,6 +196,6 @@ export const ConfigureStep = ({
       <Button size="lg" className="w-full h-12 text-base" disabled={!canReview} onClick={onReview}>
         Review Activation
       </Button>
-    </div>
+    </StepCard>
   )
 }

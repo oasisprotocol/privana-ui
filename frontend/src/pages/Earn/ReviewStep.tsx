@@ -4,17 +4,13 @@ import type { TokenInfo } from '@/api/swap'
 import { Button } from '@/components/ui/button'
 import { Separator } from '@/components/ui/separator'
 import { Skeleton } from '@/components/ui/skeleton'
-import { formatAmount } from '@/lib/tokens'
-import { formatApyBps, STRATEGY_LABELS } from './labels'
+import { QuoteCountdown } from '@/components/QuoteCountdown'
+import { Row } from '@/components/Row'
+import { StepCard } from '@/components/StepCard'
+import { ApyValue } from './ApyValue'
+import { STRATEGY_LABELS } from './labels'
 
 const tokenLabel = (token: TokenInfo) => token.token_symbol ?? token.token_type_name
-
-const Row = ({ label, value }: { label: string; value: string }) => (
-  <div className="flex items-center justify-between text-xs font-medium leading-4">
-    <p className="text-muted-foreground">{label}</p>
-    <p className="text-foreground">{value}</p>
-  </div>
-)
 
 type ReviewStepProps = {
   pool: EarnPool | undefined
@@ -24,7 +20,7 @@ type ReviewStepProps = {
   isLoading: boolean
   quoteLoading: boolean
   quoteError?: string | null
-  quoteExpired?: boolean
+  expiresAt?: number
   isCorrectChain: boolean
   onSwitchChain: () => void
   onBack: () => void
@@ -41,7 +37,7 @@ export const ReviewStep = ({
   isLoading,
   quoteLoading,
   quoteError,
-  quoteExpired,
+  expiresAt,
   isCorrectChain,
   onSwitchChain,
   onBack,
@@ -51,12 +47,12 @@ export const ReviewStep = ({
 }: ReviewStepProps) => {
   if (isLoading) {
     return (
-      <div className="flex flex-col gap-4 w-full max-w-120 mx-auto bg-card border p-6 rounded-[14px] shadow-[0_1px_2px_0_rgba(0,0,0,0.05)]">
+      <StepCard>
         <Skeleton className="h-8 w-40" />
         <Skeleton className="h-5 w-full max-w-80" />
         <Skeleton className="h-12 w-full" />
         <Skeleton className="h-12 w-full" />
-      </div>
+      </StepCard>
     )
   }
 
@@ -64,14 +60,8 @@ export const ReviewStep = ({
     return <p className="text-destructive">Pool not found</p>
   }
 
-  const decimals = token?.token_decimals
-  const sharesLabel = quote && decimals != null ? formatAmount(BigInt(quote.shares_estimate), decimals) : '-'
-  const exchangeRateLabel = quote
-    ? `1 ${token?.token_symbol ?? 'token'} ≈ ${Number(quote.exchange_rate).toFixed(4)} shares`
-    : '-'
-
   return (
-    <div className="flex flex-col gap-6 w-full max-w-120 mx-auto bg-card border p-6 rounded-[14px] shadow-[0_1px_2px_0_rgba(0,0,0,0.05)]">
+    <StepCard className="gap-6">
       <div className="flex flex-col gap-1.5">
         <h2 className="text-2xl font-medium text-foreground leading-8">Review activation</h2>
         <p className="text-sm text-muted-foreground">Confirm before activating yield.</p>
@@ -92,30 +82,24 @@ export const ReviewStep = ({
         </div>
       </div>
 
+      <QuoteCountdown quoteLoading={quoteLoading} expiresAt={expiresAt} />
+
       <Separator />
 
       <div className="flex flex-col gap-4">
         <Row label="Strategy" value={STRATEGY_LABELS[pool.strategy] ?? pool.strategy} />
-        <Row label="APY" value={formatApyBps(pool.apy_bps)} />
-        {quoteLoading ? (
-          <>
-            <Skeleton className="h-4 w-full" />
-            <Skeleton className="h-4 w-full" />
-          </>
-        ) : quoteError ? (
-          <p className="text-sm text-destructive">Failed to fetch quote: {quoteError}</p>
-        ) : (
-          <>
-            <Row label="Estimated shares" value={sharesLabel} />
-            <Row label="Exchange rate" value={exchangeRateLabel} />
-          </>
-        )}
-        <Row label="Privacy" value="🔒 No public trace" />
+        <Row label="APY" value={<ApyValue bps={pool.apy_bps} />} />
+        {/* TODO: replace once backend `performance_fee_bps` is available */}
+        <Row label="Performance fee" value="n/a" />
+        {/* Aave V3 doesn't lock supplied funds; revisit if a strategy with a lockup is added */}
+        <Row label="Lock-up period" value="None — recall anytime" />
+        {/* All earn withdrawals route through the vault allowance; revisit if a strategy ever pays out to an external address */}
+        <Row label="Withdraws to" value="Your allowance (not external wallet)" />
       </div>
 
-      {quoteExpired && (
+      {quoteError && (
         <div className="rounded-lg border bg-card p-4 text-sm">
-          <p className="text-destructive">Quote expired. Go back to fetch a new one.</p>
+          <p className="text-destructive">Failed to fetch quote: {quoteError}</p>
         </div>
       )}
       <div className="flex gap-5 w-full">
@@ -131,7 +115,7 @@ export const ReviewStep = ({
             size="lg"
             className="flex-1"
             onClick={onConfirm}
-            disabled={loading || !quote || quoteExpired}
+            disabled={loading || quoteLoading || !quote}
           >
             {loading ? 'Signing & submitting...' : 'Activate yield'}
           </Button>
@@ -139,6 +123,6 @@ export const ReviewStep = ({
       </div>
 
       {error && <p className="text-sm text-center text-destructive">{error}</p>}
-    </div>
+    </StepCard>
   )
 }

@@ -1,9 +1,11 @@
-import { useEffect, useState, type ReactNode } from 'react'
-import { ArrowRight, Loader2 } from 'lucide-react'
+import { ArrowRight } from 'lucide-react'
 import { getTokenIcon } from '@oasisprotocol/flexvaults-sdk'
 import { Button } from '@/components/ui/button'
 import { Separator } from '@/components/ui/separator'
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip'
+import { QuoteCountdown } from '@/components/QuoteCountdown'
+import { Row } from '@/components/Row'
+import { StepCard } from '@/components/StepCard'
 import type { TokenInfo } from '@/api/swap'
 import type { QuoteSummary } from './useQuoteSummary'
 
@@ -27,16 +29,6 @@ type ReviewStepProps = {
   error?: string | null
 }
 
-const remainingSeconds = (expiresAt: number) => Math.max(0, expiresAt - Math.floor(Date.now() / 1000))
-
-type RowProps = { label: string; value: ReactNode }
-const Row = ({ label, value }: RowProps) => (
-  <div className="flex items-center justify-between text-xs font-medium leading-4">
-    <p className="text-muted-foreground">{label}</p>
-    <div className="text-foreground">{value}</div>
-  </div>
-)
-
 export const ReviewStep = ({
   fromToken,
   toToken,
@@ -54,16 +46,8 @@ export const ReviewStep = ({
   loading,
   error,
 }: ReviewStepProps) => {
-  const [, setTick] = useState(0)
-  useEffect(() => {
-    if (!expiresAt) return
-    const id = setInterval(() => setTick(n => n + 1), 1000)
-    return () => clearInterval(id)
-  }, [expiresAt])
-  const remaining = expiresAt ? remainingSeconds(expiresAt) : 0
-
   return (
-    <div className="flex flex-col gap-6 w-full max-w-145 mx-auto bg-card border p-6 rounded-[14px] shadow-[0_1px_2px_0_rgba(0,0,0,0.05)]">
+    <StepCard className="gap-6">
       <div className="flex flex-col gap-1.5">
         <h2 className="text-2xl font-medium text-foreground leading-8">Review swap</h2>
         <p className="text-sm text-muted-foreground">Confirm before executing.</p>
@@ -119,6 +103,8 @@ export const ReviewStep = ({
           </div>
         </div>
 
+        <QuoteCountdown quoteLoading={quoteLoading} expiresAt={expiresAt} />
+
         <Separator />
 
         <div className="flex flex-col gap-4">
@@ -127,18 +113,6 @@ export const ReviewStep = ({
           <Row label="Network & route fee" value={summary.routeCostFiatLabel} />
           <Row label="Service fee" value={summary.feeFiatLabel} />
           <Row label="Estimated time" value="<20s" />
-          {expiresAt && (
-            <Row
-              label="Quote refreshes in"
-              value={
-                quoteLoading ? (
-                  <Loader2 className="size-3 animate-spin text-muted-foreground" />
-                ) : (
-                  `${remaining}s`
-                )
-              }
-            />
-          )}
         </div>
       </div>
 
@@ -163,6 +137,6 @@ export const ReviewStep = ({
       </div>
 
       {error && <p className="text-sm text-center text-destructive">{error}</p>}
-    </div>
+    </StepCard>
   )
 }

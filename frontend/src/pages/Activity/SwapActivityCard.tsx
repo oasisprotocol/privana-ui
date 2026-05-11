@@ -6,7 +6,8 @@ import { Separator } from '@/components/ui/separator'
 import { cn } from '@/lib/utils'
 import { formatFiat } from '@/lib/tokens'
 import type { SwapActivity } from '@/contexts/ActivityProvider/context'
-import { Row, StatusBadge, TokenAmount } from './ActivityCardParts'
+import { Row } from '@/components/Row'
+import { StatusBadge, TokenAmount } from './ActivityCardParts'
 
 type SwapActivityCardProps = {
   activity: SwapActivity

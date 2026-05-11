@@ -1,5 +1,5 @@
 import { useMemo, useState } from 'react'
-import { Separator } from '@/components/ui/separator'
+import { PageHeading } from '@/components/PageHeading'
 import { cn } from '@/lib/utils'
 import { useActivity } from '@/contexts/ActivityProvider/useActivity'
 import { SwapActivityCard } from './SwapActivityCard'
@@ -24,60 +24,56 @@ export const Activity = () => {
   const isEmpty = activities.length === 0
 
   return (
-    <div className="flex flex-col gap-8 w-full">
-      <div className="flex flex-col gap-1.5">
-        <h1 className="text-3xl font-medium text-foreground">Activity</h1>
-        <p className="text-base text-muted-foreground">
-          {isEmpty
+    <>
+      <PageHeading
+        title="Activity"
+        description={
+          isEmpty
             ? 'Nothing to show yet. Your swaps, deposits, withdrawals, and earnings will appear here.'
-            : 'Browse through your recent activity.'}
-        </p>
-      </div>
+            : 'Browse through your recent activity.'
+        }
+      />
 
       {!isEmpty && (
-        <>
-          <Separator className="my-16" />
-
-          <div className="flex flex-col gap-4 w-full max-w-145 mx-auto">
-            <div
-              role="tablist"
-              aria-label="Activity filter"
-              className="inline-flex items-center gap-1 rounded-md border bg-background p-1 w-fit"
-            >
-              {TABS.map(tab => {
-                const isActive = tab.id === activeTab
-                return (
-                  <button
-                    key={tab.id}
-                    type="button"
-                    role="tab"
-                    aria-selected={isActive}
-                    onClick={() => setActiveTab(tab.id)}
-                    className={cn(
-                      'h-8 px-3 rounded-sm text-sm font-medium transition-colors',
-                      isActive ? 'bg-primary text-primary-foreground' : 'text-foreground hover:bg-accent',
-                    )}
-                  >
-                    {tab.label}
-                  </button>
-                )
-              })}
-            </div>
-
-            {filtered.length === 0 ? (
-              <p className="text-base text-muted-foreground">No matching activity</p>
-            ) : (
-              filtered.map(activity =>
-                activity.type === 'swap' ? (
-                  <SwapActivityCard key={activity.id} activity={activity} />
-                ) : (
-                  <EarnActivityCard key={activity.id} activity={activity} />
-                ),
+        <div className="flex flex-col gap-4 w-full max-w-145 mx-auto">
+          <div
+            role="tablist"
+            aria-label="Activity filter"
+            className="inline-flex items-center gap-1 rounded-md border bg-background p-1 w-fit"
+          >
+            {TABS.map(tab => {
+              const isActive = tab.id === activeTab
+              return (
+                <button
+                  key={tab.id}
+                  type="button"
+                  role="tab"
+                  aria-selected={isActive}
+                  onClick={() => setActiveTab(tab.id)}
+                  className={cn(
+                    'h-8 px-3 rounded-sm text-sm font-medium transition-colors',
+                    isActive ? 'bg-primary text-primary-foreground' : 'text-foreground hover:bg-accent',
+                  )}
+                >
+                  {tab.label}
+                </button>
               )
-            )}
+            })}
           </div>
-        </>
+
+          {filtered.length === 0 ? (
+            <p className="text-base text-muted-foreground">No matching activity</p>
+          ) : (
+            filtered.map(activity =>
+              activity.type === 'swap' ? (
+                <SwapActivityCard key={activity.id} activity={activity} />
+              ) : (
+                <EarnActivityCard key={activity.id} activity={activity} />
+              ),
+            )
+          )}
+        </div>
       )}
-    </div>
+    </>
   )
 }
