@@ -7,16 +7,9 @@ type Params = {
   amount: string
   userAddress: string | undefined
   enabled?: boolean
-  pauseRefetch?: boolean
 }
 
-export const useEarnDepositQuote = ({
-  poolId,
-  amount,
-  userAddress,
-  enabled: enabledProp = true,
-  pauseRefetch,
-}: Params) => {
+export const useEarnDepositQuote = ({ poolId, amount, userAddress, enabled: enabledProp = true }: Params) => {
   const [refetchKey, setRefetchKey] = useState(0)
 
   const enabled = enabledProp && !!poolId && !!amount && !!userAddress
@@ -49,13 +42,12 @@ export const useEarnDepositQuote = ({
   const error = errorState?.key === inputKey ? errorState.message : null
   const loading = enabled && !data && !error
 
-  const { expired } = useQuoteExpiry({
+  useQuoteExpiry({
     data,
-    pauseRefetch,
     onRefetch: () => setRefetchKey(k => k + 1),
   })
 
   const reset = () => setRefetchKey(k => k + 1)
 
-  return { data, loading, error, expired, reset }
+  return { data, loading, error, reset }
 }

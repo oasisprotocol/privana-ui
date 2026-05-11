@@ -78,12 +78,12 @@ export const useSwapQuote = ({
   const toAmountExact =
     data && toDecimals != null ? formatUnits(BigInt(data.to_amount_estimate), toDecimals) : ''
 
-  const { expired } = useQuoteExpiry({
+  useQuoteExpiry({
     data,
     onRefetch: () => setRefetchKey(k => k + 1),
   })
 
   const reset = () => setRefetchKey(k => k + 1)
 
-  return { data, loading, error, toAmount, toAmountExact, reset, expired }
+  return { data, loading, error, toAmount, toAmountExact, reset }
 }
