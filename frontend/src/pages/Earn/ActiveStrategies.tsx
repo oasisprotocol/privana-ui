@@ -2,10 +2,11 @@ import { Link } from 'react-router'
 import { Button } from '@/components/ui/button'
 import { Skeleton } from '@/components/ui/skeleton'
 import { earnCreatePath, earnWithdrawPath } from '@/paths'
+import { ApyValue } from './ApyValue'
 import { ProtocolLabel } from './ProtocolLabel'
 import { useActiveStrategies, type ActiveStrategy } from './useActiveStrategies'
 
-export const StrategyCard = ({ poolId, name, earning, apyLabel, asset, strategyKey }: ActiveStrategy) => (
+export const StrategyCard = ({ poolId, name, earning, apyBps, asset, strategyKey }: ActiveStrategy) => (
   <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 bg-card border p-8 rounded-lg">
     <div className="flex flex-col gap-3 min-w-0">
       <p className="text-xl font-medium text-foreground">{name}</p>
@@ -16,7 +17,7 @@ export const StrategyCard = ({ poolId, name, earning, apyLabel, asset, strategyK
         </div>
         <div className="flex items-center gap-2">
           <span className="text-muted-foreground">APY</span>
-          <span className="text-chart-positive text-lg">{apyLabel}</span>
+          <ApyValue bps={apyBps} signed className="text-lg" />
         </div>
       </div>
       <div className="flex flex-wrap gap-3 text-sm font-medium">

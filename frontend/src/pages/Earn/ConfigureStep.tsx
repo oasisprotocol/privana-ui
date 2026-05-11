@@ -11,7 +11,8 @@ import { Skeleton } from '@/components/ui/skeleton'
 import { StepCard } from '@/components/StepCard'
 import { formatAmount, formatFiat, isPositiveAmount } from '@/lib/tokens'
 import { cn } from '@/lib/utils'
-import { formatApyBps, STRATEGY_LABELS } from './labels'
+import { ApyValue } from './ApyValue'
+import { STRATEGY_LABELS } from './labels'
 
 const PERCENTS = [25, 50, 75, 100] as const
 const percentLabel = (pct: number) => (pct === 100 ? 'Max' : `${pct}%`)
@@ -129,8 +130,7 @@ export const ConfigureStep = ({
           {activePools.map(p => (
             <SelectItem key={p.pool_id} value={p.pool_id}>
               <span>
-                {STRATEGY_LABELS[p.strategy] ?? p.strategy}{' '}
-                <span className="text-chart-positive">{formatApyBps(p.apy_bps)} APY</span>
+                {STRATEGY_LABELS[p.strategy] ?? p.strategy} <ApyValue bps={p.apy_bps} /> APY
               </span>
             </SelectItem>
           ))}

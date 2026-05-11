@@ -7,7 +7,8 @@ import { Skeleton } from '@/components/ui/skeleton'
 import { QuoteCountdown } from '@/components/QuoteCountdown'
 import { Row } from '@/components/Row'
 import { StepCard } from '@/components/StepCard'
-import { formatApyBps, STRATEGY_LABELS } from './labels'
+import { ApyValue } from './ApyValue'
+import { STRATEGY_LABELS } from './labels'
 
 const tokenLabel = (token: TokenInfo) => token.token_symbol ?? token.token_type_name
 
@@ -87,7 +88,7 @@ export const ReviewStep = ({
 
       <div className="flex flex-col gap-4">
         <Row label="Strategy" value={STRATEGY_LABELS[pool.strategy] ?? pool.strategy} />
-        <Row label="APY" value={<span className="text-chart-positive">{formatApyBps(pool.apy_bps)}</span>} />
+        <Row label="APY" value={<ApyValue bps={pool.apy_bps} />} />
         {/* TODO: replace once backend `performance_fee_bps` is available */}
         <Row label="Performance fee" value="n/a" />
         {/* Aave V3 doesn't lock supplied funds; revisit if a strategy with a lockup is added */}
