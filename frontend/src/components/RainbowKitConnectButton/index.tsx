@@ -2,7 +2,7 @@ import { useEffect, type FC } from 'react'
 import { useLocation } from 'react-router'
 import { ConnectButton } from '@rainbow-me/rainbowkit'
 import { useAccount, useDisconnect } from 'wagmi'
-import { useHostedRedirectAuth } from '@oasisprotocol/flexvaults-sdk'
+import { useHostedRedirectAuth } from '@oasisprotocol/privana-sdk'
 import { ChevronDown } from 'lucide-react'
 import { Button } from '../ui/button'
 import {

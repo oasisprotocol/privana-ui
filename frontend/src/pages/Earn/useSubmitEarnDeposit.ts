@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import type { WalletClient } from 'viem'
-import { signTransferMessage } from '@oasisprotocol/flexvaults-sdk'
+import { signTransferMessage } from '@oasisprotocol/privana-sdk'
 import { depositEarn, type DepositQuoteResponse } from '@/api/earn'
 import type { TokenInfo } from '@/api/swap'
 import type { ActivityStatus } from '@/contexts/ActivityProvider/context'

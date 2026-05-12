@@ -5,7 +5,7 @@ import { Skeleton } from '@/components/ui/skeleton'
 import type { TokenInfo } from '@/api/swap'
 import { formatAmount, formatFiat } from '@/lib/tokens'
 import { TokenSelectDialog } from './TokenSelectDialog'
-import { getTokenIcon } from '@oasisprotocol/flexvaults-sdk'
+import { getTokenIcon } from '@oasisprotocol/privana-sdk'
 
 const tokenLabel = (token: TokenInfo) => token.token_symbol ?? token.token_type_name
 

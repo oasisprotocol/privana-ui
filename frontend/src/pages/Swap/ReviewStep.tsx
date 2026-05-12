@@ -1,5 +1,5 @@
 import { ArrowRight } from 'lucide-react'
-import { getTokenIcon } from '@oasisprotocol/flexvaults-sdk'
+import { getTokenIcon } from '@oasisprotocol/privana-sdk'
 import { Button } from '@/components/ui/button'
 import { Separator } from '@/components/ui/separator'
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip'

@@ -1,4 +1,4 @@
-import { getTokenIcon } from '@oasisprotocol/flexvaults-sdk'
+import { getTokenIcon } from '@oasisprotocol/privana-sdk'
 import type { DepositQuoteResponse, EarnPool } from '@/api/earn'
 import type { TokenInfo } from '@/api/swap'
 import { Button } from '@/components/ui/button'

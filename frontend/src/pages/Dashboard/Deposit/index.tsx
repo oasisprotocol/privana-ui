@@ -1,9 +1,9 @@
-import { FlexvaultsInlineModal } from '@oasisprotocol/flexvaults-sdk'
+import { PrivanaInlineModal } from '@oasisprotocol/privana-sdk'
 
 export const Deposit = () => {
   return (
     <div>
-      <FlexvaultsInlineModal showLockedFunds={false} />
+      <PrivanaInlineModal showLockedFunds={false} />
     </div>
   )
 }

@@ -9,7 +9,7 @@ const isPersistable = (a: Activity): boolean =>
   (a.type === 'swap' && a.swapId != null) ||
   (a.type === 'earn' && (a.depositId != null || a.withdrawId != null))
 
-const STORAGE_KEY = 'flexvaults-activities'
+const STORAGE_KEY = 'privana-activities'
 
 const loadFromStorage = (): Activity[] => {
   try {

@@ -11,7 +11,7 @@ import {
 import { Input } from '@/components/ui/input'
 import type { TokenInfo } from '@/api/swap'
 import { cn } from '@/lib/utils'
-import { getTokenIcon } from '@oasisprotocol/flexvaults-sdk'
+import { getTokenIcon } from '@oasisprotocol/privana-sdk'
 
 const tokenLabel = (token: TokenInfo) => token.token_symbol ?? token.token_type_name
 

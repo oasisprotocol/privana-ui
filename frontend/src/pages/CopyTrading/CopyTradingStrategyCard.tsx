@@ -5,7 +5,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import { FC } from 'react'
 import { useNavigate } from 'react-router'
 import { Area, AreaChart, XAxis, YAxis } from 'recharts'
-import { Button } from '@oasisprotocol/flexvaults-sdk'
+import { Button } from '@oasisprotocol/privana-sdk'
 import { copyTradingStrategyPath } from '@/paths'
 
 export interface TraderInfo {

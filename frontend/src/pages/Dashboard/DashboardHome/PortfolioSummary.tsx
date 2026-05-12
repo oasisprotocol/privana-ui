@@ -1,9 +1,4 @@
-import {
-  getTokenIcon,
-  useBatchBalances,
-  useFlexvaultsContext,
-  useLockedFunds,
-} from '@oasisprotocol/flexvaults-sdk'
+import { getTokenIcon, useBatchBalances, usePrivanaContext, useLockedFunds } from '@oasisprotocol/privana-sdk'
 import { FC, useMemo } from 'react'
 import { Card } from '@/components/ui/card'
 import { Skeleton } from '@/components/ui/skeleton'
@@ -21,7 +16,7 @@ interface TokenEntry {
 }
 
 export const PortfolioSummary: FC = () => {
-  const { enabledTokens, getTokenById } = useFlexvaultsContext()
+  const { enabledTokens, getTokenById } = usePrivanaContext()
   const tokenIds = useMemo(() => enabledTokens.map(t => t.id), [enabledTokens])
   const { balances, isLoading: balancesLoading } = useBatchBalances({ tokenIds })
   const { locks, isLoading: locksLoading } = useLockedFunds()

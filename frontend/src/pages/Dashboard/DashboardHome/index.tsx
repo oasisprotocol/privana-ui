@@ -2,12 +2,7 @@ import { Button } from '@/components/ui/button'
 import { GitCompare, ArrowDownToLine, ArrowUpToLine, History, Percent } from 'lucide-react'
 import { PortfolioCard } from './PortfolioCard'
 import { ComponentProps, useMemo, useState } from 'react'
-import {
-  FlexvaultsModal,
-  useBatchBalances,
-  useFlexvaultsContext,
-  useLockedFunds,
-} from '@oasisprotocol/flexvaults-sdk'
+import { PrivanaModal, useBatchBalances, usePrivanaContext, useLockedFunds } from '@oasisprotocol/privana-sdk'
 import { formatUnits } from 'viem'
 import { Skeleton } from '@/components/ui/skeleton'
 import { PortfolioSummary } from './PortfolioSummary'
@@ -18,8 +13,8 @@ import { activityPath, earnPath, tradePath } from '@/paths'
 import { Link } from 'react-router'
 
 export const DashboardHome = () => {
-  const [modalOpen, setModalOpen] = useState<ComponentProps<typeof FlexvaultsModal>['defaultTab']>(undefined)
-  const { enabledTokens, tokensStatus, getTokenById } = useFlexvaultsContext()
+  const [modalOpen, setModalOpen] = useState<ComponentProps<typeof PrivanaModal>['defaultTab']>(undefined)
+  const { enabledTokens, tokensStatus, getTokenById } = usePrivanaContext()
   const tokenIds = useMemo(() => enabledTokens.map(t => t.id), [enabledTokens])
   const { balances, isLoading } = useBatchBalances({ tokenIds })
   const pending = tokensStatus !== 'ready' || isLoading
@@ -61,7 +56,7 @@ export const DashboardHome = () => {
             <div className="flex flex-col gap-0.5">
               <h3 className="text-xl font-semibold text-tertiary-foreground">Wallet connected</h3>
               <h2 className="max-w-md text-3xl font-medium text-card-foreground">
-                Start your private trading journey, FlexVaults
+                Start your private trading journey, Privana
               </h2>
             </div>
             <Button className="w-full md:w-35" size="lg" onClick={handleStartWithoutFunds}>
@@ -148,7 +143,7 @@ export const DashboardHome = () => {
         onDeposit={() => setModalOpen('deposit')}
       />
 
-      <FlexvaultsModal
+      <PrivanaModal
         open={!!modalOpen}
         onClose={() => setModalOpen(undefined)}
         showLockedFunds={false}

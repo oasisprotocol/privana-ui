@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router'
-import { useHostedRedirectAuth } from '@oasisprotocol/flexvaults-sdk'
+import { useHostedRedirectAuth } from '@oasisprotocol/privana-sdk'
 import { Layout } from '../../components/Layout'
 import { dashboardPath } from '@/paths'
 

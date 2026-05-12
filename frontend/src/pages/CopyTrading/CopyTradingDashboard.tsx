@@ -1,6 +1,6 @@
 import { useNavigate } from 'react-router'
 import { Skeleton } from '@/components/ui/skeleton'
-import { Button } from '@oasisprotocol/flexvaults-sdk'
+import { Button } from '@oasisprotocol/privana-sdk'
 import { StrategiesSummary } from './StrategiesSummary'
 import { Separator } from '@/components/ui/separator'
 import { copyTradingCreatePath } from '@/paths'
