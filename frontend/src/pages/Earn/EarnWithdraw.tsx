@@ -28,7 +28,7 @@ export const EarnWithdraw = () => {
   const [step, setStep] = useState(0)
 
   const { data: poolsData, isLoading: poolsLoading } = useEarnPools()
-  const { data: balanceData, isLoading: balanceLoading } = useEarnBalance(address)
+  const { data: balanceData, isLoading: balanceLoading } = useEarnBalance()
   const { data: tokensData, isLoading: tokensLoading } = useTokens()
 
   const pools = poolsData?.pools ?? []

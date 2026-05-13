@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import type { WalletClient } from 'viem'
 import { ApiError, getWithdrawNonce, withdrawEarn } from '@/api/earn'
+import { useSwapSiweAuth } from '@/api/swapAuth'
 import type { TokenInfo } from '@/api/swap'
 import type { ActivityStatus } from '@/contexts/ActivityProvider/context'
 import { useActivity } from '@/contexts/ActivityProvider/useActivity'
@@ -26,6 +27,7 @@ export type SubmitEarnWithdrawParams = {
 
 export const useSubmitEarnWithdraw = ({ onSuccess }: Params = {}) => {
   const { addActivity, updateActivity } = useActivity()
+  const { getToken } = useSwapSiweAuth()
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
 
@@ -51,7 +53,8 @@ export const useSubmitEarnWithdraw = ({ onSuccess }: Params = {}) => {
           },
         })
 
-      const { nonce } = await getWithdrawNonce(address)
+      const siweToken = await getToken()
+      const { nonce } = await getWithdrawNonce(siweToken)
       const signature = await signAt(nonce)
 
       const id = crypto.randomUUID()
@@ -82,7 +85,7 @@ export const useSubmitEarnWithdraw = ({ onSuccess }: Params = {}) => {
           return await withdrawEarn({ pool_id: poolId, user_address: address, amount, nonce, signature })
         } catch (err) {
           if (!(err instanceof ApiError) || err.status !== 400) throw err
-          const { nonce: freshNonce } = await getWithdrawNonce(address)
+          const { nonce: freshNonce } = await getWithdrawNonce(siweToken)
           if (freshNonce === nonce) throw err
           const freshSignature = await signAt(freshNonce)
           return withdrawEarn({

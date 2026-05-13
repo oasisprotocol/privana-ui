@@ -1,4 +1,6 @@
 import { useQuery } from '@tanstack/react-query'
+import { useAccount } from 'wagmi'
+import { useSwapSiweAuth } from './swapAuth'
 
 const BASE_URL = import.meta.env.VITE_SWAP_API_URL ?? 'http://localhost:8001'
 
@@ -13,11 +15,11 @@ export class ApiError extends Error {
   }
 }
 
-async function request<T>(path: string, init?: RequestInit): Promise<T> {
-  const res = await fetch(`${BASE_URL}${path}`, {
-    headers: { 'Content-Type': 'application/json' },
-    ...init,
-  })
+async function request<T>(path: string, init?: RequestInit, siweToken?: string): Promise<T> {
+  const headers: Record<string, string> = { 'Content-Type': 'application/json' }
+  if (siweToken) headers['X-SIWE-Token'] = siweToken
+  const merged = { ...headers, ...(init?.headers as Record<string, string> | undefined) }
+  const res = await fetch(`${BASE_URL}${path}`, { ...init, headers: merged })
   if (!res.ok) {
     const body = await res.json().catch(() => null)
     throw new ApiError(res.status, body?.detail ?? null)
@@ -144,14 +146,12 @@ export function withdrawEarn(body: WithdrawRequest) {
   })
 }
 
-export function getWithdrawNonce(userAddress: string) {
-  const search = new URLSearchParams({ user_address: userAddress })
-  return request<WithdrawNonceResponse>(`/v1/earn/withdraw/nonce?${search}`)
+export function getWithdrawNonce(siweToken: string) {
+  return request<WithdrawNonceResponse>('/v1/earn/withdraw/nonce', undefined, siweToken)
 }
 
-export function getEarnBalance(userAddress: string) {
-  const search = new URLSearchParams({ user_address: userAddress })
-  return request<EarnBalanceListResponse>(`/v1/earn/balance?${search}`)
+export function getEarnBalance(siweToken: string) {
+  return request<EarnBalanceListResponse>('/v1/earn/balance', undefined, siweToken)
 }
 
 export function useEarnPools() {
@@ -162,11 +162,16 @@ export function useEarnPools() {
   })
 }
 
-export function useEarnBalance(userAddress: string | undefined) {
+export function useEarnBalance() {
+  const { address } = useAccount()
+  const { isReady, getToken } = useSwapSiweAuth()
   return useQuery({
-    queryKey: earnKeys.balance(userAddress ?? ''),
-    queryFn: () => getEarnBalance(userAddress!),
-    enabled: !!userAddress,
+    queryKey: earnKeys.balance(address ?? ''),
+    queryFn: async () => {
+      const token = await getToken()
+      return getEarnBalance(token)
+    },
+    enabled: isReady,
     staleTime: 30_000,
   })
 }
