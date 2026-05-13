@@ -3,7 +3,7 @@
 @import '@fontsource-variable/geist';
 
 /* Exclude SDK from Tailwind scanning - SDK provides its own scoped CSS */
-@source not "../node_modules/@oasisprotocol/flexvaults-sdk";
+@source not "../node_modules/@oasisprotocol/privana-sdk";
 
 @custom-variant dark (&:is(.dark *));
 
@@ -141,9 +141,9 @@
   animation-timing-function: ease-in-out;
 }
 
-[data-flexvaults],
-[data-flexvaults].dark,
-.dark [data-flexvaults] {
+[data-privana],
+[data-privana].dark,
+.dark [data-privana] {
   --fv-radius: var(--radius);
   --fv-background: var(--background);
   --fv-foreground: var(--foreground);

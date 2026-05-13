@@ -1,6 +1,6 @@
 import { Fragment, useEffect, useMemo } from 'react'
 import { formatUnits, parseUnits } from 'viem'
-import { getTokenIcon, useBalance } from '@oasisprotocol/flexvaults-sdk'
+import { getTokenIcon, useBalance } from '@oasisprotocol/privana-sdk'
 import { useTokenPrices } from '@/api/coin-gecko'
 import { useEarnPools } from '@/api/earn'
 import { useTokens } from '@/api/swap'

@@ -1,5 +1,5 @@
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion'
-import { Button } from '@oasisprotocol/flexvaults-sdk'
+import { Button } from '@oasisprotocol/privana-sdk'
 import { useConnectModal } from '@rainbow-me/rainbowkit'
 import { EarnHeader } from './EarnHeader'
 

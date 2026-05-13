@@ -1,4 +1,4 @@
-import { Button } from '@oasisprotocol/flexvaults-sdk'
+import { Button } from '@oasisprotocol/privana-sdk'
 
 type StepNavigationProps = {
   back: () => void

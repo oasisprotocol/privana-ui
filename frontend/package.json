@@ -17,7 +17,7 @@
     "@fontsource-variable/geist": "^5.2.8",
     "@hookform/resolvers": "^5.2.2",
     "@metamask/jazzicon": "^2.0.0",
-    "@oasisprotocol/flexvaults-sdk": "^0.1.16",
+    "@oasisprotocol/privana-sdk": "^0.2.0",
     "@rainbow-me/rainbowkit": "^2.2.10",
     "@tanstack/react-query": "^5.90.20",
     "class-variance-authority": "^0.7.1",

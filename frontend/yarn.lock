@@ -736,10 +736,10 @@
   resolved "https://registry.yarnpkg.com/@noble/hashes/-/hashes-1.8.0.tgz#cee43d801fcef9644b11b8194857695acd5f815a"
   integrity sha512-jCs9ldd7NwzpgXDIf6P3+NrHh9/sD6CQdxHyjQI+h/6rDNo88ypBxxz45UDuZHz9r3tNz7N/VInSVoVdtXEI4A==
 
-"@oasisprotocol/flexvaults-sdk@^0.1.16":
-  version "0.1.16"
-  resolved "https://registry.yarnpkg.com/@oasisprotocol/flexvaults-sdk/-/flexvaults-sdk-0.1.16.tgz#f1828ca5bf2e4f56729156339649895e9a1232e0"
-  integrity sha512-n/QfCKw4lzc3JeZCpKLZvxN0Ux8IZq9/G//uNbLLhRK1FDB5UfOiw9iPj2roikoZkRybZbdR/wFTS+CE5tfKIQ==
+"@oasisprotocol/privana-sdk@^0.2.0":
+  version "0.2.0"
+  resolved "https://registry.yarnpkg.com/@oasisprotocol/privana-sdk/-/privana-sdk-0.2.0.tgz#339c3349b8d22bf37065a14501062a188df33a04"
+  integrity sha512-J2Uk5t4YOLo5FFvl/6jNkFpwm5na5pUwATR8Q6ffFoH3J4WRGFiS7le5mI9ebhfnh+cNBkQfQr/Zge26/Zu5ng==
   dependencies:
     "@radix-ui/react-dialog" "^1.1.15"
     "@radix-ui/react-dropdown-menu" "^2.1.16"

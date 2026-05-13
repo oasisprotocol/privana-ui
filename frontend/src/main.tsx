@@ -6,13 +6,13 @@ import { WagmiProvider } from 'wagmi'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { lightTheme, RainbowKitProvider, Theme } from '@rainbow-me/rainbowkit'
 import { wagmiConfig } from './wagmi-config.ts'
-import { FlexvaultsProvider } from '@oasisprotocol/flexvaults-sdk'
+import { PrivanaProvider } from '@oasisprotocol/privana-sdk'
 import { ALLOWED_TOKEN_IDS } from './config/tokens'
 import { authCallbackPath } from './paths'
 import { ActivityProvider } from './contexts/ActivityProvider'
 import { TooltipProvider } from './components/ui/tooltip'
 import '@rainbow-me/rainbowkit/styles.css'
-import '@oasisprotocol/flexvaults-sdk/styles.css'
+import '@oasisprotocol/privana-sdk/styles.css'
 import './index.css'
 
 const queryClient = new QueryClient()
@@ -31,15 +31,15 @@ createRoot(document.getElementById('root')!).render(
   <StrictMode>
     <WagmiProvider config={wagmiConfig}>
       <QueryClientProvider client={queryClient}>
-        <FlexvaultsProvider
+        <PrivanaProvider
           networkConfig={{
             chainId: parseInt(import.meta.env.VITE_CHAIN_ID, 10),
             accountingContract: import.meta.env.VITE_ACCOUNTING_CONTRACT_ADDRESS,
-            apiUrl: import.meta.env.VITE_FLEXVAULTS_API_URL,
+            apiUrl: import.meta.env.VITE_PRIVANA_API_URL,
           }}
           tokens={ALLOWED_TOKEN_IDS}
           hostedAuth={{
-            clientId: import.meta.env.VITE_FLEXVAULTS_CLIENT_ID,
+            clientId: import.meta.env.VITE_PRIVANA_CLIENT_ID,
             redirectUri: `${window.location.origin}${authCallbackPath()}`,
           }}
         >
@@ -50,7 +50,7 @@ createRoot(document.getElementById('root')!).render(
               </TooltipProvider>
             </ActivityProvider>
           </RainbowKitProvider>
-        </FlexvaultsProvider>
+        </PrivanaProvider>
       </QueryClientProvider>
     </WagmiProvider>
   </StrictMode>,

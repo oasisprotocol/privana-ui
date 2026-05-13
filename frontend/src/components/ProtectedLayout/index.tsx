@@ -2,7 +2,7 @@ import { type FC } from 'react'
 import { Outlet, useNavigate } from 'react-router'
 import { useAccount, useAccountEffect, useDisconnect } from 'wagmi'
 import { useConnectModal } from '@rainbow-me/rainbowkit'
-import { useHostedRedirectAuth } from '@oasisprotocol/flexvaults-sdk'
+import { useHostedRedirectAuth } from '@oasisprotocol/privana-sdk'
 import { Button } from '@/components/ui/button'
 import { Layout } from '../Layout'
 
@@ -40,7 +40,7 @@ export const ProtectedLayout: FC = () => {
       <Layout dashboard>
         <div className="flex flex-col flex-1 gap-4 justify-center items-center text-center">
           <p className="text-sm text-muted-foreground max-w-md">
-            Wallet is connected. Sign in to Flexvaults to continue.
+            Wallet is connected. Sign in to Privana to continue.
           </p>
           <div className="flex items-center gap-3">
             <Button onClick={() => void login()} disabled={isAuthLoading}>

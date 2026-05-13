@@ -2,7 +2,7 @@ import { BookCopy, KeySquare, LogOut, Wand } from 'lucide-react'
 import { PoweredByHyperliquid } from '@/components/PoweredByHyperliquid'
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion'
 import { Separator } from '@/components/ui/separator'
-import { Button } from '@oasisprotocol/flexvaults-sdk'
+import { Button } from '@oasisprotocol/privana-sdk'
 import HeroImage from '../../assets/dashboard-hero.svg'
 import { useConnectModal } from '@rainbow-me/rainbowkit'
 
@@ -84,7 +84,7 @@ export const CopyTradingLanding = () => {
             </AccordionContent>
           </AccordionItem>
           <AccordionItem value="returns">
-            <AccordionTrigger>How Copy Trading Works on FlexVaults</AccordionTrigger>
+            <AccordionTrigger>How Copy Trading Works on Privana</AccordionTrigger>
             <AccordionContent>-</AccordionContent>
           </AccordionItem>
           <AccordionItem value="support">

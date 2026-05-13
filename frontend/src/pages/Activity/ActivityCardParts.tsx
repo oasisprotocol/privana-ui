@@ -1,5 +1,5 @@
 import { Check } from 'lucide-react'
-import { getTokenIcon } from '@oasisprotocol/flexvaults-sdk'
+import { getTokenIcon } from '@oasisprotocol/privana-sdk'
 import { Badge } from '@/components/ui/badge'
 import { cn } from '@/lib/utils'
 import { formatAmount } from '@/lib/tokens'
