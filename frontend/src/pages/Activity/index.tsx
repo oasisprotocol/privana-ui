@@ -1,9 +1,10 @@
 import { useMemo, useState } from 'react'
 import { PageHeading } from '@/components/PageHeading'
 import { cn } from '@/lib/utils'
-import { useActivity } from '@/contexts/ActivityProvider/useActivity'
+import { useMergedActivity, type MergedRow } from '@/hooks/use-merged-activity'
 import { SwapActivityCard } from './SwapActivityCard'
 import { EarnActivityCard } from './EarnActivityCard'
+import { ChainActivityCard } from './ChainActivityCard'
 
 const TABS = [
   { id: 'all', label: 'All' },
@@ -13,15 +14,29 @@ const TABS = [
 
 type TabId = (typeof TABS)[number]['id']
 
+const isSwap = (r: MergedRow): boolean =>
+  (r.source === 'local' && r.activity.type === 'swap') || (r.source === 'chain' && r.row.kind === 'swap')
+
+const isEarn = (r: MergedRow): boolean =>
+  (r.source === 'local' && r.activity.type === 'earn') ||
+  (r.source === 'chain' && r.row.kind === 'earnDeposit')
+
+const rowKey = (r: MergedRow): string =>
+  r.source === 'local'
+    ? `local:${r.activity.id}`
+    : `chain:${r.timestamp}:${r.row.entry.kind}:${r.row.counterparty ?? '-'}:${r.row.amount ?? '-'}`
+
 export const Activity = () => {
   const [activeTab, setActiveTab] = useState<TabId>('all')
-  const { activities } = useActivity()
+  const { rows, isLoading } = useMergedActivity()
+
   const filtered = useMemo(() => {
-    if (activeTab === 'swaps') return activities.filter(a => a.type === 'swap')
-    if (activeTab === 'earn') return activities.filter(a => a.type === 'earn')
-    return activities
-  }, [activities, activeTab])
-  const isEmpty = activities.length === 0
+    if (activeTab === 'swaps') return rows.filter(isSwap)
+    if (activeTab === 'earn') return rows.filter(isEarn)
+    return rows
+  }, [rows, activeTab])
+
+  const isEmpty = !isLoading && rows.length === 0
 
   return (
     <>
@@ -64,13 +79,16 @@ export const Activity = () => {
           {filtered.length === 0 ? (
             <p className="text-base text-muted-foreground">No matching activity</p>
           ) : (
-            filtered.map(activity =>
-              activity.type === 'swap' ? (
-                <SwapActivityCard key={activity.id} activity={activity} />
-              ) : (
-                <EarnActivityCard key={activity.id} activity={activity} />
-              ),
-            )
+            filtered.map(r => {
+              if (r.source === 'local') {
+                return r.activity.type === 'swap' ? (
+                  <SwapActivityCard key={rowKey(r)} activity={r.activity} />
+                ) : (
+                  <EarnActivityCard key={rowKey(r)} activity={r.activity} />
+                )
+              }
+              return <ChainActivityCard key={rowKey(r)} row={r.row} />
+            })
           )}
         </div>
       )}
