@@ -7,7 +7,7 @@ import { Input } from '@/components/ui/input'
 import { cn } from '@/lib/utils'
 import { useMergedActivity, type MergedRow } from '@/hooks/use-merged-activity'
 import { ActivityFilterSheet } from './ActivityFilterSheet'
-import { applyFilters, type ActivityFilters } from './filters'
+import { applyFilters, type ActivityFilters, type FilterType } from './filters'
 import { useActivityFilters } from './useActivityFilters'
 import { SwapActivityCard } from './SwapActivityCard'
 import { EarnActivityCard } from './EarnActivityCard'
@@ -23,16 +23,34 @@ const TABS = [
 
 type TabId = (typeof TABS)[number]['id']
 
-const isDeposit = (r: MergedRow): boolean => r.source === 'chain' && r.row.kind === 'deposit'
+const TYPE_FOR_TAB: Record<TabId, FilterType> = {
+  all: 'all',
+  deposits: 'deposit',
+  withdrawals: 'withdraw',
+  swaps: 'swap',
+  earn: 'earnDeposit',
+}
 
-const isWithdrawal = (r: MergedRow): boolean => r.source === 'chain' && r.row.kind === 'withdraw'
+const TAB_FOR_TYPE: Record<FilterType, TabId> = {
+  all: 'all',
+  deposit: 'deposits',
+  withdraw: 'withdrawals',
+  swap: 'swaps',
+  earnDeposit: 'earn',
+  earnWithdraw: 'earn',
+  lock: 'all',
+  reclaim: 'all',
+  transfer: 'all',
+}
 
-const isSwap = (r: MergedRow): boolean =>
-  (r.source === 'local' && r.activity.type === 'swap') || (r.source === 'chain' && r.row.kind === 'swap')
-
-const isEarn = (r: MergedRow): boolean =>
-  (r.source === 'local' && r.activity.type === 'earn') ||
-  (r.source === 'chain' && r.row.kind === 'earnDeposit')
+const TAB_REFLECTED_TYPES: ReadonlySet<FilterType> = new Set([
+  'all',
+  'deposit',
+  'withdraw',
+  'swap',
+  'earnDeposit',
+  'earnWithdraw',
+])
 
 const rowKey = (r: MergedRow): string =>
   r.source === 'local'
@@ -42,7 +60,7 @@ const rowKey = (r: MergedRow): string =>
 const activeFilterCount = (f: ActivityFilters): number => {
   let n = 0
   if (f.app !== 'all') n++
-  if (f.type !== 'all') n++
+  if (!TAB_REFLECTED_TYPES.has(f.type)) n++
   if (f.status !== 'all') n++
   if (f.asset !== 'all') n++
   if (f.time !== 'all') n++
@@ -51,24 +69,21 @@ const activeFilterCount = (f: ActivityFilters): number => {
 }
 
 export const Activity = () => {
-  const [activeTab, setActiveTab] = useState<TabId>('all')
   const [filters, setFilters] = useActivityFilters()
   const [filterOpen, setFilterOpen] = useState(false)
 
   const { rows, isLoading } = useMergedActivity()
   const { getTokenById } = usePrivanaContext()
 
-  const visible = useMemo(() => {
-    const afterFilters = applyFilters(rows, filters, {
-      resolveSymbol: id => (id ? getTokenById(id)?.symbol : undefined),
-    })
-    if (activeTab === 'deposits') return afterFilters.filter(isDeposit)
-    if (activeTab === 'withdrawals') return afterFilters.filter(isWithdrawal)
-    if (activeTab === 'swaps') return afterFilters.filter(isSwap)
-    if (activeTab === 'earn') return afterFilters.filter(isEarn)
-    return afterFilters
-  }, [rows, filters, activeTab, getTokenById])
+  const visible = useMemo(
+    () =>
+      applyFilters(rows, filters, {
+        resolveSymbol: id => (id ? getTokenById(id)?.symbol : undefined),
+      }),
+    [rows, filters, getTokenById],
+  )
 
+  const activeTab = TAB_FOR_TYPE[filters.type]
   const filterCount = activeFilterCount(filters)
   const isEmpty = !isLoading && rows.length === 0
 
@@ -120,7 +135,7 @@ export const Activity = () => {
                   type="button"
                   role="tab"
                   aria-selected={isActive}
-                  onClick={() => setActiveTab(tab.id)}
+                  onClick={() => setFilters({ ...filters, type: TYPE_FOR_TAB[tab.id] })}
                   className={cn(
                     'h-8 px-3 rounded-sm text-sm font-medium transition-colors',
                     isActive ? 'bg-primary text-primary-foreground' : 'text-foreground hover:bg-accent',
