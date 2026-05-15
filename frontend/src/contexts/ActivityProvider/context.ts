@@ -44,6 +44,7 @@ export type ActivityContextValue = {
   pendingCount: number
   addActivity: (activity: Activity) => void
   updateActivity: (id: string, patch: Partial<Activity>) => void
+  removeActivity: (id: string) => void
 }
 
 export const ActivityContext = createContext<ActivityContextValue | null>(null)

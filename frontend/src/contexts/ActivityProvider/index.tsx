@@ -44,11 +44,15 @@ export const ActivityProvider = ({ children }: { children: ReactNode }) => {
     setActivities(prev => prev.map(a => (a.id === id ? ({ ...a, ...patch } as Activity) : a)))
   }, [])
 
+  const removeActivity = useCallback((id: string) => {
+    setActivities(prev => prev.filter(a => a.id !== id))
+  }, [])
+
   const pendingCount = useMemo(() => activities.filter(a => a.status === 'in-progress').length, [activities])
 
   const value = useMemo(
-    () => ({ activities, pendingCount, addActivity, updateActivity }),
-    [activities, pendingCount, addActivity, updateActivity],
+    () => ({ activities, pendingCount, addActivity, updateActivity, removeActivity }),
+    [activities, pendingCount, addActivity, updateActivity, removeActivity],
   )
 
   return (
