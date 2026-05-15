@@ -15,11 +15,17 @@ import { ChainActivityCard } from './ChainActivityCard'
 
 const TABS = [
   { id: 'all', label: 'All' },
+  { id: 'deposits', label: 'Deposits' },
+  { id: 'withdrawals', label: 'Withdrawals' },
   { id: 'swaps', label: 'Swaps' },
   { id: 'earn', label: 'Earn' },
 ] as const
 
 type TabId = (typeof TABS)[number]['id']
+
+const isDeposit = (r: MergedRow): boolean => r.source === 'chain' && r.row.kind === 'deposit'
+
+const isWithdrawal = (r: MergedRow): boolean => r.source === 'chain' && r.row.kind === 'withdraw'
 
 const isSwap = (r: MergedRow): boolean =>
   (r.source === 'local' && r.activity.type === 'swap') || (r.source === 'chain' && r.row.kind === 'swap')
@@ -56,6 +62,8 @@ export const Activity = () => {
     const afterFilters = applyFilters(rows, filters, {
       resolveSymbol: id => (id ? getTokenById(id)?.symbol : undefined),
     })
+    if (activeTab === 'deposits') return afterFilters.filter(isDeposit)
+    if (activeTab === 'withdrawals') return afterFilters.filter(isWithdrawal)
     if (activeTab === 'swaps') return afterFilters.filter(isSwap)
     if (activeTab === 'earn') return afterFilters.filter(isEarn)
     return afterFilters
