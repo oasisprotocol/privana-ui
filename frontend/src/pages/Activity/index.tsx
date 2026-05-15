@@ -1,7 +1,13 @@
 import { useMemo, useState } from 'react'
+import { Search, SlidersHorizontal } from 'lucide-react'
+import { usePrivanaContext } from '@oasisprotocol/privana-sdk'
 import { PageHeading } from '@/components/PageHeading'
+import { Button } from '@/components/ui/button'
+import { Input } from '@/components/ui/input'
 import { cn } from '@/lib/utils'
 import { useMergedActivity, type MergedRow } from '@/hooks/use-merged-activity'
+import { ActivityFilterSheet } from './ActivityFilterSheet'
+import { applyFilters, DEFAULT_FILTERS, type ActivityFilters } from './filters'
 import { SwapActivityCard } from './SwapActivityCard'
 import { EarnActivityCard } from './EarnActivityCard'
 import { ChainActivityCard } from './ChainActivityCard'
@@ -26,16 +32,35 @@ const rowKey = (r: MergedRow): string =>
     ? `local:${r.activity.id}`
     : `chain:${r.timestamp}:${r.row.entry.kind}:${r.row.counterparty ?? '-'}:${r.row.amount ?? '-'}`
 
+const activeFilterCount = (f: ActivityFilters): number => {
+  let n = 0
+  if (f.app !== 'all') n++
+  if (f.type !== 'all') n++
+  if (f.status !== 'all') n++
+  if (f.asset !== 'all') n++
+  if (f.time !== 'all') n++
+  if (f.search.trim().length > 0) n++
+  return n
+}
+
 export const Activity = () => {
   const [activeTab, setActiveTab] = useState<TabId>('all')
+  const [filters, setFilters] = useState<ActivityFilters>(DEFAULT_FILTERS)
+  const [filterOpen, setFilterOpen] = useState(false)
+
   const { rows, isLoading } = useMergedActivity()
+  const { getTokenById } = usePrivanaContext()
 
-  const filtered = useMemo(() => {
-    if (activeTab === 'swaps') return rows.filter(isSwap)
-    if (activeTab === 'earn') return rows.filter(isEarn)
-    return rows
-  }, [rows, activeTab])
+  const visible = useMemo(() => {
+    const afterFilters = applyFilters(rows, filters, {
+      resolveSymbol: id => (id ? getTokenById(id)?.symbol : undefined),
+    })
+    if (activeTab === 'swaps') return afterFilters.filter(isSwap)
+    if (activeTab === 'earn') return afterFilters.filter(isEarn)
+    return afterFilters
+  }, [rows, filters, activeTab, getTokenById])
 
+  const filterCount = activeFilterCount(filters)
   const isEmpty = !isLoading && rows.length === 0
 
   return (
@@ -51,6 +76,28 @@ export const Activity = () => {
 
       {!isEmpty && (
         <div className="flex flex-col gap-4 w-full max-w-145 mx-auto">
+          <div className="flex items-center gap-2">
+            <div className="relative flex-1">
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 size-4 text-muted-foreground" />
+              <Input
+                type="search"
+                placeholder="Search"
+                value={filters.search}
+                onChange={e => setFilters(f => ({ ...f, search: e.target.value }))}
+                className="pl-9"
+              />
+            </div>
+            <Button variant="default" onClick={() => setFilterOpen(true)}>
+              <SlidersHorizontal />
+              Filter
+              {filterCount > 0 && (
+                <span className="ml-1 inline-flex items-center justify-center rounded-full bg-foreground text-background text-xs font-medium h-5 min-w-5 px-1.5">
+                  {filterCount}
+                </span>
+              )}
+            </Button>
+          </div>
+
           <div
             role="tablist"
             aria-label="Activity filter"
@@ -76,10 +123,10 @@ export const Activity = () => {
             })}
           </div>
 
-          {filtered.length === 0 ? (
+          {visible.length === 0 ? (
             <p className="text-base text-muted-foreground">No matching activity</p>
           ) : (
-            filtered.map(r => {
+            visible.map(r => {
               if (r.source === 'local') {
                 return r.activity.type === 'swap' ? (
                   <SwapActivityCard key={rowKey(r)} activity={r.activity} />
@@ -92,6 +139,13 @@ export const Activity = () => {
           )}
         </div>
       )}
+
+      <ActivityFilterSheet
+        filters={filters}
+        onChange={setFilters}
+        open={filterOpen}
+        onOpenChange={setFilterOpen}
+      />
     </>
   )
 }
