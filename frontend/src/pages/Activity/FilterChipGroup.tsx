@@ -1,6 +1,7 @@
+import type { ReactNode } from 'react'
 import { cn } from '@/lib/utils'
 
-type Option<V extends string> = { value: V; label: string }
+type Option<V extends string> = { value: V; label: string; leading?: ReactNode }
 
 type Props<V extends string> = {
   label: string
@@ -22,12 +23,14 @@ export function FilterChipGroup<V extends string>({ label, options, value, onCha
               type="button"
               onClick={() => onChange(opt.value)}
               className={cn(
-                'h-7 px-3 rounded-full text-sm font-medium transition-colors',
+                'inline-flex items-center gap-1.5 h-7 pl-2 pr-3 rounded-full text-sm font-medium transition-colors',
+                opt.leading == null && 'pl-3',
                 isActive
                   ? 'bg-primary text-primary-foreground'
                   : 'bg-secondary text-foreground hover:bg-accent',
               )}
             >
+              {opt.leading}
               {opt.label}
             </button>
           )

@@ -42,7 +42,11 @@ export function ActivityFilterSheet({ filters, onChange, open, onOpenChange }: P
   const { enabledTokens } = usePrivanaContext()
   const appOptions = [
     { value: 'all', label: 'All' },
-    ...KNOWN_APPS.map(a => ({ value: a.id, label: a.name })),
+    ...KNOWN_APPS.map(a => ({
+      value: a.id,
+      label: a.name,
+      leading: <img src={a.logoUrl} alt="" width={16} height={16} className="rounded-full" />,
+    })),
   ]
   const assetOptions = [
     { value: 'all', label: 'All' },
