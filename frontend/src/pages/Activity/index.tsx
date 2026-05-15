@@ -7,7 +7,8 @@ import { Input } from '@/components/ui/input'
 import { cn } from '@/lib/utils'
 import { useMergedActivity, type MergedRow } from '@/hooks/use-merged-activity'
 import { ActivityFilterSheet } from './ActivityFilterSheet'
-import { applyFilters, DEFAULT_FILTERS, type ActivityFilters } from './filters'
+import { applyFilters, type ActivityFilters } from './filters'
+import { useActivityFilters } from './useActivityFilters'
 import { SwapActivityCard } from './SwapActivityCard'
 import { EarnActivityCard } from './EarnActivityCard'
 import { ChainActivityCard } from './ChainActivityCard'
@@ -45,7 +46,7 @@ const activeFilterCount = (f: ActivityFilters): number => {
 
 export const Activity = () => {
   const [activeTab, setActiveTab] = useState<TabId>('all')
-  const [filters, setFilters] = useState<ActivityFilters>(DEFAULT_FILTERS)
+  const [filters, setFilters] = useActivityFilters()
   const [filterOpen, setFilterOpen] = useState(false)
 
   const { rows, isLoading } = useMergedActivity()
@@ -83,7 +84,7 @@ export const Activity = () => {
                 type="search"
                 placeholder="Search"
                 value={filters.search}
-                onChange={e => setFilters(f => ({ ...f, search: e.target.value }))}
+                onChange={e => setFilters({ ...filters, search: e.target.value })}
                 className="pl-9"
               />
             </div>

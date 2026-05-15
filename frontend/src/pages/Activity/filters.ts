@@ -99,7 +99,7 @@ export function timeBoundsFor(preset: FilterTimePreset, now: number = Date.now()
   }
 }
 
-export function searchableTextOf(r: MergedRow): string {
+export function searchableTextOf(r: MergedRow, resolveSymbol?: ResolveSymbol): string {
   const parts: string[] = []
   if (r.source === 'local') {
     if (r.activity.type === 'swap') {
@@ -114,6 +114,10 @@ export function searchableTextOf(r: MergedRow): string {
   } else {
     if (r.row.counterparty) parts.push(r.row.counterparty)
     if (r.row.pool) parts.push(r.row.pool.strategy, r.row.pool.pool_id)
+    if (resolveSymbol) {
+      const symbol = resolveSymbol(r.row.tokenId)
+      if (symbol) parts.push(symbol)
+    }
   }
   return parts.join(' ').toLowerCase()
 }
@@ -134,7 +138,7 @@ export function applyFilters(
     if (filters.app !== 'all' && appOf(r) !== filters.app) return false
     if (wantedAsset && !assetsOf(r, resolveSymbol).includes(wantedAsset)) return false
     if (r.timestamp < tFrom || r.timestamp > tTo) return false
-    if (search && !searchableTextOf(r).includes(search)) return false
+    if (search && !searchableTextOf(r, resolveSymbol).includes(search)) return false
     return true
   })
 }
