@@ -48,9 +48,11 @@ export function ActivityFilterSheet({ filters, onChange, open, onOpenChange }: P
       leading: <img src={a.logoUrl} alt="" width={16} height={16} className="rounded-full" />,
     })),
   ]
+  // Multiple tokens can share a symbol (e.g. USDC on different chains), so the
+  // chip value must be the unique token id; the symbol is shown as the label.
   const assetOptions = [
     { value: 'all', label: 'All' },
-    ...enabledTokens.map(t => ({ value: t.symbol.toUpperCase(), label: t.symbol })),
+    ...enabledTokens.map(t => ({ value: t.id, label: t.symbol })),
   ]
   const update = <K extends keyof ActivityFilters>(key: K, value: ActivityFilters[K]) => {
     onChange({ ...filters, [key]: value })

@@ -72,15 +72,14 @@ export function statusOf(r: MergedRow): ActivityStatus {
 
 export type ResolveSymbol = (tokenId: string | null | undefined) => string | undefined
 
-export function assetsOf(r: MergedRow, resolveSymbol: ResolveSymbol): string[] {
+export function assetsOf(r: MergedRow): string[] {
   if (r.source === 'local') {
     if (r.activity.type === 'swap') {
-      return [r.activity.fromToken.symbol.toUpperCase(), r.activity.toToken.symbol.toUpperCase()]
+      return [r.activity.fromToken.id, r.activity.toToken.id]
     }
-    return [r.activity.token.symbol.toUpperCase()]
+    return [r.activity.token.id]
   }
-  const symbol = resolveSymbol(r.row.tokenId)
-  return symbol ? [symbol.toUpperCase()] : []
+  return r.row.tokenId ? [r.row.tokenId] : []
 }
 
 export function timeBoundsFor(preset: FilterTimePreset, now: number = Date.now()): [number, number] {
@@ -131,12 +130,12 @@ export function applyFilters(
   const resolveSymbol = options.resolveSymbol ?? (() => undefined)
   const [tFrom, tTo] = timeBoundsFor(filters.time, now)
   const search = filters.search.trim().toLowerCase()
-  const wantedAsset = filters.asset === 'all' ? null : filters.asset.toUpperCase()
+  const wantedAsset = filters.asset === 'all' ? null : filters.asset
   return rows.filter(r => {
     if (filters.type !== 'all' && filterTypeOf(r) !== filters.type) return false
     if (filters.status !== 'all' && statusOf(r) !== filters.status) return false
     if (filters.app !== 'all' && appOf(r) !== filters.app) return false
-    if (wantedAsset && !assetsOf(r, resolveSymbol).includes(wantedAsset)) return false
+    if (wantedAsset && !assetsOf(r).includes(wantedAsset)) return false
     if (r.timestamp < tFrom || r.timestamp > tTo) return false
     if (search && !searchableTextOf(r, resolveSymbol).includes(search)) return false
     return true
