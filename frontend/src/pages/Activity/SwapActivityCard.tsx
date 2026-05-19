@@ -1,12 +1,6 @@
-import { useState } from 'react'
-import { ArrowRight, ChevronDown } from 'lucide-react'
-import { Button } from '@/components/ui/button'
+import { ArrowRight } from 'lucide-react'
 import { Progress } from '@/components/ui/progress'
-import { Separator } from '@/components/ui/separator'
-import { cn } from '@/lib/utils'
-import { formatFiat } from '@/lib/tokens'
 import type { SwapActivity } from '@/contexts/ActivityProvider/context'
-import { Row } from '@/components/Row'
 import { StatusBadge, TokenAmount } from './ActivityCardParts'
 
 type SwapActivityCardProps = {
@@ -14,8 +8,7 @@ type SwapActivityCardProps = {
 }
 
 export const SwapActivityCard = ({ activity }: SwapActivityCardProps) => {
-  const [detailsOpen, setDetailsOpen] = useState(false)
-  const { status, fromToken, toToken, fromAmount, toAmount, rateLabel, feeFiat } = activity
+  const { status, fromToken, toToken, fromAmount, toAmount } = activity
 
   return (
     <div className="flex flex-col gap-4 bg-card border p-6 rounded-[14px] shadow-[0_1px_2px_0_rgba(0,0,0,0.05)]">
@@ -33,29 +26,6 @@ export const SwapActivityCard = ({ activity }: SwapActivityCardProps) => {
       </div>
 
       {status === 'in-progress' && <Progress />}
-
-      <Separator />
-
-      {detailsOpen && (
-        <div className="flex flex-col gap-4">
-          <Row label="Rate" value={rateLabel || '—'} />
-          <Row label="Privacy" value="🔒 No public trace" />
-          <Row label="Fee" value={feeFiat != null ? `~${formatFiat(feeFiat)}` : '—'} />
-          <Row label="Estimated time" value="<2 seconds" />
-        </div>
-      )}
-
-      <div>
-        <Button
-          variant="secondary"
-          size="xs"
-          onClick={() => setDetailsOpen(open => !open)}
-          aria-expanded={detailsOpen}
-        >
-          {detailsOpen ? 'Less details' : 'More details'}
-          <ChevronDown className={cn('transition-transform', detailsOpen && 'rotate-180')} />
-        </Button>
-      </div>
     </div>
   )
 }
