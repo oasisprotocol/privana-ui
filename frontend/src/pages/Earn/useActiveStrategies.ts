@@ -1,4 +1,3 @@
-import { useAccount } from 'wagmi'
 import { useEarnBalance, useEarnPools } from '@/api/earn'
 import { useTokens } from '@/api/swap'
 import { formatAmount } from '@/lib/tokens'
@@ -14,8 +13,7 @@ export type ActiveStrategy = {
 }
 
 export const useActiveStrategies = (): { strategies: ActiveStrategy[]; isLoading: boolean } => {
-  const { address } = useAccount()
-  const { data: balanceData, isLoading: balanceLoading } = useEarnBalance(address)
+  const { data: balanceData, isLoading: balanceLoading } = useEarnBalance()
   const { data: poolsData, isLoading: poolsLoading } = useEarnPools()
   const { data: tokensData, isLoading: tokensLoading } = useTokens()
 

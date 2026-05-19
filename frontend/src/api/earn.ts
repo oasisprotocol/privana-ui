@@ -1,4 +1,6 @@
-import { useQuery } from '@tanstack/react-query'
+import { useEffect, useRef } from 'react'
+import { useQuery, useQueryClient } from '@tanstack/react-query'
+import { usePrivanaContext } from '@oasisprotocol/privana-sdk'
 
 const BASE_URL = import.meta.env.VITE_SWAP_API_URL ?? 'http://localhost:8001'
 
@@ -13,10 +15,12 @@ export class ApiError extends Error {
   }
 }
 
-async function request<T>(path: string, init?: RequestInit): Promise<T> {
+async function request<T>(path: string, init?: RequestInit, bearer?: string): Promise<T> {
+  const headers: Record<string, string> = { 'Content-Type': 'application/json' }
+  if (bearer) headers.Authorization = `Bearer ${bearer}`
   const res = await fetch(`${BASE_URL}${path}`, {
-    headers: { 'Content-Type': 'application/json' },
     ...init,
+    headers: { ...headers, ...(init?.headers as Record<string, string> | undefined) },
   })
   if (!res.ok) {
     const body = await res.json().catch(() => null)
@@ -145,14 +149,12 @@ export function withdrawEarn(body: WithdrawRequest) {
   })
 }
 
-export function getWithdrawNonce(userAddress: string) {
-  const search = new URLSearchParams({ user_address: userAddress })
-  return request<WithdrawNonceResponse>(`/v1/earn/withdraw/nonce?${search}`)
+export function getWithdrawNonce(jwt: string) {
+  return request<WithdrawNonceResponse>('/v1/earn/withdraw/nonce', undefined, jwt)
 }
 
-export function getEarnBalance(userAddress: string) {
-  const search = new URLSearchParams({ user_address: userAddress })
-  return request<EarnBalanceListResponse>(`/v1/earn/balance?${search}`)
+export function getEarnBalance(jwt: string) {
+  return request<EarnBalanceListResponse>('/v1/earn/balance', undefined, jwt)
 }
 
 export function useEarnPools() {
@@ -163,11 +165,29 @@ export function useEarnPools() {
   })
 }
 
-export function useEarnBalance(userAddress: string | undefined) {
+export function useEarnBalance() {
+  const { hostedAuthSession } = usePrivanaContext()
+  // Key the cache off the JWT's own address so the queryKey and queryFn always
+  // agree on which identity the request is for. Using wagmi's address would
+  // race during wallet switches (jwt can rotate before useAccount propagates).
+  const address = hostedAuthSession?.address
+  const jwt = hostedAuthSession?.accessToken
+  const queryClient = useQueryClient()
+
+  // Drop cached balances when the auth session goes away so a logout doesn't
+  // briefly flash the previous user's data on the next sign-in.
+  const hadJwtRef = useRef(false)
+  useEffect(() => {
+    if (hadJwtRef.current && !jwt) {
+      queryClient.removeQueries({ queryKey: [...earnKeys.all, 'balance'] })
+    }
+    hadJwtRef.current = !!jwt
+  }, [jwt, queryClient])
+
   return useQuery({
-    queryKey: earnKeys.balance(userAddress ?? ''),
-    queryFn: () => getEarnBalance(userAddress!),
-    enabled: !!userAddress,
+    queryKey: earnKeys.balance(address ?? ''),
+    queryFn: () => getEarnBalance(jwt!),
+    enabled: !!address && !!jwt,
     staleTime: 30_000,
   })
 }
