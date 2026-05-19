@@ -38,9 +38,15 @@ export function useMergedActivity(): UseMergedActivityResult {
 
   const matchedLocalIds = useMemo(() => {
     const ids = new Set<string>()
-    for (const row of chainRows) {
-      for (const local of activities) {
-        if (matchesLocal(row, local)) ids.add(local.id)
+    const consumedChain = new Set<number>()
+    for (const local of activities) {
+      for (let i = 0; i < chainRows.length; i++) {
+        if (consumedChain.has(i)) continue
+        if (matchesLocal(chainRows[i], local)) {
+          consumedChain.add(i)
+          ids.add(local.id)
+          break
+        }
       }
     }
     return ids
