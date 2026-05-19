@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import type { WalletClient } from 'viem'
+import { usePrivanaContext } from '@oasisprotocol/privana-sdk'
 import { ApiError, getWithdrawNonce, withdrawEarn } from '@/api/earn'
 import type { TokenInfo } from '@/api/swap'
 import type { ActivityStatus } from '@/contexts/ActivityProvider/context'
@@ -26,6 +27,7 @@ export type SubmitEarnWithdrawParams = {
 
 export const useSubmitEarnWithdraw = ({ onSuccess }: Params = {}) => {
   const { addActivity, updateActivity } = useActivity()
+  const { hostedAuthSession } = usePrivanaContext()
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
 
@@ -33,6 +35,11 @@ export const useSubmitEarnWithdraw = ({ onSuccess }: Params = {}) => {
     const { amount, walletClient, address, token, poolId, protocol, apyLabel } = params
     if (token.token_decimals == null) {
       setError('Missing token decimals')
+      return false
+    }
+    const jwt = hostedAuthSession?.accessToken
+    if (!jwt) {
+      setError('Not signed in')
       return false
     }
     setLoading(true)
@@ -51,7 +58,7 @@ export const useSubmitEarnWithdraw = ({ onSuccess }: Params = {}) => {
           },
         })
 
-      const { nonce } = await getWithdrawNonce(address)
+      const { nonce } = await getWithdrawNonce(jwt)
       const signature = await signAt(nonce)
 
       const id = crypto.randomUUID()
@@ -82,7 +89,7 @@ export const useSubmitEarnWithdraw = ({ onSuccess }: Params = {}) => {
           return await withdrawEarn({ pool_id: poolId, user_address: address, amount, nonce, signature })
         } catch (err) {
           if (!(err instanceof ApiError) || err.status !== 400) throw err
-          const { nonce: freshNonce } = await getWithdrawNonce(address)
+          const { nonce: freshNonce } = await getWithdrawNonce(jwt)
           if (freshNonce === nonce) throw err
           const freshSignature = await signAt(freshNonce)
           return withdrawEarn({
