@@ -4,6 +4,7 @@ import { usePrivanaContext } from '@oasisprotocol/privana-sdk'
 import { PageHeading } from '@/components/PageHeading'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
+import { Skeleton } from '@/components/ui/skeleton'
 import { cn } from '@/lib/utils'
 import { useMergedActivity, type MergedRow } from '@/hooks/use-merged-activity'
 import { ActivityFilterSheet } from './ActivityFilterSheet'
@@ -147,9 +148,7 @@ export const Activity = () => {
             })}
           </div>
 
-          {visible.length === 0 ? (
-            <p className="text-base text-muted-foreground">No matching activity</p>
-          ) : (
+          {visible.length > 0 ? (
             visible.map(r => {
               if (r.source === 'local') {
                 return r.activity.type === 'swap' ? (
@@ -160,6 +159,12 @@ export const Activity = () => {
               }
               return <ChainActivityCard key={rowKey(r)} row={r.row} />
             })
+          ) : isLoading ? (
+            Array.from({ length: 3 }).map((_, i) => (
+              <Skeleton key={i} className="h-32 w-full rounded-[14px]" />
+            ))
+          ) : (
+            <p className="text-base text-muted-foreground">No matching activity</p>
           )}
         </div>
       )}
