@@ -65,9 +65,9 @@ function resolveKind(
     case 'transferFromLock':
       return { kind: 'reclaim' }
     case 'transferBalance': {
-      if (isSwapLpAddress(counterpartyLower)) return { kind: 'swap' }
       const matched = counterpartyLower ? poolsByAddress.get(counterpartyLower) : undefined
       if (matched) return { kind: 'earnDeposit', pool: matched }
+      if (isSwapLpAddress(counterpartyLower)) return { kind: 'swap' }
       return { kind: 'transfer' }
     }
     default:
