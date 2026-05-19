@@ -13,9 +13,15 @@ export type DisplayKind =
   | 'transfer'
   | 'unknown'
 
-// Kinds whose chain entries are self-contained are self-contained. Swap output & earn withdraws
-// live in the LP/pool's history so their local copies must stay until backend is tweaked
-export const PRUNE_ELIGIBLE: ReadonlySet<DisplayKind> = new Set(['deposit', 'withdraw', 'earnDeposit'])
+// Kinds where the chain entry alone is enough to drop the local copy.
+// Earn withdrawals don't appear on the user's history (pool is sender), so
+// their local activities must stay until the backend tracks them.
+export const PRUNE_ELIGIBLE: ReadonlySet<DisplayKind> = new Set([
+  'deposit',
+  'withdraw',
+  'earnDeposit',
+  'swap',
+])
 
 export type ClassifiedHistoryEntry = {
   source: 'chain'
@@ -81,6 +87,10 @@ export function matchesLocal(row: ClassifiedHistoryEntry, local: Activity, skewS
 
   if (row.kind === 'earnDeposit' && local.type === 'earn' && local.direction === 'deposit') {
     return row.pool?.pool_id === local.poolId && row.tokenId === local.token.id && row.amount === local.amount
+  }
+
+  if (row.kind === 'swap' && local.type === 'swap') {
+    return row.tokenId === local.fromToken.id && row.amount === local.fromAmount
   }
 
   return false
