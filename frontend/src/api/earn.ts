@@ -34,6 +34,7 @@ export interface EarnPool {
   total_assets: string
   apy_bps: number
   status: EarnPoolStatus
+  pool_address: string
 }
 
 export interface EarnPoolListResponse {
