@@ -15,7 +15,9 @@ export interface UseMergedActivityResult {
   isError: boolean
 }
 
-// Latest page of on-chain history (cap = 100 today, contract-side).
+// Fetches just the most recent page of history. The contract supports paging
+// via offset/limit (per-call max ~100);
+// TODO: add multi-page assembly if/when user regularly exceed this window.
 const HISTORY_PAGE_SIZE = 100
 
 export function useMergedActivity(): UseMergedActivityResult {
