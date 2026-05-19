@@ -1,6 +1,5 @@
 import { useEffect, useRef } from 'react'
 import { useQuery, useQueryClient } from '@tanstack/react-query'
-import { useAccount } from 'wagmi'
 import { usePrivanaContext } from '@oasisprotocol/privana-sdk'
 
 const BASE_URL = import.meta.env.VITE_SWAP_API_URL ?? 'http://localhost:8001'
@@ -167,8 +166,11 @@ export function useEarnPools() {
 }
 
 export function useEarnBalance() {
-  const { address } = useAccount()
   const { hostedAuthSession } = usePrivanaContext()
+  // Key the cache off the JWT's own address so the queryKey and queryFn always
+  // agree on which identity the request is for. Using wagmi's address would
+  // race during wallet switches (jwt can rotate before useAccount propagates).
+  const address = hostedAuthSession?.address
   const jwt = hostedAuthSession?.accessToken
   const queryClient = useQueryClient()
 
