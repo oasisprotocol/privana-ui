@@ -1,18 +1,19 @@
 import { useEffect, useRef } from 'react'
-import { AuthState, useTurnkey, WalletSource } from '@turnkey/react-wallet-kit'
+import { AuthState, useTurnkey, WalletInterfaceType, WalletSource } from '@turnkey/react-wallet-kit'
 import { useAccount, useConnect, useDisconnect } from 'wagmi'
-import { setTurnkeySignerContext } from '@/wallet/turnkeyBridge'
+import type { EIP1193Provider } from 'viem'
+import { setTurnkeyActiveWallet } from '@/wallet/turnkeyBridge'
 import { TURNKEY_CONNECTOR_ID } from '@/wallet/turnkeyConnector'
 import type { AppChainId } from '@/wagmi-config'
 
 const APP_CHAIN_ID = parseInt(import.meta.env.VITE_CHAIN_ID, 10) as AppChainId
 
-// Keeps wagmi in sync with the Turnkey embedded-wallet session: provisions an
-// Ethereum wallet if the authenticated user has none, publishes the signer
-// context for the connector, connects wagmi after login, and disconnects on
-// logout. Rendered only when Turnkey is enabled (inside TurnkeyProvider).
+// Keeps wagmi in sync with the active Turnkey wallet — embedded or connected
+// (external). Publishes the active wallet to the bridge, provisions an embedded
+// wallet when a passkey/email signup has none, connects the single Turnkey wagmi
+// connector, and disconnects on logout. Rendered only when Turnkey is enabled.
 export const TurnkeySync = () => {
-  const { authState, httpClient, session, wallets, createWallet } = useTurnkey()
+  const { authState, httpClient, session, wallets, walletProviders, createWallet } = useTurnkey()
   const { connectAsync, connectors } = useConnect()
   const { disconnectAsync } = useDisconnect()
   const { connector: activeConnector, isConnected } = useAccount()
@@ -23,20 +24,54 @@ export const TurnkeySync = () => {
 
   useEffect(() => {
     if (authState === AuthState.Unauthenticated) {
-      setTurnkeySignerContext(null)
+      setTurnkeyActiveWallet(null)
       if (isTurnkeyActive) void disconnectAsync()
       return
     }
+    if (authState !== AuthState.Authenticated) return
 
-    if (authState !== AuthState.Authenticated || !httpClient || !session?.organizationId) return
+    const connectToWagmi = () => {
+      if (isTurnkeyActive || connectingRef.current) return
+      const connector = connectors.find(c => c.id === TURNKEY_CONNECTOR_ID)
+      if (!connector) return
+      connectingRef.current = true
+      void connectAsync({ connector, chainId: APP_CHAIN_ID })
+        .catch(err => console.error('[TurnkeySync] connect failed', err))
+        .finally(() => {
+          connectingRef.current = false
+        })
+    }
 
-    const wallet = wallets.find(w => w.source === WalletSource.Embedded) ?? wallets[0]
-    const address = wallet?.accounts?.[0]?.address
+    // Connected (external) wallet: surface its own EIP-1193 provider to wagmi.
+    const connectedWallet = wallets.find(w => w.source === WalletSource.Connected)
+    if (connectedWallet) {
+      const address = connectedWallet.accounts?.[0]?.address
+      const walletProvider = walletProviders.find(
+        p =>
+          p.interfaceType !== WalletInterfaceType.Solana &&
+          !!address &&
+          p.connectedAddresses.some(a => a.toLowerCase() === address.toLowerCase()),
+      )
+      if (address && walletProvider) {
+        setTurnkeyActiveWallet({
+          kind: 'connected',
+          provider: walletProvider.provider as EIP1193Provider,
+          address: address as `0x${string}`,
+        })
+        connectToWagmi()
+      }
+      return
+    }
+
+    // Embedded wallet path needs the Turnkey client/session.
+    if (!httpClient || !session?.organizationId) return
+    const embeddedWallet = wallets.find(w => w.source === WalletSource.Embedded)
+    const address = embeddedWallet?.accounts?.[0]?.address
 
     // Email/passkey signup creates a sub-org but not always a wallet — provision
     // an Ethereum embedded wallet on first sight. The wallets list updates
     // automatically, which re-runs this effect and falls through to connect.
-    if (!wallet || !address) {
+    if (!embeddedWallet || !address) {
       if (wallets.length === 0 && !creatingWalletRef.current) {
         creatingWalletRef.current = true
         void createWallet({ walletName: 'Privana', accounts: ['ADDRESS_FORMAT_ETHEREUM'] })
@@ -48,29 +83,20 @@ export const TurnkeySync = () => {
       return
     }
 
-    setTurnkeySignerContext({
+    setTurnkeyActiveWallet({
+      kind: 'embedded',
       httpClient,
       organizationId: session.organizationId,
-      walletId: wallet.walletId,
+      walletId: embeddedWallet.walletId,
       address: address as `0x${string}`,
     })
-
-    if (!isTurnkeyActive && !connectingRef.current) {
-      const connector = connectors.find(c => c.id === TURNKEY_CONNECTOR_ID)
-      if (connector) {
-        connectingRef.current = true
-        void connectAsync({ connector, chainId: APP_CHAIN_ID })
-          .catch(err => console.error('[TurnkeySync] connect failed', err))
-          .finally(() => {
-            connectingRef.current = false
-          })
-      }
-    }
+    connectToWagmi()
   }, [
     authState,
     httpClient,
     session,
     wallets,
+    walletProviders,
     isTurnkeyActive,
     createWallet,
     connectAsync,

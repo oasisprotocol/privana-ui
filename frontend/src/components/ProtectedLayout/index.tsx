@@ -3,13 +3,13 @@ import { Outlet, useNavigate } from 'react-router'
 import { useAccount, useAccountEffect, useDisconnect } from 'wagmi'
 import { useSiweAuth } from '@oasisprotocol/privana-sdk'
 import { Button } from '@/components/ui/button'
-import { useOpenWalletModal } from '@/components/WalletConnect/useOpenWalletModal'
+import { useConnectWallet } from '@/components/WalletConnect/useConnectWallet'
 import { Layout } from '../Layout'
 
 export const ProtectedLayout: FC = () => {
   const { isConnected, status } = useAccount()
   const { disconnect } = useDisconnect()
-  const openWalletModal = useOpenWalletModal()
+  const connectWallet = useConnectWallet()
   const { isAuthenticated, isLoading: isAuthLoading, error: authError, login } = useSiweAuth()
   const navigate = useNavigate()
 
@@ -28,7 +28,7 @@ export const ProtectedLayout: FC = () => {
         ) : (
           <div className="flex flex-col flex-1 gap-4 justify-center items-center text-center">
             <p className="text-sm text-muted-foreground max-w-md">Please connect your wallet to continue.</p>
-            <Button onClick={openWalletModal}>Connect Wallet</Button>
+            <Button onClick={connectWallet}>Connect Wallet</Button>
           </div>
         )}
       </Layout>

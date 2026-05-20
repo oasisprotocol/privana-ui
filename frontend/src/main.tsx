@@ -10,7 +10,7 @@ import { ALLOWED_TOKEN_IDS } from './config/tokens'
 import { ActivityProvider } from './contexts/ActivityProvider'
 import { TurnkeyAuthProvider, IS_TURNKEY_ENABLED } from './components/TurnkeyAuthProvider'
 import { TurnkeySync } from './components/TurnkeySync'
-import { WalletModalProvider } from './components/WalletConnect/WalletModalProvider'
+import { ConnectWalletProvider } from './components/WalletConnect/ConnectWalletProvider'
 import { TooltipProvider } from './components/ui/tooltip'
 import '@oasisprotocol/privana-sdk/styles.css'
 import './index.css'
@@ -36,9 +36,9 @@ createRoot(document.getElementById('root')!).render(
           >
             <ActivityProvider>
               <TooltipProvider>
-                <WalletModalProvider>
+                <ConnectWalletProvider>
                   <RouterProvider router={router} />
-                </WalletModalProvider>
+                </ConnectWalletProvider>
               </TooltipProvider>
             </ActivityProvider>
           </PrivanaProvider>

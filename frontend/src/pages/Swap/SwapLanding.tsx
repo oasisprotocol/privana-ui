@@ -3,7 +3,7 @@ import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/
 import { Separator } from '@/components/ui/separator'
 import { Button } from '@oasisprotocol/privana-sdk'
 import HeroImage from '../../assets/dashboard-hero.svg'
-import { useOpenWalletModal } from '@/components/WalletConnect/useOpenWalletModal'
+import { useConnectWallet } from '@/components/WalletConnect/useConnectWallet'
 
 const features = [
   {
@@ -21,7 +21,7 @@ const features = [
 ]
 
 export const SwapLanding = () => {
-  const openWalletModal = useOpenWalletModal()
+  const connectWallet = useConnectWallet()
 
   return (
     <>
@@ -40,7 +40,7 @@ export const SwapLanding = () => {
           </div>
 
           <div className="flex flex-row flex-wrap gap-6">
-            <Button className="w-full md:w-auto" onClick={openWalletModal}>
+            <Button className="w-full md:w-auto" onClick={connectWallet}>
               Start trading now
             </Button>
             <Button variant="secondary" className="w-full md:w-auto">

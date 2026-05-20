@@ -11,7 +11,7 @@ import {
   type Hex,
 } from 'viem'
 import { createEIP1193Provider } from '@turnkey/eip-1193-provider'
-import { getTurnkeySignerContext } from './turnkeyBridge'
+import { getTurnkeyActiveWallet } from './turnkeyBridge'
 
 type SendTxRequest = { from: Hex; to?: Hex; data?: Hex; value?: Hex }
 
@@ -93,43 +93,46 @@ function wrapTurnkeyProvider(
   return provider
 }
 
-// Bridges the Turnkey embedded wallet into wagmi. The Turnkey EIP-1193 provider
-// is built lazily from the runtime signer context (see turnkeyBridge); once
-// built, the rest of the app and the Privana SDK talk to it through standard
-// wagmi/viem hooks. Connecting/disconnecting is driven by TurnkeySync, not a
-// direct wagmi connect.
+// Bridges the active Turnkey wallet into wagmi. For an embedded wallet it builds
+// a patched EIP-1193 provider from the runtime signer context; for a connected
+// (external) wallet it uses that wallet's own provider directly. Connecting and
+// disconnecting are driven by TurnkeySync, not a direct wagmi connect.
 export function turnkeyConnector() {
   return createConnector<EIP1193Provider>(config => {
-    let provider: EIP1193Provider | undefined
-    let providerKey: string | undefined
+    let embeddedProvider: EIP1193Provider | undefined
+    let embeddedKey: string | undefined
     let connectedChainId = config.chains[0].id
 
     async function ensureProvider(): Promise<EIP1193Provider> {
-      const ctx = getTurnkeySignerContext()
-      if (!ctx) throw new Error('Turnkey session not available')
-      const key = `${ctx.organizationId}:${ctx.walletId}`
-      if (!provider || providerKey !== key) {
+      const active = getTurnkeyActiveWallet()
+      if (!active) throw new Error('Turnkey wallet not available')
+      // Connected (external) wallets are already standard EIP-1193 providers.
+      if (active.kind === 'connected') return active.provider
+      // Embedded: build + patch lazily, cached by org:walletId.
+      const key = `${active.organizationId}:${active.walletId}`
+      if (!embeddedProvider || embeddedKey !== key) {
         // walletId/organizationId are branded UUIDs and turnkeyClient's public
         // type is narrower than what the provider accepts at runtime, so cast
         // the whole options object. See the eip-1193-provider notes in the plan.
         const options = {
-          walletId: ctx.walletId,
-          organizationId: ctx.organizationId,
-          turnkeyClient: ctx.httpClient,
+          walletId: active.walletId,
+          organizationId: active.organizationId,
+          turnkeyClient: active.httpClient,
           chains: config.chains.map(toChainParam),
         } as unknown as Parameters<typeof createEIP1193Provider>[0]
-        provider = wrapTurnkeyProvider((await createEIP1193Provider(options)) as unknown as EIP1193Provider, {
-          chains: config.chains,
-          getChainId: () => connectedChainId,
-        })
-        providerKey = key
+        embeddedProvider = wrapTurnkeyProvider(
+          (await createEIP1193Provider(options)) as unknown as EIP1193Provider,
+          { chains: config.chains, getChainId: () => connectedChainId },
+        )
+        embeddedKey = key
       }
-      return provider
+      return embeddedProvider
     }
 
-    // Drive the provider's active chain. eth_sendTransaction signs + broadcasts
-    // on the provider's activeChain, so this must run before any cross-chain tx
-    // (e.g. a Base Sepolia deposit while the app sits on Sapphire).
+    // Drive the provider's active chain (via wallet_switchEthereumChain). For the
+    // embedded provider this must run before any cross-chain tx, since it signs +
+    // broadcasts on its activeChain; for connected wallets it asks the external
+    // wallet to switch.
     async function switchProviderChain(chainId: number): Promise<void> {
       const p = await ensureProvider()
       await p.request({
@@ -145,27 +148,26 @@ export function turnkeyConnector() {
       type: 'turnkey',
 
       async connect({ chainId } = {}) {
-        const ctx = getTurnkeySignerContext()
-        if (!ctx) throw new Error('Turnkey session not available')
-        // Build the provider now so getProvider() (used for signing) is ready.
-        // The address comes from the session, so connecting needs no extra prompt.
+        const active = getTurnkeyActiveWallet()
+        if (!active) throw new Error('Turnkey wallet not available')
         await ensureProvider()
         // Align the provider's active chain with the requested chain so the first
-        // tx targets the right network.
-        await switchProviderChain(chainId ?? connectedChainId)
+        // tx targets the right network. Tolerate failures for connected wallets
+        // (the external wallet may decline to switch).
+        await switchProviderChain(chainId ?? connectedChainId).catch(() => {})
         // `as never` satisfies wagmi's `withCapabilities` conditional return type;
         // the runtime value is just the address array.
-        return { accounts: [getAddress(ctx.address)] as never, chainId: connectedChainId }
+        return { accounts: [getAddress(active.address)] as never, chainId: connectedChainId }
       },
 
       async disconnect() {
-        provider = undefined
-        providerKey = undefined
+        embeddedProvider = undefined
+        embeddedKey = undefined
       },
 
       async getAccounts() {
-        const ctx = getTurnkeySignerContext()
-        return ctx ? [getAddress(ctx.address)] : []
+        const active = getTurnkeyActiveWallet()
+        return active ? [getAddress(active.address)] : []
       },
 
       async getChainId() {
@@ -177,7 +179,7 @@ export function turnkeyConnector() {
       },
 
       async isAuthorized() {
-        return !!getTurnkeySignerContext()
+        return !!getTurnkeyActiveWallet()
       },
 
       async switchChain({ chainId }) {
@@ -199,8 +201,8 @@ export function turnkeyConnector() {
       },
 
       onDisconnect() {
-        provider = undefined
-        providerKey = undefined
+        embeddedProvider = undefined
+        embeddedKey = undefined
         config.emitter.emit('disconnect')
       },
     }

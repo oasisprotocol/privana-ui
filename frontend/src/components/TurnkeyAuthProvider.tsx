@@ -23,6 +23,10 @@ export const TurnkeyAuthProvider = ({ children }: { children: ReactNode }) => {
       config={{
         organizationId: ORGANIZATION_ID,
         authProxyConfigId: AUTH_PROXY_CONFIG_ID,
+        // Show "Continue with wallet" so external wallets connect through the
+        // Turnkey modal too. (The Wallet method must also be enabled in the
+        // Turnkey dashboard auth-proxy config for it to function.)
+        ui: { authModal: { methods: { walletAuthEnabled: true } } },
       }}
     >
       {children}

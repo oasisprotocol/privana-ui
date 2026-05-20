@@ -13,7 +13,7 @@ import { AccountAvatar } from '../AccountAvatar'
 import { trimLongString } from '../../utils/trimLongString'
 import { wagmiConfig, type AppChainId } from '@/wagmi-config'
 import { TURNKEY_CONNECTOR_ID } from '@/wallet/turnkeyConnector'
-import { useOpenWalletModal } from '../WalletConnect/useOpenWalletModal'
+import { useConnectWallet } from '../WalletConnect/useConnectWallet'
 import { ExportWalletItem } from './ExportWalletItem'
 import { TurnkeyLogoutItem } from './TurnkeyLogoutItem'
 
@@ -27,13 +27,13 @@ export const ConnectButton: FC = () => {
   const { disconnect } = useDisconnect()
   const { switchChain } = useSwitchChain()
   const chainId = useChainId()
-  const openWalletModal = useOpenWalletModal()
+  const connectWallet = useConnectWallet()
 
   const isTurnkeyActive = connector?.id === TURNKEY_CONNECTOR_ID
 
   if (!isConnected || !address) {
     return (
-      <Button type="button" onClick={openWalletModal}>
+      <Button type="button" onClick={connectWallet}>
         Connect Wallet
       </Button>
     )

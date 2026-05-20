@@ -1,23 +1,37 @@
 import type { TurnkeySDKClientBase } from '@turnkey/core'
+import type { EIP1193Provider } from 'viem'
 
-// Runtime signer context for the Turnkey embedded wallet. The wagmi connector
-// lives outside React (it's built in wagmi-config), so it can't read Turnkey's
-// React context directly. TurnkeySync (mounted inside TurnkeyProvider) writes
-// the live session here after login and clears it on logout; the connector
-// reads it lazily when building its EIP-1193 provider.
-export type TurnkeySignerContext = {
-  httpClient: TurnkeySDKClientBase
-  organizationId: string
-  walletId: string
-  address: `0x${string}`
+// The Turnkey wallet currently active in wagmi. The connector lives outside React
+// (built in wagmi-config), so it can't read Turnkey's React context directly —
+// TurnkeySync (inside TurnkeyProvider) publishes the active wallet here after
+// login and clears it on logout.
+//
+// Two kinds:
+//  - embedded: Turnkey-custodied. We build a patched EIP-1193 provider from the
+//    client + walletId on demand (see turnkeyConnector / wrapTurnkeyProvider).
+//  - connected: the user's own external wallet (MetaMask/Rabby), which Turnkey
+//    surfaces as a standard viem EIP1193Provider we use directly — no patches,
+//    key stays in the user's extension.
+export type TurnkeyActiveWallet =
+  | {
+      kind: 'embedded'
+      httpClient: TurnkeySDKClientBase
+      organizationId: string
+      walletId: string
+      address: `0x${string}`
+    }
+  | {
+      kind: 'connected'
+      provider: EIP1193Provider
+      address: `0x${string}`
+    }
+
+let current: TurnkeyActiveWallet | null = null
+
+export function setTurnkeyActiveWallet(wallet: TurnkeyActiveWallet | null): void {
+  current = wallet
 }
 
-let current: TurnkeySignerContext | null = null
-
-export function setTurnkeySignerContext(ctx: TurnkeySignerContext | null): void {
-  current = ctx
-}
-
-export function getTurnkeySignerContext(): TurnkeySignerContext | null {
+export function getTurnkeyActiveWallet(): TurnkeyActiveWallet | null {
   return current
 }
