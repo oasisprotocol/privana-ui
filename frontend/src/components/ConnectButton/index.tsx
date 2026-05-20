@@ -17,6 +17,7 @@ import { authCallbackPath } from '@/paths'
 import { wagmiConfig, type AppChainId } from '@/wagmi-config'
 import { TURNKEY_CONNECTOR_ID } from '@/wallet/turnkeyConnector'
 import { useOpenWalletModal } from '../WalletConnect/useOpenWalletModal'
+import { ExportWalletItem } from './ExportWalletItem'
 import { TurnkeyLogoutItem } from './TurnkeyLogoutItem'
 
 const APP_CHAIN_ID = parseInt(import.meta.env.VITE_CHAIN_ID, 10) as AppChainId
@@ -110,6 +111,7 @@ export const ConnectButton: FC = () => {
           <DropdownMenuItem onClick={() => switchChain({ chainId: APP_CHAIN_ID })}>
             Switch network
           </DropdownMenuItem>
+          {isTurnkeyActive && <ExportWalletItem />}
           <DropdownMenuSeparator />
           {isTurnkeyActive ? (
             <TurnkeyLogoutItem />
