@@ -18,8 +18,8 @@ function toChainParam(chain: Chain): AddEthereumChainParameter {
 // Bridges the Turnkey embedded wallet into wagmi. The Turnkey EIP-1193 provider
 // is built lazily from the runtime signer context (see turnkeyBridge); once
 // built, the rest of the app and the Privana SDK talk to it through standard
-// wagmi/viem hooks. Connecting/disconnecting is driven by TurnkeySync, not the
-// RainbowKit modal.
+// wagmi/viem hooks. Connecting/disconnecting is driven by TurnkeySync, not a
+// direct wagmi connect.
 export function turnkeyConnector() {
   return createConnector<EIP1193Provider>(config => {
     let provider: EIP1193Provider | undefined
