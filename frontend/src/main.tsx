@@ -11,6 +11,7 @@ import { ALLOWED_TOKEN_IDS } from './config/tokens'
 import { ActivityProvider } from './contexts/ActivityProvider'
 import { TurnkeyAuthProvider, IS_TURNKEY_ENABLED } from './components/TurnkeyAuthProvider'
 import { TurnkeySync } from './components/TurnkeySync'
+import { WalletModalProvider } from './components/WalletConnect/WalletModalProvider'
 import { TooltipProvider } from './components/ui/tooltip'
 import '@rainbow-me/rainbowkit/styles.css'
 import '@oasisprotocol/privana-sdk/styles.css'
@@ -48,7 +49,9 @@ createRoot(document.getElementById('root')!).render(
             <RainbowKitProvider theme={rainbowKitTheme} modalSize="compact">
               <ActivityProvider>
                 <TooltipProvider>
-                  <RouterProvider router={router} />
+                  <WalletModalProvider>
+                    <RouterProvider router={router} />
+                  </WalletModalProvider>
                 </TooltipProvider>
               </ActivityProvider>
             </RainbowKitProvider>

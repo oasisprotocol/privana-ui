@@ -1,6 +1,6 @@
 import { useEffect, type FC } from 'react'
 import { useLocation } from 'react-router'
-import { useAccount, useChainId, useConnect, useDisconnect, useSwitchChain } from 'wagmi'
+import { useAccount, useChainId, useDisconnect, useSwitchChain } from 'wagmi'
 import { useHostedRedirectAuth } from '@oasisprotocol/privana-sdk'
 import { ChevronDown } from 'lucide-react'
 import { Button } from '../ui/button'
@@ -16,8 +16,7 @@ import { trimLongString } from '../../utils/trimLongString'
 import { authCallbackPath } from '@/paths'
 import { wagmiConfig, type AppChainId } from '@/wagmi-config'
 import { TURNKEY_CONNECTOR_ID } from '@/wallet/turnkeyConnector'
-import { IS_TURNKEY_ENABLED } from '../TurnkeyAuthProvider'
-import { EmbeddedLoginItem } from './EmbeddedLoginItem'
+import { useOpenWalletModal } from '../WalletConnect/useOpenWalletModal'
 import { TurnkeyLogoutItem } from './TurnkeyLogoutItem'
 
 const APP_CHAIN_ID = parseInt(import.meta.env.VITE_CHAIN_ID, 10) as AppChainId
@@ -25,10 +24,10 @@ const SUPPORTED_CHAIN_IDS = wagmiConfig.chains.map(c => c.id)
 
 export const ConnectButton: FC = () => {
   const { address, isConnected, status, connector } = useAccount()
-  const { connect, connectors } = useConnect()
   const { disconnect } = useDisconnect()
   const { switchChain } = useSwitchChain()
   const chainId = useChainId()
+  const openWalletModal = useOpenWalletModal()
   const { login, logout, isAuthenticated, isLoading: isAuthLoading, session } = useHostedRedirectAuth()
   const location = useLocation()
 
@@ -49,12 +48,7 @@ export const ConnectButton: FC = () => {
     }
 
     // Connected wallet and session address mismatch
-    if (
-      isConnected &&
-      address &&
-      session &&
-      address.toLowerCase() !== session.address.toLowerCase()
-    ) {
+    if (isConnected && address && session && address.toLowerCase() !== session.address.toLowerCase()) {
       void logout()
       return
     }
@@ -63,28 +57,25 @@ export const ConnectButton: FC = () => {
     if (isConnected && !isAuthenticated && !isAuthLoading) {
       void login()
     }
-  }, [status, isConnected, address, session, isAuthenticated, isAuthLoading, login, logout, location.pathname])
+  }, [
+    status,
+    isConnected,
+    address,
+    session,
+    isAuthenticated,
+    isAuthLoading,
+    login,
+    logout,
+    location.pathname,
+  ])
 
-  // The Turnkey connector is driven by TurnkeySync via handleLogin, not by a
-  // direct wagmi connect, so it's kept out of the external-wallet picker.
-  const externalConnectors = connectors.filter(c => c.id !== TURNKEY_CONNECTOR_ID)
   const isTurnkeyActive = connector?.id === TURNKEY_CONNECTOR_ID
 
   if (!isConnected || !address) {
     return (
-      <DropdownMenu>
-        <DropdownMenuTrigger asChild>
-          <Button type="button">Connect Wallet</Button>
-        </DropdownMenuTrigger>
-        <DropdownMenuContent>
-          {IS_TURNKEY_ENABLED && <EmbeddedLoginItem />}
-          {externalConnectors.map(c => (
-            <DropdownMenuItem key={c.uid} onClick={() => connect({ connector: c })}>
-              {c.name}
-            </DropdownMenuItem>
-          ))}
-        </DropdownMenuContent>
-      </DropdownMenu>
+      <Button type="button" onClick={openWalletModal}>
+        Connect Wallet
+      </Button>
     )
   }
 
