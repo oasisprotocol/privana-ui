@@ -142,6 +142,37 @@ export function turnkeyConnector() {
       connectedChainId = chainId
     }
 
+    // Forward wallet-initiated events (account/chain change, disconnect) to wagmi.
+    // Only wired for connected (external) wallets — their providers emit standard
+    // EIP-1193 events. The embedded provider's chainChanged payload is non-standard
+    // and we drive its chain ourselves, so it isn't subscribed.
+    let subscribedProvider: EIP1193Provider | undefined
+    const handleAccountsChanged = (accounts: string[]) => {
+      if (accounts.length === 0) config.emitter.emit('disconnect')
+      else config.emitter.emit('change', { accounts: accounts.map(a => getAddress(a)) })
+    }
+    const handleChainChanged = (chainId: string) => {
+      connectedChainId = Number(chainId)
+      config.emitter.emit('change', { chainId: connectedChainId })
+    }
+    const handleProviderDisconnect = () => config.emitter.emit('disconnect')
+
+    function subscribe(p: EIP1193Provider) {
+      if (subscribedProvider === p) return
+      unsubscribe()
+      p.on('accountsChanged', handleAccountsChanged)
+      p.on('chainChanged', handleChainChanged)
+      p.on('disconnect', handleProviderDisconnect)
+      subscribedProvider = p
+    }
+    function unsubscribe() {
+      if (!subscribedProvider) return
+      subscribedProvider.removeListener('accountsChanged', handleAccountsChanged)
+      subscribedProvider.removeListener('chainChanged', handleChainChanged)
+      subscribedProvider.removeListener('disconnect', handleProviderDisconnect)
+      subscribedProvider = undefined
+    }
+
     return {
       id: TURNKEY_CONNECTOR_ID,
       name: 'Turnkey',
@@ -150,17 +181,20 @@ export function turnkeyConnector() {
       async connect({ chainId } = {}) {
         const active = getTurnkeyActiveWallet()
         if (!active) throw new Error('Turnkey wallet not available')
-        await ensureProvider()
+        const provider = await ensureProvider()
         // Align the provider's active chain with the requested chain so the first
         // tx targets the right network. Tolerate failures for connected wallets
         // (the external wallet may decline to switch).
         await switchProviderChain(chainId ?? connectedChainId).catch(() => {})
+        // External wallets emit standard EIP-1193 events; forward them to wagmi.
+        if (active.kind === 'connected') subscribe(provider)
         // `as never` satisfies wagmi's `withCapabilities` conditional return type;
         // the runtime value is just the address array.
         return { accounts: [getAddress(active.address)] as never, chainId: connectedChainId }
       },
 
       async disconnect() {
+        unsubscribe()
         embeddedProvider = undefined
         embeddedKey = undefined
       },
@@ -190,17 +224,12 @@ export function turnkeyConnector() {
         return chain
       },
 
-      onAccountsChanged(accounts) {
-        if (accounts.length === 0) config.emitter.emit('disconnect')
-        else config.emitter.emit('change', { accounts: accounts.map(a => getAddress(a)) })
-      },
+      onAccountsChanged: handleAccountsChanged,
 
-      onChainChanged(chainId) {
-        connectedChainId = Number(chainId)
-        config.emitter.emit('change', { chainId: connectedChainId })
-      },
+      onChainChanged: handleChainChanged,
 
       onDisconnect() {
+        unsubscribe()
         embeddedProvider = undefined
         embeddedKey = undefined
         config.emitter.emit('disconnect')
