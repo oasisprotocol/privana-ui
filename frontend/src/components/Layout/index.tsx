@@ -1,6 +1,6 @@
 import type { ReactNode } from 'react'
 import { Link } from 'react-router'
-import { RainbowKitConnectButton } from '../RainbowKitConnectButton'
+import { ConnectButton } from '../ConnectButton'
 import Logo from '../../assets/logo.svg'
 import DashboardBg from '../../assets/dashboard-bg.svg'
 import { MenuItem } from './menu-item'
@@ -47,7 +47,7 @@ export const Layout = ({ children, dashboard }: LayoutProps) => {
           </div>
 
           <div className="flex items-center gap-4">
-            <RainbowKitConnectButton />
+            <ConnectButton />
           </div>
         </nav>
 
