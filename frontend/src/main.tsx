@@ -9,6 +9,7 @@ import { wagmiConfig } from './wagmi-config.ts'
 import { PrivanaProvider } from '@oasisprotocol/privana-sdk'
 import { ALLOWED_TOKEN_IDS } from './config/tokens'
 import { ActivityProvider } from './contexts/ActivityProvider'
+import { TurnkeyAuthProvider } from './components/TurnkeyAuthProvider'
 import { TooltipProvider } from './components/ui/tooltip'
 import '@rainbow-me/rainbowkit/styles.css'
 import '@oasisprotocol/privana-sdk/styles.css'
@@ -28,28 +29,30 @@ const rainbowKitTheme: Theme = {
 
 createRoot(document.getElementById('root')!).render(
   <StrictMode>
-    <WagmiProvider config={wagmiConfig}>
-      <QueryClientProvider client={queryClient}>
-        <PrivanaProvider
-          networkConfig={{
-            chainId: parseInt(import.meta.env.VITE_CHAIN_ID, 10),
-            accountingContract: import.meta.env.VITE_ACCOUNTING_CONTRACT_ADDRESS,
-            apiUrl: import.meta.env.VITE_PRIVANA_API_URL,
-          }}
-          tokens={ALLOWED_TOKEN_IDS}
-          siweAuth={{
-            statement: 'Sign in to Privana to access your private account data.',
-          }}
-        >
-          <RainbowKitProvider theme={rainbowKitTheme} modalSize="compact">
-            <ActivityProvider>
-              <TooltipProvider>
-                <RouterProvider router={router} />
-              </TooltipProvider>
-            </ActivityProvider>
-          </RainbowKitProvider>
-        </PrivanaProvider>
-      </QueryClientProvider>
-    </WagmiProvider>
+    <TurnkeyAuthProvider>
+      <WagmiProvider config={wagmiConfig}>
+        <QueryClientProvider client={queryClient}>
+          <PrivanaProvider
+            networkConfig={{
+              chainId: parseInt(import.meta.env.VITE_CHAIN_ID, 10),
+              accountingContract: import.meta.env.VITE_ACCOUNTING_CONTRACT_ADDRESS,
+              apiUrl: import.meta.env.VITE_PRIVANA_API_URL,
+            }}
+            tokens={ALLOWED_TOKEN_IDS}
+            siweAuth={{
+              statement: 'Sign in to Privana to access your private account data.',
+            }}
+          >
+            <RainbowKitProvider theme={rainbowKitTheme} modalSize="compact">
+              <ActivityProvider>
+                <TooltipProvider>
+                  <RouterProvider router={router} />
+                </TooltipProvider>
+              </ActivityProvider>
+            </RainbowKitProvider>
+          </PrivanaProvider>
+        </QueryClientProvider>
+      </WagmiProvider>
+    </TurnkeyAuthProvider>
   </StrictMode>,
 )
