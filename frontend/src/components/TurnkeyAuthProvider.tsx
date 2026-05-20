@@ -5,6 +5,11 @@ import '@turnkey/react-wallet-kit/styles.css'
 const ORGANIZATION_ID = import.meta.env.VITE_TURNKEY_ORGANIZATION_ID
 const AUTH_PROXY_CONFIG_ID = import.meta.env.VITE_TURNKEY_AUTH_PROXY_CONFIG_ID
 
+// Whether the Turnkey embedded-wallet path is configured. Consumers (e.g. the
+// wagmi sync component) gate on this so they don't call useTurnkey() when the
+// provider isn't mounted.
+export const IS_TURNKEY_ENABLED = !!ORGANIZATION_ID
+
 export const TurnkeyAuthProvider = ({ children }: { children: ReactNode }) => {
   if (!ORGANIZATION_ID) {
     if (import.meta.env.DEV) {

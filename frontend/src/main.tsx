@@ -9,7 +9,8 @@ import { wagmiConfig } from './wagmi-config.ts'
 import { PrivanaProvider } from '@oasisprotocol/privana-sdk'
 import { ALLOWED_TOKEN_IDS } from './config/tokens'
 import { ActivityProvider } from './contexts/ActivityProvider'
-import { TurnkeyAuthProvider } from './components/TurnkeyAuthProvider'
+import { TurnkeyAuthProvider, IS_TURNKEY_ENABLED } from './components/TurnkeyAuthProvider'
+import { TurnkeySync } from './components/TurnkeySync'
 import { TooltipProvider } from './components/ui/tooltip'
 import '@rainbow-me/rainbowkit/styles.css'
 import '@oasisprotocol/privana-sdk/styles.css'
@@ -32,6 +33,7 @@ createRoot(document.getElementById('root')!).render(
     <TurnkeyAuthProvider>
       <WagmiProvider config={wagmiConfig}>
         <QueryClientProvider client={queryClient}>
+          {IS_TURNKEY_ENABLED && <TurnkeySync />}
           <PrivanaProvider
             networkConfig={{
               chainId: parseInt(import.meta.env.VITE_CHAIN_ID, 10),
