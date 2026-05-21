@@ -1,8 +1,6 @@
-import { useEffect, type FC } from 'react'
-import { useLocation } from 'react-router'
+import { type FC } from 'react'
 import { ConnectButton } from '@rainbow-me/rainbowkit'
-import { useAccount, useDisconnect } from 'wagmi'
-import { useHostedRedirectAuth } from '@oasisprotocol/privana-sdk'
+import { useDisconnect } from 'wagmi'
 import { ChevronDown } from 'lucide-react'
 import { Button } from '../ui/button'
 import {
@@ -15,53 +13,9 @@ import {
 import { AccountAvatar } from '../AccountAvatar'
 import { trimLongString } from '../../utils/trimLongString'
 import { sapphire, sapphireTestnet, baseSepolia } from 'viem/chains'
-import { authCallbackPath } from '@/paths'
 
 export const RainbowKitConnectButton: FC = () => {
   const { disconnect } = useDisconnect()
-  const { address: walletAddress, isConnected, status } = useAccount()
-  const { login, logout, isAuthenticated, isLoading: isAuthLoading, session } = useHostedRedirectAuth()
-  const location = useLocation()
-
-  useEffect(() => {
-    // Auth callback owns its own session exchange
-    if (location.pathname === authCallbackPath()) return
-
-    // Wagmi is rehydrating
-    if (status === 'connecting' || status === 'reconnecting') return
-
-    // Stale session
-    if (!isConnected && isAuthenticated) {
-      void logout()
-      return
-    }
-
-    // Connected wallet and session address mismatch
-    if (
-      isConnected &&
-      walletAddress &&
-      session &&
-      walletAddress.toLowerCase() !== session.address.toLowerCase()
-    ) {
-      void logout()
-      return
-    }
-
-    // Wallet connected without a session
-    if (isConnected && !isAuthenticated && !isAuthLoading) {
-      void login()
-    }
-  }, [
-    status,
-    isConnected,
-    walletAddress,
-    session,
-    isAuthenticated,
-    isAuthLoading,
-    login,
-    logout,
-    location.pathname,
-  ])
 
   return (
     <ConnectButton.Custom>

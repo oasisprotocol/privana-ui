@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import type { WalletClient } from 'viem'
-import { usePrivanaContext } from '@oasisprotocol/privana-sdk'
+import { useSiweAuth } from '@oasisprotocol/privana-sdk'
 import { ApiError, getWithdrawNonce, withdrawEarn } from '@/api/earn'
 import type { TokenInfo } from '@/api/swap'
 import type { ActivityStatus } from '@/contexts/ActivityProvider/context'
@@ -27,7 +27,7 @@ export type SubmitEarnWithdrawParams = {
 
 export const useSubmitEarnWithdraw = ({ onSuccess }: Params = {}) => {
   const { addActivity, updateActivity } = useActivity()
-  const { hostedAuthSession } = usePrivanaContext()
+  const { accessToken } = useSiweAuth()
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
 
@@ -37,7 +37,7 @@ export const useSubmitEarnWithdraw = ({ onSuccess }: Params = {}) => {
       setError('Missing token decimals')
       return false
     }
-    const jwt = hostedAuthSession?.accessToken
+    const jwt = accessToken
     if (!jwt) {
       setError('Not signed in')
       return false
