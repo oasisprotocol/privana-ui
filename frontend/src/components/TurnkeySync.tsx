@@ -1,5 +1,11 @@
 import { useEffect, useRef } from 'react'
-import { AuthState, useTurnkey, WalletInterfaceType, WalletSource } from '@turnkey/react-wallet-kit'
+import {
+  AuthState,
+  ClientState,
+  useTurnkey,
+  WalletInterfaceType,
+  WalletSource,
+} from '@turnkey/react-wallet-kit'
 import { useAccount, useConnect, useDisconnect } from 'wagmi'
 import type { EIP1193Provider } from 'viem'
 import { setTurnkeyActiveWallet } from '@/wallet/turnkeyBridge'
@@ -13,7 +19,16 @@ const APP_CHAIN_ID = parseInt(import.meta.env.VITE_CHAIN_ID, 10) as AppChainId
 // wallet when a passkey/email signup has none, connects the single Turnkey wagmi
 // connector, and disconnects on logout. Rendered only when Turnkey is enabled.
 export const TurnkeySync = () => {
-  const { authState, httpClient, session, wallets, walletProviders, createWallet } = useTurnkey()
+  const {
+    authState,
+    clientState,
+    httpClient,
+    session,
+    wallets,
+    walletProviders,
+    createWallet,
+    refreshWallets,
+  } = useTurnkey()
   const { connectAsync, connectors } = useConnect()
   const { disconnectAsync } = useDisconnect()
   const { connector: activeConnector, isConnected } = useAccount()
@@ -29,6 +44,9 @@ export const TurnkeySync = () => {
       return
     }
     if (authState !== AuthState.Authenticated) return
+
+    // Don't act on session state until the Turnkey client has initialized.
+    if (clientState !== ClientState.Ready) return
 
     const connectToWagmi = () => {
       if (isTurnkeyActive || connectingRef.current) return
@@ -72,9 +90,17 @@ export const TurnkeySync = () => {
     // an Ethereum embedded wallet on first sight. The wallets list updates
     // automatically, which re-runs this effect and falls through to connect.
     if (!embeddedWallet || !address) {
-      if (wallets.length === 0 && !creatingWalletRef.current) {
+      if (!creatingWalletRef.current) {
         creatingWalletRef.current = true
-        void createWallet({ walletName: 'Privana', accounts: ['ADDRESS_FORMAT_ETHEREUM'] })
+        // The reactive `wallets` is transiently empty during rehydration even after
+        // clientState is Ready, so re-fetch a definitive list and only provision
+        // when the org genuinely has no wallets — otherwise we'd try to create a
+        // wallet that already exists ("wallet label must be unique").
+        void refreshWallets()
+          .then(current => {
+            if (current.length > 0) return
+            return createWallet({ walletName: 'Privana', accounts: ['ADDRESS_FORMAT_ETHEREUM'] })
+          })
           .catch(err => console.error('[TurnkeySync] createWallet failed', err))
           .finally(() => {
             creatingWalletRef.current = false
@@ -93,12 +119,14 @@ export const TurnkeySync = () => {
     connectToWagmi()
   }, [
     authState,
+    clientState,
     httpClient,
     session,
     wallets,
     walletProviders,
     isTurnkeyActive,
     createWallet,
+    refreshWallets,
     connectAsync,
     disconnectAsync,
     connectors,
