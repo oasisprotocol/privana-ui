@@ -30,8 +30,8 @@ function toChainParam(chain: Chain): AddEthereumChainParameter {
 // The Turnkey eip-1193-provider has gaps a normal wallet fills in. We patch them
 // in this wrapper (scoped to the Turnkey connector, so external wallets are
 // unaffected):
-//   - personal_sign/eth_sign: it signs with HASH_FUNCTION_NO_OP (expects a
-//     32-byte digest) and does NOT apply the EIP-191 prefix, so we pre-hash.
+//   - personal_sign: it signs with HASH_FUNCTION_NO_OP (expects a 32-byte
+//     digest) and does NOT apply the EIP-191 prefix, so we pre-hash.
 //   - eth_sendTransaction: it BigInt()s gas/nonce/fees that viem doesn't send
 //     for a JSON-RPC account, so we populate them (nonce/gas/fees/value/chainId)
 //     before delegating — the prep a normal wallet would do.
@@ -72,10 +72,6 @@ function wrapTurnkeyProvider(
     if (args.method === 'personal_sign') {
       const [message, address] = (args.params ?? []) as [Hex, Hex]
       return original({ method: 'personal_sign', params: [hashMessage({ raw: message }), address] })
-    }
-    if (args.method === 'eth_sign') {
-      const [address, message] = (args.params ?? []) as [Hex, Hex]
-      return original({ method: 'eth_sign', params: [address, hashMessage({ raw: message })] })
     }
     if (args.method === 'eth_signTypedData_v4') {
       // viem sends the typed data as a JSON string; the provider's
