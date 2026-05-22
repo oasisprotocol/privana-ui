@@ -9,15 +9,12 @@ import {
 import { useAccount, useConnect, useDisconnect } from 'wagmi'
 import type { EIP1193Provider } from 'viem'
 import { setTurnkeyActiveWallet } from '@/wallet/turnkeyBridge'
+import { setTurnkeyWalletIntent, useTurnkeyWalletIntent } from '@/wallet/turnkeyIntent'
 import { TURNKEY_CONNECTOR_ID } from '@/wallet/turnkeyConnector'
 import type { AppChainId } from '@/wagmi-config'
 
 const APP_CHAIN_ID = parseInt(import.meta.env.VITE_CHAIN_ID, 10) as AppChainId
 
-// Keeps wagmi in sync with the active Turnkey wallet — embedded or connected
-// (external). Publishes the active wallet to the bridge, provisions an embedded
-// wallet when a passkey/email signup has none, connects the single Turnkey wagmi
-// connector, and disconnects on logout. Rendered only when Turnkey is enabled.
 export const TurnkeySync = () => {
   const {
     authState,
@@ -29,6 +26,7 @@ export const TurnkeySync = () => {
     createWallet,
     refreshWallets,
   } = useTurnkey()
+  const intent = useTurnkeyWalletIntent()
   const { connectAsync, connectors } = useConnect()
   const { disconnectAsync } = useDisconnect()
   const { connector: activeConnector, isConnected } = useAccount()
@@ -38,15 +36,15 @@ export const TurnkeySync = () => {
   const isTurnkeyActive = isConnected && activeConnector?.id === TURNKEY_CONNECTOR_ID
 
   useEffect(() => {
+    if (clientState !== ClientState.Ready) return
+
     if (authState === AuthState.Unauthenticated) {
       setTurnkeyActiveWallet(null)
+      setTurnkeyWalletIntent(null)
       if (isTurnkeyActive) void disconnectAsync()
       return
     }
     if (authState !== AuthState.Authenticated) return
-
-    // Don't act on session state until the Turnkey client has initialized.
-    if (clientState !== ClientState.Ready) return
 
     const connectToWagmi = () => {
       if (isTurnkeyActive || connectingRef.current) return
@@ -60,63 +58,56 @@ export const TurnkeySync = () => {
         })
     }
 
-    // Connected (external) wallet: surface its own EIP-1193 provider to wagmi.
-    const connectedWallet = wallets.find(w => w.source === WalletSource.Connected)
-    if (connectedWallet) {
-      const address = connectedWallet.accounts?.[0]?.address
+    if (intent === 'connected') {
+      const connectedWallet = wallets.find(w => w.source === WalletSource.Connected)
+      const address = connectedWallet?.accounts?.[0]?.address
+      if (!address) return
       const walletProvider = walletProviders.find(
         p =>
           p.interfaceType !== WalletInterfaceType.Solana &&
-          !!address &&
           p.connectedAddresses.some(a => a.toLowerCase() === address.toLowerCase()),
       )
-      if (address && walletProvider) {
-        setTurnkeyActiveWallet({
-          kind: 'connected',
-          provider: walletProvider.provider as EIP1193Provider,
-          address: address as `0x${string}`,
-        })
-        connectToWagmi()
-      }
+      if (!walletProvider) return
+      setTurnkeyActiveWallet({
+        kind: 'connected',
+        provider: walletProvider.provider as EIP1193Provider,
+        address: address as `0x${string}`,
+      })
+      connectToWagmi()
       return
     }
 
-    // Embedded wallet path needs the Turnkey client/session.
-    if (!httpClient || !session?.organizationId) return
-    const embeddedWallet = wallets.find(w => w.source === WalletSource.Embedded)
-    const address = embeddedWallet?.accounts?.[0]?.address
+    if (intent === 'embedded') {
+      // Embedded wallet path needs the Turnkey client/session.
+      if (!httpClient || !session?.organizationId) return
+      const embeddedWallet = wallets.find(w => w.source === WalletSource.Embedded)
+      const address = embeddedWallet?.accounts?.[0]?.address
 
-    // Email/passkey signup creates a sub-org but not always a wallet — provision
-    // an Ethereum embedded wallet on first sight. The wallets list updates
-    // automatically, which re-runs this effect and falls through to connect.
-    if (!embeddedWallet || !address) {
-      if (!creatingWalletRef.current) {
-        creatingWalletRef.current = true
-        // The reactive `wallets` is transiently empty during rehydration even after
-        // clientState is Ready, so re-fetch a definitive list and only provision
-        // when the org genuinely has no wallets — otherwise we'd try to create a
-        // wallet that already exists ("wallet label must be unique").
-        void refreshWallets()
-          .then(current => {
-            if (current.length > 0) return
-            return createWallet({ walletName: 'Privana', accounts: ['ADDRESS_FORMAT_ETHEREUM'] })
-          })
-          .catch(err => console.error('[TurnkeySync] createWallet failed', err))
-          .finally(() => {
-            creatingWalletRef.current = false
-          })
+      if (!embeddedWallet || !address) {
+        if (!creatingWalletRef.current) {
+          creatingWalletRef.current = true
+          void refreshWallets()
+            .then(list => {
+              if (list.some(w => w.source === WalletSource.Embedded)) return
+              return createWallet({ walletName: 'Privana', accounts: ['ADDRESS_FORMAT_ETHEREUM'] })
+            })
+            .catch(err => console.error('[TurnkeySync] createWallet failed', err))
+            .finally(() => {
+              creatingWalletRef.current = false
+            })
+        }
+        return
       }
-      return
-    }
 
-    setTurnkeyActiveWallet({
-      kind: 'embedded',
-      httpClient,
-      organizationId: session.organizationId,
-      walletId: embeddedWallet.walletId,
-      address: address as `0x${string}`,
-    })
-    connectToWagmi()
+      setTurnkeyActiveWallet({
+        kind: 'embedded',
+        httpClient,
+        organizationId: session.organizationId,
+        walletId: embeddedWallet.walletId,
+        address: address as `0x${string}`,
+      })
+      connectToWagmi()
+    }
   }, [
     authState,
     clientState,
@@ -124,6 +115,7 @@ export const TurnkeySync = () => {
     session,
     wallets,
     walletProviders,
+    intent,
     isTurnkeyActive,
     createWallet,
     refreshWallets,
