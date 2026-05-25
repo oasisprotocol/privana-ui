@@ -43,6 +43,8 @@ export const ProtectedLayout: FC = () => {
             Wallet is connected. Sign in to Privana to continue.
           </p>
           <div className="flex items-center gap-3">
+            {/* login() surfaces failures via authError (rendered below) and rethrows; the catch
+                only swallows the rethrow so a rejected signature isn't an unhandled rejection. */}
             <Button onClick={() => void login().catch(() => {})} disabled={isAuthLoading}>
               {isAuthLoading ? 'Signing in…' : 'Sign in'}
             </Button>
