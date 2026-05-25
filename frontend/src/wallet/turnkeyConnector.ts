@@ -16,7 +16,17 @@ import {
 import { createAccount } from '@turnkey/viem'
 import { getTurnkeyActiveWallet, type TurnkeyActiveWallet } from './turnkeyBridge'
 
-type SendTxRequest = { from?: Hex; to?: Hex; data?: Hex; value?: Hex }
+type SendTxRequest = {
+  from?: Hex
+  to?: Hex
+  data?: Hex
+  value?: Hex
+  gas?: Hex
+  gasPrice?: Hex
+  maxFeePerGas?: Hex
+  maxPriorityFeePerGas?: Hex
+  nonce?: Hex
+}
 
 export const TURNKEY_CONNECTOR_ID = 'turnkeyEmbedded'
 
@@ -73,11 +83,23 @@ function createEmbeddedProvider(
       case 'eth_sendTransaction': {
         const [tx] = (params ?? []) as [SendTxRequest]
         const { walletClient } = await clientsFor(chainId)
+        const toBig = (v?: Hex) => (v != null ? BigInt(v) : undefined)
+        // Honor whatever the caller already populated (wagmi/viem fills gas, fees
+        // and nonce before dispatching) instead of dropping it and re-estimating.
         return walletClient.sendTransaction({
           to: tx.to,
           data: tx.data,
-          value: tx.value ? BigInt(tx.value) : undefined,
-        })
+          value: toBig(tx.value),
+          gas: toBig(tx.gas),
+          nonce: tx.nonce != null ? Number(tx.nonce) : undefined,
+          // legacy or EIP-1559 fees, whichever was supplied (never both)
+          ...(tx.gasPrice != null
+            ? { gasPrice: BigInt(tx.gasPrice) }
+            : {
+                maxFeePerGas: toBig(tx.maxFeePerGas),
+                maxPriorityFeePerGas: toBig(tx.maxPriorityFeePerGas),
+              }),
+        } as Parameters<typeof walletClient.sendTransaction>[0])
       }
       default: {
         const { publicClient } = await clientsFor(chainId)
