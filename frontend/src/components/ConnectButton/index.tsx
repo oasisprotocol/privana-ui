@@ -20,8 +20,8 @@ import { TurnkeyLogoutItem } from './TurnkeyLogoutItem'
 const APP_CHAIN_ID = parseInt(import.meta.env.VITE_CHAIN_ID, 10) as AppChainId
 const SUPPORTED_CHAIN_IDS = wagmiConfig.chains.map(c => c.id)
 
-// Wallet UI only. The Privana session is driven by AuthProvider, which watches
-// the wagmi connection and runs SIWE login/logout.
+// Wallet UI only. The Privana session is driven by the SDK's SiweAuthProvider
+// (useSiweAuth), which watches the wagmi connection and runs SIWE login/logout.
 export const ConnectButton: FC = () => {
   const { address, isConnected, connector } = useAccount()
   const { disconnect } = useDisconnect()

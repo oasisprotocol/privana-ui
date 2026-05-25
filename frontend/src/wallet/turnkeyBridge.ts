@@ -1,4 +1,4 @@
-import type { TurnkeySDKClientBase } from '@turnkey/core'
+import type { TurnkeySDKClientBase } from '@turnkey/react-wallet-kit'
 import type { EIP1193Provider } from 'viem'
 
 // The Turnkey wallet currently active in wagmi. The connector lives outside React
@@ -7,8 +7,9 @@ import type { EIP1193Provider } from 'viem'
 // login and clears it on logout.
 //
 // Two kinds:
-//  - embedded: Turnkey-custodied. We build a patched EIP-1193 provider from the
-//    client + walletId on demand (see turnkeyConnector / wrapTurnkeyProvider).
+//  - embedded: Turnkey-custodied. We build an EIP-1193 provider backed by
+//    @turnkey/viem from the client + walletId on demand (see
+//    turnkeyConnector's createEmbeddedProvider).
 //  - connected: the user's own external wallet (MetaMask/Rabby), which Turnkey
 //    surfaces as a standard viem EIP1193Provider we use directly — no patches,
 //    key stays in the user's extension.
