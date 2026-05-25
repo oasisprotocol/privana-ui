@@ -11,16 +11,7 @@ import { EarnCreate } from './pages/Earn/EarnCreate'
 import { EarnWithdraw } from './pages/Earn/EarnWithdraw'
 import { Apps } from './pages/Apps'
 import { Activity } from './pages/Activity'
-import { AuthCallback } from './pages/AuthCallback'
-import {
-  activityPath,
-  appsPath,
-  authCallbackPath,
-  earnPath,
-  homePath,
-  dashboardPath,
-  tradePath,
-} from './paths'
+import { activityPath, appsPath, earnPath, homePath, dashboardPath, tradePath } from './paths'
 
 export const router = createBrowserRouter([
   {
@@ -129,10 +120,6 @@ export const router = createBrowserRouter([
         ],
       },
     ],
-  },
-  {
-    path: authCallbackPath(),
-    element: <AuthCallback />,
   },
   {
     path: '*',

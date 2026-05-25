@@ -8,7 +8,6 @@ import { lightTheme, RainbowKitProvider, Theme } from '@rainbow-me/rainbowkit'
 import { wagmiConfig } from './wagmi-config.ts'
 import { PrivanaProvider } from '@oasisprotocol/privana-sdk'
 import { ALLOWED_TOKEN_IDS } from './config/tokens'
-import { authCallbackPath } from './paths'
 import { ActivityProvider } from './contexts/ActivityProvider'
 import { TooltipProvider } from './components/ui/tooltip'
 import '@rainbow-me/rainbowkit/styles.css'
@@ -38,9 +37,8 @@ createRoot(document.getElementById('root')!).render(
             apiUrl: import.meta.env.VITE_PRIVANA_API_URL,
           }}
           tokens={ALLOWED_TOKEN_IDS}
-          hostedAuth={{
-            clientId: import.meta.env.VITE_PRIVANA_CLIENT_ID,
-            redirectUri: `${window.location.origin}${authCallbackPath()}`,
+          siweAuth={{
+            statement: 'Sign in to Privana to access your private account data.',
           }}
         >
           <RainbowKitProvider theme={rainbowKitTheme} modalSize="compact">

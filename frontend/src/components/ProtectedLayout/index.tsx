@@ -2,7 +2,7 @@ import { type FC } from 'react'
 import { Outlet, useNavigate } from 'react-router'
 import { useAccount, useAccountEffect, useDisconnect } from 'wagmi'
 import { useConnectModal } from '@rainbow-me/rainbowkit'
-import { useHostedRedirectAuth } from '@oasisprotocol/privana-sdk'
+import { useSiweAuth } from '@oasisprotocol/privana-sdk'
 import { Button } from '@/components/ui/button'
 import { Layout } from '../Layout'
 
@@ -10,7 +10,7 @@ export const ProtectedLayout: FC = () => {
   const { isConnected, status } = useAccount()
   const { disconnect } = useDisconnect()
   const { openConnectModal } = useConnectModal()
-  const { isAuthenticated, isLoading: isAuthLoading, error: authError, login } = useHostedRedirectAuth()
+  const { isAuthenticated, isLoading: isAuthLoading, error: authError, login } = useSiweAuth()
   const navigate = useNavigate()
 
   useAccountEffect({
@@ -43,7 +43,9 @@ export const ProtectedLayout: FC = () => {
             Wallet is connected. Sign in to Privana to continue.
           </p>
           <div className="flex items-center gap-3">
-            <Button onClick={() => void login()} disabled={isAuthLoading}>
+            {/* login() surfaces failures via authError (rendered below) and rethrows; the catch
+                only swallows the rethrow so a rejected signature isn't an unhandled rejection. */}
+            <Button onClick={() => void login().catch(() => {})} disabled={isAuthLoading}>
               {isAuthLoading ? 'Signing in…' : 'Sign in'}
             </Button>
             <Button variant="outline" onClick={() => disconnect()}>
