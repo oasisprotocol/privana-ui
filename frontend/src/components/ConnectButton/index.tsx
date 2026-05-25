@@ -1,7 +1,5 @@
-import { useEffect, type FC } from 'react'
-import { useLocation } from 'react-router'
+import { type FC } from 'react'
 import { useAccount, useChainId, useDisconnect, useSwitchChain } from 'wagmi'
-import { useHostedRedirectAuth } from '@oasisprotocol/privana-sdk'
 import { ChevronDown } from 'lucide-react'
 import { Button } from '../ui/button'
 import {
@@ -13,7 +11,6 @@ import {
 } from '../ui/dropdown-menu'
 import { AccountAvatar } from '../AccountAvatar'
 import { trimLongString } from '../../utils/trimLongString'
-import { authCallbackPath } from '@/paths'
 import { wagmiConfig, type AppChainId } from '@/wagmi-config'
 import { TURNKEY_CONNECTOR_ID } from '@/wallet/turnkeyConnector'
 import { useOpenWalletModal } from '../WalletConnect/useOpenWalletModal'
@@ -23,52 +20,14 @@ import { TurnkeyLogoutItem } from './TurnkeyLogoutItem'
 const APP_CHAIN_ID = parseInt(import.meta.env.VITE_CHAIN_ID, 10) as AppChainId
 const SUPPORTED_CHAIN_IDS = wagmiConfig.chains.map(c => c.id)
 
+// Wallet UI only. The Privana session is driven by AuthProvider, which watches
+// the wagmi connection and runs SIWE login/logout.
 export const ConnectButton: FC = () => {
-  const { address, isConnected, status, connector } = useAccount()
+  const { address, isConnected, connector } = useAccount()
   const { disconnect } = useDisconnect()
   const { switchChain } = useSwitchChain()
   const chainId = useChainId()
   const openWalletModal = useOpenWalletModal()
-  const { login, logout, isAuthenticated, isLoading: isAuthLoading, session } = useHostedRedirectAuth()
-  const location = useLocation()
-
-  // Keep the Privana hosted-auth session in step with the connected wallet.
-  // Wallet-vendor agnostic — works the same for external wallets and the
-  // Turnkey embedded wallet (both surface through wagmi).
-  useEffect(() => {
-    // Auth callback owns its own session exchange
-    if (location.pathname === authCallbackPath()) return
-
-    // Wagmi is rehydrating
-    if (status === 'connecting' || status === 'reconnecting') return
-
-    // Stale session
-    if (!isConnected && isAuthenticated) {
-      void logout()
-      return
-    }
-
-    // Connected wallet and session address mismatch
-    if (isConnected && address && session && address.toLowerCase() !== session.address.toLowerCase()) {
-      void logout()
-      return
-    }
-
-    // Wallet connected without a session
-    if (isConnected && !isAuthenticated && !isAuthLoading) {
-      void login()
-    }
-  }, [
-    status,
-    isConnected,
-    address,
-    session,
-    isAuthenticated,
-    isAuthLoading,
-    login,
-    logout,
-    location.pathname,
-  ])
 
   const isTurnkeyActive = connector?.id === TURNKEY_CONNECTOR_ID
 
@@ -107,9 +66,6 @@ export const ConnectButton: FC = () => {
         <DropdownMenuContent>
           <DropdownMenuItem onClick={() => void navigator.clipboard.writeText(address)}>
             Copy Address
-          </DropdownMenuItem>
-          <DropdownMenuItem onClick={() => switchChain({ chainId: APP_CHAIN_ID })}>
-            Switch network
           </DropdownMenuItem>
           {isTurnkeyActive && <ExportWalletItem />}
           <DropdownMenuSeparator />
