@@ -141,6 +141,36 @@
   animation-timing-function: ease-in-out;
 }
 
+.tk-modal input {
+  background-color: var(--background);
+}
+
+.tk-modal button,
+.tk-modal input {
+  border: none;
+  font-size: 14px;
+}
+.tk-modal button {
+  height: 40px;
+  font-weight: 500;
+}
+
+.tk-modal button:has(.fa-xmark),
+.tk-modal button:has(.fa-arrow-left),
+.tk-modal button[data-testid='email-continue-icon'] {
+  background-color: transparent !important;
+}
+
+.tk-modal svg[class*='shadow-primary-light'] {
+  box-shadow: none !important;
+}
+
+.tk-modal :focus,
+.tk-modal :focus-visible {
+  outline-width: 3px !important;
+  outline-color: color-mix(in srgb, var(--ring) 50%, transparent) !important;
+}
+
 [data-privana],
 [data-privana].dark,
 .dark [data-privana] {

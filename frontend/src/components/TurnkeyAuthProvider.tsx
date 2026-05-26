@@ -31,7 +31,18 @@ export const TurnkeyAuthProvider = ({ children }: { children: ReactNode }) => {
         // Show "Continue with wallet" so external wallets connect through the
         // Turnkey modal too. (The Wallet method must also be enabled in the
         // Turnkey dashboard auth-proxy config for it to function.)
-        ui: { authModal: { methods: { walletAuthEnabled: true } } },
+        ui: {
+          authModal: { methods: { walletAuthEnabled: true } },
+          borderRadius: 16,
+          colors: {
+            light: {
+              primary: '#fcd34d',
+              primaryText: '#25292e',
+              button: '#fcd34d',
+              modalBackground: '#f2f2f2',
+            },
+          },
+        },
         // Surface external wallets in the modal: injected (Rabby/MetaMask) via
         // `native`, plus WalletConnect when a project id is configured.
         walletConfig: {
