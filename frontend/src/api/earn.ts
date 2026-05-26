@@ -2,7 +2,7 @@ import { useEffect, useRef } from 'react'
 import { useQuery, useQueryClient } from '@tanstack/react-query'
 import { useSiweAuth } from '@oasisprotocol/privana-sdk'
 
-const BASE_URL = import.meta.env.VITE_SWAP_API_URL ?? 'http://localhost:8001'
+const BASE_URL = import.meta.env.VITE_PRIVANA_SERVICES_API_URL ?? 'http://localhost:8001'
 
 export class ApiError extends Error {
   readonly status: number
