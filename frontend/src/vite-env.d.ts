@@ -10,7 +10,7 @@ interface ImportMetaEnv {
   readonly VITE_ACCOUNTING_CONTRACT_ADDRESS: `0x${string}`
   readonly VITE_EARN_MANAGER_CONTRACT_ADDRESS: `0x${string}`
   readonly VITE_PRIVANA_API_URL: string
-  readonly VITE_SWAP_API_URL?: string
+  readonly VITE_PRIVANA_SERVICES_API_URL?: string
   readonly VITE_SWAP_LP_ADDRESS?: `0x${string}`
 }
 
