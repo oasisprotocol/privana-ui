@@ -20,10 +20,11 @@ import { ReviewStep } from './ReviewStep'
 import { useSwapQuote } from './useSwapQuote'
 import { useSubmitSwap } from './useSubmitSwap'
 import { useQuoteSummary } from './useQuoteSummary'
+import type { AppChainId } from '@/wagmi-config'
 
 const steps = ['1. Configure', '2. Review']
 
-const CHAIN_ID = parseInt(import.meta.env.VITE_CHAIN_ID, 10)
+const CHAIN_ID = parseInt(import.meta.env.VITE_CHAIN_ID, 10) as AppChainId
 
 export const SwapDashboard = () => {
   const [step, setStep] = useState(0)
