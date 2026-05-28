@@ -13,8 +13,9 @@ import { formatApyBps, PROTOCOL_LABELS } from './labels'
 import { ReviewStep } from './ReviewStep'
 import { useEarnDepositQuote } from './useEarnDepositQuote'
 import { useSubmitEarnDeposit } from './useSubmitEarnDeposit'
+import type { AppChainId } from '@/wagmi-config'
 
-const CHAIN_ID = parseInt(import.meta.env.VITE_CHAIN_ID, 10)
+const CHAIN_ID = parseInt(import.meta.env.VITE_CHAIN_ID, 10) as AppChainId
 
 const steps = ['1. Configure', '2. Review']
 
