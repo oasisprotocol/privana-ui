@@ -4,7 +4,7 @@ import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/
 import { Separator } from '@/components/ui/separator'
 import { Button } from '@oasisprotocol/privana-sdk'
 import HeroImage from '../../assets/dashboard-hero.svg'
-import { useConnectModal } from '@rainbow-me/rainbowkit'
+import { useConnectWallet } from '@/components/WalletConnect/useConnectWallet'
 
 const features = [
   {
@@ -26,7 +26,7 @@ const features = [
 ]
 
 export const CopyTradingLanding = () => {
-  const { openConnectModal } = useConnectModal()
+  const connectWallet = useConnectWallet()
 
   return (
     <>
@@ -45,7 +45,7 @@ export const CopyTradingLanding = () => {
           </div>
 
           <div className="flex flex-row flex-wrap gap-6">
-            <Button className="w-full md:w-auto" onClick={openConnectModal}>
+            <Button className="w-full md:w-auto" onClick={connectWallet}>
               Create your strategy
             </Button>
             <Button variant="secondary" className="w-full md:w-auto">
