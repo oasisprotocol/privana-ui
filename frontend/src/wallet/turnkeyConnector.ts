@@ -1,125 +1,13 @@
 import { createConnector } from 'wagmi'
-import {
-  createPublicClient,
-  createWalletClient,
-  getAddress,
-  http,
-  numberToHex,
-  type Chain,
-  type EIP1193Provider,
-  type Hex,
-  type LocalAccount,
-  type PublicClient,
-  type Transport,
-  type WalletClient,
-} from 'viem'
-import { createAccount } from '@turnkey/viem'
-import { getTurnkeyActiveWallet, type TurnkeyActiveWallet } from './turnkeyBridge'
-
-type SendTxRequest = {
-  from?: Hex
-  to?: Hex
-  data?: Hex
-  value?: Hex
-  gas?: Hex
-  gasPrice?: Hex
-  maxFeePerGas?: Hex
-  maxPriorityFeePerGas?: Hex
-  nonce?: Hex
-}
+import { getAddress, type EIP1193Provider } from 'viem'
+import { getTurnkeyActiveWallet } from './turnkeyBridge'
+import { createEmbeddedEip1193Provider } from './embeddedEip1193Provider'
 
 export const TURNKEY_CONNECTOR_ID = 'turnkeyEmbedded'
 
-function createEmbeddedProvider(
-  active: Extract<TurnkeyActiveWallet, { kind: 'embedded' }>,
-  ctx: { chains: readonly Chain[]; getChainId: () => number },
-): EIP1193Provider {
-  let accountPromise: Promise<LocalAccount> | undefined
-  const getAccount = () =>
-    (accountPromise ??= createAccount({
-      client: active.httpClient,
-      organizationId: active.organizationId,
-      signWith: active.address,
-    }))
-
-  const clientsByChain = new Map<
-    number,
-    { publicClient: PublicClient; walletClient: WalletClient<Transport, Chain, LocalAccount> }
-  >()
-  async function clientsFor(chainId: number) {
-    const cached = clientsByChain.get(chainId)
-    if (cached) return cached
-    const chain = ctx.chains.find(c => c.id === chainId)
-    if (!chain) throw new Error(`Chain ${chainId} is not configured`)
-    const account = await getAccount()
-    const publicClient = createPublicClient({ chain, transport: http() })
-    const walletClient = createWalletClient({ account, chain, transport: http() })
-    const clients = { publicClient, walletClient }
-    clientsByChain.set(chainId, clients)
-    return clients
-  }
-
-  const request = (async ({ method, params }: { method: string; params?: unknown[] }) => {
-    const chainId = ctx.getChainId()
-    switch (method) {
-      case 'eth_accounts':
-      case 'eth_requestAccounts':
-        return [getAddress(active.address)]
-      case 'eth_chainId':
-        return numberToHex(chainId)
-      case 'wallet_switchEthereumChain':
-        return null
-      case 'personal_sign': {
-        const [message] = (params ?? []) as [Hex]
-        const account = await getAccount()
-        return account.signMessage({ message: { raw: message } })
-      }
-      case 'eth_signTypedData_v4': {
-        const [, data] = (params ?? []) as [Hex, unknown]
-        const account = await getAccount()
-        const typedData = typeof data === 'string' ? JSON.parse(data) : data
-        return account.signTypedData(typedData as Parameters<LocalAccount['signTypedData']>[0])
-      }
-      case 'eth_sendTransaction': {
-        const [tx] = (params ?? []) as [SendTxRequest]
-        const { walletClient } = await clientsFor(chainId)
-        const toBig = (v?: Hex) => (v != null ? BigInt(v) : undefined)
-        // Honor whatever the caller already populated (wagmi/viem fills gas, fees
-        // and nonce before dispatching) instead of dropping it and re-estimating.
-        return walletClient.sendTransaction({
-          to: tx.to,
-          data: tx.data,
-          value: toBig(tx.value),
-          gas: toBig(tx.gas),
-          nonce: tx.nonce != null ? Number(tx.nonce) : undefined,
-          // legacy or EIP-1559 fees, whichever was supplied (never both)
-          ...(tx.gasPrice != null
-            ? { gasPrice: BigInt(tx.gasPrice) }
-            : {
-                maxFeePerGas: toBig(tx.maxFeePerGas),
-                maxPriorityFeePerGas: toBig(tx.maxPriorityFeePerGas),
-              }),
-        } as Parameters<typeof walletClient.sendTransaction>[0])
-      }
-      default: {
-        const { publicClient } = await clientsFor(chainId)
-        const forward = publicClient.request as unknown as (args: {
-          method: string
-          params?: unknown[]
-        }) => Promise<unknown>
-        return forward({ method, params })
-      }
-    }
-  }) as EIP1193Provider['request']
-
-  // The embedded wallet emits no standard EIP-1193 events.
-  const noop = () => {}
-  return { request, on: noop, removeListener: noop } as unknown as EIP1193Provider
-}
-
 // Bridges active Turnkey wallet into wagmi. For an embedded wallet it builds
-// a @turnkey/viem-backed EIP-1193 provider from the runtime signer context; for a
-// connected (external) wallet it uses that wallet's own provider directly.
+// a @turnkey/viem-backed EIP-1193 provider from the runtime signer context; for
+// a connected (external) wallet it uses that wallet's own provider directly.
 // Connecting and disconnecting are driven by TurnkeySync, not a direct wagmi connect.
 export function turnkeyConnector() {
   return createConnector<EIP1193Provider>(config => {
@@ -133,7 +21,7 @@ export function turnkeyConnector() {
       if (active.kind === 'connected') return active.provider
       const key = `${active.organizationId}:${active.walletId}`
       if (!embeddedProvider || embeddedKey !== key) {
-        embeddedProvider = createEmbeddedProvider(active, {
+        embeddedProvider = createEmbeddedEip1193Provider(active, {
           chains: config.chains,
           getChainId: () => connectedChainId,
         })
