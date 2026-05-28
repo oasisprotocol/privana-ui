@@ -81,10 +81,16 @@ export function turnkeyConnector() {
         const active = getTurnkeyActiveWallet()
         if (!active) throw new Error('Turnkey wallet not available')
         const provider = await ensureProvider()
-        // Best-effort chain switch on connect — wagmi surfaces mismatched
-        // state via useAccount().chainId / useSwitchChain, so swallowing here
-        // avoids blocking the connect flow on a transient chain hiccup.
-        await switchProviderChain(chainId ?? connectedChainId).catch(() => {})
+        // Best-effort chain switch on connect - a failure (user rejection,
+        // chain not added to the external wallet) is non-fatal, but we have
+        // to report the chain the wallet is actually on, otherwise wagmi
+        // caches the requested id while the wallet stays on the old chain.
+        try {
+          await switchProviderChain(chainId ?? connectedChainId)
+        } catch {
+          const actual = (await provider.request({ method: 'eth_chainId' })) as `0x${string}`
+          connectedChainId = Number(actual)
+        }
         if (active.kind === 'connected') subscribe(provider)
         return { accounts: [getAddress(active.address)] as never, chainId: connectedChainId }
       },
