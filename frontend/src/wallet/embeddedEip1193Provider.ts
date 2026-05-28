@@ -39,6 +39,16 @@ interface ProviderContext {
 // don't rebuild the transport. The embedded wallet has no real EIP-1193 events,
 // so `on`/`removeListener` are noops — connectors wiring this provider should
 // only subscribe events on external (connected) wallets.
+//
+// Uses @turnkey/viem rather than the official @turnkey/eip-1193-provider for
+// signing safety. viem's account abstraction handles EIP-191 (personal_sign)
+// prefixing and EIP-712 typed-data hashing internally; the official provider
+// exposes raw signRawPayload + HASH_FUNCTION_NO_OP and leaves prefixing/hashing
+// to the caller — easy to get wrong, and SIWE in particular is silently brittle
+// if EIP-191 is mis-applied. viem's signTransaction is also chain-aware and
+// supports both legacy and EIP-1559, whereas the wagmi-demo reference path
+// hardcodes EIP-1559 + Sepolia. The official path is wireable if Turnkey ships
+// their own wagmi connector later.
 export function createEmbeddedEip1193Provider(
   active: EmbeddedActiveWallet,
   ctx: ProviderContext,
