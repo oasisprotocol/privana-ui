@@ -1,16 +1,16 @@
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion'
 import { Button } from '@oasisprotocol/privana-sdk'
-import { useConnectModal } from '@rainbow-me/rainbowkit'
+import { useConnectWallet } from '@/components/WalletConnect/useConnectWallet'
 import { EarnHeader } from './EarnHeader'
 
 export const EarnLanding = () => {
-  const { openConnectModal } = useConnectModal()
+  const connectWallet = useConnectWallet()
 
   return (
     <>
       <EarnHeader
         action={
-          <Button className="w-full md:w-auto" onClick={openConnectModal}>
+          <Button className="w-full md:w-auto" onClick={connectWallet}>
             Start earning now
           </Button>
         }
