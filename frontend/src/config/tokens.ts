@@ -1,6 +1,7 @@
 interface TokenConfig {
   geckoId: string
   swappable?: boolean
+  moonpayCode?: string
 }
 
 const TOKENS = {
@@ -14,6 +15,11 @@ const TOKENS = {
     geckoId: 'usd-coin',
     swappable: false,
   },
+  '0xbd3a41ffd21be1cfcdca7a4e7755842a5b78c9443fb7ea008e6a7314f0caea87': {
+    geckoId: 'usd-coin',
+    swappable: false,
+    moonpayCode: 'usdc',
+  },
 } as const satisfies Record<string, TokenConfig>
 
 export type TokenId = keyof typeof TOKENS
@@ -24,5 +30,12 @@ export const SWAPPABLE_TOKEN_IDS: TokenId[] = (Object.entries(TOKENS) as [TokenI
   .filter(([, cfg]) => cfg.swappable !== false)
   .map(([id]) => id)
 
+export const ONRAMPABLE_TOKEN_IDS: TokenId[] = (Object.entries(TOKENS) as [TokenId, TokenConfig][])
+  .filter(([, cfg]) => Boolean(cfg.moonpayCode))
+  .map(([id]) => id)
+
 export const getGeckoId = (tokenId: string): string | undefined =>
   (TOKENS as Record<string, TokenConfig>)[tokenId]?.geckoId
+
+export const getMoonpayCode = (tokenId: string): string | undefined =>
+  (TOKENS as Record<string, TokenConfig>)[tokenId]?.moonpayCode
