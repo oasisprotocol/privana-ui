@@ -14,6 +14,7 @@ interface ImportMetaEnv {
   readonly VITE_SWAP_LP_ADDRESS?: `0x${string}`
   readonly VITE_TURNKEY_ORGANIZATION_ID?: string
   readonly VITE_TURNKEY_AUTH_PROXY_CONFIG_ID?: string
+  readonly VITE_MOONPAY_API_KEY: string
 }
 
 interface ImportMeta {

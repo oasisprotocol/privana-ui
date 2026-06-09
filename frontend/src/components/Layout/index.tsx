@@ -5,7 +5,7 @@ import Logo from '../../assets/logo.svg'
 import DashboardBg from '../../assets/dashboard-bg.svg'
 import { MenuItem } from './menu-item'
 import { Separator } from '../ui/separator'
-import { activityPath, appsPath, earnPath, homePath, dashboardPath, tradePath } from '@/paths'
+import { activityPath, appsPath, earnPath, homePath, dashboardPath, onRampPath, tradePath } from '@/paths'
 import { useActivity } from '@/contexts/ActivityProvider/useActivity'
 
 const FOOTER_SECTIONS = [
@@ -40,6 +40,7 @@ export const Layout = ({ children, dashboard }: LayoutProps) => {
           </Link>
           <div className="flex items-center gap-1">
             <MenuItem to={dashboardPath()} label="Dashboard" />
+            <MenuItem to={onRampPath()} label="On-Ramp" />
             <MenuItem to={tradePath()} label="Trade" />
             <MenuItem to={earnPath()} label="Earn" />
             <MenuItem to={appsPath()} label="Apps" />

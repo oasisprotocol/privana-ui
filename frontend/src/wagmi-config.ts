@@ -1,11 +1,11 @@
 import { createConfig, http } from 'wagmi'
-import { sapphire, sapphireTestnet, baseSepolia } from 'viem/chains'
+import { sapphire, sapphireTestnet, baseSepolia, sepolia } from 'viem/chains'
 import { turnkeyConnector } from './wallet/turnkeyConnector'
 
 const { VITE_TURNKEY_ORGANIZATION_ID } = import.meta.env
 
 export const wagmiConfig = createConfig({
-  chains: [sapphire, sapphireTestnet, baseSepolia],
+  chains: [sapphire, sapphireTestnet, baseSepolia, sepolia],
   // Every wallet — embedded and external — connects through Turnkey's modal and
   // is bridged into wagmi by the single Turnkey connector. EIP-6963 discovery is
   // disabled so wagmi doesn't auto-add injected wallets that would bypass it.
@@ -15,6 +15,7 @@ export const wagmiConfig = createConfig({
     [sapphire.id]: http(),
     [sapphireTestnet.id]: http(),
     [baseSepolia.id]: http(),
+    [sepolia.id]: http(),
   },
   batch: {
     multicall: false,
