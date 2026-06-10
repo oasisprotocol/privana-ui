@@ -879,10 +879,10 @@
   resolved "https://registry.yarnpkg.com/@noble/hashes/-/hashes-1.8.0.tgz#cee43d801fcef9644b11b8194857695acd5f815a"
   integrity sha512-jCs9ldd7NwzpgXDIf6P3+NrHh9/sD6CQdxHyjQI+h/6rDNo88ypBxxz45UDuZHz9r3tNz7N/VInSVoVdtXEI4A==
 
-"@oasisprotocol/privana-sdk@^0.4.0":
-  version "0.4.0"
-  resolved "https://registry.yarnpkg.com/@oasisprotocol/privana-sdk/-/privana-sdk-0.4.0.tgz#05cc44ba355886ab36b30e16e359f504c631b2a8"
-  integrity sha512-+1yEQ6AVW59pAxtE9JACe7bfM0P5TL10mgiwO07AAZ6j5gB4CsLkZgwKkkbvf3PrLgB2k+AAJH+Hev42keTa0w==
+"@oasisprotocol/privana-sdk@^0.4.1":
+  version "0.4.1"
+  resolved "https://registry.yarnpkg.com/@oasisprotocol/privana-sdk/-/privana-sdk-0.4.1.tgz#7021ced1a2b8a6309173a903328508cd8408be8e"
+  integrity sha512-cZHQNgdySWNbV5hKL6LET7aQnt7xc2WOVs8GDetyykwDbD6XjbSO5nZPExP/z9Qxg2x1evBwOXN7grzrrOc3yg==
   dependencies:
     "@moonpay/moonpay-react" "^1.10.6"
     "@radix-ui/react-dialog" "^1.1.15"
