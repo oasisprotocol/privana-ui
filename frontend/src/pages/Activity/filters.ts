@@ -18,6 +18,7 @@ export type FilterType =
   | 'swap'
   | 'deposit'
   | 'withdraw'
+  | 'earn'
   | 'earnDeposit'
   | 'earnWithdraw'
   | 'lock'
@@ -52,6 +53,8 @@ export function filterTypeOf(r: MergedRow): FilterType {
   if (r.row.kind === 'unknown') return 'transfer'
   // Modify/release rows are filtered alongside plain locks.
   if (r.row.kind === 'lockModified' || r.row.kind === 'lockReleased') return 'lock'
+  // In/out paired locked transfers share the reclaim filter.
+  if (r.row.kind === 'reclaimOut' || r.row.kind === 'reclaimIn') return 'reclaim'
   return r.row.kind
 }
 
@@ -60,6 +63,7 @@ export function appOf(r: MergedRow): string {
   switch (r.row.kind) {
     case 'swap':
     case 'earnDeposit':
+    case 'earnWithdraw':
     case 'deposit':
     case 'withdraw':
       return PRIVANA_APP_ID
@@ -134,7 +138,7 @@ export function applyFilters(
   const search = filters.search.trim().toLowerCase()
   const wantedAsset = filters.asset === 'all' ? null : filters.asset
   return rows.filter(r => {
-    if (filters.type !== 'all' && filterTypeOf(r) !== filters.type) return false
+    if (filters.type !== 'all' && !matchesFilterType(r, filters.type)) return false
     if (filters.status !== 'all' && statusOf(r) !== filters.status) return false
     if (filters.app !== 'all' && appOf(r) !== filters.app) return false
     if (wantedAsset && !assetsOf(r).includes(wantedAsset)) return false
@@ -142,4 +146,12 @@ export function applyFilters(
     if (search && !searchableTextOf(r, resolveSymbol).includes(search)) return false
     return true
   })
+}
+
+// The `earn` filter is a coarse group used by the Earn tab — matches both
+// directions. Every other FilterType is 1:1 with what filterTypeOf returns.
+function matchesFilterType(r: MergedRow, type: FilterType): boolean {
+  const rowType = filterTypeOf(r)
+  if (type === 'earn') return rowType === 'earnDeposit' || rowType === 'earnWithdraw'
+  return rowType === type
 }

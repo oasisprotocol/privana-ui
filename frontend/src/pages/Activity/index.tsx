@@ -29,7 +29,7 @@ const TYPE_FOR_TAB: Record<TabId, FilterType> = {
   deposits: 'deposit',
   withdrawals: 'withdraw',
   swaps: 'swap',
-  earn: 'earnDeposit',
+  earn: 'earn',
 }
 
 const TAB_FOR_TYPE: Record<FilterType, TabId> = {
@@ -37,6 +37,7 @@ const TAB_FOR_TYPE: Record<FilterType, TabId> = {
   deposit: 'deposits',
   withdraw: 'withdrawals',
   swap: 'swaps',
+  earn: 'earn',
   earnDeposit: 'earn',
   earnWithdraw: 'earn',
   lock: 'all',
@@ -49,6 +50,7 @@ const TAB_REFLECTED_TYPES: ReadonlySet<FilterType> = new Set([
   'deposit',
   'withdraw',
   'swap',
+  'earn',
   'earnDeposit',
   'earnWithdraw',
 ])

@@ -1,4 +1,5 @@
 import type { DisplayKind } from './historyMapping'
+import type { FilterType } from './filters'
 
 export const ACTIVITY_TITLES: Record<DisplayKind, string> = {
   swap: 'Swap',
@@ -9,7 +10,8 @@ export const ACTIVITY_TITLES: Record<DisplayKind, string> = {
   lock: 'Lock',
   lockModified: 'Lock - Modified',
   lockReleased: 'Lock - Released',
-  reclaim: 'Reclaim',
+  reclaimOut: 'Locked Transfer Sent',
+  reclaimIn: 'Locked Transfer Received',
   transfer: 'Transfer',
   unknown: 'Activity',
 }
@@ -23,7 +25,21 @@ export const ACTIVITY_AMOUNT_LABELS: Record<DisplayKind, string> = {
   lock: 'Locked',
   lockModified: 'Locked',
   lockReleased: 'Returned',
-  reclaim: 'Reclaimed',
+  reclaimOut: 'Sent from lock',
+  reclaimIn: 'Received from lock',
   transfer: 'Transferred',
   unknown: 'Amount',
+}
+
+export const FILTER_TYPE_LABELS: Record<FilterType, string> = {
+  all: 'All',
+  deposit: ACTIVITY_TITLES.deposit,
+  withdraw: ACTIVITY_TITLES.withdraw,
+  swap: ACTIVITY_TITLES.swap,
+  earn: 'Earn',
+  earnDeposit: ACTIVITY_TITLES.earnDeposit,
+  earnWithdraw: ACTIVITY_TITLES.earnWithdraw,
+  lock: ACTIVITY_TITLES.lock,
+  reclaim: 'Locked Transfer',
+  transfer: ACTIVITY_TITLES.transfer,
 }

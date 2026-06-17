@@ -3,19 +3,19 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/u
 import { KNOWN_APPS } from '@/config/apps'
 import type { ActivityStatus } from '@/contexts/ActivityProvider/context'
 import type { ActivityFilters, FilterTimePreset, FilterType } from './filters'
-import { ACTIVITY_TITLES } from './labels'
+import { FILTER_TYPE_LABELS } from './labels'
 import { FilterChipGroup } from './FilterChipGroup'
 
 const TYPE_OPTIONS: readonly { value: FilterType; label: string }[] = [
-  { value: 'all', label: 'All' },
-  { value: 'deposit', label: ACTIVITY_TITLES.deposit },
-  { value: 'withdraw', label: ACTIVITY_TITLES.withdraw },
-  { value: 'swap', label: ACTIVITY_TITLES.swap },
-  { value: 'earnDeposit', label: ACTIVITY_TITLES.earnDeposit },
-  { value: 'earnWithdraw', label: ACTIVITY_TITLES.earnWithdraw },
-  { value: 'lock', label: ACTIVITY_TITLES.lock },
-  { value: 'reclaim', label: ACTIVITY_TITLES.reclaim },
-  { value: 'transfer', label: ACTIVITY_TITLES.transfer },
+  { value: 'all', label: FILTER_TYPE_LABELS.all },
+  { value: 'deposit', label: FILTER_TYPE_LABELS.deposit },
+  { value: 'withdraw', label: FILTER_TYPE_LABELS.withdraw },
+  { value: 'swap', label: FILTER_TYPE_LABELS.swap },
+  { value: 'earnDeposit', label: FILTER_TYPE_LABELS.earnDeposit },
+  { value: 'earnWithdraw', label: FILTER_TYPE_LABELS.earnWithdraw },
+  { value: 'lock', label: FILTER_TYPE_LABELS.lock },
+  { value: 'reclaim', label: FILTER_TYPE_LABELS.reclaim },
+  { value: 'transfer', label: FILTER_TYPE_LABELS.transfer },
 ]
 
 const STATUS_OPTIONS: readonly { value: 'all' | ActivityStatus; label: string }[] = [

@@ -8,6 +8,7 @@ const FILTER_TYPE_FLAGS: Record<FilterType, true> = {
   swap: true,
   deposit: true,
   withdraw: true,
+  earn: true,
   earnDeposit: true,
   earnWithdraw: true,
   lock: true,

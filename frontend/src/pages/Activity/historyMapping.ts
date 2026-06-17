@@ -12,7 +12,8 @@ export type DisplayKind =
   | 'lock'
   | 'lockModified'
   | 'lockReleased'
-  | 'reclaim'
+  | 'reclaimOut'
+  | 'reclaimIn'
   | 'transfer'
   | 'unknown'
 
@@ -69,8 +70,9 @@ function resolveKind(
     case 'unlockLock':
       return { kind: 'lockReleased' }
     case 'transferFromLockOut':
+      return { kind: 'reclaimOut' }
     case 'transferFromLockIn':
-      return { kind: 'reclaim' }
+      return { kind: 'reclaimIn' }
     case 'transferBalanceOut': {
       const matched = counterpartyLower ? poolsByAddress.get(counterpartyLower) : undefined
       if (matched) return { kind: 'earnDeposit', pool: matched }
