@@ -1,5 +1,5 @@
+import { usePrivanaContext } from '@oasisprotocol/privana-sdk'
 import { useEarnBalance, useEarnPools } from '@/api/earn'
-import { useTokens } from '@/api/swap'
 import { formatAmount } from '@/lib/tokens'
 import { STRATEGY_LABELS } from './labels'
 
@@ -15,13 +15,12 @@ export type ActiveStrategy = {
 export const useActiveStrategies = (): { strategies: ActiveStrategy[]; isLoading: boolean } => {
   const { data: balanceData, isLoading: balanceLoading } = useEarnBalance()
   const { data: poolsData, isLoading: poolsLoading } = useEarnPools()
-  const { data: tokensData, isLoading: tokensLoading } = useTokens()
+  const { getTokenById } = usePrivanaContext()
 
-  const isLoading = balanceLoading || poolsLoading || tokensLoading
+  const isLoading = balanceLoading || poolsLoading
 
   const positions = balanceData?.positions ?? []
   const pools = poolsData?.pools ?? []
-  const tokensById = new Map((tokensData?.tokens ?? []).map(t => [t.token_id, t]))
   const poolsById = new Map(pools.map(p => [p.pool_id, p]))
 
   const strategies = positions
@@ -34,17 +33,17 @@ export const useActiveStrategies = (): { strategies: ActiveStrategy[]; isLoading
     })
     .map(pos => {
       const pool = poolsById.get(pos.pool_id)
-      const token = pool ? tokensById.get(pool.token_id) : tokensById.get(pos.token_id)
-      const decimals = token?.token_decimals
+      const token = getTokenById(pool ? pool.token_id : pos.token_id)
+      const decimals = token?.decimals
       return {
         poolId: pos.pool_id,
         name: pool ? (STRATEGY_LABELS[pool.strategy] ?? pool.strategy) : pos.pool_id,
         earning:
           decimals != null
-            ? `${formatAmount(BigInt(pos.underlying_amount), decimals)} ${token?.token_symbol ?? ''}`
+            ? `${formatAmount(BigInt(pos.underlying_amount), decimals)} ${token?.symbol ?? ''}`
             : '-',
         apyBps: pool ? pool.apy_bps : null,
-        asset: token?.token_symbol ?? '—',
+        asset: token?.symbol ?? '—',
         strategyKey: pool?.strategy ?? null,
       }
     })

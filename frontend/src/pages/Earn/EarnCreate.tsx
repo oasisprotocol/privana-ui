@@ -3,7 +3,6 @@ import { useNavigate, useParams } from 'react-router'
 import { useAccount, useSwitchChain, useWalletClient } from 'wagmi'
 import { parseUnits } from 'viem'
 import { useEarnPools } from '@/api/earn'
-import { useTokens } from '@/api/swap'
 import { StepsNav } from '@/components/StepsNav'
 import { useResetBalanceCaches } from '@/hooks/use-reset-balance-caches'
 import { extractErrorMessage } from '@/lib/errors'
@@ -12,6 +11,7 @@ import { ConfigureStep } from './ConfigureStep'
 import { formatApyBps, PROTOCOL_LABELS } from './labels'
 import { ReviewStep } from './ReviewStep'
 import { useEarnDepositQuote } from './useEarnDepositQuote'
+import { useEarnToken } from './useEarnToken'
 import { useSubmitEarnDeposit } from './useSubmitEarnDeposit'
 import type { AppChainId } from '@/wagmi-config'
 
@@ -38,11 +38,10 @@ export const EarnCreate = () => {
   }
 
   const { data: poolsData, isLoading: poolsLoading } = useEarnPools()
-  const { data: tokensData, isLoading: tokensLoading } = useTokens()
 
   const pools = poolsData?.pools ?? []
   const pool = pools.find(p => p.pool_id === poolId)
-  const token = pool ? tokensData?.tokens.find(t => t.token_id === pool.token_id) : undefined
+  const token = useEarnToken(pool?.token_id)
   const decimals = token?.token_decimals
 
   const amountBaseUnits = useMemo(() => {
@@ -114,7 +113,7 @@ export const EarnCreate = () => {
           token={token}
           amount={amount}
           quote={quote ?? undefined}
-          isLoading={poolsLoading || tokensLoading}
+          isLoading={poolsLoading}
           quoteLoading={quoteLoading}
           quoteError={quoteError}
           expiresAt={quote?.expires_at}

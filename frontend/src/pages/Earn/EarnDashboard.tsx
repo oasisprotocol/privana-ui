@@ -1,9 +1,9 @@
 import { useMemo, type ReactNode } from 'react'
 import { Link } from 'react-router'
+import { usePrivanaContext } from '@oasisprotocol/privana-sdk'
 import { Button } from '@/components/ui/button'
 import { Skeleton } from '@/components/ui/skeleton'
 import { useEarnPools } from '@/api/earn'
-import { useTokens } from '@/api/swap'
 import { earnCreatePath } from '@/paths'
 import { ActiveStrategies } from './ActiveStrategies'
 import { ApyValue } from './ApyValue'
@@ -58,29 +58,28 @@ const YieldCardSkeleton = () => (
 
 export const EarnDashboard = () => {
   const { data: poolsData, isLoading: poolsLoading, error: poolsError } = useEarnPools()
-  const { data: tokensData, isLoading: tokensLoading, error: tokensError } = useTokens()
-  const isLoading = poolsLoading || tokensLoading
+  const { getTokenById, getChainById } = usePrivanaContext()
+  const isLoading = poolsLoading
 
   const { strategies, protocols } = useMemo(() => {
-    if (!poolsData || !tokensData) return { strategies: [], protocols: [] }
-    const tokensById = new Map(tokensData.tokens.map(t => [t.token_id, t]))
+    if (!poolsData) return { strategies: [], protocols: [] }
     const items = poolsData.pools
       .filter(p => p.status === 'active')
       .map(p => {
-        const token = tokensById.get(p.token_id)
+        const token = getTokenById(p.token_id)
         return {
           id: p.pool_id,
           strategyKey: p.strategy,
           apyBps: p.apy_bps,
-          asset: token?.token_symbol ?? '—',
-          chain: token?.chain_name ?? '—',
+          asset: token?.symbol ?? '—',
+          chain: (token ? getChainById(token.chainId)?.name : undefined) ?? '—',
         }
       })
     return {
       strategies: items.map(i => ({ ...i, name: STRATEGY_LABELS[i.strategyKey] ?? i.strategyKey })),
       protocols: items.map(i => ({ ...i, name: <ProtocolLabel strategy={i.strategyKey} iconSize={24} /> })),
     }
-  }, [poolsData, tokensData])
+  }, [poolsData, getTokenById, getChainById])
 
   return (
     <>
@@ -94,7 +93,7 @@ export const EarnDashboard = () => {
 
       <ActiveStrategies />
 
-      {(poolsError || tokensError) && <p className="text-destructive">Unable to load earn pools</p>}
+      {poolsError && <p className="text-destructive">Unable to load earn pools</p>}
 
       {(isLoading || strategies.length > 0) && (
         <div className="flex flex-col gap-6">

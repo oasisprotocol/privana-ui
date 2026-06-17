@@ -3,7 +3,6 @@ import { formatUnits, parseUnits } from 'viem'
 import { getTokenIcon, useBalance } from '@oasisprotocol/privana-sdk'
 import { useTokenPrices } from '@/api/coin-gecko'
 import { useEarnPools } from '@/api/earn'
-import { useTokens } from '@/api/swap'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
@@ -13,6 +12,7 @@ import { formatAmount, formatFiat, isPositiveAmount } from '@/lib/tokens'
 import { cn } from '@/lib/utils'
 import { ApyValue } from './ApyValue'
 import { STRATEGY_LABELS } from './labels'
+import { useEarnToken } from './useEarnToken'
 
 const PERCENTS = [25, 50, 75, 100] as const
 const percentLabel = (pct: number) => (pct === 100 ? 'Max' : `${pct}%`)
@@ -35,14 +35,12 @@ export const ConfigureStep = ({
   onReview,
 }: ConfigureStepProps) => {
   const { data: poolsData, isLoading: poolsLoading, error: poolsError } = useEarnPools()
-  const { data: tokensData, isLoading: tokensLoading, error: tokensError } = useTokens()
-  const isLoading = poolsLoading || tokensLoading
+  const isLoading = poolsLoading
   const pools = poolsData?.pools ?? []
 
   const activePools = pools.filter(p => p.status === 'active')
-  const tokensById = new Map((tokensData?.tokens ?? []).map(t => [t.token_id, t]))
   const selectedPool = activePools.find(p => p.pool_id === poolId)
-  const selectedToken = selectedPool ? tokensById.get(selectedPool.token_id) : undefined
+  const selectedToken = useEarnToken(selectedPool?.token_id)
 
   const tokenBalance = useBalance({
     tokenId: (selectedToken?.token_id || undefined) as `0x${string}` | undefined,
@@ -106,7 +104,7 @@ export const ConfigureStep = ({
     )
   }
 
-  if (poolsError || tokensError) {
+  if (poolsError) {
     return <p className="text-destructive">Unable to load earn pools</p>
   }
 

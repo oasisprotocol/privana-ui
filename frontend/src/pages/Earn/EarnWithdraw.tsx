@@ -3,12 +3,12 @@ import { useNavigate, useParams } from 'react-router'
 import { useAccount, useSwitchChain, useWalletClient } from 'wagmi'
 import { parseUnits } from 'viem'
 import { useEarnBalance, useEarnPools } from '@/api/earn'
-import { useTokens } from '@/api/swap'
 import { StepsNav } from '@/components/StepsNav'
 import { useResetBalanceCaches } from '@/hooks/use-reset-balance-caches'
 import { extractErrorMessage } from '@/lib/errors'
 import { activityPath } from '@/paths'
 import { formatApyBps, PROTOCOL_LABELS } from './labels'
+import { useEarnToken } from './useEarnToken'
 import { WithdrawConfigureStep } from './WithdrawConfigureStep'
 import { WithdrawReviewStep } from './WithdrawReviewStep'
 import { useSubmitEarnWithdraw } from './useSubmitEarnWithdraw'
@@ -30,15 +30,14 @@ export const EarnWithdraw = () => {
 
   const { data: poolsData, isLoading: poolsLoading } = useEarnPools()
   const { data: balanceData, isLoading: balanceLoading } = useEarnBalance()
-  const { data: tokensData, isLoading: tokensLoading } = useTokens()
 
   const pools = poolsData?.pools ?? []
   const positions = balanceData?.positions ?? []
   const pool = pools.find(p => p.pool_id === poolId)
   const position = positions.find(p => p.pool_id === poolId)
-  const token = pool ? tokensData?.tokens.find(t => t.token_id === pool.token_id) : undefined
+  const token = useEarnToken(pool?.token_id)
   const decimals = token?.token_decimals
-  const isLoading = poolsLoading || balanceLoading || tokensLoading
+  const isLoading = poolsLoading || balanceLoading
 
   const protocol = pool ? (PROTOCOL_LABELS[pool.strategy] ?? pool.strategy) : ''
   const apyLabel = pool ? `${formatApyBps(pool.apy_bps)} APY` : undefined
