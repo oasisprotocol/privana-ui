@@ -21,7 +21,7 @@ export const PortfolioSummary: FC = () => {
   const { balances, isLoading: balancesLoading } = useBatchBalances({ tokenIds })
   const { locks, isLoading: locksLoading } = useLockedFunds()
   const { strategies, isLoading: strategiesLoading } = useActiveStrategies()
-  const isLoading = balancesLoading || locksLoading || strategiesLoading
+  const sdkLoading = balancesLoading || locksLoading
   const tokens: TokenEntry[] = useMemo(() => {
     return balances.flatMap(b => {
       const decimals = getTokenById(b.token_id)?.decimals
@@ -45,10 +45,12 @@ export const PortfolioSummary: FC = () => {
   }, [balances, locks, getTokenById])
   const hasTokens = tokens.some(t => t.total > 0n)
   const hasStrategies = strategies.length > 0
+  const showEmpty = !sdkLoading && !strategiesLoading && !hasTokens && !hasStrategies
+  const showPortfolio = !sdkLoading && (hasTokens || hasStrategies || strategiesLoading)
 
   return (
     <>
-      {isLoading && (
+      {sdkLoading && (
         <div className="flex flex-col gap-4">
           <Skeleton className="h-10 w-48" />
           <Skeleton className="h-20 w-full" />
@@ -56,14 +58,14 @@ export const PortfolioSummary: FC = () => {
         </div>
       )}
 
-      {!isLoading && !hasTokens && !hasStrategies && (
+      {showEmpty && (
         <div className="flex flex-col justify-start items-start gap-1.5">
           <div className="text-foreground text-2xl font-medium">Nothing in your portfolio yet.</div>
           <div className="text-muted-foreground text-sm font-normal">Create your first investment.</div>
         </div>
       )}
 
-      {!isLoading && (hasTokens || hasStrategies) && (
+      {showPortfolio && (
         <div className="flex flex-col gap-8">
           <div className="flex flex-col justify-start items-start gap-1.5">
             <div className="text-foreground text-2xl font-medium">Your portfolio</div>
@@ -120,6 +122,13 @@ export const PortfolioSummary: FC = () => {
               {strategies.map(s => (
                 <StrategyCard key={s.poolId} {...s} />
               ))}
+            </div>
+          )}
+
+          {!hasStrategies && strategiesLoading && (
+            <div className="flex flex-col gap-4">
+              <p className="text-[15px] font-bold text-muted-foreground uppercase">Earn</p>
+              <Skeleton className="h-20 w-full" />
             </div>
           )}
         </div>
