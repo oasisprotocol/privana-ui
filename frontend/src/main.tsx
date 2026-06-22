@@ -17,6 +17,8 @@ import './index.css'
 
 const queryClient = new QueryClient()
 
+const CHAIN_ID = parseInt(import.meta.env.VITE_CHAIN_ID, 10)
+
 createRoot(document.getElementById('root')!).render(
   <StrictMode>
     <TurnkeyAuthProvider>
@@ -25,13 +27,13 @@ createRoot(document.getElementById('root')!).render(
           {IS_TURNKEY_ENABLED && <TurnkeySync />}
           <PrivanaProvider
             networkConfig={{
-              chainId: parseInt(import.meta.env.VITE_CHAIN_ID, 10),
+              chainId: CHAIN_ID,
               accountingContract: import.meta.env.VITE_ACCOUNTING_CONTRACT_ADDRESS,
               apiUrl: import.meta.env.VITE_PRIVANA_API_URL,
             }}
             tokens={ALLOWED_TOKEN_IDS}
             siweAuth={{
-              statement: 'Sign in to Privana to access your private account data.',
+              statement: `Sign in to Privana on chain ${CHAIN_ID}`,
             }}
           >
             <ActivityProvider>
