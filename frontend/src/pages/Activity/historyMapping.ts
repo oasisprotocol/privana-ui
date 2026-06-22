@@ -6,20 +6,22 @@ import { isSwapLpAddress } from '@/config/swap'
 export type DisplayKind =
   | 'swap'
   | 'earnDeposit'
+  | 'earnWithdraw'
   | 'deposit'
   | 'withdraw'
   | 'lock'
+  | 'lockModified'
+  | 'lockReleased'
   | 'reclaim'
   | 'transfer'
   | 'unknown'
 
 // Kinds where the chain entry alone is enough to drop the local copy.
-// Earn withdrawals don't appear on the user's history (pool is sender), so
-// their local activities must stay until the backend tracks them.
 export const PRUNE_ELIGIBLE: ReadonlySet<DisplayKind> = new Set([
   'deposit',
   'withdraw',
   'earnDeposit',
+  'earnWithdraw',
   'swap',
 ])
 
@@ -62,12 +64,23 @@ function resolveKind(
       return { kind: 'withdraw' }
     case 'createLock':
       return { kind: 'lock' }
-    case 'transferFromLock':
+    case 'modifyLock':
+      return { kind: 'lockModified' }
+    case 'unlockLock':
+      return { kind: 'lockReleased' }
+    case 'transferFromLockOut':
+    case 'transferFromLockIn':
       return { kind: 'reclaim' }
-    case 'transferBalance': {
+    case 'transferBalanceOut': {
       const matched = counterpartyLower ? poolsByAddress.get(counterpartyLower) : undefined
       if (matched) return { kind: 'earnDeposit', pool: matched }
       if (isSwapLpAddress(counterpartyLower)) return { kind: 'swap' }
+      return { kind: 'transfer' }
+    }
+    case 'transferBalanceIn': {
+      // Counterparty here is the sender. A pool address means an earn payout.
+      const matched = counterpartyLower ? poolsByAddress.get(counterpartyLower) : undefined
+      if (matched) return { kind: 'earnWithdraw', pool: matched }
       return { kind: 'transfer' }
     }
     default:
@@ -86,6 +99,10 @@ export function matchesLocal(row: ClassifiedHistoryEntry, local: Activity, skewS
   if (row.timestamp + skewSeconds < createdAtSec) return false
 
   if (row.kind === 'earnDeposit' && local.type === 'earn' && local.direction === 'deposit') {
+    return row.pool?.pool_id === local.poolId && row.tokenId === local.token.id && row.amount === local.amount
+  }
+
+  if (row.kind === 'earnWithdraw' && local.type === 'earn' && local.direction === 'withdraw') {
     return row.pool?.pool_id === local.poolId && row.tokenId === local.token.id && row.amount === local.amount
   }
 

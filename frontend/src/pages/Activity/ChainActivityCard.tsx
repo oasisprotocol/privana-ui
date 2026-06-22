@@ -7,10 +7,13 @@ const SETTLED = 'completed' as const
 
 const TITLE_BY_KIND: Record<DisplayKind, string> = {
   swap: 'Swap',
-  earnDeposit: 'Earn — Deposit',
+  earnDeposit: 'Move to Earn',
+  earnWithdraw: 'Withdraw from Earn',
   deposit: 'Deposit',
   withdraw: 'Withdraw',
   lock: 'Lock',
+  lockModified: 'Lock - Modified',
+  lockReleased: 'Lock - Released',
   reclaim: 'Reclaim',
   transfer: 'Transfer',
   unknown: 'Activity',
@@ -19,9 +22,12 @@ const TITLE_BY_KIND: Record<DisplayKind, string> = {
 const AMOUNT_LABEL_BY_KIND: Record<DisplayKind, string> = {
   swap: 'Sent to swap pool',
   earnDeposit: 'Deposited',
+  earnWithdraw: 'Withdrew',
   deposit: 'Deposited',
   withdraw: 'Withdrew',
   lock: 'Locked',
+  lockModified: 'Locked',
+  lockReleased: 'Returned',
   reclaim: 'Reclaimed',
   transfer: 'Transferred',
   unknown: 'Amount',

@@ -50,6 +50,8 @@ export function filterTypeOf(r: MergedRow): FilterType {
     return r.activity.direction === 'deposit' ? 'earnDeposit' : 'earnWithdraw'
   }
   if (r.row.kind === 'unknown') return 'transfer'
+  // Modify/release rows are filtered alongside plain locks.
+  if (r.row.kind === 'lockModified' || r.row.kind === 'lockReleased') return 'lock'
   return r.row.kind
 }
 

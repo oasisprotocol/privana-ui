@@ -14,7 +14,7 @@ export const EarnActivityCard = ({ activity }: EarnActivityCardProps) => {
     <div className="flex flex-col gap-4 bg-card border p-6 rounded-[14px] shadow-[0_1px_2px_0_rgba(0,0,0,0.05)]">
       <div className="flex items-center justify-between">
         <p className="text-lg font-semibold text-foreground leading-7">
-          Earn — {isDeposit ? 'Deposit' : 'Withdraw'}
+          {isDeposit ? 'Move to Earn' : 'Withdraw from Earn'}
         </p>
         <StatusBadge status={status} />
       </div>
