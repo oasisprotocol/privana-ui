@@ -32,9 +32,7 @@ createRoot(document.getElementById('root')!).render(
               apiUrl: import.meta.env.VITE_PRIVANA_API_URL,
             }}
             tokens={ALLOWED_TOKEN_IDS}
-            siweAuth={{
-              statement: `Sign in to Privana on chain ${CHAIN_ID}`,
-            }}
+            siweAuth
           >
             <ActivityProvider>
               <TooltipProvider>
