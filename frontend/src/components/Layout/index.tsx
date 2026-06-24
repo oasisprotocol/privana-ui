@@ -38,7 +38,7 @@ export const Layout = ({ children, dashboard }: LayoutProps) => {
           <Link to={homePath()} viewTransition className="text-xl font-bold">
             <img src={Logo} alt="Privana" className="h-5 min-w-25" />
           </Link>
-          <div className="flex items-center gap-1">
+          <div className="hidden md:flex items-center gap-1">
             <MenuItem to={dashboardPath()} label="Home" />
             <MenuItem to={earnPath()} label="Earn" />
             <MenuItem to={tradePath()} label="Swap" />
