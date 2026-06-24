@@ -4,6 +4,7 @@ import { ConnectButton } from '../ConnectButton'
 import Logo from '../../assets/logo.svg'
 import DashboardBg from '../../assets/dashboard-bg.svg'
 import { MenuItem } from './menu-item'
+import { MobileBottomNav } from './MobileBottomNav'
 import { Separator } from '../ui/separator'
 import { activityPath, earnPath, homePath, dashboardPath, tradePath } from '@/paths'
 import { useActivity } from '@/contexts/ActivityProvider/useActivity'
@@ -28,13 +29,16 @@ export const Layout = ({ children, dashboard }: LayoutProps) => {
   return (
     <div className="min-h-screen bg-background text-foreground">
       <div
-        className=" bg-no-repeat w-full"
+        className=" bg-no-repeat w-full pb-20 md:pb-0"
         style={{
           backgroundImage: `url(${dashboard ? DashboardBg : ''})`,
           backgroundPosition: 'top right',
         }}
       >
-        <nav className="flex items-center justify-between px-6 h-16 border-b border-border shadow-[0_1px_2px_0_rgba(0,0,0,0.05)] bg-background">
+        <nav
+          style={{ viewTransitionName: 'top-nav' }}
+          className="flex items-center justify-between px-6 h-16 border-b border-border shadow-[0_1px_2px_0_rgba(0,0,0,0.05)] bg-background"
+        >
           <Link to={homePath()} viewTransition className="text-xl font-bold">
             <img src={Logo} alt="Privana" className="h-5 min-w-25" />
           </Link>
@@ -100,6 +104,8 @@ export const Layout = ({ children, dashboard }: LayoutProps) => {
           </div>
         </footer>
       </div>
+
+      <MobileBottomNav activityBadge={pendingCount} />
     </div>
   )
 }

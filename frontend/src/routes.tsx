@@ -20,11 +20,14 @@ export const router = createBrowserRouter([
     element: <Home />,
   },
   {
-    path: dashboardPath(),
-    element: <ProtectedLayout />,
+    // Single shared layout: Dashboard renders <Layout> (top nav + mobile bottom
+    // nav) once and keeps it mounted across navigations — only the <Outlet>
+    // content swaps, so the menu no longer flickers between routes.
+    element: <Dashboard />,
     children: [
       {
-        element: <Dashboard />,
+        path: dashboardPath(),
+        element: <ProtectedLayout />,
         children: [
           {
             index: true,
@@ -36,39 +39,19 @@ export const router = createBrowserRouter([
           },
         ],
       },
-    ],
-  },
-  {
-    path: tradePath(),
-    children: [
       {
-        element: <Dashboard />,
-        children: [
-          {
-            index: true,
-            element: <Swap />,
-          },
-        ],
+        path: tradePath(),
+        element: <Swap />,
       },
-    ],
-  },
-  {
-    path: earnPath(),
-    children: [
       {
-        element: <Dashboard />,
+        path: earnPath(),
         children: [
           {
             index: true,
             element: <Earn />,
           },
-        ],
-      },
-      {
-        element: <ProtectedLayout />,
-        children: [
           {
-            element: <Dashboard />,
+            element: <ProtectedLayout />,
             children: [
               {
                 path: 'create',
@@ -91,28 +74,13 @@ export const router = createBrowserRouter([
           },
         ],
       },
-    ],
-  },
-  {
-    path: appsPath(),
-    children: [
       {
-        element: <Dashboard />,
-        children: [
-          {
-            index: true,
-            element: <Apps />,
-          },
-        ],
+        path: appsPath(),
+        element: <Apps />,
       },
-    ],
-  },
-  {
-    path: activityPath(),
-    element: <ProtectedLayout />,
-    children: [
       {
-        element: <Dashboard />,
+        path: activityPath(),
+        element: <ProtectedLayout />,
         children: [
           {
             index: true,
@@ -120,14 +88,9 @@ export const router = createBrowserRouter([
           },
         ],
       },
-    ],
-  },
-  {
-    path: onRampPath(),
-    element: <ProtectedLayout />,
-    children: [
       {
-        element: <Dashboard />,
+        path: onRampPath(),
+        element: <ProtectedLayout />,
         children: [
           {
             index: true,
