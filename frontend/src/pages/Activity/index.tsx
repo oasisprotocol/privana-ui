@@ -60,6 +60,9 @@ const rowKey = (r: MergedRow): string =>
     ? `local:${r.activity.id}`
     : `chain:${r.timestamp}:${r.row.entry.kind}:${r.row.counterparty ?? '-'}:${r.row.amount ?? '-'}`
 
+// The search box and filter button are hidden until the redesigned Activity is completed.
+const SHOW_FILTER_CONTROLS = false
+
 const activeFilterCount = (f: ActivityFilters): number => {
   let n = 0
   if (f.app !== 'all') n++
@@ -103,27 +106,29 @@ export const Activity = () => {
 
       {!isEmpty && (
         <div className="flex flex-col gap-4 w-full max-w-145 mx-auto">
-          <div className="flex items-center gap-2">
-            <div className="relative flex-1">
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 size-4 text-muted-foreground" />
-              <Input
-                type="search"
-                placeholder="Search"
-                value={filters.search}
-                onChange={e => setFilters({ ...filters, search: e.target.value })}
-                className="pl-9"
-              />
+          {SHOW_FILTER_CONTROLS && (
+            <div className="flex items-center gap-2">
+              <div className="relative flex-1">
+                <Search className="absolute left-3 top-1/2 -translate-y-1/2 size-4 text-muted-foreground" />
+                <Input
+                  type="search"
+                  placeholder="Search"
+                  value={filters.search}
+                  onChange={e => setFilters({ ...filters, search: e.target.value })}
+                  className="pl-9"
+                />
+              </div>
+              <Button variant="default" onClick={() => setFilterOpen(true)}>
+                <SlidersHorizontal />
+                Filter
+                {filterCount > 0 && (
+                  <span className="ml-1 inline-flex items-center justify-center rounded-full bg-foreground text-background text-xs font-medium h-5 min-w-5 px-1.5">
+                    {filterCount}
+                  </span>
+                )}
+              </Button>
             </div>
-            <Button variant="default" onClick={() => setFilterOpen(true)}>
-              <SlidersHorizontal />
-              Filter
-              {filterCount > 0 && (
-                <span className="ml-1 inline-flex items-center justify-center rounded-full bg-foreground text-background text-xs font-medium h-5 min-w-5 px-1.5">
-                  {filterCount}
-                </span>
-              )}
-            </Button>
-          </div>
+          )}
 
           <div
             role="tablist"
