@@ -13,6 +13,7 @@ import { AccountAvatar } from '../AccountAvatar'
 import { trimLongString } from '../../utils/trimLongString'
 import { wagmiConfig, type AppChainId } from '@/wagmi-config'
 import { TURNKEY_CONNECTOR_ID } from '@/wallet/turnkeyConnector'
+import { useTurnkeyWalletIntent } from '@/wallet/turnkeyIntent'
 import { useConnectWallet } from '../WalletConnect/useConnectWallet'
 import { ExportWalletItem } from './ExportWalletItem'
 import { TurnkeyLogoutItem } from './TurnkeyLogoutItem'
@@ -30,6 +31,8 @@ export const ConnectButton: FC = () => {
   const connectWallet = useConnectWallet()
 
   const isTurnkeyActive = connector?.id === TURNKEY_CONNECTOR_ID
+  const walletIntent = useTurnkeyWalletIntent()
+  const isEmbeddedWallet = isTurnkeyActive && walletIntent === 'embedded'
 
   if (!isConnected || !address) {
     return (
@@ -67,7 +70,7 @@ export const ConnectButton: FC = () => {
           <DropdownMenuItem onClick={() => void navigator.clipboard.writeText(address)}>
             Copy Address
           </DropdownMenuItem>
-          {isTurnkeyActive && <ExportWalletItem />}
+          {isEmbeddedWallet && <ExportWalletItem />}
           <DropdownMenuSeparator />
           {isTurnkeyActive ? (
             <TurnkeyLogoutItem />
