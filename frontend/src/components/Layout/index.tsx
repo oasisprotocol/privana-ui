@@ -40,7 +40,7 @@ export const Layout = ({ children, dashboard }: LayoutProps) => {
           className="flex items-center justify-between px-6 h-16"
         >
           <Link to={homePath()} viewTransition className="text-xl font-bold">
-            <img src={Logo} alt="Privana" className="h-5 min-w-25" />
+            <img src={Logo} alt="Privana" className="h-5 min-w-25 dark:brightness-0 dark:invert" />
           </Link>
           <div className="hidden md:flex items-center gap-1">
             <MenuItem to={dashboardPath()} label="Home" />
@@ -68,7 +68,7 @@ export const Layout = ({ children, dashboard }: LayoutProps) => {
         <footer className="w-full max-w-7xl py-12 mx-auto flex flex-col justify-start items-center gap-16 text-xs text-muted-foreground px-6">
           <div className="flex flex-col md:flex-row gap-8 md:gap-6 items-start w-full">
             <div className="flex-1">
-              <img src={Logo} alt="Privana" className="h-5" />
+              <img src={Logo} alt="Privana" className="h-5 dark:brightness-0 dark:invert" />
             </div>
             {FOOTER_SECTIONS.map(section => (
               <div key={section.title} className="flex-1 flex flex-col gap-4 min-w-0">
