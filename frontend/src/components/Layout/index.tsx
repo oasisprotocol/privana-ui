@@ -1,5 +1,6 @@
 import type { ReactNode } from 'react'
 import { Link } from 'react-router'
+import { cn } from '@/lib/utils'
 import { ConnectButton } from '../ConnectButton'
 import Logo from '../../assets/logo.svg'
 import { MenuItem } from './menu-item'
@@ -27,10 +28,16 @@ export const Layout = ({ children, dashboard }: LayoutProps) => {
   const { pendingCount } = useActivity()
   return (
     <div className="min-h-screen bg-background text-foreground">
-      <div className="w-full pb-20 md:pb-0">
+      <div
+        className={cn(
+          'w-full pb-20 md:pb-0',
+          dashboard &&
+            'bg-[linear-gradient(to_bottom,#F3F4F6_0px,#FFFFFF_460px)] dark:bg-[linear-gradient(to_bottom,#21242C_0px,#181B20_180px,#111318_460px)]',
+        )}
+      >
         <nav
           style={{ viewTransitionName: 'top-nav' }}
-          className="flex items-center justify-between px-6 h-16 border-b border-border shadow-[0_1px_2px_0_rgba(0,0,0,0.05)] bg-background"
+          className="flex items-center justify-between px-6 h-16"
         >
           <Link to={homePath()} viewTransition className="text-xl font-bold">
             <img src={Logo} alt="Privana" className="h-5 min-w-25" />
@@ -49,7 +56,7 @@ export const Layout = ({ children, dashboard }: LayoutProps) => {
 
         {dashboard ? (
           <div className="w-full max-w-7xl mx-auto" style={{ viewTransitionName: 'page-content' }}>
-            <div className="min-h-[500px] self-stretch px-8 md:px-24 py-8 md:py-16 gap-8 md:gap-16 flex flex-col border-r border-b border-l border-border bg-[linear-gradient(to_bottom,#F3F4F6_0px,#FFFFFF_460px)] dark:bg-none">
+            <div className="min-h-[500px] self-stretch px-8 md:px-24 py-8 md:py-16 gap-8 md:gap-16 flex flex-col border-r border-b border-l border-border">
               {children}
             </div>
           </div>
