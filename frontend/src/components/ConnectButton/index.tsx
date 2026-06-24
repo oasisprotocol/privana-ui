@@ -14,11 +14,11 @@ import { cn } from '@/lib/utils'
 import { setThemePreference, useResolvedTheme } from '@/lib/theme'
 import { ExportEmbeddedWallet } from './ExportEmbeddedWallet'
 import { TurnkeyLogoutItem } from './TurnkeyLogoutItem'
+import { EmbeddedWalletEmail } from './EmbeddedWalletEmail'
 import { WALLET_MENU_ROW } from './walletMenuRow'
 
 const APP_CHAIN_ID = parseInt(import.meta.env.VITE_CHAIN_ID, 10) as AppChainId
 const SUPPORTED_CHAIN_IDS = wagmiConfig.chains.map(c => c.id)
-const getEmbeddedWalletEmail = (): string | undefined => undefined
 
 // Wallet UI only. The Privana session is driven by the SDK's SiweAuthProvider
 // (useSiweAuth), which watches the wagmi connection and runs SIWE login/logout.
@@ -32,7 +32,6 @@ export const ConnectButton: FC = () => {
   const isTurnkeyActive = connector?.id === TURNKEY_CONNECTOR_ID
   const walletIntent = useTurnkeyWalletIntent()
   const isEmbeddedWallet = isTurnkeyActive && walletIntent === 'embedded'
-  const email = getEmbeddedWalletEmail()
   const resolvedTheme = useResolvedTheme()
 
   const [menuOpen, setMenuOpen] = useState(false)
@@ -87,11 +86,7 @@ export const ConnectButton: FC = () => {
                 <Copy className="h-3.5 w-3.5" />
               </button>
             </div>
-            {isEmbeddedWallet && email && (
-              <div className="mt-2 truncate border-t border-border/70 pt-2 text-xs text-muted-foreground">
-                {email}
-              </div>
-            )}
+            {isEmbeddedWallet && <EmbeddedWalletEmail />}
           </div>
 
           {isEmbeddedWallet && (
