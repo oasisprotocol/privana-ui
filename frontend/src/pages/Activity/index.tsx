@@ -97,7 +97,7 @@ export const Activity = () => {
         description={
           isEmpty
             ? 'Nothing to show yet. Your swaps, deposits, withdrawals, and earnings will appear here.'
-            : 'Browse through your recent activity.'
+            : 'All your deposits, withdrawals, and earnings.'
         }
       />
 

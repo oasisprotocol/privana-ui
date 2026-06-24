@@ -54,7 +54,7 @@ export const Layout = ({ children, dashboard }: LayoutProps) => {
 
         {dashboard ? (
           <div className="w-full max-w-7xl mx-auto" style={{ viewTransitionName: 'page-content' }}>
-            <div className="min-h-[500px] self-stretch px-8 md:px-24 py-8 md:py-16 gap-12 md:gap-16 flex flex-col border-r border-b border-l border-border bg-linear-to-b from-[#F3F4F6] to-background">
+            <div className="min-h-[500px] self-stretch px-8 md:px-24 py-8 md:py-16 gap-8 md:gap-16 flex flex-col border-r border-b border-l border-border bg-linear-to-b from-[#F3F4F6] to-background">
               {children}
             </div>
           </div>
