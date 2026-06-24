@@ -18,10 +18,12 @@ export const ACTIVITY_TITLES: Record<DisplayKind, string> = {
 
 export const ACTIVITY_AMOUNT_LABELS: Record<DisplayKind, string> = {
   swap: 'Sent to swap pool',
-  earnDeposit: 'Deposited',
-  earnWithdraw: 'Withdrew',
-  deposit: 'Deposited',
-  withdraw: 'Withdrew',
+  // earnDeposit/earnWithdraw are rendered by AmountLabel as a "Wallet → Earn"
+  // direction with an icon arrow; these strings are plain-text fallbacks only.
+  earnDeposit: 'Wallet to Earn',
+  earnWithdraw: 'Earn to Wallet',
+  deposit: 'Amount',
+  withdraw: 'Amount',
   lock: 'Locked',
   lockModified: 'Locked',
   lockReleased: 'Returned',

@@ -154,17 +154,15 @@ export const Activity = () => {
             visible.map(r => {
               if (r.source === 'local') {
                 return r.activity.type === 'swap' ? (
-                  <SwapActivityCard key={rowKey(r)} activity={r.activity} />
+                  <SwapActivityCard key={rowKey(r)} activity={r.activity} timestamp={r.timestamp} />
                 ) : (
-                  <EarnActivityCard key={rowKey(r)} activity={r.activity} />
+                  <EarnActivityCard key={rowKey(r)} activity={r.activity} timestamp={r.timestamp} />
                 )
               }
-              return <ChainActivityCard key={rowKey(r)} row={r.row} />
+              return <ChainActivityCard key={rowKey(r)} row={r.row} timestamp={r.timestamp} />
             })
           ) : isLoading ? (
-            Array.from({ length: 3 }).map((_, i) => (
-              <Skeleton key={i} className="h-32 w-full rounded-2xl" />
-            ))
+            Array.from({ length: 3 }).map((_, i) => <Skeleton key={i} className="h-32 w-full rounded-2xl" />)
           ) : (
             <p className="text-base text-muted-foreground">No matching activity</p>
           )}
