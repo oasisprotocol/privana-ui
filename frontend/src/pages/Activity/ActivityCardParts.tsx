@@ -49,14 +49,13 @@ export const StatusBadge = ({ status }: { status: ActivityStatus }) => {
   return <Badge>In progress</Badge>
 }
 
-// The value + token logo + ticker, rendered inline.
 export const TokenValue = ({ token, amount }: { token: ActivityTokenInfo; amount: string }) => (
   <div className="flex gap-1 items-center shrink-0">
-    <span className="text-xl font-semibold text-foreground leading-none">
+    <span className="text-sm md:text-base font-medium text-foreground leading-none">
       {formatAmount(BigInt(amount), token.decimals)}
     </span>
     <span className="shrink-0 size-4 overflow-hidden rounded-full">{getTokenIcon(token.symbol, 16)}</span>
-    <span className="text-sm font-semibold text-foreground leading-none">{token.symbol}</span>
+    <span className="text-sm md:text-base font-medium text-foreground leading-none">{token.symbol}</span>
   </div>
 )
 
