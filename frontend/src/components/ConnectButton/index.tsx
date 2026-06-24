@@ -9,6 +9,8 @@ import { wagmiConfig, type AppChainId } from '@/wagmi-config'
 import { TURNKEY_CONNECTOR_ID } from '@/wallet/turnkeyConnector'
 import { useTurnkeyWalletIntent } from '@/wallet/turnkeyIntent'
 import { useConnectWallet } from '../WalletConnect/useConnectWallet'
+import { cn } from '@/lib/utils'
+import { setThemePreference, useResolvedTheme } from '@/lib/theme'
 import { ExportEmbeddedWallet } from './ExportEmbeddedWallet'
 import { TurnkeyLogoutItem } from './TurnkeyLogoutItem'
 import { WALLET_MENU_ROW } from './walletMenuRow'
@@ -30,6 +32,7 @@ export const ConnectButton: FC = () => {
   const walletIntent = useTurnkeyWalletIntent()
   const isEmbeddedWallet = isTurnkeyActive && walletIntent === 'embedded'
   const email = getEmbeddedWalletEmail()
+  const resolvedTheme = useResolvedTheme()
 
   if (!isConnected || !address) {
     return (
@@ -103,20 +106,24 @@ export const ConnectButton: FC = () => {
           <div className="mt-2 flex items-center justify-between gap-2 rounded-xl bg-muted px-3 py-2">
             <span className="text-sm font-medium text-foreground">Appearance</span>
             <div className="inline-flex items-center gap-0.5 text-xs font-medium">
-              <button
-                type="button"
-                className="inline-flex items-center gap-1 rounded-full bg-background px-2.5 py-1 text-foreground shadow-sm"
-              >
-                <Sun className="size-3.5" />
-                Light
-              </button>
-              <button
-                type="button"
-                className="inline-flex items-center gap-1 rounded-full px-2.5 py-1 text-muted-foreground"
-              >
-                <Moon className="size-3.5" />
-                Dark
-              </button>
+              {(['light', 'dark'] as const).map(mode => {
+                const Icon = mode === 'light' ? Sun : Moon
+                const active = resolvedTheme === mode
+                return (
+                  <button
+                    key={mode}
+                    type="button"
+                    onClick={() => setThemePreference(mode)}
+                    className={cn(
+                      'inline-flex items-center gap-1 rounded-full px-2.5 py-1 transition-colors',
+                      active ? 'bg-background text-foreground shadow-sm' : 'text-muted-foreground',
+                    )}
+                  >
+                    <Icon className="size-3.5" />
+                    {mode === 'light' ? 'Light' : 'Dark'}
+                  </button>
+                )
+              })}
             </div>
           </div>
 
