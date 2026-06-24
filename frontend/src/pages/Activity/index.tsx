@@ -162,7 +162,9 @@ export const Activity = () => {
               return <ChainActivityCard key={rowKey(r)} row={r.row} timestamp={r.timestamp} />
             })
           ) : isLoading ? (
-            Array.from({ length: 3 }).map((_, i) => <Skeleton key={i} className="h-32 w-full rounded-2xl" />)
+            Array.from({ length: 5 }).map((_, i) => (
+              <Skeleton key={i} className="h-[90px] w-full rounded-2xl" />
+            ))
           ) : (
             <p className="text-base text-muted-foreground">No matching activity</p>
           )}
