@@ -1,6 +1,7 @@
-import { type FC } from 'react'
+import { type ComponentProps, type FC, useState } from 'react'
 import { useAccount, useChainId, useDisconnect, useSwitchChain } from 'wagmi'
 import { ArrowDownToLine, ArrowUpFromLine, Copy, LogOut, Moon, Sun, Wallet } from 'lucide-react'
+import { PrivanaModal } from '@oasisprotocol/privana-sdk'
 import { Button } from '../ui/button'
 import { DropdownMenu, DropdownMenuContent, DropdownMenuTrigger } from '../ui/dropdown-menu'
 import { AccountAvatar } from '../AccountAvatar'
@@ -34,6 +35,13 @@ export const ConnectButton: FC = () => {
   const email = getEmbeddedWalletEmail()
   const resolvedTheme = useResolvedTheme()
 
+  const [menuOpen, setMenuOpen] = useState(false)
+  const [modalTab, setModalTab] = useState<ComponentProps<typeof PrivanaModal>['defaultTab']>(undefined)
+  const openModal = (tab: 'deposit' | 'withdraw') => {
+    setMenuOpen(false)
+    setModalTab(tab)
+  }
+
   if (!isConnected || !address) {
     return (
       <Button type="button" onClick={connectWallet}>
@@ -52,7 +60,7 @@ export const ConnectButton: FC = () => {
 
   return (
     <div className="flex gap-2 items-center">
-      <DropdownMenu>
+      <DropdownMenu open={menuOpen} onOpenChange={setMenuOpen}>
         <DropdownMenuTrigger asChild>
           <button
             type="button"
@@ -93,11 +101,11 @@ export const ConnectButton: FC = () => {
           )}
 
           <div className="mt-2 grid grid-cols-2 gap-2">
-            <Button className="gap-2">
+            <Button className="gap-2" onClick={() => openModal('deposit')}>
               <ArrowDownToLine className="size-4" />
               Deposit
             </Button>
-            <Button variant="outline" className="gap-2">
+            <Button variant="outline" className="gap-2" onClick={() => openModal('withdraw')}>
               <ArrowUpFromLine className="size-4" />
               Withdraw
             </Button>
@@ -139,6 +147,13 @@ export const ConnectButton: FC = () => {
           </div>
         </DropdownMenuContent>
       </DropdownMenu>
+
+      <PrivanaModal
+        open={!!modalTab}
+        onClose={() => setModalTab(undefined)}
+        showLockedFunds={false}
+        defaultTab={modalTab}
+      />
     </div>
   )
 }
