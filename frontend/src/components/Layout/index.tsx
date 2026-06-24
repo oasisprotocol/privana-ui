@@ -5,7 +5,7 @@ import Logo from '../../assets/logo.svg'
 import DashboardBg from '../../assets/dashboard-bg.svg'
 import { MenuItem } from './menu-item'
 import { Separator } from '../ui/separator'
-import { activityPath, appsPath, earnPath, homePath, dashboardPath, onRampPath, tradePath } from '@/paths'
+import { activityPath, earnPath, homePath, dashboardPath, tradePath } from '@/paths'
 import { useActivity } from '@/contexts/ActivityProvider/useActivity'
 
 const FOOTER_SECTIONS = [
@@ -39,11 +39,9 @@ export const Layout = ({ children, dashboard }: LayoutProps) => {
             <img src={Logo} alt="Privana" className="h-5 min-w-25" />
           </Link>
           <div className="flex items-center gap-1">
-            <MenuItem to={dashboardPath()} label="Dashboard" />
-            <MenuItem to={onRampPath()} label="On-Ramp" />
-            <MenuItem to={tradePath()} label="Trade" />
+            <MenuItem to={dashboardPath()} label="Home" />
             <MenuItem to={earnPath()} label="Earn" />
-            <MenuItem to={appsPath()} label="Apps" />
+            <MenuItem to={tradePath()} label="Swap" />
             <MenuItem to={activityPath()} label="Activity" badge={pendingCount} />
           </div>
 
