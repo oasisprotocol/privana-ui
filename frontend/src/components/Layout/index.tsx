@@ -2,7 +2,6 @@ import type { ReactNode } from 'react'
 import { Link } from 'react-router'
 import { ConnectButton } from '../ConnectButton'
 import Logo from '../../assets/logo.svg'
-import DashboardBg from '../../assets/dashboard-bg.svg'
 import { MenuItem } from './menu-item'
 import { MobileBottomNav } from './MobileBottomNav'
 import { Separator } from '../ui/separator'
@@ -28,13 +27,7 @@ export const Layout = ({ children, dashboard }: LayoutProps) => {
   const { pendingCount } = useActivity()
   return (
     <div className="min-h-screen bg-background text-foreground">
-      <div
-        className=" bg-no-repeat w-full pb-20 md:pb-0"
-        style={{
-          backgroundImage: `url(${dashboard ? DashboardBg : ''})`,
-          backgroundPosition: 'top right',
-        }}
-      >
+      <div className="w-full pb-20 md:pb-0">
         <nav
           style={{ viewTransitionName: 'top-nav' }}
           className="flex items-center justify-between px-6 h-16 border-b border-border shadow-[0_1px_2px_0_rgba(0,0,0,0.05)] bg-background"
