@@ -163,7 +163,7 @@ export const Activity = () => {
             })
           ) : isLoading ? (
             Array.from({ length: 3 }).map((_, i) => (
-              <Skeleton key={i} className="h-32 w-full rounded-[14px]" />
+              <Skeleton key={i} className="h-32 w-full rounded-2xl" />
             ))
           ) : (
             <p className="text-base text-muted-foreground">No matching activity</p>

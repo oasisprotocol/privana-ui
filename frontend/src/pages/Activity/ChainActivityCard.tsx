@@ -1,7 +1,7 @@
 import { usePrivanaContext } from '@oasisprotocol/privana-sdk'
 import type { ClassifiedHistoryEntry } from './historyMapping'
 import { ACTIVITY_AMOUNT_LABELS, ACTIVITY_TITLES } from './labels'
-import { StatusBadge, TokenAmount } from './ActivityCardParts'
+import { ActivityCard, ActivityCardHeader, TokenAmount } from './ActivityCardParts'
 
 // Chain rows are by definition on-chain settled, so status is fixed.
 const SETTLED = 'completed' as const
@@ -15,11 +15,8 @@ export const ChainActivityCard = ({ row }: Props) => {
   const token = row.tokenId ? getTokenById(row.tokenId) : undefined
 
   return (
-    <div className="flex flex-col gap-4 bg-card border p-6 rounded-[14px] shadow-[0_1px_2px_0_rgba(0,0,0,0.05)]">
-      <div className="flex items-center justify-between">
-        <p className="text-lg font-semibold text-foreground leading-7">{ACTIVITY_TITLES[row.kind]}</p>
-        <StatusBadge status={SETTLED} />
-      </div>
+    <ActivityCard>
+      <ActivityCardHeader title={ACTIVITY_TITLES[row.kind]} status={SETTLED} />
 
       {token && row.amount && (
         <TokenAmount
@@ -28,6 +25,6 @@ export const ChainActivityCard = ({ row }: Props) => {
           amount={row.amount}
         />
       )}
-    </div>
+    </ActivityCard>
   )
 }
