@@ -16,11 +16,11 @@ export const SwapActivityCard = ({ activity, timestamp }: SwapActivityCardProps)
       <ActivityCardHeader title="Swap" status={status} timestamp={timestamp} />
 
       <div className="flex gap-4 items-center justify-center">
-        <TokenAmount label="You pay" token={fromToken} amount={fromAmount} align="left" />
-        <div className="bg-secondary p-3 rounded-md flex items-center justify-center shrink-0">
+        <TokenAmount token={fromToken} amount={fromAmount} align="left" />
+        <div className="inline-flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-muted">
           <ArrowRight className="size-4" />
         </div>
-        <TokenAmount label="You receive" token={toToken} amount={toAmount} align="right" />
+        <TokenAmount token={toToken} amount={toAmount} align="right" />
       </div>
 
       {status === 'in-progress' && <Progress />}

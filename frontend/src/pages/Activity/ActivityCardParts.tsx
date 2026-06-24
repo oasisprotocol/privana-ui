@@ -92,14 +92,14 @@ export const ActivityAmountRow = ({ kind, token, amount }: ActivityAmountRowProp
 )
 
 type TokenAmountProps = {
-  label: string
+  label?: string
   token: ActivityTokenInfo
   amount: string
   align?: 'left' | 'right'
 }
 export const TokenAmount = ({ label, token, amount, align = 'left' }: TokenAmountProps) => (
   <div className={cn('flex-1 flex flex-col gap-1 min-w-0 overflow-hidden', align === 'right' && 'items-end')}>
-    <p className="text-sm font-normal text-muted-foreground leading-5">{label}</p>
+    {label && <p className="text-sm font-normal text-muted-foreground leading-5">{label}</p>}
     <TokenValue token={token} amount={amount} />
   </div>
 )
