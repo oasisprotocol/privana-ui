@@ -92,7 +92,7 @@
 .dark {
   --background: #111318;
   --foreground: #fafafa;
-  --card: #171717;
+  --card: #1d2026;
   --card-foreground: #fafafa;
   --popover: #0a0a0a;
   --popover-foreground: #fafafa;
@@ -101,7 +101,7 @@
   --secondary: #262626;
   --secondary-foreground: #a1a1aa;
   --tertiary-foreground: #525252;
-  --muted: #27272a;
+  --muted: #262931;
   --muted-foreground: #a1a1aa;
   --accent: #27272a;
   --accent-foreground: #fafafa;

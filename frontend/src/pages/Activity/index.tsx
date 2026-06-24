@@ -140,7 +140,7 @@ export const Activity = () => {
                   className={cn(
                     'h-8 px-3 rounded-full text-sm font-medium whitespace-nowrap transition-all outline-none focus-visible:ring-2 focus-visible:ring-ring',
                     isActive
-                      ? 'bg-transparent text-secondary-foreground shadow-[inset_0_2px_3px_0_rgba(88,97,116,0.36),inset_0_-1px_1px_0_rgba(255,255,255,0.85),0_0_0_0.5px_rgba(88,97,116,0.06)]'
+                      ? 'bg-[linear-gradient(to_bottom,#E2E2E6,#EFEFF2)] dark:bg-[linear-gradient(to_bottom,#181B20,#22252B)] text-[#3f3f46] dark:text-[#b8b8b8] shadow-[inset_0_2px_3px_0_rgba(88,97,116,0.36),inset_0_-1px_1px_0_rgba(255,255,255,0.85),0_0_0_0.5px_rgba(88,97,116,0.06)] dark:shadow-[inset_0_2px_4px_0_rgba(0,0,0,0.6),inset_0_-1px_1px_0_rgba(255,255,255,0.06),0_0_0_0.5px_rgba(0,0,0,0.45)]'
                       : 'bg-white dark:bg-card text-foreground shadow-[0_0.5px_1.5px_0_rgba(0,0,0,0.25),0_3.5px_7px_0_rgba(0,0,0,0.08)]',
                   )}
                 >
