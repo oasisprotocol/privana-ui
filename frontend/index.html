@@ -7,6 +7,19 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <meta name="description" content="Swap privately, earn automatically, and always get the best price." />
     <title>Privana - Your private corner of DeFi.</title>
+    <script>
+      // No-flash theme init (keep STORAGE_KEY in sync with src/lib/theme.ts).
+      // Defaults to system when no explicit preference is stored.
+      ;(function () {
+        try {
+          var pref = localStorage.getItem('privana.theme') || 'system'
+          var dark =
+            pref === 'dark' ||
+            (pref === 'system' && window.matchMedia('(prefers-color-scheme: dark)').matches)
+          document.documentElement.classList.toggle('dark', dark)
+        } catch (e) {}
+      })()
+    </script>
   </head>
   <body>
     <div id="root"></div>

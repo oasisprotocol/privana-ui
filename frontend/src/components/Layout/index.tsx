@@ -2,10 +2,10 @@ import type { ReactNode } from 'react'
 import { Link } from 'react-router'
 import { ConnectButton } from '../ConnectButton'
 import Logo from '../../assets/logo.svg'
-import DashboardBg from '../../assets/dashboard-bg.svg'
 import { MenuItem } from './menu-item'
+import { MobileBottomNav } from './MobileBottomNav'
 import { Separator } from '../ui/separator'
-import { activityPath, appsPath, earnPath, homePath, dashboardPath, onRampPath, tradePath } from '@/paths'
+import { activityPath, earnPath, homePath, dashboardPath, tradePath } from '@/paths'
 import { useActivity } from '@/contexts/ActivityProvider/useActivity'
 
 const FOOTER_SECTIONS = [
@@ -27,23 +27,18 @@ export const Layout = ({ children, dashboard }: LayoutProps) => {
   const { pendingCount } = useActivity()
   return (
     <div className="min-h-screen bg-background text-foreground">
-      <div
-        className=" bg-no-repeat w-full"
-        style={{
-          backgroundImage: `url(${dashboard ? DashboardBg : ''})`,
-          backgroundPosition: 'top right',
-        }}
-      >
-        <nav className="flex items-center justify-between px-6 h-16 border-b border-border shadow-[0_1px_2px_0_rgba(0,0,0,0.05)] bg-background">
+      <div className="w-full pb-20 md:pb-0">
+        <nav
+          style={{ viewTransitionName: 'top-nav' }}
+          className="flex items-center justify-between px-6 h-16 border-b border-border shadow-[0_1px_2px_0_rgba(0,0,0,0.05)] bg-background"
+        >
           <Link to={homePath()} viewTransition className="text-xl font-bold">
             <img src={Logo} alt="Privana" className="h-5 min-w-25" />
           </Link>
-          <div className="flex items-center gap-1">
-            <MenuItem to={dashboardPath()} label="Dashboard" />
-            <MenuItem to={onRampPath()} label="On-Ramp" />
-            <MenuItem to={tradePath()} label="Trade" />
+          <div className="hidden md:flex items-center gap-1">
+            <MenuItem to={dashboardPath()} label="Home" />
             <MenuItem to={earnPath()} label="Earn" />
-            <MenuItem to={appsPath()} label="Apps" />
+            <MenuItem to={tradePath()} label="Swap" />
             <MenuItem to={activityPath()} label="Activity" badge={pendingCount} />
           </div>
 
@@ -54,7 +49,7 @@ export const Layout = ({ children, dashboard }: LayoutProps) => {
 
         {dashboard ? (
           <div className="w-full max-w-7xl mx-auto" style={{ viewTransitionName: 'page-content' }}>
-            <div className="min-h-[500px] self-stretch px-8 md:px-24 py-8 md:py-16 gap-8 md:gap-16 flex flex-col border-r border-b border-l border-border bg-linear-to-b from-[#F3F4F6] to-background">
+            <div className="min-h-[500px] self-stretch px-8 md:px-24 py-8 md:py-16 gap-8 md:gap-16 flex flex-col border-r border-b border-l border-border bg-[linear-gradient(to_bottom,#F3F4F6_0px,#FFFFFF_460px)] dark:bg-none">
               {children}
             </div>
           </div>
@@ -102,6 +97,8 @@ export const Layout = ({ children, dashboard }: LayoutProps) => {
           </div>
         </footer>
       </div>
+
+      <MobileBottomNav activityBadge={pendingCount} />
     </div>
   )
 }
