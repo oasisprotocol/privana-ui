@@ -18,7 +18,6 @@ const TABS = [
   { id: 'all', label: 'All' },
   { id: 'deposits', label: 'Deposits' },
   { id: 'withdrawals', label: 'Withdrawals' },
-  { id: 'swaps', label: 'Swaps' },
   { id: 'earn', label: 'Earn' },
 ] as const
 
@@ -28,7 +27,6 @@ const TYPE_FOR_TAB: Record<TabId, FilterType> = {
   all: 'all',
   deposits: 'deposit',
   withdrawals: 'withdraw',
-  swaps: 'swap',
   earn: 'earn',
 }
 
@@ -36,7 +34,7 @@ const TAB_FOR_TYPE: Record<FilterType, TabId> = {
   all: 'all',
   deposit: 'deposits',
   withdraw: 'withdrawals',
-  swap: 'swaps',
+  swap: 'all',
   earn: 'earn',
   earnDeposit: 'earn',
   earnWithdraw: 'earn',
@@ -49,7 +47,6 @@ const TAB_REFLECTED_TYPES: ReadonlySet<FilterType> = new Set([
   'all',
   'deposit',
   'withdraw',
-  'swap',
   'earn',
   'earnDeposit',
   'earnWithdraw',
@@ -130,11 +127,7 @@ export const Activity = () => {
             </div>
           )}
 
-          <div
-            role="tablist"
-            aria-label="Activity filter"
-            className="inline-flex items-center gap-1 rounded-md border bg-background p-1 w-fit"
-          >
+          <div role="tablist" aria-label="Activity filter" className="inline-flex items-center gap-2 w-fit">
             {TABS.map(tab => {
               const isActive = tab.id === activeTab
               return (
@@ -145,8 +138,10 @@ export const Activity = () => {
                   aria-selected={isActive}
                   onClick={() => setFilters({ ...filters, type: TYPE_FOR_TAB[tab.id] })}
                   className={cn(
-                    'h-8 px-3 rounded-sm text-sm font-medium transition-colors',
-                    isActive ? 'bg-primary text-primary-foreground' : 'text-foreground hover:bg-accent',
+                    'h-8 px-3 rounded-full text-sm font-medium whitespace-nowrap transition-all outline-none focus-visible:ring-2 focus-visible:ring-ring',
+                    isActive
+                      ? 'bg-transparent text-secondary-foreground shadow-[inset_0_2px_3px_0_rgba(88,97,116,0.36),inset_0_-1px_1px_0_rgba(255,255,255,0.85),0_0_0_0.5px_rgba(88,97,116,0.06)]'
+                      : 'bg-white dark:bg-card text-foreground shadow-[0_0.5px_1.5px_0_rgba(0,0,0,0.25),0_3.5px_7px_0_rgba(0,0,0,0.08)]',
                   )}
                 >
                   {tab.label}
