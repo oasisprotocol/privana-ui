@@ -71,7 +71,7 @@ export const ReviewStep = ({
               )}
             </div>
           </div>
-          <div className="bg-secondary p-3 rounded-md flex items-center justify-center shrink-0">
+          <div className="inline-flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-muted">
             <ArrowRight className="size-4" />
           </div>
           <div className="flex-1 flex flex-col gap-1 items-end min-w-0 overflow-hidden">

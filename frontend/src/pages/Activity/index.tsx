@@ -18,7 +18,6 @@ const TABS = [
   { id: 'all', label: 'All' },
   { id: 'deposits', label: 'Deposits' },
   { id: 'withdrawals', label: 'Withdrawals' },
-  { id: 'swaps', label: 'Swaps' },
   { id: 'earn', label: 'Earn' },
 ] as const
 
@@ -28,7 +27,6 @@ const TYPE_FOR_TAB: Record<TabId, FilterType> = {
   all: 'all',
   deposits: 'deposit',
   withdrawals: 'withdraw',
-  swaps: 'swap',
   earn: 'earn',
 }
 
@@ -36,7 +34,7 @@ const TAB_FOR_TYPE: Record<FilterType, TabId> = {
   all: 'all',
   deposit: 'deposits',
   withdraw: 'withdrawals',
-  swap: 'swaps',
+  swap: 'all',
   earn: 'earn',
   earnDeposit: 'earn',
   earnWithdraw: 'earn',
@@ -49,7 +47,6 @@ const TAB_REFLECTED_TYPES: ReadonlySet<FilterType> = new Set([
   'all',
   'deposit',
   'withdraw',
-  'swap',
   'earn',
   'earnDeposit',
   'earnWithdraw',
@@ -59,6 +56,9 @@ const rowKey = (r: MergedRow): string =>
   r.source === 'local'
     ? `local:${r.activity.id}`
     : `chain:${r.timestamp}:${r.row.entry.kind}:${r.row.counterparty ?? '-'}:${r.row.amount ?? '-'}`
+
+// The search box and filter button are hidden until the redesigned Activity is completed.
+const SHOW_FILTER_CONTROLS = false
 
 const activeFilterCount = (f: ActivityFilters): number => {
   let n = 0
@@ -97,39 +97,37 @@ export const Activity = () => {
         description={
           isEmpty
             ? 'Nothing to show yet. Your swaps, deposits, withdrawals, and earnings will appear here.'
-            : 'Browse through your recent activity.'
+            : 'All your deposits, withdrawals, and earnings.'
         }
       />
 
       {!isEmpty && (
         <div className="flex flex-col gap-4 w-full max-w-145 mx-auto">
-          <div className="flex items-center gap-2">
-            <div className="relative flex-1">
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 size-4 text-muted-foreground" />
-              <Input
-                type="search"
-                placeholder="Search"
-                value={filters.search}
-                onChange={e => setFilters({ ...filters, search: e.target.value })}
-                className="pl-9"
-              />
+          {SHOW_FILTER_CONTROLS && (
+            <div className="flex items-center gap-2">
+              <div className="relative flex-1">
+                <Search className="absolute left-3 top-1/2 -translate-y-1/2 size-4 text-muted-foreground" />
+                <Input
+                  type="search"
+                  placeholder="Search"
+                  value={filters.search}
+                  onChange={e => setFilters({ ...filters, search: e.target.value })}
+                  className="pl-9"
+                />
+              </div>
+              <Button variant="default" onClick={() => setFilterOpen(true)}>
+                <SlidersHorizontal />
+                Filter
+                {filterCount > 0 && (
+                  <span className="ml-1 inline-flex items-center justify-center rounded-full bg-foreground text-background text-xs font-medium h-5 min-w-5 px-1.5">
+                    {filterCount}
+                  </span>
+                )}
+              </Button>
             </div>
-            <Button variant="default" onClick={() => setFilterOpen(true)}>
-              <SlidersHorizontal />
-              Filter
-              {filterCount > 0 && (
-                <span className="ml-1 inline-flex items-center justify-center rounded-full bg-foreground text-background text-xs font-medium h-5 min-w-5 px-1.5">
-                  {filterCount}
-                </span>
-              )}
-            </Button>
-          </div>
+          )}
 
-          <div
-            role="tablist"
-            aria-label="Activity filter"
-            className="inline-flex items-center gap-1 rounded-md border bg-background p-1 w-fit"
-          >
+          <div role="tablist" aria-label="Activity filter" className="inline-flex items-center gap-2 w-fit">
             {TABS.map(tab => {
               const isActive = tab.id === activeTab
               return (
@@ -140,8 +138,10 @@ export const Activity = () => {
                   aria-selected={isActive}
                   onClick={() => setFilters({ ...filters, type: TYPE_FOR_TAB[tab.id] })}
                   className={cn(
-                    'h-8 px-3 rounded-sm text-sm font-medium transition-colors',
-                    isActive ? 'bg-primary text-primary-foreground' : 'text-foreground hover:bg-accent',
+                    'h-8 px-3 rounded-full text-sm font-medium whitespace-nowrap transition-all outline-none focus-visible:ring-2 focus-visible:ring-ring',
+                    isActive
+                      ? 'bg-transparent text-secondary-foreground shadow-[inset_0_2px_3px_0_rgba(88,97,116,0.36),inset_0_-1px_1px_0_rgba(255,255,255,0.85),0_0_0_0.5px_rgba(88,97,116,0.06)]'
+                      : 'bg-white dark:bg-card text-foreground shadow-[0_0.5px_1.5px_0_rgba(0,0,0,0.25),0_3.5px_7px_0_rgba(0,0,0,0.08)]',
                   )}
                 >
                   {tab.label}
@@ -154,16 +154,16 @@ export const Activity = () => {
             visible.map(r => {
               if (r.source === 'local') {
                 return r.activity.type === 'swap' ? (
-                  <SwapActivityCard key={rowKey(r)} activity={r.activity} />
+                  <SwapActivityCard key={rowKey(r)} activity={r.activity} timestamp={r.timestamp} />
                 ) : (
-                  <EarnActivityCard key={rowKey(r)} activity={r.activity} />
+                  <EarnActivityCard key={rowKey(r)} activity={r.activity} timestamp={r.timestamp} />
                 )
               }
-              return <ChainActivityCard key={rowKey(r)} row={r.row} />
+              return <ChainActivityCard key={rowKey(r)} row={r.row} timestamp={r.timestamp} />
             })
           ) : isLoading ? (
-            Array.from({ length: 3 }).map((_, i) => (
-              <Skeleton key={i} className="h-32 w-full rounded-[14px]" />
+            Array.from({ length: 5 }).map((_, i) => (
+              <Skeleton key={i} className="h-[90px] w-full rounded-2xl" />
             ))
           ) : (
             <p className="text-base text-muted-foreground">No matching activity</p>

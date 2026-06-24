@@ -68,14 +68,19 @@ export function useMergedActivity(): UseMergedActivityResult {
       timestamp: row.timestamp,
       row,
     }))
-    for (const a of activities) {
-      if (matchedLocalIds.has(a.id)) continue
-      // Activity.createdAt is ms; HistoryEntry.timestamp is seconds.
-      merged.push({ source: 'local', timestamp: Math.floor(a.createdAt / 1000), activity: a })
+    // Hold back local (optimistic localStorage) rows until backend history has
+    // loaded. Otherwise a lone pending item flashes on its own before the full
+    // list arrives — and before we can dedupe it against its settled chain entry.
+    if (!history.isLoading) {
+      for (const a of activities) {
+        if (matchedLocalIds.has(a.id)) continue
+        // Activity.createdAt is ms; HistoryEntry.timestamp is seconds.
+        merged.push({ source: 'local', timestamp: Math.floor(a.createdAt / 1000), activity: a })
+      }
     }
     merged.sort((a, b) => b.timestamp - a.timestamp)
     return merged
-  }, [chainRows, activities, matchedLocalIds])
+  }, [chainRows, activities, matchedLocalIds, history.isLoading])
 
   return {
     rows,
