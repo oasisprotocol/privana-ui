@@ -6,6 +6,8 @@ import { Skeleton } from '@/components/ui/skeleton'
 import { SurfaceCard } from '@/components/SurfaceCard'
 import { formatApyBps } from '@/lib/apy'
 import { formatFiat } from '@/lib/tokens'
+import { earnPath, tradePath } from '@/paths'
+import { Link } from 'react-router'
 import { useDashboardFunds } from './useDashboardFunds'
 import { BalanceAmount } from './BalanceAmount'
 import { PortfolioChart } from './PortfolioChart'
@@ -59,6 +61,29 @@ const FeatureRow = ({
   </div>
 )
 
+const DepositFeatures = ({ bestApyBps }: { bestApyBps: number | null }) => (
+  <div className="mt-6 flex flex-col gap-3">
+    <FeatureRow
+      icon={<Zap className="h-4 w-4" />}
+      title="Earn Daily"
+      pill={
+        bestApyBps != null ? (
+          <span className="inline-flex items-center gap-1 rounded-full bg-chart-positive px-2 py-0.5 text-xs font-semibold text-white">
+            <TrendingUp className="h-3 w-3" />
+            {formatApyBps(bestApyBps)} APY
+          </span>
+        ) : undefined
+      }
+      description="Interest accrues every day and compounds automatically."
+    />
+    <FeatureRow
+      icon={<ArrowLeftRight className="h-4 w-4" />}
+      title="Swap privately"
+      description="Private non-custodial swaps over established DeFi protocols."
+    />
+  </div>
+)
+
 export const DashboardHome = () => {
   const [modalOpen, setModalOpen] = useState<ComponentProps<typeof PrivanaModal>['defaultTab']>(undefined)
   const {
@@ -70,6 +95,9 @@ export const DashboardHome = () => {
     bestApyBps,
     pricesError,
   } = useDashboardFunds()
+
+  // Rough "earn about $X / month" estimate: available × APY ÷ 12.
+  const monthlyEarnEstimate = ((availableFiatValue ?? 0) * (bestApyBps ?? 0)) / 10000 / 12
 
   return (
     <>
@@ -89,26 +117,7 @@ export const DashboardHome = () => {
               <p className="mt-2 text-sm text-muted-foreground">
                 Deposit ETH, HYPE or USDC to start using Privana.
               </p>
-              <div className="mt-6 flex flex-col gap-3">
-                <FeatureRow
-                  icon={<Zap className="h-4 w-4" />}
-                  title="Earn Daily"
-                  pill={
-                    bestApyBps != null ? (
-                      <span className="inline-flex items-center gap-1 rounded-full bg-chart-positive px-2 py-0.5 text-xs font-semibold text-white">
-                        <TrendingUp className="h-3 w-3" />
-                        {formatApyBps(bestApyBps)} APY
-                      </span>
-                    ) : undefined
-                  }
-                  description="Interest accrues every day and compounds automatically."
-                />
-                <FeatureRow
-                  icon={<ArrowLeftRight className="h-4 w-4" />}
-                  title="Swap privately"
-                  description="Private non-custodial swaps over established DeFi protocols."
-                />
-              </div>
+              <DepositFeatures bestApyBps={bestApyBps} />
               <div className="mt-6 flex justify-center">
                 <Button size="lg" onClick={() => setModalOpen('deposit')}>
                   Deposit crypto
@@ -151,13 +160,48 @@ export const DashboardHome = () => {
               <div className="flex justify-center">
                 <Button
                   size="lg"
-                  className="h-14 px-8 text-base brightness-[1.07] w-full sm:w-auto"
+                  className="h-14 px-8 text-base brightness-[1.07] w-full sm:w-auto sm:min-w-[200px]"
                   onClick={() => setModalOpen('deposit')}
                 >
                   Deposit
                 </Button>
               </div>
             </div>
+
+            <SurfaceCard className="p-6">
+              <h2 className="text-2xl font-semibold tracking-tight text-foreground">
+                Put your deposit to work
+              </h2>
+              <p className="mt-2 text-sm text-muted-foreground">
+                Your{' '}
+                <span className="font-medium text-foreground">{formatFiat(availableFiatValue ?? 0)}</span> is
+                ready. Earn about{' '}
+                <span className="font-medium text-foreground">{formatFiat(monthlyEarnEstimate)}</span> /
+                month, or swap it privately.
+              </p>
+              <DepositFeatures bestApyBps={bestApyBps} />
+              <div className="mt-6 flex flex-col items-center gap-3">
+                <Button
+                  asChild
+                  size="lg"
+                  className="h-14 px-8 text-base brightness-[1.07] w-full sm:w-auto sm:min-w-[200px]"
+                >
+                  <Link to={earnPath()} viewTransition>
+                    Earn daily
+                  </Link>
+                </Button>
+                <Button
+                  asChild
+                  variant="outline"
+                  size="lg"
+                  className="h-14 px-8 text-base w-full sm:w-auto sm:min-w-[200px]"
+                >
+                  <Link to={tradePath()} viewTransition>
+                    Swap privately
+                  </Link>
+                </Button>
+              </div>
+            </SurfaceCard>
           </div>
         )}
       </div>
