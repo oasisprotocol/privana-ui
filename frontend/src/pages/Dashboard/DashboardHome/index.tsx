@@ -8,6 +8,7 @@ import { formatApyBps } from '@/lib/apy'
 import { formatFiat } from '@/lib/tokens'
 import { useDashboardFunds } from './useDashboardFunds'
 import { BalanceAmount } from './BalanceAmount'
+import { PortfolioChart } from './PortfolioChart'
 
 const BreakdownRow = ({
   dotClass,
@@ -142,6 +143,19 @@ export const DashboardHome = () => {
                   value={availableFiatValue}
                   error={pricesError}
                 />
+              </div>
+            </div>
+
+            <div className="flex flex-col gap-6">
+              <PortfolioChart />
+              <div className="flex justify-center">
+                <Button
+                  size="lg"
+                  className="h-14 px-8 text-base brightness-[1.07] w-full sm:w-auto"
+                  onClick={() => setModalOpen('deposit')}
+                >
+                  Deposit
+                </Button>
               </div>
             </div>
           </div>

@@ -2,11 +2,14 @@ import { Area, AreaChart, XAxis, YAxis } from 'recharts'
 import { ChartConfig, ChartContainer } from '@/components/ui/chart'
 
 const data = [
-  { date: 'Mon', value: 1200 },
-  { date: 'Tue', value: 3100 },
-  { date: 'Wed', value: 2400 },
-  { date: 'Thu', value: 1800 },
-  { date: 'Fri', value: 3500 },
+  { date: '1', value: 1000 },
+  { date: '2', value: 1008 },
+  { date: '3', value: 1004 },
+  { date: '4', value: 1018 },
+  { date: '5', value: 1012 },
+  { date: '6', value: 1030 },
+  { date: '7', value: 1075 },
+  { date: '8', value: 1180 },
 ]
 
 const chartConfig = {
@@ -18,7 +21,7 @@ const chartConfig = {
 
 export const PortfolioChart = () => {
   return (
-    <ChartContainer config={chartConfig} className="h-32 w-full lg:w-185">
+    <ChartContainer config={chartConfig} className="h-40 w-full">
       <AreaChart data={data} margin={{ top: 0, right: 0, bottom: 0, left: 0 }}>
         <defs>
           <linearGradient id="portfolioGradient" x1="0" y1="0" x2="0" y2="1">
