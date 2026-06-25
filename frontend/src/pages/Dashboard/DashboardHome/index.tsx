@@ -11,11 +11,17 @@ import {
 } from 'lucide-react'
 import { PortfolioCard } from './PortfolioCard'
 import { ComponentProps, useMemo, useState, type ReactNode } from 'react'
-import { PrivanaModal, useBatchBalances, usePrivanaContext, useLockedFunds } from '@oasisprotocol/privana-sdk'
+import {
+  PrivanaModal,
+  useBatchBalances,
+  usePrivanaContext,
+  useLockedFunds,
+  usePendingWithdrawals,
+} from '@oasisprotocol/privana-sdk'
 import { formatUnits } from 'viem'
 import { Skeleton } from '@/components/ui/skeleton'
 import { PortfolioSummary } from './PortfolioSummary'
-import { useEarnPools } from '@/api/earn'
+import { useEarnPools, useEarnBalance } from '@/api/earn'
 import { formatApyBps } from '@/pages/Earn/labels'
 import { useTokenPrices } from '@/api/coin-gecko'
 import { formatFiat } from '@/lib/tokens'
@@ -51,11 +57,18 @@ export const DashboardHome = () => {
   const [modalOpen, setModalOpen] = useState<ComponentProps<typeof PrivanaModal>['defaultTab']>(undefined)
   const { enabledTokens, tokensStatus, getTokenById } = usePrivanaContext()
   const tokenIds = useMemo(() => enabledTokens.map(t => t.id), [enabledTokens])
-  const { balances, isLoading } = useBatchBalances({ tokenIds })
-  const pending = tokensStatus !== 'ready' || isLoading
-  const { locks } = useLockedFunds()
+  const { balances, isLoading: balancesLoading } = useBatchBalances({ tokenIds })
+  const { locks, totalLocked, isLoading: locksLoading } = useLockedFunds()
+  const { data: earnBalance, isLoading: earnLoading } = useEarnBalance()
+  const { hasPendingWithdrawals, isLoading: pendingWithdrawalsLoading } = usePendingWithdrawals()
   const { data: prices, isPending: pricesPending, isError: pricesError } = useTokenPrices(tokenIds)
   const { data: poolsData } = useEarnPools()
+
+  // Hold the dashboard in its loading state until every place funds can live has
+  // resolved, so we never flash the onboarding step at a user whose funds are
+  // only in earn / locks / a pending withdrawal.
+  const pending =
+    tokensStatus !== 'ready' || balancesLoading || locksLoading || earnLoading || pendingWithdrawalsLoading
 
   const bestApyBps = useMemo(() => {
     const pools = poolsData?.pools ?? []
@@ -82,8 +95,11 @@ export const DashboardHome = () => {
     return { availableFiatValue: available, totalFiatValue: total }
   }, [balances, locks, prices, getTokenById])
 
-  // TODO: take into account yield, pending etc when API is ready
-  const hasFunds = balances.some(b => BigInt(b.balance || '0') > 0n)
+  const hasFunds =
+    balances.some(b => BigInt(b.balance || '0') > 0n) ||
+    BigInt(totalLocked || '0') > 0n ||
+    (earnBalance?.positions ?? []).some(p => BigInt(p.underlying_amount || '0') > 0n) ||
+    hasPendingWithdrawals
 
   return (
     <>
