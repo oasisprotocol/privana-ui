@@ -39,15 +39,11 @@ export function useDashboardFunds(): DashboardFunds {
   // resolved, so we never flash the onboarding step at a user whose funds are
   // only in earn / locks / a pending withdrawal.
   const isLoading =
-    tokensStatus !== 'ready' ||
-    balancesLoading ||
-    locksLoading ||
-    earnLoading ||
-    pendingWithdrawalsLoading
+    tokensStatus !== 'ready' || balancesLoading || locksLoading || earnLoading || pendingWithdrawalsLoading
 
   const bestApyBps = useMemo(() => {
-    const pools = poolsData?.pools ?? []
-    return pools.length ? Math.max(...pools.map(p => p.apy_bps)) : null
+    const activePools = (poolsData?.pools ?? []).filter(p => p.status === 'active')
+    return activePools.length ? Math.max(...activePools.map(p => p.apy_bps)) : null
   }, [poolsData])
 
   const { availableFiatValue, totalFiatValue } = useMemo(() => {
