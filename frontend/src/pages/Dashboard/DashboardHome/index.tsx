@@ -20,6 +20,7 @@ import { formatFiat } from '@/lib/tokens'
 import { activityPath, earnPath, tradePath } from '@/paths'
 import { Link } from 'react-router'
 import { useDashboardFunds } from './useDashboardFunds'
+import { BalanceAmount } from './BalanceAmount'
 
 const FeatureRow = ({
   icon,
@@ -59,11 +60,7 @@ export const DashboardHome = () => {
           <div className="flex flex-col gap-8 w-full">
             <div className="flex flex-col">
               <span className="text-sm font-medium text-muted-foreground leading-5">Total balance</span>
-              <span className="mt-3 inline-flex items-baseline tabular-nums text-5xl font-semibold tracking-tight text-foreground">
-                <span className="text-[0.75em] text-muted-foreground">$</span>
-                <span>0</span>
-                <span className="text-muted-foreground">.00</span>
-              </span>
+              <BalanceAmount value={totalFiatValue ?? 0} className="mt-3" />
             </div>
 
             <SurfaceCard className="p-6">
