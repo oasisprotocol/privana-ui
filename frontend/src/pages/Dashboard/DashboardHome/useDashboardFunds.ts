@@ -48,30 +48,29 @@ export function useDashboardFunds(): DashboardFunds {
 
   const { availableFiatValue, totalFiatValue } = useMemo(() => {
     if (!prices) return { availableFiatValue: undefined, totalFiatValue: undefined }
+    const fiatOf = (tokenId: string, amountWei: string): number => {
+      const price = prices[tokenId]
+      const decimals = getTokenById(tokenId)?.decimals
+      if (price == null || decimals == null) return 0
+      return Number(formatUnits(BigInt(amountWei || '0'), decimals)) * price
+    }
+
     let available = 0
     let total = 0
     for (const b of balances) {
-      const price = prices[b.token_id]
-      if (price == null) continue
-      const decimals = getTokenById(b.token_id)?.decimals
-      if (decimals == null) continue
-      const availableAmount = Number(formatUnits(BigInt(b.balance || '0'), decimals))
-      const lockedAmount = locks
+      const availableValue = fiatOf(b.token_id, b.balance)
+      const lockedValue = locks
         .filter(l => l.token_id === b.token_id)
-        .reduce((sum, l) => sum + Number(formatUnits(BigInt(l.amount), decimals)), 0)
-      available += availableAmount * price
-      total += (availableAmount + lockedAmount) * price
+        .reduce((sum, l) => sum + fiatOf(l.token_id, l.amount), 0)
+      available += availableValue
+      total += availableValue + lockedValue
     }
     // Earn positions are transferred into the pool (not held as a lock), so they
     // are a separate bucket from available/locked - no double counting. Their
     // underlying_amount already reflects accrued yield. (Pending in-flight
     // withdrawals are intentionally excluded; those funds are leaving.)
     for (const p of earnBalance?.positions ?? []) {
-      const price = prices[p.token_id]
-      if (price == null) continue
-      const decimals = getTokenById(p.token_id)?.decimals
-      if (decimals == null) continue
-      total += Number(formatUnits(BigInt(p.underlying_amount || '0'), decimals)) * price
+      total += fiatOf(p.token_id, p.underlying_amount)
     }
     return { availableFiatValue: available, totalFiatValue: total }
   }, [balances, locks, earnBalance, prices, getTokenById])
