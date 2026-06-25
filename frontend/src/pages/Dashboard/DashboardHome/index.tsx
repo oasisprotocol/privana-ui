@@ -101,7 +101,7 @@ export const DashboardHome = () => {
 
   return (
     <>
-      <div className="flex flex-col gap-6 mb-8 md:mb-12">
+      <div className="flex flex-col gap-6 mb-8 md:mb-12 w-full max-w-145 mx-auto">
         {isLoading && <Skeleton className="h-100 w-full" />}
         {!isLoading && !hasFunds && (
           <div className="flex flex-col gap-8 w-full">
