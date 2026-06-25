@@ -120,7 +120,11 @@ export const DashboardHome = () => {
               </p>
               <DepositFeatures bestApyBps={bestApyBps} />
               <div className="mt-6 flex justify-center">
-                <Button size="lg" onClick={() => setModalOpen('deposit')}>
+                <Button
+                  size="lg"
+                  className="h-14 px-8 text-base brightness-[1.07] w-full sm:w-auto sm:min-w-[200px]"
+                  onClick={() => setModalOpen('deposit')}
+                >
                   Deposit crypto
                 </Button>
               </div>

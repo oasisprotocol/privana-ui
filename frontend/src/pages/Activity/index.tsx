@@ -50,7 +50,6 @@ const TAB_REFLECTED_TYPES: ReadonlySet<FilterType> = new Set([
   'earnWithdraw',
 ])
 
-
 // The search box and filter button are hidden until the redesigned Activity is completed.
 const SHOW_FILTER_CONTROLS = false
 
