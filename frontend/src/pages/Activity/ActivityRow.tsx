@@ -1,0 +1,15 @@
+import type { MergedRow } from '@/hooks/use-merged-activity'
+import { SwapActivityCard } from './SwapActivityCard'
+import { EarnActivityCard } from './EarnActivityCard'
+import { ChainActivityCard } from './ChainActivityCard'
+
+export const ActivityRow = ({ row }: { row: MergedRow }) => {
+  if (row.source === 'local') {
+    return row.activity.type === 'swap' ? (
+      <SwapActivityCard activity={row.activity} timestamp={row.timestamp} />
+    ) : (
+      <EarnActivityCard activity={row.activity} timestamp={row.timestamp} />
+    )
+  }
+  return <ChainActivityCard row={row.row} timestamp={row.timestamp} />
+}

@@ -11,6 +11,7 @@ import { Link } from 'react-router'
 import { useDashboardFunds } from './useDashboardFunds'
 import { BalanceAmount } from './BalanceAmount'
 import { PortfolioChart } from './PortfolioChart'
+import { LatestActivity } from './LatestActivity'
 
 const BreakdownRow = ({
   dotClass,
@@ -202,6 +203,8 @@ export const DashboardHome = () => {
                 </Button>
               </div>
             </SurfaceCard>
+
+            <LatestActivity />
           </div>
         )}
       </div>
