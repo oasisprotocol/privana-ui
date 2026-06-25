@@ -69,7 +69,7 @@ export const ConnectButton: FC = () => {
             <Wallet className="size-6" />
           </button>
         </DropdownMenuTrigger>
-        <DropdownMenuContent align="end" className="w-72 rounded-2xl p-3">
+        <DropdownMenuContent align="end" className="w-72 rounded-2xl p-3 dark:bg-card dark:border-[#31363f]">
           <div className="rounded-xl bg-muted px-3 py-2.5">
             <span className="text-[11px] uppercase tracking-wide text-muted-foreground">Wallet</span>
             <div className="mt-1 flex items-center gap-2">
@@ -119,7 +119,9 @@ export const ConnectButton: FC = () => {
                     onClick={() => setThemePreference(mode)}
                     className={cn(
                       'inline-flex items-center gap-1 rounded-full px-2.5 py-1 transition-colors',
-                      active ? 'bg-background text-foreground shadow-sm' : 'text-muted-foreground',
+                      active
+                        ? 'bg-background dark:bg-card text-foreground shadow-sm dark:shadow-[inset_0_1px_0_0_rgba(255,255,255,0.05),0_1px_2px_0_rgba(0,0,0,0.4),0_4px_12px_0_rgba(0,0,0,0.5)]'
+                        : 'text-muted-foreground',
                     )}
                   >
                     <Icon className="size-3.5" />
