@@ -15,6 +15,8 @@ export interface DashboardFunds {
   /** Whether the user has funds in any bucket (available, locked, earn, pending withdrawal). */
   hasFunds: boolean
   availableFiatValue: number | undefined
+  /** Fiat value held in earn positions. */
+  earningFiatValue: number | undefined
   totalFiatValue: number | undefined
   /** Highest pool APY in basis points, or null when no pools. */
   bestApyBps: number | null
@@ -46,8 +48,10 @@ export function useDashboardFunds(): DashboardFunds {
     return activePools.length ? Math.max(...activePools.map(p => p.apy_bps)) : null
   }, [poolsData])
 
-  const { availableFiatValue, totalFiatValue } = useMemo(() => {
-    if (!prices) return { availableFiatValue: undefined, totalFiatValue: undefined }
+  const { availableFiatValue, earningFiatValue, totalFiatValue } = useMemo(() => {
+    if (!prices) {
+      return { availableFiatValue: undefined, earningFiatValue: undefined, totalFiatValue: undefined }
+    }
     const fiatOf = (tokenId: string, amountWei: string): number => {
       const price = prices[tokenId]
       const decimals = getTokenById(tokenId)?.decimals
@@ -69,10 +73,12 @@ export function useDashboardFunds(): DashboardFunds {
     // are a separate bucket from available/locked - no double counting. Their
     // underlying_amount already reflects accrued yield. (Pending in-flight
     // withdrawals are intentionally excluded; those funds are leaving.)
+    let earning = 0
     for (const p of earnBalance?.positions ?? []) {
-      total += fiatOf(p.token_id, p.underlying_amount)
+      earning += fiatOf(p.token_id, p.underlying_amount)
     }
-    return { availableFiatValue: available, totalFiatValue: total }
+    total += earning
+    return { availableFiatValue: available, earningFiatValue: earning, totalFiatValue: total }
   }, [balances, locks, earnBalance, prices, getTokenById])
 
   // Funds live in several places, not just the available wallet balance: locked
@@ -84,5 +90,14 @@ export function useDashboardFunds(): DashboardFunds {
     (earnBalance?.positions ?? []).some(p => BigInt(p.underlying_amount || '0') > 0n) ||
     hasPendingWithdrawals
 
-  return { isLoading, hasFunds, availableFiatValue, totalFiatValue, bestApyBps, pricesError, pricesPending }
+  return {
+    isLoading,
+    hasFunds,
+    availableFiatValue,
+    earningFiatValue,
+    totalFiatValue,
+    bestApyBps,
+    pricesError,
+    pricesPending,
+  }
 }
