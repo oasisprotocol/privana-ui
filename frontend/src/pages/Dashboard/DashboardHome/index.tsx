@@ -13,10 +13,8 @@ import { BalanceAmount } from './BalanceAmount'
 import { PortfolioChart } from './PortfolioChart'
 import { LatestActivity } from './LatestActivity'
 
-// Shared sizing for the dashboard's primary call-to-action buttons. The gold
-// variant adds the design's slightly-lighter brightness boost.
+// Shared sizing for the dashboard's primary call-to-action buttons.
 const CTA_BUTTON = 'h-14 px-8 text-base w-full sm:w-auto sm:min-w-[200px]'
-const CTA_BUTTON_GOLD = `${CTA_BUTTON} brightness-[1.07]`
 
 const BreakdownRow = ({
   dotClass,
@@ -126,7 +124,7 @@ export const DashboardHome = () => {
               </p>
               <DepositFeatures bestApyBps={bestApyBps} />
               <div className="mt-6 flex justify-center">
-                <Button size="lg" className={CTA_BUTTON_GOLD} onClick={() => setModalOpen('deposit')}>
+                <Button size="lg" className={CTA_BUTTON} onClick={() => setModalOpen('deposit')}>
                   Deposit crypto
                 </Button>
               </div>
@@ -165,7 +163,7 @@ export const DashboardHome = () => {
             <div className="flex flex-col gap-6">
               <PortfolioChart />
               <div className="flex justify-center">
-                <Button size="lg" className={CTA_BUTTON_GOLD} onClick={() => setModalOpen('deposit')}>
+                <Button size="lg" className={CTA_BUTTON} onClick={() => setModalOpen('deposit')}>
                   Deposit
                 </Button>
               </div>
@@ -185,7 +183,7 @@ export const DashboardHome = () => {
                 </p>
                 <DepositFeatures bestApyBps={bestApyBps} />
                 <div className="mt-6 flex flex-col items-center gap-3">
-                  <Button asChild size="lg" className={CTA_BUTTON_GOLD}>
+                  <Button asChild size="lg" className={CTA_BUTTON}>
                     <Link to={earnPath()} viewTransition>
                       Earn daily
                     </Link>
