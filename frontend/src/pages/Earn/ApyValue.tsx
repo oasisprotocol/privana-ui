@@ -1,5 +1,5 @@
 import { cn } from '@/lib/utils'
-import { formatApyBps } from './labels'
+import { formatApyBps } from '@/lib/apy'
 
 type ApyValueProps = {
   bps: number | null | undefined
