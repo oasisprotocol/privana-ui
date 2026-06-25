@@ -151,8 +151,12 @@ export const SwapDashboard = () => {
   return (
     <div className="flex flex-col gap-8">
       <PageHeading
-        title="Swap"
-        description="Choose the asset you want to swap & the asset you wish to receive."
+        title={step === 0 ? 'Swap' : 'Review swap'}
+        description={
+          step === 0
+            ? 'Choose the asset you want to swap & the asset you wish to receive.'
+            : 'Confirm before executing.'
+        }
       />
 
       {switchChainError && (
