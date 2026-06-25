@@ -10,23 +10,15 @@ import {
   TrendingUp,
 } from 'lucide-react'
 import { PortfolioCard } from './PortfolioCard'
-import { ComponentProps, useMemo, useState, type ReactNode } from 'react'
-import {
-  PrivanaModal,
-  useBatchBalances,
-  usePrivanaContext,
-  useLockedFunds,
-  usePendingWithdrawals,
-} from '@oasisprotocol/privana-sdk'
-import { formatUnits } from 'viem'
+import { ComponentProps, useState, type ReactNode } from 'react'
+import { PrivanaModal } from '@oasisprotocol/privana-sdk'
 import { Skeleton } from '@/components/ui/skeleton'
 import { PortfolioSummary } from './PortfolioSummary'
-import { useEarnPools, useEarnBalance } from '@/api/earn'
 import { formatApyBps } from '@/pages/Earn/labels'
-import { useTokenPrices } from '@/api/coin-gecko'
 import { formatFiat } from '@/lib/tokens'
 import { activityPath, earnPath, tradePath } from '@/paths'
 import { Link } from 'react-router'
+import { useDashboardFunds } from './useDashboardFunds'
 
 const FeatureRow = ({
   icon,
@@ -55,67 +47,14 @@ const FeatureRow = ({
 
 export const DashboardHome = () => {
   const [modalOpen, setModalOpen] = useState<ComponentProps<typeof PrivanaModal>['defaultTab']>(undefined)
-  const { enabledTokens, tokensStatus, getTokenById } = usePrivanaContext()
-  const tokenIds = useMemo(() => enabledTokens.map(t => t.id), [enabledTokens])
-  const { balances, isLoading: balancesLoading } = useBatchBalances({ tokenIds })
-  const { locks, totalLocked, isLoading: locksLoading } = useLockedFunds()
-  const { data: earnBalance, isLoading: earnLoading } = useEarnBalance()
-  const { hasPendingWithdrawals, isLoading: pendingWithdrawalsLoading } = usePendingWithdrawals()
-  const { data: prices, isPending: pricesPending, isError: pricesError } = useTokenPrices(tokenIds)
-  const { data: poolsData } = useEarnPools()
-
-  // Hold the dashboard in its loading state until every place funds can live has
-  // resolved, so we never flash the onboarding step at a user whose funds are
-  // only in earn / locks / a pending withdrawal.
-  const pending =
-    tokensStatus !== 'ready' || balancesLoading || locksLoading || earnLoading || pendingWithdrawalsLoading
-
-  const bestApyBps = useMemo(() => {
-    const pools = poolsData?.pools ?? []
-    return pools.length ? Math.max(...pools.map(p => p.apy_bps)) : null
-  }, [poolsData])
-
-  const { availableFiatValue, totalFiatValue } = useMemo(() => {
-    if (!prices) return { availableFiatValue: undefined, totalFiatValue: undefined }
-    let available = 0
-    let total = 0
-    for (const b of balances) {
-      const price = prices[b.token_id]
-      if (price == null) continue
-      const decimals = getTokenById(b.token_id)?.decimals
-      if (decimals == null) continue
-      const availableAmount = Number(formatUnits(BigInt(b.balance || '0'), decimals))
-      const lockedAmount = locks
-        .filter(l => l.token_id === b.token_id)
-        .reduce((sum, l) => sum + Number(formatUnits(BigInt(l.amount), decimals)), 0)
-      available += availableAmount * price
-      total += (availableAmount + lockedAmount) * price
-    }
-    // Earn positions are transferred into the pool (not held as a lock), so they
-    // are a separate bucket from available/locked - no double counting. Their
-    // underlying_amount already reflects accrued yield. (Pending in-flight
-    // withdrawals are intentionally excluded; those funds are leaving.)
-    for (const p of earnBalance?.positions ?? []) {
-      const price = prices[p.token_id]
-      if (price == null) continue
-      const decimals = getTokenById(p.token_id)?.decimals
-      if (decimals == null) continue
-      total += Number(formatUnits(BigInt(p.underlying_amount || '0'), decimals)) * price
-    }
-    return { availableFiatValue: available, totalFiatValue: total }
-  }, [balances, locks, earnBalance, prices, getTokenById])
-
-  const hasFunds =
-    balances.some(b => BigInt(b.balance || '0') > 0n) ||
-    BigInt(totalLocked || '0') > 0n ||
-    (earnBalance?.positions ?? []).some(p => BigInt(p.underlying_amount || '0') > 0n) ||
-    hasPendingWithdrawals
+  const { isLoading, hasFunds, availableFiatValue, totalFiatValue, bestApyBps, pricesError, pricesPending } =
+    useDashboardFunds()
 
   return (
     <>
       <div className="flex flex-col gap-6 mb-8 md:mb-12">
-        {pending && <Skeleton className="h-100 w-full" />}
-        {!pending && !hasFunds && (
+        {isLoading && <Skeleton className="h-100 w-full" />}
+        {!isLoading && !hasFunds && (
           <div className="flex flex-col gap-8 w-full">
             <div className="flex flex-col">
               <span className="text-sm font-medium text-muted-foreground leading-5">Total balance</span>
@@ -161,7 +100,7 @@ export const DashboardHome = () => {
             </div>
           </div>
         )}
-        {!pending && hasFunds && (
+        {!isLoading && hasFunds && (
           <div className="flex flex-col gap-6">
             <div className="flex md:justify-end">
               <div className="flex flex-col md:flex-row md:items-center gap-2 md:gap-6 rounded-lg border bg-card p-3 w-full md:w-auto">
