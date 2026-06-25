@@ -6,6 +6,7 @@ import type { TokenInfo } from '@/api/swap'
 import { formatAmount, formatFiat } from '@/lib/tokens'
 import { TokenSelectDialog } from './TokenSelectDialog'
 import { getTokenIcon } from '@oasisprotocol/privana-sdk'
+import { cn } from '@/lib/utils'
 
 const tokenLabel = (token: TokenInfo) => token.token_symbol ?? token.token_type_name
 
@@ -79,10 +80,13 @@ export const AssetRow = ({
         />
         <div className="relative flex-1 min-w-0">
           <Input
-            className={`h-[58px] w-full rounded-r-full border-0 bg-transparent px-3 text-right text-xl font-semibold text-foreground shadow-none focus-visible:ring-0 md:text-xl ${loading ? 'opacity-50' : ''}`}
+            className={cn(
+              'h-[58px] w-full rounded-r-full border-0 bg-transparent px-3 text-right text-xl font-semibold text-foreground shadow-none focus-visible:ring-0 md:text-xl',
+              loading && 'pr-10 opacity-50',
+            )}
             type="text"
             inputMode="decimal"
-            placeholder="0"
+            placeholder={loading ? '' : '0'}
             value={amount}
             readOnly={readOnly}
             disabled={disabled}
