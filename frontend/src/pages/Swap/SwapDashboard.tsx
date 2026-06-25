@@ -8,7 +8,7 @@ import { useBalance } from '@oasisprotocol/privana-sdk'
 import { formatUnits, parseUnits } from 'viem'
 import { useAccount, useWalletClient, useSwitchChain } from 'wagmi'
 import { ArrowUpDown, EyeOff } from 'lucide-react'
-import { StepsNav } from '@/components/StepsNav'
+import { PageHeading } from '@/components/PageHeading'
 import { extractErrorMessage } from '@/lib/errors'
 import { activityPath } from '@/paths'
 import { SWAPPABLE_TOKEN_IDS } from '@/config/tokens'
@@ -21,8 +21,6 @@ import { useSwapQuote } from './useSwapQuote'
 import { useSubmitSwap } from './useSubmitSwap'
 import { useQuoteSummary } from './useQuoteSummary'
 import type { AppChainId } from '@/wagmi-config'
-
-const steps = ['1. Configure', '2. Review']
 
 const CHAIN_ID = parseInt(import.meta.env.VITE_CHAIN_ID, 10) as AppChainId
 
@@ -151,8 +149,11 @@ export const SwapDashboard = () => {
   }
 
   return (
-    <div>
-      <StepsNav steps={steps} activeIndex={step} ariaLabel="Swap progress" />
+    <div className="flex flex-col gap-8">
+      <PageHeading
+        title="Swap"
+        description="Choose the asset you want to swap & the asset you wish to receive."
+      />
 
       {switchChainError && (
         <p className="text-sm text-center text-destructive mb-4">{extractErrorMessage(switchChainError)}</p>
@@ -182,15 +183,8 @@ export const SwapDashboard = () => {
 
       {data && step === 0 && (
         <StepCard>
-          <div className="flex flex-col gap-1.5">
-            <h2 className="text-2xl font-medium text-foreground leading-8">Make a swap</h2>
-            <p className="text-sm text-muted-foreground">
-              Choose asset you want to swap &amp; asset you wish to receive.
-            </p>
-          </div>
-
           <div className="flex flex-col gap-2">
-            <p className="text-sm font-medium text-foreground">You pay</p>
+            <p className="text-sm font-normal text-muted-foreground">You pay</p>
             <AssetRow
               tokens={tokens}
               token={fromToken}
@@ -215,17 +209,18 @@ export const SwapDashboard = () => {
             <Button
               type="button"
               variant="secondary"
-              size="icon-lg"
+              size="icon"
               onClick={handleSwapDirection}
               disabled={!fromTokenId && !toTokenId}
               aria-label="Swap direction"
+              className="bg-card"
             >
               <ArrowUpDown className="size-4" />
             </Button>
           </div>
 
           <div className="flex flex-col gap-2">
-            <p className="text-sm font-medium text-foreground">You receive</p>
+            <p className="text-sm font-normal text-muted-foreground">You receive</p>
             <AssetRow
               tokens={tokens}
               token={toToken}
