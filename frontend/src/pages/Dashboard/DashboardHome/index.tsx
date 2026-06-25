@@ -14,6 +14,7 @@ import { ComponentProps, useState, type ReactNode } from 'react'
 import { PrivanaModal } from '@oasisprotocol/privana-sdk'
 import { Skeleton } from '@/components/ui/skeleton'
 import { PortfolioSummary } from './PortfolioSummary'
+import { SurfaceCard } from '@/components/SurfaceCard'
 import { formatApyBps } from '@/pages/Earn/labels'
 import { formatFiat } from '@/lib/tokens'
 import { activityPath, earnPath, tradePath } from '@/paths'
@@ -65,7 +66,7 @@ export const DashboardHome = () => {
               </span>
             </div>
 
-            <div className="rounded-2xl bg-white dark:bg-card p-6 shadow-[inset_0_1px_0_0_rgba(255,255,255,0.9),0_1px_2px_0_rgba(87,97,117,0.05),0_4px_10px_0_rgba(87,97,117,0.08)] dark:shadow-[inset_0_1px_0_0_rgba(255,255,255,0.05),0_1px_2px_0_rgba(0,0,0,0.4),0_4px_12px_0_rgba(0,0,0,0.5)]">
+            <SurfaceCard className="p-6">
               <h2 className="text-2xl font-semibold tracking-tight text-foreground">
                 Add funds to get started
               </h2>
@@ -97,7 +98,7 @@ export const DashboardHome = () => {
                   Deposit crypto
                 </Button>
               </div>
-            </div>
+            </SurfaceCard>
           </div>
         )}
         {!isLoading && hasFunds && (
