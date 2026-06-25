@@ -14,6 +14,8 @@ export interface DashboardFunds {
   isLoading: boolean
   /** Whether the user has funds in any bucket (available, locked, earn, pending withdrawal). */
   hasFunds: boolean
+  /** Whether the user has idle (available, not-yet-invested) balance to put to work. */
+  hasAvailableBalance: boolean
   availableFiatValue: number | undefined
   /** Fiat value held in earn positions. */
   earningFiatValue: number | undefined
@@ -84,8 +86,9 @@ export function useDashboardFunds(): DashboardFunds {
   // Funds live in several places, not just the available wallet balance: locked
   // funds, active earn positions, and in-flight (pending) withdrawals all mean the
   // user is past onboarding. Treat the user as funded if any bucket is non-zero.
+  const hasAvailableBalance = balances.some(b => BigInt(b.balance || '0') > 0n)
   const hasFunds =
-    balances.some(b => BigInt(b.balance || '0') > 0n) ||
+    hasAvailableBalance ||
     BigInt(totalLocked || '0') > 0n ||
     (earnBalance?.positions ?? []).some(p => BigInt(p.underlying_amount || '0') > 0n) ||
     hasPendingWithdrawals
@@ -93,6 +96,7 @@ export function useDashboardFunds(): DashboardFunds {
   return {
     isLoading,
     hasFunds,
+    hasAvailableBalance,
     availableFiatValue,
     earningFiatValue,
     totalFiatValue,

@@ -90,6 +90,7 @@ export const DashboardHome = () => {
   const {
     isLoading,
     hasFunds,
+    hasAvailableBalance,
     availableFiatValue,
     earningFiatValue,
     totalFiatValue,
@@ -173,40 +174,42 @@ export const DashboardHome = () => {
               </div>
             </div>
 
-            <SurfaceCard className="p-6">
-              <h2 className="text-2xl font-semibold tracking-tight text-foreground">
-                Put your deposit to work
-              </h2>
-              <p className="mt-2 text-sm text-muted-foreground">
-                Your{' '}
-                <span className="font-medium text-foreground">{formatFiat(availableFiatValue ?? 0)}</span> is
-                ready. Earn about{' '}
-                <span className="font-medium text-foreground">{formatFiat(monthlyEarnEstimate)}</span> /
-                month, or swap it privately.
-              </p>
-              <DepositFeatures bestApyBps={bestApyBps} />
-              <div className="mt-6 flex flex-col items-center gap-3">
-                <Button
-                  asChild
-                  size="lg"
-                  className="h-14 px-8 text-base brightness-[1.07] w-full sm:w-auto sm:min-w-[200px]"
-                >
-                  <Link to={earnPath()} viewTransition>
-                    Earn daily
-                  </Link>
-                </Button>
-                <Button
-                  asChild
-                  variant="outline"
-                  size="lg"
-                  className="h-14 px-8 text-base w-full sm:w-auto sm:min-w-[200px]"
-                >
-                  <Link to={tradePath()} viewTransition>
-                    Swap privately
-                  </Link>
-                </Button>
-              </div>
-            </SurfaceCard>
+            {hasAvailableBalance && (
+              <SurfaceCard className="p-6">
+                <h2 className="text-2xl font-semibold tracking-tight text-foreground">
+                  Put your deposit to work
+                </h2>
+                <p className="mt-2 text-sm text-muted-foreground">
+                  Your{' '}
+                  <span className="font-medium text-foreground">{formatFiat(availableFiatValue ?? 0)}</span>{' '}
+                  is ready. Earn about{' '}
+                  <span className="font-medium text-foreground">{formatFiat(monthlyEarnEstimate)}</span> /
+                  month, or swap it privately.
+                </p>
+                <DepositFeatures bestApyBps={bestApyBps} />
+                <div className="mt-6 flex flex-col items-center gap-3">
+                  <Button
+                    asChild
+                    size="lg"
+                    className="h-14 px-8 text-base brightness-[1.07] w-full sm:w-auto sm:min-w-[200px]"
+                  >
+                    <Link to={earnPath()} viewTransition>
+                      Earn daily
+                    </Link>
+                  </Button>
+                  <Button
+                    asChild
+                    variant="outline"
+                    size="lg"
+                    className="h-14 px-8 text-base w-full sm:w-auto sm:min-w-[200px]"
+                  >
+                    <Link to={tradePath()} viewTransition>
+                      Swap privately
+                    </Link>
+                  </Button>
+                </div>
+              </SurfaceCard>
+            )}
 
             <LatestActivity />
           </div>
