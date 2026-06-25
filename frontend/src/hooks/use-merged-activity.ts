@@ -3,7 +3,7 @@ import { useHistory } from '@oasisprotocol/privana-sdk'
 import { useEarnPools, type EarnPool } from '@/api/earn'
 import { useActivity } from '@/contexts/ActivityProvider/useActivity'
 import type { Activity } from '@/contexts/ActivityProvider/context'
-import { classify, matchesLocal, type ClassifiedHistoryEntry } from '@/pages/Activity/historyMapping'
+import { classifyHistory, matchesLocal, type ClassifiedHistoryEntry } from '@/pages/Activity/historyMapping'
 
 export type MergedRow =
   | { source: 'chain'; timestamp: number; row: ClassifiedHistoryEntry }
@@ -34,7 +34,7 @@ export function useMergedActivity(): UseMergedActivityResult {
   }, [poolsData])
 
   const chainRows = useMemo(
-    () => history.history.map(e => classify(e, poolsByAddress)),
+    () => classifyHistory(history.history, poolsByAddress),
     [history.history, poolsByAddress],
   )
 

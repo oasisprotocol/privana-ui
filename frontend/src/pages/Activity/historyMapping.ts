@@ -35,6 +35,61 @@ export type ClassifiedHistoryEntry = {
   counterparty: string | null
   pool: EarnPool | undefined
   entry: HistoryEntry
+  // For swaps: the received ("to") leg. The base tokenId/amount carry the
+  // sent ("from") leg so swap dedupe against the local copy keeps working.
+  toTokenId?: string | null
+  toAmount?: string | null
+}
+
+// A swap is a single on-chain SwapManager.swap() call that atomically transfers
+// the "from" token out (transferBalanceOut) and the "to" token in
+// (transferBalanceIn), so both legs share a timestamp and the LP counterparty.
+// On testnet the swap LP shares an address with an earn pool, so the *pair* —
+// not the counterparty is what distinguishes a swap from an earn move.
+export function classifyHistory(
+  entries: HistoryEntry[],
+  poolsByAddress: Map<string, EarnPool>,
+): ClassifiedHistoryEntry[] {
+  const consumed = new Set<number>()
+  const rows: ClassifiedHistoryEntry[] = []
+
+  for (let i = 0; i < entries.length; i++) {
+    if (consumed.has(i)) continue
+    const out = entries[i]
+
+    if (out.kind === 'transferBalanceOut' && isSwapLpAddress(out.counterparty)) {
+      const j = entries.findIndex(
+        (e, idx) =>
+          idx !== i &&
+          !consumed.has(idx) &&
+          e.kind === 'transferBalanceIn' &&
+          e.timestamp === out.timestamp &&
+          isSwapLpAddress(e.counterparty),
+      )
+      if (j !== -1) {
+        const inLeg = entries[j]
+        consumed.add(i)
+        consumed.add(j)
+        rows.push({
+          source: 'chain',
+          kind: 'swap',
+          timestamp: out.timestamp,
+          tokenId: out.token_id ?? null,
+          amount: out.amount ?? null,
+          counterparty: out.counterparty ?? null,
+          pool: undefined,
+          entry: out,
+          toTokenId: inLeg.token_id ?? null,
+          toAmount: inLeg.amount ?? null,
+        })
+        continue
+      }
+    }
+
+    rows.push(classify(out, poolsByAddress))
+  }
+
+  return rows
 }
 
 export function classify(entry: HistoryEntry, poolsByAddress: Map<string, EarnPool>): ClassifiedHistoryEntry {
