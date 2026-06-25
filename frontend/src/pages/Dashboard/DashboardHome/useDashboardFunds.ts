@@ -23,7 +23,6 @@ export interface DashboardFunds {
   /** Highest pool APY in basis points, or null when no pools. */
   bestApyBps: number | null
   pricesError: boolean
-  pricesPending: boolean
 }
 
 // Owns everything about "where the user's money is": fetching the buckets,
@@ -36,7 +35,7 @@ export function useDashboardFunds(): DashboardFunds {
   const { locks, totalLocked, isLoading: locksLoading } = useLockedFunds()
   const { data: earnBalance, isLoading: earnLoading } = useEarnBalance()
   const { hasPendingWithdrawals, isLoading: pendingWithdrawalsLoading } = usePendingWithdrawals()
-  const { data: prices, isPending: pricesPending, isError: pricesError } = useTokenPrices(tokenIds)
+  const { data: prices, isError: pricesError } = useTokenPrices(tokenIds)
   const { data: poolsData } = useEarnPools()
 
   // Hold the dashboard in its loading state until every place funds can live has
@@ -102,6 +101,5 @@ export function useDashboardFunds(): DashboardFunds {
     totalFiatValue,
     bestApyBps,
     pricesError,
-    pricesPending,
   }
 }
