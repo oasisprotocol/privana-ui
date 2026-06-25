@@ -1,26 +1,37 @@
 import { Button } from '@/components/ui/button'
-import {
-  GitCompare,
-  ArrowDownToLine,
-  ArrowUpToLine,
-  History,
-  Percent,
-  Zap,
-  ArrowLeftRight,
-  TrendingUp,
-} from 'lucide-react'
-import { PortfolioCard } from './PortfolioCard'
+import { Zap, ArrowLeftRight, TrendingUp } from 'lucide-react'
 import { ComponentProps, useState, type ReactNode } from 'react'
 import { PrivanaModal } from '@oasisprotocol/privana-sdk'
 import { Skeleton } from '@/components/ui/skeleton'
-import { PortfolioSummary } from './PortfolioSummary'
 import { SurfaceCard } from '@/components/SurfaceCard'
 import { formatApyBps } from '@/lib/apy'
 import { formatFiat } from '@/lib/tokens'
-import { activityPath, earnPath, tradePath } from '@/paths'
-import { Link } from 'react-router'
 import { useDashboardFunds } from './useDashboardFunds'
 import { BalanceAmount } from './BalanceAmount'
+
+const BreakdownRow = ({
+  dotClass,
+  label,
+  value,
+  error,
+}: {
+  dotClass: string
+  label: string
+  value: number | undefined
+  error: boolean
+}) => (
+  <div className="flex items-center gap-2">
+    <span className={`size-2 rounded-full ${dotClass}`} />
+    <span className="font-semibold text-foreground">{label}</span>
+    {error ? (
+      <span className="text-muted-foreground">-</span>
+    ) : value === undefined ? (
+      <Skeleton className="h-4 w-16" />
+    ) : (
+      <span className="text-muted-foreground">{formatFiat(value)}</span>
+    )}
+  </div>
+)
 
 const FeatureRow = ({
   icon,
@@ -49,8 +60,15 @@ const FeatureRow = ({
 
 export const DashboardHome = () => {
   const [modalOpen, setModalOpen] = useState<ComponentProps<typeof PrivanaModal>['defaultTab']>(undefined)
-  const { isLoading, hasFunds, availableFiatValue, totalFiatValue, bestApyBps, pricesError, pricesPending } =
-    useDashboardFunds()
+  const {
+    isLoading,
+    hasFunds,
+    availableFiatValue,
+    earningFiatValue,
+    totalFiatValue,
+    bestApyBps,
+    pricesError,
+  } = useDashboardFunds()
 
   return (
     <>
@@ -99,77 +117,36 @@ export const DashboardHome = () => {
           </div>
         )}
         {!isLoading && hasFunds && (
-          <div className="flex flex-col gap-6">
-            <div className="flex md:justify-end">
-              <div className="flex flex-col md:flex-row md:items-center gap-2 md:gap-6 rounded-lg border bg-card p-3 w-full md:w-auto">
-                <div className="flex md:items-center gap-3 text-base font-medium">
-                  <span className="text-secondary-foreground">Available funds</span>
-                  {pricesError ? (
-                    <span className="text-foreground" title="Token prices are temporarily unavailable.">
-                      -
-                    </span>
-                  ) : pricesPending || availableFiatValue === undefined ? (
-                    <Skeleton className="h-5 w-20" />
-                  ) : (
-                    <span className="text-foreground">{formatFiat(availableFiatValue)}</span>
-                  )}
-                </div>
-                <div className="flex items-center gap-3">
-                  <Button variant="secondary" size="xs" onClick={() => setModalOpen('deposit')}>
-                    <ArrowDownToLine />
-                    Deposit
-                  </Button>
-                  <Button variant="secondary" size="xs" onClick={() => setModalOpen('withdraw')}>
-                    <ArrowUpToLine />
-                    Withdraw
-                  </Button>
-                  <Button variant="secondary" size="xs" asChild>
-                    <Link to={activityPath()} viewTransition>
-                      <History />
-                      See activity
-                    </Link>
-                  </Button>
-                </div>
+          <div className="flex flex-col gap-8 w-full">
+            <div className="flex flex-col gap-3">
+              <div className="flex flex-col">
+                <span className="text-sm font-medium text-muted-foreground leading-5">Total balance</span>
+                {pricesError ? (
+                  <span className="mt-3 text-5xl font-semibold tracking-tight text-foreground">-</span>
+                ) : totalFiatValue === undefined ? (
+                  <Skeleton className="mt-3 h-12 w-44 rounded-md" />
+                ) : (
+                  <BalanceAmount value={totalFiatValue} className="mt-3" />
+                )}
               </div>
-            </div>
-            <div className="flex flex-col lg:flex-row justify-between lg:items-center">
-              <div className="flex flex-col gap-3">
-                <div className="flex flex-col">
-                  <h3 className="text-xl font-semibold text-tertiary-foreground">Total balance</h3>
-                  <h2
-                    className="text-3xl font-medium text-card-foreground"
-                    title={pricesError ? 'Token prices are temporarily unavailable.' : undefined}
-                  >
-                    {pricesError ? '-' : formatFiat(totalFiatValue ?? 0)}
-                  </h2>
-                  <span className="text-lg font-semibold text-chart-positive">+$0.00 (+0%)</span>
-                </div>
+              <div className="flex flex-col gap-1 text-sm">
+                <BreakdownRow
+                  dotClass="bg-chart-positive"
+                  label="Earning"
+                  value={earningFiatValue}
+                  error={pricesError}
+                />
+                <BreakdownRow
+                  dotClass="bg-primary"
+                  label="Available"
+                  value={availableFiatValue}
+                  error={pricesError}
+                />
               </div>
             </div>
           </div>
         )}
       </div>
-
-      {hasFunds && (
-        <>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 md:gap-12 lg:gap-24 w-full">
-            <PortfolioCard
-              icon={<GitCompare />}
-              title="Swap"
-              buttonLabel="Make your private swap"
-              to={tradePath()}
-            />
-            <PortfolioCard
-              icon={<Percent />}
-              title="Earn"
-              buttonLabel="Check out earning strategies"
-              to={earnPath()}
-            />
-          </div>
-
-          <PortfolioSummary />
-        </>
-      )}
 
       <PrivanaModal
         open={!!modalOpen}
