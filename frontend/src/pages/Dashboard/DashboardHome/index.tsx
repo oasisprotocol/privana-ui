@@ -76,7 +76,6 @@ export const DashboardHome = () => {
   }, [poolsData])
 
   const { availableFiatValue, totalFiatValue } = useMemo(() => {
-    // TODO: take into account yield, pending etc when API is ready
     if (!prices) return { availableFiatValue: undefined, totalFiatValue: undefined }
     let available = 0
     let total = 0
@@ -92,8 +91,19 @@ export const DashboardHome = () => {
       available += availableAmount * price
       total += (availableAmount + lockedAmount) * price
     }
+    // Earn positions are transferred into the pool (not held as a lock), so they
+    // are a separate bucket from available/locked - no double counting. Their
+    // underlying_amount already reflects accrued yield. (Pending in-flight
+    // withdrawals are intentionally excluded; those funds are leaving.)
+    for (const p of earnBalance?.positions ?? []) {
+      const price = prices[p.token_id]
+      if (price == null) continue
+      const decimals = getTokenById(p.token_id)?.decimals
+      if (decimals == null) continue
+      total += Number(formatUnits(BigInt(p.underlying_amount || '0'), decimals)) * price
+    }
     return { availableFiatValue: available, totalFiatValue: total }
-  }, [balances, locks, prices, getTokenById])
+  }, [balances, locks, earnBalance, prices, getTokenById])
 
   const hasFunds =
     balances.some(b => BigInt(b.balance || '0') > 0n) ||
