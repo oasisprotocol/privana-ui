@@ -52,7 +52,7 @@ export const TokenSelectDialog = ({
 
   return (
     <Dialog open={open} onOpenChange={next => (!disabled ? setOpen(next) : undefined)}>
-      <DialogTrigger asChild disabled={disabled}>
+      <DialogTrigger asChild disabled={disabled} className="dark:bg-transparent">
         {trigger}
       </DialogTrigger>
       <DialogContent className="sm:max-w-md bg-card gap-4 rounded-[14px] p-6">

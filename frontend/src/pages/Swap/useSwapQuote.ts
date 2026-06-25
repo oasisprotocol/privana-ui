@@ -28,10 +28,19 @@ export const useSwapQuote = ({
   const debouncedFromAmount = useDebouncedValue(fromAmount)
   const [refetchKey, setRefetchKey] = useState(0)
 
+  const positiveAmount = (() => {
+    if (!debouncedFromAmount || fromDecimals == null) return false
+    try {
+      return parseUnits(debouncedFromAmount, fromDecimals) > 0n
+    } catch {
+      return false
+    }
+  })()
+
   const enabled =
     !!fromTokenId &&
     !!toTokenId &&
-    !!debouncedFromAmount &&
+    positiveAmount &&
     !!address &&
     !disabled &&
     fromDecimals != null &&

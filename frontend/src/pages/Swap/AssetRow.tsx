@@ -6,6 +6,7 @@ import type { TokenInfo } from '@/api/swap'
 import { formatAmount, formatFiat } from '@/lib/tokens'
 import { TokenSelectDialog } from './TokenSelectDialog'
 import { getTokenIcon } from '@oasisprotocol/privana-sdk'
+import { cn } from '@/lib/utils'
 
 const tokenLabel = (token: TokenInfo) => token.token_symbol ?? token.token_type_name
 
@@ -53,7 +54,7 @@ export const AssetRow = ({
 
   return (
     <div className="flex flex-col gap-2">
-      <div className="flex items-center w-full">
+      <div className="flex items-center gap-2 w-full h-[58px] rounded-full border border-input bg-background dark:bg-muted pl-2 pr-1">
         <TokenSelectDialog
           tokens={tokens}
           value={token?.token_id}
@@ -61,27 +62,31 @@ export const AssetRow = ({
           disabledId={disabledId}
           disabled={disabled}
           trigger={
-            <button
+            <Button
               type="button"
+              variant="outline"
               disabled={disabled}
-              className="h-12 rounded-l-[10px] rounded-r-none bg-secondary px-4 py-3 flex items-center gap-2 text-base font-medium text-secondary-foreground shrink-0 w-33 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed focus-visible:outline-none"
+              className="h-[42px] rounded-full px-3 gap-2 text-sm font-semibold shrink-0"
             >
               {token?.token_symbol && (
                 <span className="shrink-0 size-5 overflow-hidden rounded-full">
                   {getTokenIcon(token.token_symbol, 20)}
                 </span>
               )}
-              <span className="flex-1 truncate text-left">{token ? tokenLabel(token) : 'Select'}</span>
+              <span className="truncate text-left">{token ? tokenLabel(token) : 'Select'}</span>
               <ChevronDown className="size-4 shrink-0 opacity-50" />
-            </button>
+            </Button>
           }
         />
         <div className="relative flex-1 min-w-0">
           <Input
-            className={`h-12 rounded-l-none rounded-r-[10px] border-l-0 bg-background px-2.5 py-3 text-base shadow-none md:text-base ${loading ? 'opacity-50' : ''}`}
+            className={cn(
+              'h-[58px] w-full rounded-r-full border-0 bg-transparent px-3 text-right text-xl font-semibold text-foreground shadow-none focus-visible:ring-0 md:text-xl',
+              loading && 'pr-10 opacity-50',
+            )}
             type="text"
             inputMode="decimal"
-            placeholder="0"
+            placeholder={loading ? '' : '0'}
             value={amount}
             readOnly={readOnly}
             disabled={disabled}
@@ -105,8 +110,15 @@ export const AssetRow = ({
         <div className="flex items-center gap-2">
           {balanceLabel ? <span>{balanceLabel}</span> : renderBalance()}
           {onMax && token && balance && !balance.loading && balance.wei != null && (
-            <Button type="button" variant="secondary" size="xs" onClick={onMax} disabled={disabled}>
-              MAX
+            <Button
+              type="button"
+              variant="secondary"
+              size="xs"
+              onClick={onMax}
+              disabled={disabled}
+              className="h-auto px-2 py-0.5 text-[10px] font-semibold uppercase"
+            >
+              Max
             </Button>
           )}
         </div>

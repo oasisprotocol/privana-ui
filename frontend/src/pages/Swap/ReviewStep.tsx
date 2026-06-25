@@ -1,11 +1,10 @@
-import { ArrowRight } from 'lucide-react'
+import { ArrowRight, EyeOff } from 'lucide-react'
 import { getTokenIcon } from '@oasisprotocol/privana-sdk'
 import { Button } from '@/components/ui/button'
-import { Separator } from '@/components/ui/separator'
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip'
 import { QuoteCountdown } from '@/components/QuoteCountdown'
 import { Row } from '@/components/Row'
-import { StepCard } from '@/components/StepCard'
+import { cn } from '@/lib/utils'
 import type { TokenInfo } from '@/api/swap'
 import type { QuoteSummary } from './useQuoteSummary'
 
@@ -46,14 +45,16 @@ export const ReviewStep = ({
   loading,
   error,
 }: ReviewStepProps) => {
+  const cardClass =
+    'flex flex-col gap-4 bg-white dark:bg-card p-5 rounded-2xl shadow-[inset_0_1px_0_0_rgba(255,255,255,0.9),0_1px_2px_0_rgba(87,97,117,0.05),0_4px_10px_0_rgba(87,97,117,0.08)] dark:shadow-[inset_0_1px_0_0_rgba(255,255,255,0.05),0_1px_2px_0_rgba(0,0,0,0.4),0_4px_12px_0_rgba(0,0,0,0.5)]'
+
   return (
-    <StepCard className="gap-6">
-      <div className="flex flex-col gap-1.5">
-        <h2 className="text-2xl font-medium text-foreground leading-8">Review swap</h2>
-        <p className="text-sm text-muted-foreground">Confirm before executing.</p>
+    <div className="flex flex-col gap-4 w-full max-w-120 mx-auto">
+      <div className="flex justify-end">
+        <QuoteCountdown quoteLoading={quoteLoading} expiresAt={expiresAt} />
       </div>
 
-      <div className="flex flex-col gap-4">
+      <div className={cardClass}>
         <div className="flex gap-4 items-center justify-center">
           <div className="flex-1 flex flex-col gap-1 min-w-0 overflow-hidden">
             <p className="text-xs font-medium text-muted-foreground leading-4">You pay</p>
@@ -65,7 +66,7 @@ export const ReviewStep = ({
                 </span>
               )}
               {fromToken && (
-                <span className="text-sm font-semibold text-foreground leading-none">
+                <span className="text-lg font-semibold text-foreground leading-none">
                   {tokenLabel(fromToken)}
                 </span>
               )}
@@ -95,25 +96,40 @@ export const ReviewStep = ({
                 </span>
               )}
               {toToken && (
-                <span className="text-sm font-semibold text-foreground leading-none">
+                <span className="text-lg font-semibold text-foreground leading-none">
                   {tokenLabel(toToken)}
                 </span>
               )}
             </div>
           </div>
         </div>
+      </div>
 
-        <QuoteCountdown quoteLoading={quoteLoading} expiresAt={expiresAt} />
-
-        <Separator />
-
-        <div className="flex flex-col gap-4">
-          <Row label="Rate" value={summary.rateLabel || '-'} />
-          <Row label="Privacy" value="🔒 No public trace" />
-          <Row label="Network & route fee" value={summary.routeCostFiatLabel} />
-          <Row label="Service fee" value={summary.feeFiatLabel} />
-          <Row label="Estimated time" value="<20s" />
-        </div>
+      <div className={cn(cardClass, 'gap-0')}>
+        {[
+          { label: 'Rate', value: summary.rateLabel || '-' },
+          {
+            label: 'Privacy',
+            value: (
+              <span className="flex items-center gap-1.5">
+                <EyeOff className="h-3.5 w-3.5" />
+                No public trace
+              </span>
+            ),
+          },
+          { label: 'Network & route fee', value: summary.routeCostFiatLabel, mutedValue: true },
+          { label: 'Service fee', value: summary.feeFiatLabel, mutedValue: true },
+          { label: 'Estimated time', value: '< 20s', mutedValue: true },
+        ].map(row => (
+          <Row
+            key={row.label}
+            size="md"
+            className="py-3 border-b border-border first:pt-0 last:pb-0 last:border-b-0"
+            label={row.label}
+            value={row.value}
+            mutedValue={row.mutedValue}
+          />
+        ))}
       </div>
 
       <div className="flex gap-5 w-full">
@@ -137,6 +153,6 @@ export const ReviewStep = ({
       </div>
 
       {error && <p className="text-sm text-center text-destructive">{error}</p>}
-    </StepCard>
+    </div>
   )
 }
