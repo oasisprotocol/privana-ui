@@ -1,11 +1,5 @@
 import { cn } from '@/lib/utils'
-
-const fiatFormatter = new Intl.NumberFormat('en-US', {
-  style: 'currency',
-  currency: 'USD',
-  minimumFractionDigits: 2,
-  maximumFractionDigits: 2,
-})
+import { fiatFormatter } from '@/lib/tokens'
 
 export const BalanceAmount = ({ value, className }: { value: number; className?: string }) => (
   <span

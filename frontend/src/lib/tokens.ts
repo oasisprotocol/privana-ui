@@ -9,7 +9,7 @@ export const isPositiveAmount = (amount: string, decimals: number | null | undef
   }
 }
 
-const fiatFormatter = new Intl.NumberFormat('en-US', {
+export const fiatFormatter = new Intl.NumberFormat('en-US', {
   style: 'currency',
   currency: 'USD',
   minimumFractionDigits: 2,
