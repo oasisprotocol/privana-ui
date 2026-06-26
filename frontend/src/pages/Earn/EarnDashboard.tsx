@@ -6,8 +6,10 @@ import { useEarnPools } from '@/api/earn'
 import { useTokens } from '@/api/swap'
 import { earnCreatePath } from '@/paths'
 import { PageHeading } from '@/components/PageHeading'
+import { useFunds } from '@/hooks/useFunds'
 import { ActiveStrategies } from './ActiveStrategies'
 import { ApyValue } from './ApyValue'
+import { EarnBalance } from './EarnBalance'
 import { STRATEGY_LABELS } from './labels'
 import { ProtocolLabel } from './ProtocolLabel'
 
@@ -59,6 +61,7 @@ const YieldCardSkeleton = () => (
 export const EarnDashboard = () => {
   const { data: poolsData, isLoading: poolsLoading, error: poolsError } = useEarnPools()
   const { data: tokensData, isLoading: tokensLoading, error: tokensError } = useTokens()
+  const { earningFiatValue, bestApyBps, pricesError } = useFunds()
   const isLoading = poolsLoading || tokensLoading
 
   const { strategies, protocols } = useMemo(() => {
@@ -90,25 +93,33 @@ export const EarnDashboard = () => {
         className="max-w-200"
       />
 
-      <ActiveStrategies />
+      <div className="w-full max-w-200 mx-auto mt-8 flex flex-col gap-8">
+        <EarnBalance
+          earningFiatValue={earningFiatValue}
+          bestApyBps={bestApyBps}
+          pricesError={pricesError}
+        />
 
-      {(poolsError || tokensError) && <p className="text-destructive">Unable to load earn pools</p>}
+        <ActiveStrategies />
 
-      {(isLoading || strategies.length > 0) && (
-        <div className="flex flex-col gap-6">
-          <p className="text-[15px] font-bold text-muted-foreground uppercase">
-            Diversified Yield strategies
-          </p>
-          {isLoading ? <YieldCardSkeleton /> : strategies.map(s => <YieldCard key={s.id} {...s} />)}
-        </div>
-      )}
+        {(poolsError || tokensError) && <p className="text-destructive">Unable to load earn pools</p>}
 
-      {(isLoading || protocols.length > 0) && (
-        <div className="flex flex-col gap-6">
-          <p className="text-[15px] font-bold text-muted-foreground uppercase">Available protocols</p>
-          {isLoading ? <YieldCardSkeleton /> : protocols.map(p => <YieldCard key={p.id} {...p} />)}
-        </div>
-      )}
+        {(isLoading || strategies.length > 0) && (
+          <div className="flex flex-col gap-6">
+            <p className="text-[15px] font-bold text-muted-foreground uppercase">
+              Diversified Yield strategies
+            </p>
+            {isLoading ? <YieldCardSkeleton /> : strategies.map(s => <YieldCard key={s.id} {...s} />)}
+          </div>
+        )}
+
+        {(isLoading || protocols.length > 0) && (
+          <div className="flex flex-col gap-6">
+            <p className="text-[15px] font-bold text-muted-foreground uppercase">Available protocols</p>
+            {isLoading ? <YieldCardSkeleton /> : protocols.map(p => <YieldCard key={p.id} {...p} />)}
+          </div>
+        )}
+      </div>
     </>
   )
 }

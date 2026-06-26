@@ -9,7 +9,7 @@ import { formatUnits } from 'viem'
 import { useEarnPools, useEarnBalance } from '@/api/earn'
 import { useTokenPrices } from '@/api/coin-gecko'
 
-export interface DashboardFunds {
+export interface Funds {
   /** True until every place funds can live has resolved. */
   isLoading: boolean
   /** Whether the user has funds in any bucket (available, locked, earn, pending withdrawal). */
@@ -26,9 +26,9 @@ export interface DashboardFunds {
 }
 
 // Owns everything about "where the user's money is": fetching the buckets,
-// the loading gate, the funded check, and the fiat totals. Keeping it here
-// leaves DashboardHome as mostly markup and makes this logic testable.
-export function useDashboardFunds(): DashboardFunds {
+// the loading gate, the funded check, and the fiat totals. Shared by the
+// dashboard and earn pages so the bucket logic lives in one place.
+export function useFunds(): Funds {
   const { enabledTokens, tokensStatus, getTokenById } = usePrivanaContext()
   const tokenIds = useMemo(() => enabledTokens.map(t => t.id), [enabledTokens])
   const { balances, isLoading: balancesLoading } = useBatchBalances({ tokenIds })
