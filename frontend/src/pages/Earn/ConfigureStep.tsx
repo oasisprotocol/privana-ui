@@ -103,9 +103,7 @@ export const ConfigureStep = ({
   const canReview = !!selectedPool && isPositiveAmount(amount, decimals) && !exceedsBalance
 
   const availableLabel =
-    selectedToken && decimals != null
-      ? `${formatAmount(balanceWei, decimals)} ${tokenSymbol}`
-      : '-'
+    selectedToken && decimals != null ? `${formatAmount(balanceWei, decimals)} ${tokenSymbol}` : '-'
 
   if (isLoading) {
     return (

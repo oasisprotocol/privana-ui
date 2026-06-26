@@ -146,7 +146,9 @@ export const ReviewStep = ({
 
       <QuoteCountdown quoteLoading={quoteLoading} expiresAt={expiresAt} />
 
-      {quoteError && <p className="text-center text-sm text-destructive">Failed to fetch quote: {quoteError}</p>}
+      {quoteError && (
+        <p className="text-center text-sm text-destructive">Failed to fetch quote: {quoteError}</p>
+      )}
 
       {!isCorrectChain ? (
         <Button size="lg" className="h-12 w-full text-base" onClick={onSwitchChain} disabled={loading}>
