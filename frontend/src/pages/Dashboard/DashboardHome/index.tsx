@@ -4,7 +4,7 @@ import { ComponentProps, useState, type ReactNode } from 'react'
 import { PrivanaModal } from '@oasisprotocol/privana-sdk'
 import { Skeleton } from '@/components/ui/skeleton'
 import { SurfaceCard } from '@/components/SurfaceCard'
-import { formatApyBps } from '@/lib/apy'
+import { formatApyBps, apyBpsToFraction } from '@/lib/apy'
 import { formatFiat } from '@/lib/tokens'
 import { earnPath, tradePath } from '@/paths'
 import { Link } from 'react-router'
@@ -101,8 +101,8 @@ export const DashboardHome = () => {
     pricesError,
   } = useDashboardFunds()
 
-  // Rough "earn about $X / month" estimate: available × APY ÷ 12.
-  const monthlyEarnEstimate = ((availableFiatValue ?? 0) * (bestApyBps ?? 0)) / 10000 / 12
+  // Rough "earn about $X / month" estimate: available × annual APY ÷ 12 months.
+  const monthlyEarnEstimate = ((availableFiatValue ?? 0) * apyBpsToFraction(bestApyBps ?? 0)) / 12
 
   return (
     <>
