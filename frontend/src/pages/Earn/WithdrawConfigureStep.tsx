@@ -1,19 +1,14 @@
-import { Fragment, useMemo } from 'react'
+import { useMemo } from 'react'
 import { formatUnits, parseUnits } from 'viem'
-import { getTokenIcon } from '@oasisprotocol/privana-sdk'
 import { useTokenPrices } from '@/api/coin-gecko'
 import type { EarnBalance, EarnPool } from '@/api/earn'
 import type { TokenInfo } from '@/api/swap'
 import { Button } from '@/components/ui/button'
-import { Input } from '@/components/ui/input'
 import { Skeleton } from '@/components/ui/skeleton'
-import { StepCard } from '@/components/StepCard'
 import { formatAmount, formatFiat, isPositiveAmount } from '@/lib/tokens'
-import { cn } from '@/lib/utils'
-import { STRATEGY_LABELS } from './labels'
+import { PROTOCOL_LABELS } from './labels'
 
 const PERCENTS = [25, 50, 75, 100] as const
-const percentLabel = (pct: number) => (pct === 100 ? 'Max' : `${pct}%`)
 
 type WithdrawConfigureStepProps = {
   pool: EarnPool | undefined
@@ -35,7 +30,7 @@ export const WithdrawConfigureStep = ({
   onReview,
 }: WithdrawConfigureStepProps) => {
   const decimals = token?.token_decimals
-  const strategyName = pool ? (STRATEGY_LABELS[pool.strategy] ?? pool.strategy) : ''
+  const protocol = pool ? (PROTOCOL_LABELS[pool.strategy] ?? pool.strategy) : ''
   const tokenSymbol = token?.token_symbol ?? token?.token_type_name ?? ''
 
   const positionWei = useMemo(() => {
@@ -70,6 +65,13 @@ export const WithdrawConfigureStep = ({
     onAmountChange(formatUnits(portion, decimals))
   }
 
+  const handleInput = (next: string) => {
+    if (next === '') return onAmountChange('')
+    const max = decimals ?? 0
+    const pattern = max > 0 ? new RegExp(`^\\d*\\.?\\d{0,${max}}$`) : /^\d*$/
+    if (pattern.test(next)) onAmountChange(next)
+  }
+
   const exceedsBalance = useMemo(() => {
     if (!amount || decimals == null) return false
     try {
@@ -83,98 +85,71 @@ export const WithdrawConfigureStep = ({
 
   if (isLoading) {
     return (
-      <StepCard>
-        <Skeleton className="h-8 w-64" />
-        <Skeleton className="h-5 w-full max-w-80" />
+      <div className="flex flex-col items-center gap-6 w-full max-w-110 mx-auto">
+        <Skeleton className="h-7 w-48" />
+        <Skeleton className="mt-6 h-14 w-40" />
+        <Skeleton className="h-4 w-32" />
+        <Skeleton className="h-8 w-56" />
         <Skeleton className="h-12 w-full" />
-        <Skeleton className="h-12 w-full" />
-        <Skeleton className="h-12 w-full" />
-      </StepCard>
+      </div>
     )
   }
 
   if (!pool || !position) {
-    return <p className="text-destructive">Position not found</p>
+    return <p className="text-center text-destructive">Position not found</p>
   }
 
   return (
-    <StepCard>
-      <div className="flex flex-col gap-1.5">
-        <h2 className="text-2xl font-medium text-foreground leading-8">Withdraw from {strategyName}</h2>
-        <p className="text-sm text-muted-foreground">Move yield earnings back to your allowance.</p>
-      </div>
+    <div className="flex flex-col items-center gap-6 w-full max-w-110 mx-auto">
+      <h2 className="text-xl font-semibold text-foreground">Remove from {protocol}</h2>
 
-      <div className="flex flex-col gap-1">
-        <p className="text-xs font-medium text-muted-foreground">Current {strategyName} balance</p>
-        <div className="flex gap-1 items-center">
-          <span className="text-xl font-semibold text-foreground leading-none">{positionLabel}</span>
-          {tokenSymbol && (
-            <span className="shrink-0 size-4 overflow-hidden rounded-full">
-              {getTokenIcon(tokenSymbol, 16)}
-            </span>
-          )}
-          <span className="text-sm font-semibold text-foreground leading-none">{tokenSymbol}</span>
-        </div>
-      </div>
-
-      <div className="flex flex-col gap-2">
-        <p className="text-sm font-medium text-foreground">Amount to withdraw</p>
-        <div className="flex items-center w-full">
-          <div className="h-12 rounded-l-[10px] bg-secondary px-4 py-3 flex items-center gap-2 text-base font-medium text-secondary-foreground shrink-0 w-[120px]">
-            {tokenSymbol && (
-              <span className="shrink-0 size-5 overflow-hidden rounded-full">
-                {getTokenIcon(tokenSymbol, 20)}
-              </span>
-            )}
-            <span className="flex-1 truncate">{tokenSymbol || '-'}</span>
-          </div>
-          <Input
-            className="h-12 rounded-l-none rounded-r-[10px] border-l-0 bg-background px-2.5 py-3 text-base shadow-none md:text-base"
+      <div className="mt-6 flex flex-col items-center gap-2">
+        <div className="flex items-baseline justify-center gap-2">
+          <input
+            autoFocus
             type="text"
             inputMode="decimal"
             placeholder="0"
             value={amount}
-            onChange={e => {
-              const next = e.target.value
-              if (next === '') return onAmountChange('')
-              const max = decimals ?? 0
-              const pattern = max > 0 ? new RegExp(`^\\d*\\.?\\d{0,${max}}$`) : /^\d*$/
-              if (pattern.test(next)) onAmountChange(next)
-            }}
+            onChange={e => handleInput(e.target.value)}
+            size={Math.max(1, amount.length)}
+            aria-label="Amount to remove"
+            className="bg-transparent text-center text-5xl font-semibold tracking-tight tabular-nums text-foreground outline-none placeholder:text-muted-foreground"
           />
+          <span className="text-xl font-semibold text-muted-foreground">{tokenSymbol}</span>
         </div>
-        <div className="text-xs font-medium text-muted-foreground flex gap-2 items-center justify-between px-0.5">
-          <span>{fiat != null ? `≈ ${formatFiat(fiat)}` : ''}</span>
-          {exceedsBalance && <span className="text-destructive">Exceeds balance</span>}
-        </div>
-        <div className="flex items-stretch w-full">
-          {PERCENTS.map((pct, i) => (
-            <Fragment key={pct}>
-              {i > 0 && <div className="w-px bg-muted self-stretch shrink-0" />}
-              <button
-                type="button"
-                disabled={percentDisabled}
-                onClick={() => handlePercent(pct)}
-                className={cn(
-                  'flex-1 min-w-px h-7 flex items-center justify-center bg-secondary text-secondary-foreground text-xs font-medium hover:bg-accent transition-colors disabled:opacity-50 disabled:cursor-not-allowed',
-                  i === 0 && 'rounded-l-[10px]',
-                  i === PERCENTS.length - 1 && 'rounded-r-[10px]',
-                )}
-              >
-                {percentLabel(pct)}
-              </button>
-            </Fragment>
-          ))}
+        <p className="text-sm text-muted-foreground">
+          In Earn:{' '}
+          <span className="font-medium text-foreground">
+            {positionLabel} {tokenSymbol}
+          </span>
+        </p>
+        <div className="h-4 text-xs">
+          {exceedsBalance ? (
+            <span className="text-destructive">Exceeds balance</span>
+          ) : fiat != null ? (
+            <span className="text-muted-foreground">≈ {formatFiat(fiat)}</span>
+          ) : null}
         </div>
       </div>
 
-      <p className="text-xs font-medium text-muted-foreground">
-        Funds move to your allowance — not to your external wallet.
-      </p>
+      <div className="flex items-center gap-2">
+        {PERCENTS.map(pct => (
+          <button
+            key={pct}
+            type="button"
+            disabled={percentDisabled}
+            onClick={() => handlePercent(pct)}
+            className="h-8 rounded-full bg-white px-4 text-sm font-medium text-foreground shadow-[0_0.5px_1.5px_0_rgba(0,0,0,0.25),0_3.5px_7px_0_rgba(0,0,0,0.08)] transition-colors hover:bg-accent disabled:cursor-not-allowed disabled:opacity-50 dark:bg-card"
+          >
+            {pct}%
+          </button>
+        ))}
+      </div>
 
-      <Button size="lg" className="w-full h-12 text-base" disabled={!canReview} onClick={onReview}>
-        Review withdrawal
+      <Button size="lg" className="mt-4 h-12 w-full text-base" disabled={!canReview} onClick={onReview}>
+        Review
       </Button>
-    </StepCard>
+    </div>
   )
 }
