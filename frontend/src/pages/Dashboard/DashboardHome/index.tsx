@@ -1,147 +1,206 @@
 import { Button } from '@/components/ui/button'
-import { GitCompare, ArrowDownToLine, ArrowUpToLine, History, Percent } from 'lucide-react'
-import { PortfolioCard } from './PortfolioCard'
-import { ComponentProps, useMemo, useState } from 'react'
-import { PrivanaModal, useBatchBalances, usePrivanaContext, useLockedFunds } from '@oasisprotocol/privana-sdk'
-import { formatUnits } from 'viem'
+import { Zap, ArrowLeftRight, TrendingUp } from 'lucide-react'
+import { ComponentProps, useState, type ReactNode } from 'react'
+import { PrivanaModal } from '@oasisprotocol/privana-sdk'
 import { Skeleton } from '@/components/ui/skeleton'
-import { PortfolioSummary } from './PortfolioSummary'
-import { DepositAlertDialog } from './DepositAlertDialog'
-import { useTokenPrices } from '@/api/coin-gecko'
+import { SurfaceCard } from '@/components/SurfaceCard'
+import { formatApyBps, apyBpsToFraction } from '@/lib/apy'
 import { formatFiat } from '@/lib/tokens'
-import { activityPath, earnPath, tradePath } from '@/paths'
+import { earnPath, tradePath } from '@/paths'
 import { Link } from 'react-router'
+import { useDashboardFunds } from './useDashboardFunds'
+import { BalanceAmount } from './BalanceAmount'
+import { PortfolioChart } from './PortfolioChart'
+import { LatestActivity } from './LatestActivity'
+
+// Shared sizing for the dashboard's primary call-to-action buttons.
+const CTA_BUTTON = 'h-14 px-8 text-base w-full sm:w-auto sm:min-w-[200px]'
+
+const BreakdownRow = ({
+  dotClass,
+  label,
+  value,
+  error,
+}: {
+  dotClass: string
+  label: string
+  value: number | undefined
+  error: boolean
+}) => (
+  <div className="flex items-center gap-2">
+    <span className={`size-2 rounded-full ${dotClass}`} />
+    <span className="font-semibold text-foreground">{label}</span>
+    {error ? (
+      <span className="text-muted-foreground">-</span>
+    ) : value === undefined ? (
+      <Skeleton className="h-4 w-16" />
+    ) : (
+      <span className="text-muted-foreground">{formatFiat(value)}</span>
+    )}
+  </div>
+)
+
+const FeatureRow = ({
+  icon,
+  title,
+  pill,
+  description,
+}: {
+  icon: ReactNode
+  title: string
+  pill?: ReactNode
+  description: string
+}) => (
+  <div className="flex items-start gap-3">
+    <div className="mt-0.5 flex h-7 w-7 shrink-0 items-center justify-center rounded-lg bg-secondary text-secondary-foreground">
+      {icon}
+    </div>
+    <div>
+      <div className="flex items-center gap-2">
+        <p className="text-sm font-medium text-foreground">{title}</p>
+        {pill}
+      </div>
+      <p className="text-xs text-muted-foreground">{description}</p>
+    </div>
+  </div>
+)
+
+const DepositFeatures = ({ bestApyBps }: { bestApyBps: number | null }) => (
+  <div className="mt-6 flex flex-col gap-3">
+    <FeatureRow
+      icon={<Zap className="h-4 w-4" />}
+      title="Earn Daily"
+      pill={
+        bestApyBps != null ? (
+          <span className="inline-flex items-center gap-1 rounded-full bg-chart-positive px-2 py-0.5 text-xs font-semibold text-white">
+            <TrendingUp className="h-3 w-3" />
+            {formatApyBps(bestApyBps)} APY
+          </span>
+        ) : undefined
+      }
+      description="Interest accrues every day and compounds automatically."
+    />
+    <FeatureRow
+      icon={<ArrowLeftRight className="h-4 w-4" />}
+      title="Swap privately"
+      description="Private non-custodial swaps over established DeFi protocols."
+    />
+  </div>
+)
 
 export const DashboardHome = () => {
   const [modalOpen, setModalOpen] = useState<ComponentProps<typeof PrivanaModal>['defaultTab']>(undefined)
-  const { enabledTokens, tokensStatus, getTokenById } = usePrivanaContext()
-  const tokenIds = useMemo(() => enabledTokens.map(t => t.id), [enabledTokens])
-  const { balances, isLoading } = useBatchBalances({ tokenIds })
-  const pending = tokensStatus !== 'ready' || isLoading
-  const { locks } = useLockedFunds()
-  const { data: prices, isPending: pricesPending, isError: pricesError } = useTokenPrices(tokenIds)
+  const {
+    isLoading,
+    hasFunds,
+    hasAvailableBalance,
+    availableFiatValue,
+    earningFiatValue,
+    totalFiatValue,
+    bestApyBps,
+    pricesError,
+  } = useDashboardFunds()
 
-  const { availableFiatValue, totalFiatValue } = useMemo(() => {
-    // TODO: take into account yield, pending etc when API is ready
-    if (!prices) return { availableFiatValue: undefined, totalFiatValue: undefined }
-    let available = 0
-    let total = 0
-    for (const b of balances) {
-      const price = prices[b.token_id]
-      if (price == null) continue
-      const decimals = getTokenById(b.token_id)?.decimals
-      if (decimals == null) continue
-      const availableAmount = Number(formatUnits(BigInt(b.balance || '0'), decimals))
-      const lockedAmount = locks
-        .filter(l => l.token_id === b.token_id)
-        .reduce((sum, l) => sum + Number(formatUnits(BigInt(l.amount), decimals)), 0)
-      available += availableAmount * price
-      total += (availableAmount + lockedAmount) * price
-    }
-    return { availableFiatValue: available, totalFiatValue: total }
-  }, [balances, locks, prices, getTokenById])
-  const [alertOpen, setAlertOpen] = useState(false)
-  // TODO: take into account yield, pending etc when API is ready
-  const hasFunds = balances.some(b => BigInt(b.balance || '0') > 0n)
-  const handleStartWithoutFunds = () => {
-    setAlertOpen(true)
-  }
+  // Rough "earn about $X / month" estimate: available × annual APY ÷ 12 months.
+  const monthlyEarnEstimate = ((availableFiatValue ?? 0) * apyBpsToFraction(bestApyBps ?? 0)) / 12
 
   return (
     <>
-      <div className="flex flex-col gap-6 mb-8 md:mb-12">
-        {pending && <Skeleton className="h-40 w-full" />}
-        {!pending && !hasFunds && (
-          <>
-            <div className="flex flex-col gap-0.5">
-              <h3 className="text-xl font-semibold text-tertiary-foreground">Wallet connected</h3>
-              <h2 className="max-w-md text-3xl font-medium text-card-foreground">
-                Start your private trading journey, Privana
-              </h2>
+      <div className="flex flex-col gap-6 mb-8 md:mb-12 w-full max-w-200 mx-auto">
+        {isLoading && <Skeleton className="h-100 w-full" />}
+        {!isLoading && !hasFunds && (
+          <div className="flex flex-col gap-8 w-full">
+            <div className="flex flex-col">
+              <span className="text-sm font-medium text-muted-foreground leading-5">Total balance</span>
+              <BalanceAmount value={totalFiatValue ?? 0} className="mt-3" />
             </div>
-            <Button className="w-full md:w-35" size="lg" onClick={handleStartWithoutFunds}>
-              Start
-            </Button>
-          </>
+
+            <SurfaceCard className="p-6">
+              <h2 className="text-2xl font-semibold tracking-tight text-foreground">
+                Add funds to get started
+              </h2>
+              <p className="mt-2 text-sm text-muted-foreground">
+                Deposit ETH, HYPE or USDC to start using Privana.
+              </p>
+              <DepositFeatures bestApyBps={bestApyBps} />
+              <div className="mt-6 flex justify-center">
+                <Button size="lg" className={CTA_BUTTON} onClick={() => setModalOpen('deposit')}>
+                  Deposit crypto
+                </Button>
+              </div>
+            </SurfaceCard>
+          </div>
         )}
-        {!pending && hasFunds && (
-          <div className="flex flex-col gap-6">
-            <div className="flex md:justify-end">
-              <div className="flex flex-col md:flex-row md:items-center gap-2 md:gap-6 rounded-lg border bg-card p-3 w-full md:w-auto">
-                <div className="flex md:items-center gap-3 text-base font-medium">
-                  <span className="text-secondary-foreground">Available funds</span>
-                  {pricesError ? (
-                    <span className="text-foreground" title="Token prices are temporarily unavailable.">
-                      -
-                    </span>
-                  ) : pricesPending || availableFiatValue === undefined ? (
-                    <Skeleton className="h-5 w-20" />
-                  ) : (
-                    <span className="text-foreground">{formatFiat(availableFiatValue)}</span>
-                  )}
-                </div>
-                <div className="flex items-center gap-3">
-                  <Button variant="secondary" size="xs" onClick={() => setModalOpen('deposit')}>
-                    <ArrowDownToLine />
-                    Deposit
+        {!isLoading && hasFunds && (
+          <div className="flex flex-col gap-8 w-full">
+            <div className="flex flex-col gap-3">
+              <div className="flex flex-col">
+                <span className="text-sm font-medium text-muted-foreground leading-5">Total balance</span>
+                {pricesError ? (
+                  <span className="mt-3 text-5xl font-semibold tracking-tight text-foreground">-</span>
+                ) : totalFiatValue === undefined ? (
+                  <Skeleton className="mt-3 h-12 w-44 rounded-md" />
+                ) : (
+                  <BalanceAmount value={totalFiatValue} className="mt-3" />
+                )}
+              </div>
+              <div className="flex flex-col gap-1 text-sm">
+                <BreakdownRow
+                  dotClass="bg-chart-positive"
+                  label="Earning"
+                  value={earningFiatValue}
+                  error={pricesError}
+                />
+                <BreakdownRow
+                  dotClass="bg-primary"
+                  label="Available"
+                  value={availableFiatValue}
+                  error={pricesError}
+                />
+              </div>
+            </div>
+
+            <div className="flex flex-col gap-6">
+              <PortfolioChart />
+              <div className="flex justify-center">
+                <Button size="lg" className={CTA_BUTTON} onClick={() => setModalOpen('deposit')}>
+                  Deposit
+                </Button>
+              </div>
+            </div>
+
+            {hasAvailableBalance && (
+              <SurfaceCard className="p-6">
+                <h2 className="text-2xl font-semibold tracking-tight text-foreground">
+                  Put your deposit to work
+                </h2>
+                <p className="mt-2 text-sm text-muted-foreground">
+                  Your{' '}
+                  <span className="font-medium text-foreground">{formatFiat(availableFiatValue ?? 0)}</span>{' '}
+                  is ready. Earn about{' '}
+                  <span className="font-medium text-foreground">{formatFiat(monthlyEarnEstimate)}</span> /
+                  month, or swap it privately.
+                </p>
+                <DepositFeatures bestApyBps={bestApyBps} />
+                <div className="mt-6 flex flex-col items-center gap-3">
+                  <Button asChild size="lg" className={CTA_BUTTON}>
+                    <Link to={earnPath()} viewTransition>
+                      Earn daily
+                    </Link>
                   </Button>
-                  <Button variant="secondary" size="xs" onClick={() => setModalOpen('withdraw')}>
-                    <ArrowUpToLine />
-                    Withdraw
-                  </Button>
-                  <Button variant="secondary" size="xs" asChild>
-                    <Link to={activityPath()} viewTransition>
-                      <History />
-                      See activity
+                  <Button asChild variant="outline" size="lg" className={CTA_BUTTON}>
+                    <Link to={tradePath()} viewTransition>
+                      Swap privately
                     </Link>
                   </Button>
                 </div>
-              </div>
-            </div>
-            <div className="flex flex-col lg:flex-row justify-between lg:items-center">
-              <div className="flex flex-col gap-3">
-                <div className="flex flex-col">
-                  <h3 className="text-xl font-semibold text-tertiary-foreground">Total balance</h3>
-                  <h2
-                    className="text-3xl font-medium text-card-foreground"
-                    title={pricesError ? 'Token prices are temporarily unavailable.' : undefined}
-                  >
-                    {pricesError ? '-' : formatFiat(totalFiatValue ?? 0)}
-                  </h2>
-                  <span className="text-lg font-semibold text-chart-positive">+$0.00 (+0%)</span>
-                </div>
-              </div>
-            </div>
+              </SurfaceCard>
+            )}
+
+            <LatestActivity />
           </div>
         )}
       </div>
-
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6 md:gap-12 lg:gap-24 w-full">
-        <PortfolioCard
-          buttonAction={hasFunds ? undefined : handleStartWithoutFunds}
-          icon={<GitCompare />}
-          title="Swap"
-          buttonLabel="Make your private swap"
-          to={tradePath()}
-          disabled={pending}
-        />
-        <PortfolioCard
-          buttonAction={hasFunds ? undefined : handleStartWithoutFunds}
-          icon={<Percent />}
-          title="Earn"
-          buttonLabel="Check out earning strategies"
-          to={earnPath()}
-          disabled={pending}
-        />
-      </div>
-
-      <PortfolioSummary />
-
-      <DepositAlertDialog
-        open={alertOpen}
-        onClose={() => setAlertOpen(false)}
-        onDeposit={() => setModalOpen('deposit')}
-      />
 
       <PrivanaModal
         open={!!modalOpen}

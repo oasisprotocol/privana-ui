@@ -4,7 +4,7 @@ import { Button } from '@/components/ui/button'
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip'
 import { QuoteCountdown } from '@/components/QuoteCountdown'
 import { Row } from '@/components/Row'
-import { cn } from '@/lib/utils'
+import { SurfaceCard } from '@/components/SurfaceCard'
 import type { TokenInfo } from '@/api/swap'
 import type { QuoteSummary } from './useQuoteSummary'
 
@@ -45,16 +45,13 @@ export const ReviewStep = ({
   loading,
   error,
 }: ReviewStepProps) => {
-  const cardClass =
-    'flex flex-col gap-4 bg-white dark:bg-card p-5 rounded-2xl shadow-[inset_0_1px_0_0_rgba(255,255,255,0.9),0_1px_2px_0_rgba(87,97,117,0.05),0_4px_10px_0_rgba(87,97,117,0.08)] dark:shadow-[inset_0_1px_0_0_rgba(255,255,255,0.05),0_1px_2px_0_rgba(0,0,0,0.4),0_4px_12px_0_rgba(0,0,0,0.5)]'
-
   return (
     <div className="flex flex-col gap-4 w-full max-w-120 mx-auto">
       <div className="flex justify-end">
         <QuoteCountdown quoteLoading={quoteLoading} expiresAt={expiresAt} />
       </div>
 
-      <div className={cardClass}>
+      <SurfaceCard className="flex flex-col gap-4 p-5">
         <div className="flex gap-4 items-center justify-center">
           <div className="flex-1 flex flex-col gap-1 min-w-0 overflow-hidden">
             <p className="text-xs font-medium text-muted-foreground leading-4">You pay</p>
@@ -103,9 +100,9 @@ export const ReviewStep = ({
             </div>
           </div>
         </div>
-      </div>
+      </SurfaceCard>
 
-      <div className={cn(cardClass, 'gap-0')}>
+      <SurfaceCard className="flex flex-col gap-0 p-5">
         {[
           { label: 'Rate', value: summary.rateLabel || '-' },
           {
@@ -130,7 +127,7 @@ export const ReviewStep = ({
             mutedValue={row.mutedValue}
           />
         ))}
-      </div>
+      </SurfaceCard>
 
       <div className="flex gap-5 w-full">
         <Button variant="secondary" size="lg" className="flex-1" onClick={onBack} disabled={loading}>

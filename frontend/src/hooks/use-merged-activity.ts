@@ -9,6 +9,11 @@ export type MergedRow =
   | { source: 'chain'; timestamp: number; row: ClassifiedHistoryEntry }
   | { source: 'local'; timestamp: number; activity: Activity }
 
+export const rowKey = (r: MergedRow): string =>
+  r.source === 'local'
+    ? `local:${r.activity.id}`
+    : `chain:${r.timestamp}:${r.row.entry.kind}:${r.row.counterparty ?? '-'}:${r.row.amount ?? '-'}`
+
 export interface UseMergedActivityResult {
   rows: MergedRow[]
   isLoading: boolean

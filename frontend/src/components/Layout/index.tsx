@@ -54,17 +54,9 @@ export const Layout = ({ children, dashboard }: LayoutProps) => {
           </div>
         </nav>
 
-        {dashboard ? (
-          <div className="w-full max-w-7xl mx-auto" style={{ viewTransitionName: 'page-content' }}>
-            <div className="min-h-[500px] self-stretch px-8 md:px-24 py-8 md:py-16 gap-8 md:gap-16 flex flex-col border-r border-b border-l border-border">
-              {children}
-            </div>
-          </div>
-        ) : (
-          <div className="w-full max-w-7xl px-6 py-12 mx-auto" style={{ viewTransitionName: 'page-content' }}>
-            {children}
-          </div>
-        )}
+        <div className="w-full max-w-7xl px-6 py-12 mx-auto" style={{ viewTransitionName: 'page-content' }}>
+          {children}
+        </div>
         <footer className="w-full max-w-7xl py-12 mx-auto flex flex-col justify-start items-center gap-16 text-xs text-muted-foreground px-6">
           <div className="flex flex-col md:flex-row gap-8 md:gap-6 items-start w-full">
             <div className="flex-1">

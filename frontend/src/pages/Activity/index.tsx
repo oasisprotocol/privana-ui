@@ -6,13 +6,11 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Skeleton } from '@/components/ui/skeleton'
 import { cn } from '@/lib/utils'
-import { useMergedActivity, type MergedRow } from '@/hooks/use-merged-activity'
+import { useMergedActivity, rowKey } from '@/hooks/use-merged-activity'
 import { ActivityFilterSheet } from './ActivityFilterSheet'
 import { applyFilters, type ActivityFilters, type FilterType } from './filters'
 import { useActivityFilters } from './useActivityFilters'
-import { SwapActivityCard } from './SwapActivityCard'
-import { EarnActivityCard } from './EarnActivityCard'
-import { ChainActivityCard } from './ChainActivityCard'
+import { ActivityRow } from './ActivityRow'
 
 const TABS = [
   { id: 'all', label: 'All' },
@@ -51,11 +49,6 @@ const TAB_REFLECTED_TYPES: ReadonlySet<FilterType> = new Set([
   'earnDeposit',
   'earnWithdraw',
 ])
-
-const rowKey = (r: MergedRow): string =>
-  r.source === 'local'
-    ? `local:${r.activity.id}`
-    : `chain:${r.timestamp}:${r.row.entry.kind}:${r.row.counterparty ?? '-'}:${r.row.amount ?? '-'}`
 
 // The search box and filter button are hidden until the redesigned Activity is completed.
 const SHOW_FILTER_CONTROLS = false
@@ -102,7 +95,7 @@ export const Activity = () => {
       />
 
       {!isEmpty && (
-        <div className="flex flex-col gap-4 w-full max-w-145 mx-auto">
+        <div className="flex flex-col gap-4 w-full max-w-145 mx-auto mt-8">
           {SHOW_FILTER_CONTROLS && (
             <div className="flex items-center gap-2">
               <div className="relative flex-1">
@@ -151,16 +144,7 @@ export const Activity = () => {
           </div>
 
           {visible.length > 0 ? (
-            visible.map(r => {
-              if (r.source === 'local') {
-                return r.activity.type === 'swap' ? (
-                  <SwapActivityCard key={rowKey(r)} activity={r.activity} timestamp={r.timestamp} />
-                ) : (
-                  <EarnActivityCard key={rowKey(r)} activity={r.activity} timestamp={r.timestamp} />
-                )
-              }
-              return <ChainActivityCard key={rowKey(r)} row={r.row} timestamp={r.timestamp} />
-            })
+            visible.map(r => <ActivityRow key={rowKey(r)} row={r} />)
           ) : isLoading ? (
             Array.from({ length: 5 }).map((_, i) => (
               <Skeleton key={i} className="h-[90px] w-full rounded-2xl" />
