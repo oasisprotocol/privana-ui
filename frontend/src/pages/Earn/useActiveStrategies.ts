@@ -1,15 +1,11 @@
 import { useEarnBalance, useEarnPools } from '@/api/earn'
 import { useTokens } from '@/api/swap'
 import { formatAmount } from '@/lib/tokens'
-import { STRATEGY_LABELS } from './labels'
 
 export type ActiveStrategy = {
   poolId: string
-  name: string
+  /** Formatted underlying amount + symbol, e.g. "200.00 USDC". */
   earning: string
-  apyBps: number | null
-  asset: string
-  strategyKey: string | null
 }
 
 export const useActiveStrategies = (): { strategies: ActiveStrategy[]; isLoading: boolean } => {
@@ -20,9 +16,8 @@ export const useActiveStrategies = (): { strategies: ActiveStrategy[]; isLoading
   const isLoading = balanceLoading || poolsLoading || tokensLoading
 
   const positions = balanceData?.positions ?? []
-  const pools = poolsData?.pools ?? []
   const tokensById = new Map((tokensData?.tokens ?? []).map(t => [t.token_id, t]))
-  const poolsById = new Map(pools.map(p => [p.pool_id, p]))
+  const poolsById = new Map((poolsData?.pools ?? []).map(p => [p.pool_id, p]))
 
   const strategies = positions
     .filter(p => {
@@ -38,14 +33,10 @@ export const useActiveStrategies = (): { strategies: ActiveStrategy[]; isLoading
       const decimals = token?.token_decimals
       return {
         poolId: pos.pool_id,
-        name: pool ? (STRATEGY_LABELS[pool.strategy] ?? pool.strategy) : pos.pool_id,
         earning:
           decimals != null
             ? `${formatAmount(BigInt(pos.underlying_amount), decimals)} ${token?.token_symbol ?? ''}`
             : '-',
-        apyBps: pool ? pool.apy_bps : null,
-        asset: token?.token_symbol ?? '—',
-        strategyKey: pool?.strategy ?? null,
       }
     })
 
