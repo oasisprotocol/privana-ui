@@ -92,10 +92,11 @@ export const Activity = () => {
             ? 'Nothing to show yet. Your swaps, deposits, withdrawals, and earnings will appear here.'
             : 'All your deposits, withdrawals, and earnings.'
         }
+        className="max-w-200"
       />
 
       {!isEmpty && (
-        <div className="flex flex-col gap-4 w-full max-w-145 mx-auto mt-8">
+        <div className="flex flex-col gap-4 w-full max-w-200 mx-auto mt-8">
           {SHOW_FILTER_CONTROLS && (
             <div className="flex items-center gap-2">
               <div className="relative flex-1">

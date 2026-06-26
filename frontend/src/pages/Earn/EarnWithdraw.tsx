@@ -4,7 +4,6 @@ import { useAccount, useSwitchChain, useWalletClient } from 'wagmi'
 import { parseUnits } from 'viem'
 import { useEarnBalance, useEarnPools } from '@/api/earn'
 import { useTokens } from '@/api/swap'
-import { StepsNav } from '@/components/StepsNav'
 import { useResetBalanceCaches } from '@/hooks/use-reset-balance-caches'
 import { extractErrorMessage } from '@/lib/errors'
 import { activityPath } from '@/paths'
@@ -16,8 +15,6 @@ import { useSubmitEarnWithdraw } from './useSubmitEarnWithdraw'
 import type { AppChainId } from '@/wagmi-config'
 
 const CHAIN_ID = parseInt(import.meta.env.VITE_CHAIN_ID, 10) as AppChainId
-
-const steps = ['1. Configure', '2. Review']
 
 export const EarnWithdraw = () => {
   const { poolId } = useParams<{ poolId: string }>()
@@ -89,8 +86,6 @@ export const EarnWithdraw = () => {
 
   return (
     <div>
-      <StepsNav steps={steps} activeIndex={step} ariaLabel="Withdraw progress" />
-
       {step === 0 && (
         <WithdrawConfigureStep
           pool={pool}

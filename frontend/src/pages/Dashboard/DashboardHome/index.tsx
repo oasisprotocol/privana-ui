@@ -8,9 +8,9 @@ import { formatApyBps, apyBpsToFraction } from '@/lib/apy'
 import { formatFiat } from '@/lib/tokens'
 import { earnPath, tradePath } from '@/paths'
 import { Link } from 'react-router'
-import { useDashboardFunds } from './useDashboardFunds'
-import { BalanceAmount } from './BalanceAmount'
-import { PortfolioChart } from './PortfolioChart'
+import { useFunds } from '@/hooks/useFunds'
+import { BalanceAmount } from '@/components/BalanceAmount'
+import { PortfolioChart } from '@/components/PortfolioChart'
 import { LatestActivity } from './LatestActivity'
 
 // Shared sizing for the dashboard's primary call-to-action buttons.
@@ -99,7 +99,7 @@ export const DashboardHome = () => {
     totalFiatValue,
     bestApyBps,
     pricesError,
-  } = useDashboardFunds()
+  } = useFunds()
 
   // Rough "earn about $X / month" estimate: available × annual APY ÷ 12 months.
   const monthlyEarnEstimate = ((availableFiatValue ?? 0) * apyBpsToFraction(bestApyBps ?? 0)) / 12

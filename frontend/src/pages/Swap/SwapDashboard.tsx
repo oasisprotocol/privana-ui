@@ -157,6 +157,7 @@ export const SwapDashboard = () => {
             ? 'Choose the asset you want to swap & the asset you wish to receive.'
             : 'Confirm before executing.'
         }
+        className="max-w-200"
       />
 
       {switchChainError && (
