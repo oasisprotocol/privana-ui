@@ -5,9 +5,9 @@ import { Skeleton } from '@/components/ui/skeleton'
 import { useEarnPools } from '@/api/earn'
 import { useTokens } from '@/api/swap'
 import { earnCreatePath } from '@/paths'
+import { PageHeading } from '@/components/PageHeading'
 import { ActiveStrategies } from './ActiveStrategies'
 import { ApyValue } from './ApyValue'
-import { EarnHeader } from './EarnHeader'
 import { STRATEGY_LABELS } from './labels'
 import { ProtocolLabel } from './ProtocolLabel'
 
@@ -84,12 +84,10 @@ export const EarnDashboard = () => {
 
   return (
     <>
-      <EarnHeader
-        action={
-          <Button asChild size="lg" className="w-full md:w-auto">
-            <Link to={earnCreatePath()}>Select your strategy</Link>
-          </Button>
-        }
+      <PageHeading
+        title="Earn"
+        description="Where your funds are earning — withdraw anytime."
+        className="max-w-200"
       />
 
       <ActiveStrategies />
