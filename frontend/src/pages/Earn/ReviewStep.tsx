@@ -1,17 +1,21 @@
 import { useMemo } from 'react'
-import { ChevronLeft, ShieldCheck } from 'lucide-react'
 import type { DepositQuoteResponse, EarnPool } from '@/api/earn'
 import type { TokenInfo } from '@/api/swap'
-import { useTokenPrices } from '@/api/coin-gecko'
-import { Button } from '@/components/ui/button'
 import { Skeleton } from '@/components/ui/skeleton'
 import { QuoteCountdown } from '@/components/QuoteCountdown'
-import { SurfaceCard } from '@/components/SurfaceCard'
-import { Row } from '@/components/Row'
 import { formatFiat } from '@/lib/tokens'
 import { apyBpsToFraction } from '@/lib/apy'
+import { useAmountFiat } from '@/hooks/useAmountFiat'
 import { ApyValue } from './ApyValue'
 import { PROTOCOL_LABELS } from './labels'
+import {
+  ReviewAmountCard,
+  ReviewConfirmButton,
+  ReviewDetails,
+  ReviewDisclaimer,
+  ReviewHeader,
+  type ReviewDetailRow,
+} from './ReviewParts'
 
 type ReviewStepProps = {
   pool: EarnPool | undefined
@@ -49,16 +53,12 @@ export const ReviewStep = ({
   const tokenSymbol = token?.token_symbol ?? token?.token_type_name ?? ''
   const protocol = pool ? (PROTOCOL_LABELS[pool.strategy] ?? pool.strategy) : ''
 
-  const priceTokenIds = useMemo(() => (token ? [token.token_id] : []), [token])
-  const { data: prices } = useTokenPrices(priceTokenIds)
+  const fiatAmount = useAmountFiat(token, amount)
   const projected = useMemo(() => {
-    if (!pool || !token || !prices) return undefined
-    const price = prices[token.token_id]
-    const asNum = Number(amount)
-    if (price == null || !Number.isFinite(asNum)) return undefined
-    const perYear = asNum * price * apyBpsToFraction(pool.apy_bps)
+    if (!pool || fiatAmount == null) return undefined
+    const perYear = fiatAmount * apyBpsToFraction(pool.apy_bps)
     return { perMonth: perYear / 12, perYear }
-  }, [pool, token, prices, amount])
+  }, [pool, fiatAmount])
 
   if (isLoading) {
     return (
@@ -75,74 +75,37 @@ export const ReviewStep = ({
     return <p className="text-center text-destructive">Pool not found</p>
   }
 
+  const rows: ReviewDetailRow[] = [
+    { label: 'From', value: 'Available balance' },
+    { label: 'To', value: protocol },
+    { label: 'Rate', value: <ApyValue bps={pool.apy_bps} /> },
+    { label: 'Lock-up', value: 'None — withdraw anytime', muted: true },
+    ...(projected
+      ? [
+          { label: 'Projected / month', value: formatFiat(projected.perMonth), muted: true },
+          { label: 'Projected / year', value: formatFiat(projected.perYear), muted: true },
+        ]
+      : []),
+    { label: 'Fee', value: 'Free', muted: true },
+  ]
+
   return (
     <div className="flex flex-col gap-4 w-full max-w-110 mx-auto">
-      <div className="relative flex items-center justify-center">
-        <button
-          type="button"
-          onClick={onBack}
-          disabled={loading}
-          aria-label="Back"
-          className="absolute left-0 flex size-8 items-center justify-center rounded-full text-muted-foreground transition-colors hover:bg-accent disabled:opacity-50"
-        >
-          <ChevronLeft className="size-5" />
-        </button>
-        <h2 className="text-xl font-semibold text-foreground">Review move</h2>
-      </div>
+      <ReviewHeader title="Review move" onBack={onBack} disabled={loading} />
 
-      <SurfaceCard className="p-6">
-        <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground">You're moving</p>
-        <div className="mt-1 flex items-baseline gap-2">
-          <span className="text-4xl font-semibold tracking-tight tabular-nums text-foreground">{amount}</span>
-          <span className="text-xl font-semibold text-muted-foreground">{tokenSymbol}</span>
-        </div>
-        <p className="mt-1 text-sm text-muted-foreground">Available → {protocol}</p>
-      </SurfaceCard>
+      <ReviewAmountCard
+        eyebrow="You're moving"
+        amount={amount}
+        symbol={tokenSymbol}
+        subline={`Available → ${protocol}`}
+      />
 
-      <SurfaceCard className="flex flex-col px-5">
-        <Row size="md" className="border-b border-border py-3.5" label="From" value="Available balance" />
-        <Row size="md" className="border-b border-border py-3.5" label="To" value={protocol} />
-        <Row
-          size="md"
-          className="border-b border-border py-3.5"
-          label="Rate"
-          value={<ApyValue bps={pool.apy_bps} />}
-        />
-        <Row
-          size="md"
-          mutedValue
-          className="border-b border-border py-3.5"
-          label="Lock-up"
-          value="None — withdraw anytime"
-        />
-        {projected && (
-          <>
-            <Row
-              size="md"
-              mutedValue
-              className="border-b border-border py-3.5"
-              label="Projected / month"
-              value={formatFiat(projected.perMonth)}
-            />
-            <Row
-              size="md"
-              mutedValue
-              className="border-b border-border py-3.5"
-              label="Projected / year"
-              value={formatFiat(projected.perYear)}
-            />
-          </>
-        )}
-        <Row size="md" mutedValue className="py-3.5" label="Fee" value="Free" />
-      </SurfaceCard>
+      <ReviewDetails rows={rows} />
 
-      <div className="flex gap-2 rounded-xl border border-border bg-muted/30 px-4 py-3">
-        <ShieldCheck className="mt-0.5 size-4 shrink-0 text-muted-foreground" />
-        <p className="text-xs text-muted-foreground">
-          Funds move from your Available balance into {protocol} and start earning right away. No lock-up —
-          move them back anytime.
-        </p>
-      </div>
+      <ReviewDisclaimer>
+        Funds move from your Available balance into {protocol} and start earning right away. No lock-up — move
+        them back anytime.
+      </ReviewDisclaimer>
 
       <QuoteCountdown quoteLoading={quoteLoading} expiresAt={expiresAt} />
 
@@ -150,20 +113,15 @@ export const ReviewStep = ({
         <p className="text-center text-sm text-destructive">Failed to fetch quote: {quoteError}</p>
       )}
 
-      {!isCorrectChain ? (
-        <Button size="lg" className="h-12 w-full text-base" onClick={onSwitchChain} disabled={loading}>
-          Switch Network
-        </Button>
-      ) : (
-        <Button
-          size="lg"
-          className="h-12 w-full text-base"
-          onClick={onConfirm}
-          disabled={loading || quoteLoading || !quote}
-        >
-          {loading ? 'Signing & submitting...' : 'Confirm'}
-        </Button>
-      )}
+      <ReviewConfirmButton
+        isCorrectChain={isCorrectChain}
+        onSwitchChain={onSwitchChain}
+        onConfirm={onConfirm}
+        disabled={loading || quoteLoading || !quote}
+        loading={loading}
+        label="Confirm"
+        loadingLabel="Signing & submitting..."
+      />
 
       {error && <p className="text-center text-sm text-destructive">{error}</p>}
     </div>

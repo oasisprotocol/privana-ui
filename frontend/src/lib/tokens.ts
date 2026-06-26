@@ -9,6 +9,20 @@ export const isPositiveAmount = (amount: string, decimals: number | null | undef
   }
 }
 
+// Whether a human-entered amount exceeds a base-units cap (wallet balance / position).
+export const exceedsAmount = (
+  amount: string,
+  decimals: number | null | undefined,
+  maxWei: bigint,
+): boolean => {
+  if (!amount || decimals == null) return false
+  try {
+    return parseUnits(amount, decimals) > maxWei
+  } catch {
+    return false
+  }
+}
+
 export const fiatFormatter = new Intl.NumberFormat('en-US', {
   style: 'currency',
   currency: 'USD',
