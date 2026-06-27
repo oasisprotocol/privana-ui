@@ -26,7 +26,7 @@ const features = [
 ]
 
 export const CopyTradingLanding = () => {
-  const connectWallet = useConnectWallet()
+  const signIn = useConnectWallet()
 
   return (
     <>
@@ -45,7 +45,7 @@ export const CopyTradingLanding = () => {
           </div>
 
           <div className="flex flex-row flex-wrap gap-6">
-            <Button className="w-full md:w-auto" onClick={connectWallet}>
+            <Button className="w-full md:w-auto" onClick={signIn}>
               Create your strategy
             </Button>
             <Button variant="secondary" className="w-full md:w-auto">

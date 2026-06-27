@@ -6,8 +6,7 @@ const STORAGE_KEY = 'turnkey.wallet-intent'
 
 function readStored(): TurnkeyWalletIntent | null {
   if (typeof window === 'undefined') return null
-  const value = window.localStorage.getItem(STORAGE_KEY)
-  return value === 'embedded' || value === 'connected' ? value : null
+  return window.localStorage.getItem(STORAGE_KEY) === 'embedded' ? 'embedded' : null
 }
 
 let current: TurnkeyWalletIntent | null = readStored()
@@ -17,7 +16,10 @@ export function setTurnkeyWalletIntent(intent: TurnkeyWalletIntent | null): void
   if (current === intent) return
   current = intent
   if (typeof window !== 'undefined') {
-    if (intent) window.localStorage.setItem(STORAGE_KEY, intent)
+    // Persist only 'embedded'. 'connected' is session-only: there's nothing to
+    // restore on reload, and a stale persisted 'connected' would suppress the
+    // null→'connected' transition that wakes TurnkeySync on the next connect.
+    if (intent === 'embedded') window.localStorage.setItem(STORAGE_KEY, intent)
     else window.localStorage.removeItem(STORAGE_KEY)
   }
   listeners.forEach(listener => listener())

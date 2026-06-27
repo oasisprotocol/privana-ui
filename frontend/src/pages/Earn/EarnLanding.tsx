@@ -4,13 +4,13 @@ import { useConnectWallet } from '@/components/WalletConnect/useConnectWallet'
 import { EarnHeader } from './EarnHeader'
 
 export const EarnLanding = () => {
-  const connectWallet = useConnectWallet()
+  const signIn = useConnectWallet()
 
   return (
     <>
       <EarnHeader
         action={
-          <Button className="w-full md:w-auto" onClick={connectWallet}>
+          <Button className="w-full md:w-auto" onClick={signIn}>
             Start earning now
           </Button>
         }

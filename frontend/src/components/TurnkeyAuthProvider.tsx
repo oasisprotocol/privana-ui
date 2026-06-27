@@ -1,5 +1,5 @@
 import type { ReactNode } from 'react'
-import { AuthMethod, TurnkeyProvider } from '@turnkey/react-wallet-kit'
+import { TurnkeyProvider } from '@turnkey/react-wallet-kit'
 import '@turnkey/react-wallet-kit/styles.css'
 import { setTurnkeyWalletIntent } from '@/wallet/turnkeyIntent'
 import { wagmiConfig } from '@/wagmi-config'
@@ -28,11 +28,15 @@ export const TurnkeyAuthProvider = ({ children }: { children: ReactNode }) => {
       config={{
         organizationId: ORGANIZATION_ID,
         authProxyConfigId: AUTH_PROXY_CONFIG_ID,
-        // Show "Continue with wallet" so external wallets connect through the
-        // Turnkey modal too. (The Wallet method must also be enabled in the
-        // Turnkey dashboard auth-proxy config for it to function.)
+        // External wallets are intentionally NOT offered as a Turnkey auth
+        // method: wallet auth signs an ACTIVITY_TYPE_STAMP_LOGIN activity to
+        // register the wallet as a Turnkey authenticator, which external wallets
+        // surface as an unreadable "Unknown Signature Type" prompt. We connect
+        // them through Turnkey's *connecting* feature instead (connectWalletAccount,
+        // no stamp) and authenticate the app with SIWE. So this modal only does
+        // email / passkey / social → embedded wallet.
         ui: {
-          authModal: { methods: { walletAuthEnabled: true } },
+          authModal: { methods: { walletAuthEnabled: false } },
           borderRadius: 16,
           colors: {
             light: {
@@ -43,10 +47,11 @@ export const TurnkeyAuthProvider = ({ children }: { children: ReactNode }) => {
             },
           },
         },
-        // Surface external wallets in the modal: injected (Rabby/MetaMask) via
-        // `native`, plus WalletConnect when a project id is configured.
+        // Surface external wallets for *connecting* (provider discovery via
+        // `walletProviders` + connectWalletAccount). `auth` is off so wallets are
+        // never used as a Turnkey login method — see the authModal note above.
         walletConfig: {
-          features: { auth: true, connecting: true },
+          features: { auth: false, connecting: true },
           chains: {
             ethereum: { native: true, walletConnectNamespaces: WALLET_CONNECT_NAMESPACES },
           },
@@ -64,8 +69,7 @@ export const TurnkeyAuthProvider = ({ children }: { children: ReactNode }) => {
         },
       }}
       callbacks={{
-        onAuthenticationSuccess: ({ method }) =>
-          setTurnkeyWalletIntent(method === AuthMethod.Wallet ? 'connected' : 'embedded'),
+        onAuthenticationSuccess: () => setTurnkeyWalletIntent('embedded'),
       }}
     >
       {children}
