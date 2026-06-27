@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useMemo, useState, type ReactNode } from 'react'
+import { useAccount } from 'wagmi'
 import { ActivityContext, type Activity, type SwapActivity } from './context'
 import { SwapStatusPoller } from './SwapStatusPoller'
 
@@ -9,11 +10,15 @@ const isPersistable = (a: Activity): boolean =>
   (a.type === 'swap' && a.swapId != null) ||
   (a.type === 'earn' && (a.depositId != null || a.withdrawId != null))
 
-const STORAGE_KEY = 'privana-activities'
+const STORAGE_PREFIX = 'privana-activities'
 
-const loadFromStorage = (): Activity[] => {
+const storageKey = (address?: string): string | null =>
+  address ? `${STORAGE_PREFIX}:${address.toLowerCase()}` : null
+
+const loadFromStorage = (key: string | null): Activity[] => {
+  if (!key) return []
   try {
-    const raw = localStorage.getItem(STORAGE_KEY)
+    const raw = localStorage.getItem(key)
     if (!raw) return []
     const parsed = JSON.parse(raw)
     if (!Array.isArray(parsed)) return []
@@ -23,31 +28,44 @@ const loadFromStorage = (): Activity[] => {
   }
 }
 
+type ActivityState = { key: string | null; activities: Activity[] }
+
 export const ActivityProvider = ({ children }: { children: ReactNode }) => {
-  const [activities, setActivities] = useState<Activity[]>(loadFromStorage)
+  const { address } = useAccount()
+  const key = useMemo(() => storageKey(address), [address])
+
+  const [state, setState] = useState<ActivityState>(() => ({ key, activities: loadFromStorage(key) }))
+
+  if (state.key !== key) {
+    setState({ key, activities: loadFromStorage(key) })
+  }
 
   // Only persist entries that reached the backend
   useEffect(() => {
+    if (!key || state.key !== key) return
     try {
-      const persistable = activities.filter(isPersistable)
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(persistable))
+      localStorage.setItem(key, JSON.stringify(state.activities.filter(isPersistable)))
     } catch {
       // ignore quota / serialization errors
     }
-  }, [activities])
+  }, [state, key])
 
   const addActivity = useCallback((activity: Activity) => {
-    setActivities(prev => [activity, ...prev])
+    setState(prev => ({ ...prev, activities: [activity, ...prev.activities] }))
   }, [])
 
   const updateActivity = useCallback((id: string, patch: Partial<Activity>) => {
-    setActivities(prev => prev.map(a => (a.id === id ? ({ ...a, ...patch } as Activity) : a)))
+    setState(prev => ({
+      ...prev,
+      activities: prev.activities.map(a => (a.id === id ? ({ ...a, ...patch } as Activity) : a)),
+    }))
   }, [])
 
   const removeActivity = useCallback((id: string) => {
-    setActivities(prev => prev.filter(a => a.id !== id))
+    setState(prev => ({ ...prev, activities: prev.activities.filter(a => a.id !== id) }))
   }, [])
 
+  const activities = state.activities
   const pendingCount = useMemo(() => activities.filter(a => a.status === 'in-progress').length, [activities])
 
   const value = useMemo(
