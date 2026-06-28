@@ -1,8 +1,10 @@
 import { useState } from 'react'
+import { useQueryClient } from '@tanstack/react-query'
 import type { WalletClient } from 'viem'
 import { useSiweAuth } from '@oasisprotocol/privana-sdk'
 import { ApiError, getWithdrawNonce, withdrawEarn } from '@/api/earn'
 import type { TokenInfo } from '@/api/swap'
+import { operationsKeys } from '@/api/operations'
 import type { ActivityStatus } from '@/contexts/ActivityProvider/context'
 import { useActivity } from '@/contexts/ActivityProvider/useActivity'
 import { extractErrorMessage } from '@/lib/errors'
@@ -28,6 +30,7 @@ export type SubmitEarnWithdrawParams = {
 export const useSubmitEarnWithdraw = ({ onSuccess }: Params = {}) => {
   const { addActivity, updateActivity } = useActivity()
   const { accessToken } = useSiweAuth()
+  const queryClient = useQueryClient()
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
 
@@ -118,6 +121,7 @@ export const useSubmitEarnWithdraw = ({ onSuccess }: Params = {}) => {
             txHash: withdraw.tx_hash ?? undefined,
             status,
           })
+          void queryClient.invalidateQueries({ queryKey: operationsKeys.all })
           onSuccess?.()
         })
         .catch(err => {

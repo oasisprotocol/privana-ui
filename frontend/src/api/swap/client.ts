@@ -9,7 +9,7 @@ import type {
   TokenListResponse,
 } from './types'
 
-const BASE_URL = import.meta.env.VITE_PRIVANA_SERVICES_API_URL ?? 'http://localhost:8001'
+import { BASE_URL } from '../http'
 
 async function request<T>(path: string, init?: RequestInit): Promise<T> {
   const res = await fetch(`${BASE_URL}${path}`, {

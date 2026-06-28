@@ -41,7 +41,6 @@ export type Activity = SwapActivity | EarnActivity
 
 export type ActivityContextValue = {
   activities: Activity[]
-  pendingCount: number
   addActivity: (activity: Activity) => void
   updateActivity: (id: string, patch: Partial<Activity>) => void
   removeActivity: (id: string) => void

@@ -23,7 +23,7 @@ import { TURNKEY_CONNECTOR_ID } from '@/wallet/turnkeyConnector'
 import { useTurnkeyWalletIntent } from '@/wallet/turnkeyIntent'
 import { clearTurnkeyWallet } from '@/wallet/turnkeyBridge'
 import { useConnectWallet } from '../WalletConnect/useConnectWallet'
-import { useActivity } from '@/contexts/ActivityProvider/useActivity'
+import { usePendingActivityCount } from '@/hooks/use-merged-activity'
 import { activityPath } from '@/paths'
 import { cn } from '@/lib/utils'
 import { setThemePreference, useResolvedTheme } from '@/lib/theme'
@@ -48,7 +48,7 @@ export const ConnectButton: FC = () => {
   const walletIntent = useTurnkeyWalletIntent()
   const isEmbeddedWallet = isTurnkeyActive && walletIntent === 'embedded'
   const resolvedTheme = useResolvedTheme()
-  const { pendingCount } = useActivity()
+  const pendingCount = usePendingActivityCount()
 
   const [menuOpen, setMenuOpen] = useState(false)
   const [activeModal, setActiveModal] = useState<'deposit' | 'withdraw' | null>(null)
