@@ -91,7 +91,8 @@ export function walletConnectToEip1193(wc: WalletConnectProvider): EIP1193Provid
     teardownIfIdle()
   }
 
-  const request = ((args: { method: string; params?: unknown[] }) => wc.request(args)) as EIP1193Provider['request']
+  const request = ((args: { method: string; params?: unknown[] }) =>
+    wc.request(args)) as EIP1193Provider['request']
 
   return { request, on, removeListener } as unknown as EIP1193Provider
 }

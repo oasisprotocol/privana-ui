@@ -38,6 +38,18 @@ export function getTurnkeyActiveWallet(): TurnkeyActiveWallet | null {
   return current
 }
 
+// Publish a freshly connected external wallet: the live handle (bridge) must be in
+// place before the intent flips, because the null→'connected' intent transition is
+// what wakes TurnkeySync, which then reads the wallet back from the bridge. Pairing
+// the two writes here keeps that ordering in one place so call sites can't get it wrong.
+export function setConnectedTurnkeyWallet(wallet: {
+  provider: EIP1193Provider
+  address: `0x${string}`
+}): void {
+  setTurnkeyActiveWallet({ kind: 'connected', ...wallet })
+  setTurnkeyWalletIntent('connected')
+}
+
 export function clearTurnkeyWallet(): void {
   setTurnkeyWalletIntent(null)
   setTurnkeyActiveWallet(null)

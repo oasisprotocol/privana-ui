@@ -1,8 +1,7 @@
 import { useMemo, useRef, useState, type ReactNode } from 'react'
 import { useTurnkey, WalletInterfaceType } from '@turnkey/react-wallet-kit'
 import type { EIP1193Provider } from 'viem'
-import { setTurnkeyWalletIntent } from '@/wallet/turnkeyIntent'
-import { setTurnkeyActiveWallet } from '@/wallet/turnkeyBridge'
+import { setConnectedTurnkeyWallet } from '@/wallet/turnkeyBridge'
 import { walletConnectToEip1193 } from '@/wallet/walletConnectEip1193'
 import { extractErrorMessage } from '@/lib/errors'
 import { ConnectWalletContext, type ConnectWalletContextValue } from './ConnectWalletContext'
@@ -74,16 +73,13 @@ const TurnkeyConnect = ({ children }: { children: ReactNode }) => {
         provider.interfaceType === WalletInterfaceType.WalletConnect
           ? walletConnectToEip1193(provider.provider as Parameters<typeof walletConnectToEip1193>[0])
           : (provider.provider as EIP1193Provider)
-      // Publish the connected wallet to the bridge BEFORE flipping the intent:
-      // without a Turnkey session connectWalletAccount never writes it into
-      // `wallets`, so TurnkeySync reads it from the bridge instead. The
-      // null→'connected' intent transition is what wakes TurnkeySync to connect wagmi.
-      setTurnkeyActiveWallet({
-        kind: 'connected',
+      // connectWalletAccount never writes into Turnkey's `wallets` without a session,
+      // so TurnkeySync reads the wallet from the bridge — publish it (and flip the
+      // intent that wakes TurnkeySync) as one atomic step.
+      setConnectedTurnkeyWallet({
         provider: rpcProvider,
         address: account.address as `0x${string}`,
       })
-      setTurnkeyWalletIntent('connected')
       setModalOpen(false)
     } catch (err) {
       if (attemptRef.current !== attempt) return
