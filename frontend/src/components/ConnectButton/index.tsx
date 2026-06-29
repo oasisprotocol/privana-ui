@@ -8,8 +8,8 @@ import { AccountAvatar } from '../AccountAvatar'
 import { trimLongString } from '../../utils/trimLongString'
 import { wagmiConfig, type AppChainId } from '@/wagmi-config'
 import { TURNKEY_CONNECTOR_ID } from '@/wallet/turnkeyConnector'
-import { setTurnkeyWalletIntent, useTurnkeyWalletIntent } from '@/wallet/turnkeyIntent'
-import { setTurnkeyActiveWallet } from '@/wallet/turnkeyBridge'
+import { useTurnkeyWalletIntent } from '@/wallet/turnkeyIntent'
+import { clearTurnkeyWallet } from '@/wallet/turnkeyBridge'
 import { useConnectWallet } from '../WalletConnect/useConnectWallet'
 import { cn } from '@/lib/utils'
 import { setThemePreference, useResolvedTheme } from '@/lib/theme'
@@ -46,8 +46,7 @@ export const ConnectButton: FC = () => {
   // tear down the bridge + intent ourselves and disconnect wagmi (which drives
   // the SIWE logout). Embedded wallets use Turnkey's logout() via TurnkeyLogoutItem.
   const handleSignOut = () => {
-    setTurnkeyWalletIntent(null)
-    setTurnkeyActiveWallet(null)
+    clearTurnkeyWallet()
     disconnect()
   }
 
