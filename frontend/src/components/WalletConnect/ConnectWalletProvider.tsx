@@ -3,6 +3,7 @@ import { useTurnkey, WalletInterfaceType } from '@turnkey/react-wallet-kit'
 import type { EIP1193Provider } from 'viem'
 import { setTurnkeyWalletIntent } from '@/wallet/turnkeyIntent'
 import { setTurnkeyActiveWallet } from '@/wallet/turnkeyBridge'
+import { walletConnectToEip1193 } from '@/wallet/walletConnectEip1193'
 import { extractErrorMessage } from '@/lib/errors'
 import { ConnectWalletContext, type ConnectWalletContextValue } from './ConnectWalletContext'
 import { SignInDialog, type ExternalWalletOption } from './SignInDialog'
@@ -65,13 +66,21 @@ const TurnkeyConnect = ({ children }: { children: ReactNode }) => {
     try {
       const account = await connectWalletAccount(provider)
       if (attemptRef.current !== attempt) return // cancelled / superseded
+      // Turnkey hands back one of several provider shapes (injected EIP-1193 vs.
+      // WalletConnect's Wallet-Standard surface). Solana is filtered out above, so
+      // the only non-EIP-1193 case left is WalletConnect, which we adapt to EIP-1193
+      // before publishing — otherwise the wagmi connector's `provider.on(...)` throws.
+      const rpcProvider =
+        provider.interfaceType === WalletInterfaceType.WalletConnect
+          ? walletConnectToEip1193(provider.provider as Parameters<typeof walletConnectToEip1193>[0])
+          : (provider.provider as EIP1193Provider)
       // Publish the connected wallet to the bridge BEFORE flipping the intent:
       // without a Turnkey session connectWalletAccount never writes it into
       // `wallets`, so TurnkeySync reads it from the bridge instead. The
       // null→'connected' intent transition is what wakes TurnkeySync to connect wagmi.
       setTurnkeyActiveWallet({
         kind: 'connected',
-        provider: provider.provider as EIP1193Provider,
+        provider: rpcProvider,
         address: account.address as `0x${string}`,
       })
       setTurnkeyWalletIntent('connected')
