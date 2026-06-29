@@ -1,8 +1,9 @@
 import { createContext } from 'react'
 
 export type ConnectWalletContextValue = {
-  // Opens Turnkey's auth modal (passkey / email / OAuth / external wallet).
-  connectWallet: () => void
+  // Opens the Sign-in modal, which offers email/passkey (Turnkey's own modal)
+  // and any detected browser wallets (connectWalletAccount, no login stamp).
+  signIn: () => void
 }
 
 export const ConnectWalletContext = createContext<ConnectWalletContextValue | null>(null)

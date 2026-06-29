@@ -1,8 +1,30 @@
+import { useEffect } from 'react'
+import { Navigate } from 'react-router'
+import { useAccount } from 'wagmi'
+import { useSiweAuth } from '@oasisprotocol/privana-sdk'
 import { Button } from '@/components/ui/button'
 import { ArrowRight, Check } from 'lucide-react'
 import { Layout } from '../../components/Layout'
+import { dashboardPath } from '@/paths'
+
+// One-shot per page load: the first time a fully signed-in user (wallet connected
+// + SIWE authenticated) lands on the marketing home, send them to their
+// dashboard. After that they can navigate back to "/" and stay — we don't trap
+// them here.
+let autoRedirected = false
 
 export const Home = () => {
+  const { isConnected } = useAccount()
+  const { isAuthenticated } = useSiweAuth()
+  const signedIn = isConnected && isAuthenticated
+  const shouldRedirect = signedIn && !autoRedirected
+
+  useEffect(() => {
+    autoRedirected = signedIn
+  }, [signedIn])
+
+  if (shouldRedirect) return <Navigate to={dashboardPath()} replace />
+
   return (
     <Layout>
       <section className="flex flex-col items-center py-24 px-6">

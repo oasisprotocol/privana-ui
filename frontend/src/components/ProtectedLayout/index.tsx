@@ -11,7 +11,7 @@ import { useConnectWallet } from '@/components/WalletConnect/useConnectWallet'
 export const ProtectedLayout: FC = () => {
   const { isConnected, status } = useAccount()
   const { disconnect } = useDisconnect()
-  const connectWallet = useConnectWallet()
+  const signIn = useConnectWallet()
   const { isAuthenticated, isLoading: isAuthLoading, error: authError, login } = useSiweAuth()
   const navigate = useNavigate()
 
@@ -28,7 +28,7 @@ export const ProtectedLayout: FC = () => {
     ) : (
       <div className="flex flex-col flex-1 gap-4 justify-center items-center text-center">
         <p className="text-sm text-muted-foreground max-w-md">Please connect your wallet to continue.</p>
-        <Button onClick={connectWallet}>Connect Wallet</Button>
+        <Button onClick={signIn}>Sign in</Button>
       </div>
     )
   }

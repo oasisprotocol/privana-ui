@@ -9,6 +9,7 @@ import { trimLongString } from '../../utils/trimLongString'
 import { wagmiConfig, type AppChainId } from '@/wagmi-config'
 import { TURNKEY_CONNECTOR_ID } from '@/wallet/turnkeyConnector'
 import { useTurnkeyWalletIntent } from '@/wallet/turnkeyIntent'
+import { clearTurnkeyWallet } from '@/wallet/turnkeyBridge'
 import { useConnectWallet } from '../WalletConnect/useConnectWallet'
 import { cn } from '@/lib/utils'
 import { setThemePreference, useResolvedTheme } from '@/lib/theme'
@@ -27,7 +28,7 @@ export const ConnectButton: FC = () => {
   const { disconnect } = useDisconnect()
   const { switchChain } = useSwitchChain()
   const chainId = useChainId()
-  const connectWallet = useConnectWallet()
+  const signIn = useConnectWallet()
 
   const isTurnkeyActive = connector?.id === TURNKEY_CONNECTOR_ID
   const walletIntent = useTurnkeyWalletIntent()
@@ -41,10 +42,18 @@ export const ConnectButton: FC = () => {
     setModalTab(tab)
   }
 
+  // Connected (external) wallets have no Turnkey session to log out of, so we
+  // tear down the bridge + intent ourselves and disconnect wagmi (which drives
+  // the SIWE logout). Embedded wallets use Turnkey's logout() via TurnkeyLogoutItem.
+  const handleSignOut = () => {
+    clearTurnkeyWallet()
+    disconnect()
+  }
+
   if (!isConnected || !address) {
     return (
-      <Button type="button" onClick={connectWallet}>
-        Connect Wallet
+      <Button type="button" onClick={signIn}>
+        Sign in
       </Button>
     )
   }
@@ -133,10 +142,10 @@ export const ConnectButton: FC = () => {
           </div>
 
           <div className="mt-2">
-            {isTurnkeyActive ? (
+            {isEmbeddedWallet ? (
               <TurnkeyLogoutItem />
             ) : (
-              <button type="button" className={WALLET_MENU_ROW} onClick={() => disconnect()}>
+              <button type="button" className={WALLET_MENU_ROW} onClick={handleSignOut}>
                 <LogOut className="size-4" />
                 Sign out
               </button>

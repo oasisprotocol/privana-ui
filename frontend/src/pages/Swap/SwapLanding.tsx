@@ -21,7 +21,7 @@ const features = [
 ]
 
 export const SwapLanding = () => {
-  const connectWallet = useConnectWallet()
+  const signIn = useConnectWallet()
 
   return (
     <>
@@ -40,7 +40,7 @@ export const SwapLanding = () => {
           </div>
 
           <div className="flex flex-row flex-wrap gap-6">
-            <Button className="w-full md:w-auto" onClick={connectWallet}>
+            <Button className="w-full md:w-auto" onClick={signIn}>
               Start trading now
             </Button>
             <Button variant="secondary" className="w-full md:w-auto">
