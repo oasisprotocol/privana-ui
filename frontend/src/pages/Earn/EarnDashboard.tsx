@@ -1,4 +1,5 @@
-import { useMemo } from 'react'
+import { useMemo, useState } from 'react'
+import { PrivanaModal } from '@oasisprotocol/privana-sdk'
 import { Skeleton } from '@/components/ui/skeleton'
 import { useEarnPools } from '@/api/earn'
 import { useTokens } from '@/api/swap'
@@ -13,9 +14,10 @@ const VenueCardSkeleton = () => <Skeleton className="h-44 w-full rounded-2xl" />
 export const EarnDashboard = () => {
   const { data: poolsData, isLoading: poolsLoading, error: poolsError } = useEarnPools()
   const { data: tokensData, isLoading: tokensLoading, error: tokensError } = useTokens()
-  const { earningFiatValue, bestApyBps, pricesError } = useFunds()
+  const { earningFiatValue, bestApyBps, pricesError, availableTokenIds } = useFunds()
   const { strategies: activePositions, isLoading: positionsLoading } = useActiveStrategies()
   const isLoading = poolsLoading || tokensLoading || positionsLoading
+  const [depositOpen, setDepositOpen] = useState(false)
 
   const venues = useMemo<Venue[]>(() => {
     if (!poolsData || !tokensData) return []
@@ -27,6 +29,7 @@ export const EarnDashboard = () => {
         const token = tokensById.get(p.token_id)
         return {
           poolId: p.pool_id,
+          tokenId: p.token_id,
           strategyKey: p.strategy,
           asset: token?.token_symbol ?? '—',
           chain: token?.chain_name ?? '—',
@@ -52,10 +55,28 @@ export const EarnDashboard = () => {
         {(isLoading || venues.length > 0) && (
           <div className="flex flex-col gap-3">
             <p className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">Venues</p>
-            {isLoading ? <VenueCardSkeleton /> : venues.map(v => <VenueCard key={v.poolId} {...v} />)}
+            {isLoading ? (
+              <VenueCardSkeleton />
+            ) : (
+              venues.map(v => (
+                <VenueCard
+                  key={v.poolId}
+                  {...v}
+                  hasAvailableBalance={availableTokenIds.has(v.tokenId)}
+                  onRequestDeposit={() => setDepositOpen(true)}
+                />
+              ))
+            )}
           </div>
         )}
       </div>
+
+      <PrivanaModal
+        open={depositOpen}
+        onClose={() => setDepositOpen(false)}
+        showLockedFunds={false}
+        defaultTab="deposit"
+      />
     </>
   )
 }

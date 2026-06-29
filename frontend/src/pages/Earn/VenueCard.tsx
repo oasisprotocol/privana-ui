@@ -7,6 +7,7 @@ import { ProtocolLabel } from './ProtocolLabel'
 
 export type Venue = {
   poolId: string
+  tokenId: string
   strategyKey: string
   asset: string
   chain: string
@@ -15,7 +16,21 @@ export type Venue = {
   earning: string | null
 }
 
-export const VenueCard = ({ poolId, strategyKey, asset, chain, apyBps, earning }: Venue) => {
+type VenueCardProps = Venue & {
+  hasAvailableBalance: boolean
+  onRequestDeposit: () => void
+}
+
+export const VenueCard = ({
+  poolId,
+  strategyKey,
+  asset,
+  chain,
+  apyBps,
+  earning,
+  hasAvailableBalance,
+  onRequestDeposit,
+}: VenueCardProps) => {
   const isEarning = earning != null
 
   return (
@@ -42,13 +57,19 @@ export const VenueCard = ({ poolId, strategyKey, asset, chain, apyBps, earning }
               {earning}
             </span>
           </div>
-          <div className="flex gap-3">
-            <Button asChild className="flex-1">
-              <Link to={earnCreatePath(poolId)} viewTransition>
+          <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-center">
+            {hasAvailableBalance ? (
+              <Button asChild size="lg" className="w-full sm:w-auto">
+                <Link to={earnCreatePath(poolId)} viewTransition>
+                  Add funds
+                </Link>
+              </Button>
+            ) : (
+              <Button size="lg" className="w-full sm:w-auto" onClick={onRequestDeposit}>
                 Add funds
-              </Link>
-            </Button>
-            <Button asChild variant="outline" className="flex-1">
+              </Button>
+            )}
+            <Button asChild variant="outline" size="lg" className="w-full sm:w-auto">
               <Link to={earnWithdrawPath(poolId)} viewTransition>
                 Remove funds
               </Link>
@@ -60,11 +81,17 @@ export const VenueCard = ({ poolId, strategyKey, asset, chain, apyBps, earning }
           <p className="text-sm text-muted-foreground">
             Deposit {asset} to start earning {formatApyBps(apyBps)} APY.
           </p>
-          <Button asChild className="w-full">
-            <Link to={earnCreatePath(poolId)} viewTransition>
+          {hasAvailableBalance ? (
+            <Button asChild size="lg" className="w-full sm:w-auto sm:self-center">
+              <Link to={earnCreatePath(poolId)} viewTransition>
+                Start earning
+              </Link>
+            </Button>
+          ) : (
+            <Button size="lg" className="w-full sm:w-auto sm:self-center" onClick={onRequestDeposit}>
               Start earning
-            </Link>
-          </Button>
+            </Button>
+          )}
         </>
       )}
     </SurfaceCard>
