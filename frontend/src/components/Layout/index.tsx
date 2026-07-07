@@ -6,7 +6,6 @@ import { MenuItem } from './menu-item'
 import { MobileBottomNav } from './MobileBottomNav'
 import { Separator } from '../ui/separator'
 import { earnPath, homePath, dashboardPath, tradePath } from '@/paths'
-import { useActivity } from '@/contexts/ActivityProvider/useActivity'
 
 const FOOTER_SECTIONS = [
   { title: 'Company', links: ['About Us', 'Partners'] },
@@ -23,7 +22,6 @@ interface LayoutProps {
 }
 
 export const Layout = ({ children }: LayoutProps) => {
-  const { pendingCount } = useActivity()
   return (
     <div className="min-h-screen [background-image:var(--app-gradient)] text-foreground">
       <div className="w-full pb-20 md:pb-0">
@@ -88,7 +86,7 @@ export const Layout = ({ children }: LayoutProps) => {
         </footer>
       </div>
 
-      <MobileBottomNav activityBadge={pendingCount} />
+      <MobileBottomNav />
     </div>
   )
 }

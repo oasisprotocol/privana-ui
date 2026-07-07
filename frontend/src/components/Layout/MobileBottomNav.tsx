@@ -1,63 +1,34 @@
-import { NavLink, type To } from 'react-router'
-import { ArrowLeftRight, History, House, PiggyBank, type LucideIcon } from 'lucide-react'
-import { cn } from '@/lib/utils'
-import { activityPath, dashboardPath, earnPath, tradePath } from '@/paths'
+import { NavLink } from 'react-router'
+import { ArrowLeftRight, PiggyBank, type LucideIcon } from 'lucide-react'
+import { earnPath, tradePath } from '@/paths'
 
-type NavItem = { label: string; to: To; icon: LucideIcon; badge?: number }
+type NavItem = { label: string; to: string; icon: LucideIcon }
 
-export const MobileBottomNav = ({ activityBadge }: { activityBadge?: number }) => {
-  const items: NavItem[] = [
-    { label: 'Portfolio', to: dashboardPath(), icon: House },
-    { label: 'Earn', to: earnPath(), icon: PiggyBank },
-    { label: 'Swap', to: tradePath(), icon: ArrowLeftRight },
-    { label: 'Activity', to: activityPath(), icon: History, badge: activityBadge },
-  ]
+const items: NavItem[] = [
+  { label: 'Earn', to: earnPath(), icon: PiggyBank },
+  { label: 'Swap', to: tradePath(), icon: ArrowLeftRight },
+]
 
+export const MobileBottomNav = () => {
   return (
     <nav
       aria-label="Primary"
       style={{ viewTransitionName: 'bottom-nav' }}
-      className="fixed inset-x-0 bottom-0 z-50 flex border-t border-border bg-background pb-[env(safe-area-inset-bottom)] md:hidden"
+      className="pointer-events-none fixed inset-x-0 bottom-6 z-30 flex justify-center px-4 md:hidden"
     >
-      {items.map(({ label, to, icon: Icon, badge }) => {
-        const showBadge = badge != null && badge > 0
-        return (
+      <div className="pointer-events-auto flex items-center gap-2 rounded-full bg-neutral-900 p-2 shadow-[0_10px_30px_-8px_rgba(0,0,0,0.45)]">
+        {items.map(({ label, to, icon: Icon }) => (
           <NavLink
             key={label}
             to={to}
             viewTransition
-            className="flex flex-1 flex-col items-center gap-1 pt-2 pb-3"
+            className="flex items-center gap-2 rounded-full bg-neutral-800 px-8 py-4 text-sm font-medium text-white transition-colors hover:bg-neutral-700 active:scale-95"
           >
-            {({ isActive }) => (
-              <>
-                <span className="relative">
-                  <span
-                    className={cn(
-                      'flex h-8 w-12 items-center justify-center rounded-full transition-colors',
-                      isActive && 'bg-primary/20',
-                    )}
-                  >
-                    <Icon className={cn('size-5', isActive ? 'text-foreground' : 'text-muted-foreground')} />
-                  </span>
-                  {showBadge && (
-                    <span className="absolute -top-0.5 right-2 inline-flex h-4 min-w-4 items-center justify-center rounded-full bg-primary px-1 text-[10px] font-semibold leading-none text-primary-foreground">
-                      {badge}
-                    </span>
-                  )}
-                </span>
-                <span
-                  className={cn(
-                    'text-[11px] font-medium leading-normal',
-                    isActive ? 'text-foreground' : 'text-muted-foreground',
-                  )}
-                >
-                  {label}
-                </span>
-              </>
-            )}
+            <Icon className="h-4 w-4" />
+            {label}
           </NavLink>
-        )
-      })}
+        ))}
+      </div>
     </nav>
   )
 }
