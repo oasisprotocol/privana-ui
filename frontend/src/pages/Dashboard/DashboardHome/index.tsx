@@ -106,16 +106,28 @@ export const DashboardHome = () => {
 
   return (
     <>
-      <div className="flex flex-col gap-6 mb-8 md:mb-12 w-full max-w-200 mx-auto">
+      <div className="flex flex-col gap-6 mb-8 md:mb-12 w-full max-w-200 md:max-w-none mx-auto">
         {isLoading && <Skeleton className="h-100 w-full" />}
         {!isLoading && !hasFunds && (
           <div className="flex flex-col gap-8 w-full">
-            <div className="flex flex-col">
+            <div className="flex flex-col md:hidden">
               <span className="text-sm font-medium text-muted-foreground leading-5">Total balance</span>
               <BalanceAmount value={totalFiatValue ?? 0} className="mt-3" />
             </div>
 
-            <SurfaceCard className="p-6">
+            <SurfaceCard className="hidden md:grid md:grid-cols-2 md:gap-8 rounded-3xl p-8">
+              <div className="flex flex-col">
+                <span className="text-sm font-medium text-muted-foreground">Total balance</span>
+                <BalanceAmount value={totalFiatValue ?? 0} className="mt-3 text-6xl" />
+              </div>
+              <div className="flex flex-col justify-center">
+                <div className="flex min-h-[180px] items-center justify-center rounded-2xl border border-dashed border-border dark:border-[#31363f] text-sm text-muted-foreground">
+                  Make a deposit to see your balance grow.
+                </div>
+              </div>
+            </SurfaceCard>
+
+            <SurfaceCard className="p-6 w-full md:mx-auto md:max-w-2xl">
               <h2 className="text-2xl font-semibold tracking-tight text-foreground">
                 Add funds to get started
               </h2>
@@ -123,9 +135,21 @@ export const DashboardHome = () => {
                 Deposit ETH, HYPE or USDC to start using Privana.
               </p>
               <DepositFeatures bestApyBps={bestApyBps} />
-              <div className="mt-6 flex justify-center">
-                <Button size="lg" className={CTA_BUTTON} onClick={() => setModalOpen('deposit')}>
+              <div className="mt-6 flex flex-col gap-3">
+                <Button
+                  size="lg"
+                  className="h-14 px-8 text-base w-full"
+                  onClick={() => setModalOpen('deposit')}
+                >
                   Deposit crypto
+                </Button>
+                <Button
+                  variant="outline"
+                  size="lg"
+                  className="h-14 px-8 text-base w-full"
+                  onClick={() => setModalOpen('deposit')}
+                >
+                  Buy with card
                 </Button>
               </div>
             </SurfaceCard>
