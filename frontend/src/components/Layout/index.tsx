@@ -48,10 +48,10 @@ export const Layout = ({ children }: LayoutProps) => {
         <div className="w-full max-w-7xl px-6 py-12 mx-auto" style={{ viewTransitionName: 'page-content' }}>
           {children}
         </div>
-        <footer className="w-full max-w-7xl py-12 mx-auto flex flex-col justify-start items-center gap-16 text-xs text-muted-foreground px-6">
+        <footer className="w-full max-w-7xl py-12 mx-auto flex flex-col justify-start items-center gap-16 text-xs text-muted-foreground px-6 border-t border-border/70">
           <div className="flex flex-col md:flex-row gap-8 md:gap-6 items-start w-full">
             <div className="flex-1">
-              <img src={Logo} alt="Privana" className="h-5 dark:brightness-0 dark:invert" />
+              <img src={Logo} alt="Privana" className="h-6 dark:brightness-0 dark:invert" />
             </div>
             {FOOTER_SECTIONS.map(section => (
               <div key={section.title} className="flex-1 flex flex-col gap-4 min-w-0">

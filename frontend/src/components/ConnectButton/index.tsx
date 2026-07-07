@@ -90,7 +90,7 @@ export const ConnectButton: FC = () => {
             aria-label="Account menu"
             className={cn(
               'inline-flex h-10 w-10 items-center justify-center rounded-full text-foreground transition-colors hover:bg-muted cursor-pointer',
-              'md:h-9 md:w-auto md:gap-2 md:border md:border-border md:bg-background md:dark:bg-card md:py-1.5 md:pl-1.5 md:pr-3 md:text-sm md:font-medium md:shadow-sm md:hover:bg-secondary/60',
+              'md:h-9 md:w-auto md:gap-2 md:border md:border-border md:bg-background md:dark:bg-card md:py-1.5 md:pl-1.5 md:pr-3 md:text-sm md:font-medium md:shadow-xs md:hover:bg-secondary/60',
             )}
           >
             <Wallet className="size-6 md:hidden" />
