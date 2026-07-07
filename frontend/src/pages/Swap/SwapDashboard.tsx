@@ -12,7 +12,7 @@ import { PageHeading } from '@/components/PageHeading'
 import { extractErrorMessage } from '@/lib/errors'
 import { activityPath } from '@/paths'
 import { SWAPPABLE_TOKEN_IDS } from '@/config/tokens'
-import { StepCard } from '@/components/StepCard'
+import { cn } from '@/lib/utils'
 import { useResetBalanceCaches } from '@/hooks/use-reset-balance-caches'
 import { AssetRow } from './AssetRow'
 import { QuoteInfo } from './QuoteInfo'
@@ -23,6 +23,13 @@ import { useQuoteSummary } from './useQuoteSummary'
 import type { AppChainId } from '@/wagmi-config'
 
 const CHAIN_ID = parseInt(import.meta.env.VITE_CHAIN_ID, 10) as AppChainId
+
+// Desktop-only card surface (flat on mobile), matching SurfaceCard's look so the
+// swap form reads like the onboarding card on md+ but stays edge-to-edge on phones.
+const DESKTOP_CARD =
+  'md:rounded-3xl md:bg-white md:p-6 md:dark:bg-card ' +
+  'md:shadow-[inset_0_1px_0_0_rgba(255,255,255,0.9),0_1px_2px_0_rgba(87,97,117,0.05),0_4px_10px_0_rgba(87,97,117,0.08)] ' +
+  'md:dark:shadow-[inset_0_1px_0_0_rgba(255,255,255,0.05),0_1px_2px_0_rgba(0,0,0,0.4),0_4px_12px_0_rgba(0,0,0,0.5)]'
 
 export const SwapDashboard = () => {
   const [step, setStep] = useState(0)
@@ -148,28 +155,58 @@ export const SwapDashboard = () => {
     resetQuote()
   }
 
+  // Review step keeps the heading above and its own internal cards.
+  if (step === 1) {
+    return (
+      <div className="flex flex-col gap-8">
+        <PageHeading title="Review swap" description="Confirm before executing." className="max-w-200" />
+
+        {switchChainError && (
+          <p className="text-sm text-center text-destructive mb-4">{extractErrorMessage(switchChainError)}</p>
+        )}
+
+        {data && (
+          <ReviewStep
+            fromToken={fromToken}
+            toToken={toToken}
+            fromAmount={fromAmount}
+            toAmount={toAmount}
+            summary={summary}
+            quoteLoading={quoteLoading}
+            canConfirm={canSwap}
+            expiresAt={quoteData?.expires_at}
+            toAmountExact={toAmountExact}
+            isCorrectChain={isCorrectChain}
+            onSwitchChain={() => switchChain({ chainId: CHAIN_ID })}
+            onBack={() => {
+              resetSubmit()
+              setStep(0)
+            }}
+            onConfirm={handleSwap}
+            loading={swapLoading}
+            error={swapError}
+          />
+        )}
+      </div>
+    )
+  }
+
+  // Swap step: heading + form wrapped in a card on desktop, flat on mobile.
   return (
-    <div className="flex flex-col gap-8">
-      <PageHeading
-        title={step === 0 ? 'Swap' : 'Review swap'}
-        description={
-          step === 0
-            ? 'Choose the asset you want to swap & the asset you wish to receive.'
-            : 'Confirm before executing.'
-        }
-        className="max-w-200"
-      />
+    <div className={cn('mx-auto flex w-full max-w-lg flex-col', DESKTOP_CARD)}>
+      <div className="flex flex-col gap-1">
+        <h1 className="text-foreground text-3xl font-semibold tracking-tight leading-9">Swap</h1>
+        <p className="text-muted-foreground text-sm font-normal leading-5">
+          Choose the asset you want to swap &amp; the asset you wish to receive.
+        </p>
+      </div>
 
       {switchChainError && (
-        <p className="text-sm text-center text-destructive mb-4">{extractErrorMessage(switchChainError)}</p>
+        <p className="mt-4 text-sm text-center text-destructive">{extractErrorMessage(switchChainError)}</p>
       )}
 
       {isLoading && (
-        <StepCard>
-          <div className="flex flex-col gap-1.5">
-            <Skeleton className="h-8 w-40" />
-            <Skeleton className="h-5 w-full max-w-80" />
-          </div>
+        <div className="mt-6 flex flex-col gap-4">
           <div className="flex flex-col gap-2">
             <Skeleton className="h-5 w-16" />
             <Skeleton className="h-12 w-full" />
@@ -182,12 +219,12 @@ export const SwapDashboard = () => {
             <Skeleton className="h-12 w-full" />
           </div>
           <Skeleton className="h-12 w-full" />
-        </StepCard>
+        </div>
       )}
-      {error && <p>Failed to load tokens: {error.message}</p>}
+      {error && <p className="mt-6">Failed to load tokens: {error.message}</p>}
 
-      {data && step === 0 && (
-        <StepCard>
+      {data && (
+        <div className="mt-6 flex flex-col gap-4">
           <div className="flex flex-col gap-2">
             <p className="text-sm font-normal text-muted-foreground">You pay</p>
             <AssetRow
@@ -218,7 +255,7 @@ export const SwapDashboard = () => {
               onClick={handleSwapDirection}
               disabled={!fromTokenId && !toTokenId}
               aria-label="Swap direction"
-              className="bg-card"
+              className="bg-muted text-muted-foreground hover:bg-muted/80"
             >
               <ArrowUpDown className="size-4" />
             </Button>
@@ -273,30 +310,7 @@ export const SwapDashboard = () => {
             <EyeOff className="size-4 shrink-0" />
             <span>Private execution — no public trace</span>
           </div>
-        </StepCard>
-      )}
-
-      {data && step === 1 && (
-        <ReviewStep
-          fromToken={fromToken}
-          toToken={toToken}
-          fromAmount={fromAmount}
-          toAmount={toAmount}
-          summary={summary}
-          quoteLoading={quoteLoading}
-          canConfirm={canSwap}
-          expiresAt={quoteData?.expires_at}
-          toAmountExact={toAmountExact}
-          isCorrectChain={isCorrectChain}
-          onSwitchChain={() => switchChain({ chainId: CHAIN_ID })}
-          onBack={() => {
-            resetSubmit()
-            setStep(0)
-          }}
-          onConfirm={handleSwap}
-          loading={swapLoading}
-          error={swapError}
-        />
+        </div>
       )}
     </div>
   )

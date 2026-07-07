@@ -54,7 +54,7 @@ export const AssetRow = ({
 
   return (
     <div className="flex flex-col gap-2">
-      <div className="flex items-center gap-2 w-full h-[58px] rounded-full border border-input bg-background dark:bg-muted pl-2 pr-1">
+      <div className="flex items-center gap-2 w-full h-[58px] rounded-full border border-input bg-card pl-2 pr-1">
         <TokenSelectDialog
           tokens={tokens}
           value={token?.token_id}
@@ -66,11 +66,11 @@ export const AssetRow = ({
               type="button"
               variant="outline"
               disabled={disabled}
-              className="h-[42px] rounded-full px-3 gap-2 text-sm font-semibold shrink-0"
+              className="h-[42px] rounded-full px-3 gap-2 text-sm font-semibold shrink-0 [&_svg:not([class*='size-'])]:size-6"
             >
               {token?.token_symbol && (
-                <span className="shrink-0 size-5 overflow-hidden rounded-full">
-                  {getTokenIcon(token.token_symbol, 20)}
+                <span className="shrink-0 size-6 overflow-hidden rounded-full">
+                  {getTokenIcon(token.token_symbol, 24)}
                 </span>
               )}
               <span className="truncate text-left">{token ? tokenLabel(token) : 'Select'}</span>
@@ -81,7 +81,7 @@ export const AssetRow = ({
         <div className="relative flex-1 min-w-0">
           <Input
             className={cn(
-              'h-[58px] w-full rounded-r-full border-0 bg-transparent px-3 text-right text-xl font-semibold text-foreground shadow-none focus-visible:ring-0 md:text-xl',
+              'h-[58px] w-full rounded-r-full border-0 bg-transparent dark:bg-transparent px-3 text-right text-xl font-semibold text-foreground shadow-none focus-visible:ring-0 md:text-xl',
               loading && 'pr-10 opacity-50',
             )}
             type="text"
@@ -116,7 +116,7 @@ export const AssetRow = ({
               size="xs"
               onClick={onMax}
               disabled={disabled}
-              className="h-auto px-2 py-0.5 text-[10px] font-semibold uppercase"
+              className="h-auto rounded-full px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide dark:bg-[#2d3139] dark:text-foreground dark:hover:bg-[#2d3139]/80"
             >
               Max
             </Button>
