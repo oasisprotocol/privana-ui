@@ -49,7 +49,10 @@ export const Layout = ({ children }: LayoutProps) => {
           </div>
         </nav>
 
-        <div className="w-full max-w-7xl px-6 py-12 mx-auto" style={{ viewTransitionName: 'page-content' }}>
+        <div
+          className="w-full max-w-6xl px-6 py-12 mx-auto md:px-8 md:py-10"
+          style={{ viewTransitionName: 'page-content' }}
+        >
           {children}
         </div>
         <footer className="w-full max-w-7xl py-12 mx-auto flex flex-col justify-start items-center gap-16 text-xs text-muted-foreground px-6 border-t border-border/70">
