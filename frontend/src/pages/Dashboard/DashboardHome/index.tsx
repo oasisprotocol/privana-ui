@@ -1,7 +1,7 @@
 import { Button } from '@/components/ui/button'
 import { Zap, ArrowLeftRight, TrendingUp } from 'lucide-react'
-import { ComponentProps, useState, type ReactNode } from 'react'
-import { PrivanaModal, getTokenIcon } from '@oasisprotocol/privana-sdk'
+import { useState, type ReactNode } from 'react'
+import { DepositModal, getTokenIcon } from '@oasisprotocol/privana-sdk'
 import { Skeleton } from '@/components/ui/skeleton'
 import { SurfaceCard } from '@/components/SurfaceCard'
 import { formatApyBps, apyBpsToFraction } from '@/lib/apy'
@@ -145,7 +145,7 @@ const DepositFeatures = ({ bestApyBps }: { bestApyBps: number | null }) => (
 )
 
 export const DashboardHome = () => {
-  const [modalOpen, setModalOpen] = useState<ComponentProps<typeof PrivanaModal>['defaultTab']>(undefined)
+  const [depositTab, setDepositTab] = useState<'crypto' | 'credit-card' | null>(null)
   const {
     isLoading,
     hasFunds,
@@ -197,7 +197,7 @@ export const DashboardHome = () => {
                 <Button
                   size="lg"
                   className="h-14 px-8 text-base w-full"
-                  onClick={() => setModalOpen('deposit')}
+                  onClick={() => setDepositTab('crypto')}
                 >
                   Deposit crypto
                 </Button>
@@ -205,7 +205,7 @@ export const DashboardHome = () => {
                   variant="outline"
                   size="lg"
                   className="h-14 px-8 text-base w-full"
-                  onClick={() => setModalOpen('deposit')}
+                  onClick={() => setDepositTab('credit-card')}
                 >
                   Buy with card
                 </Button>
@@ -245,7 +245,7 @@ export const DashboardHome = () => {
                 <Button
                   size="lg"
                   className="mt-8 h-14 px-8 text-base w-full sm:w-auto sm:self-start sm:px-10"
-                  onClick={() => setModalOpen('deposit')}
+                  onClick={() => setDepositTab('crypto')}
                 >
                   Deposit
                 </Button>
@@ -288,7 +288,7 @@ export const DashboardHome = () => {
               <div className="flex flex-col gap-6">
                 <PortfolioChart />
                 <div className="flex justify-center">
-                  <Button size="lg" className={CTA_BUTTON} onClick={() => setModalOpen('deposit')}>
+                  <Button size="lg" className={CTA_BUTTON} onClick={() => setDepositTab('crypto')}>
                     Deposit
                   </Button>
                 </div>
@@ -328,11 +328,10 @@ export const DashboardHome = () => {
         )}
       </div>
 
-      <PrivanaModal
-        open={!!modalOpen}
-        onClose={() => setModalOpen(undefined)}
-        showLockedFunds={false}
-        defaultTab={modalOpen}
+      <DepositModal
+        open={depositTab !== null}
+        onClose={() => setDepositTab(null)}
+        defaultTab={depositTab ?? 'crypto'}
       />
     </>
   )
