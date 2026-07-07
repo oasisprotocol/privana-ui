@@ -1,7 +1,7 @@
 export function trimLongString(
   value: string | undefined | null,
   trimStart = 6,
-  trimEnd = 6,
+  trimEnd = 4,
   ellipsis = '…',
 ): string {
   if (!value) return ''

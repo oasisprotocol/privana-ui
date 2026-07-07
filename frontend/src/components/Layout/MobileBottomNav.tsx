@@ -7,7 +7,7 @@ type NavItem = { label: string; to: To; icon: LucideIcon; badge?: number }
 
 export const MobileBottomNav = ({ activityBadge }: { activityBadge?: number }) => {
   const items: NavItem[] = [
-    { label: 'Home', to: dashboardPath(), icon: House },
+    { label: 'Portfolio', to: dashboardPath(), icon: House },
     { label: 'Earn', to: earnPath(), icon: PiggyBank },
     { label: 'Swap', to: tradePath(), icon: ArrowLeftRight },
     { label: 'Activity', to: activityPath(), icon: History, badge: activityBadge },

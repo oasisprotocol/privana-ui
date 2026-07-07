@@ -6,7 +6,7 @@ import Logo from '../../assets/logo.svg'
 import { MenuItem } from './menu-item'
 import { MobileBottomNav } from './MobileBottomNav'
 import { Separator } from '../ui/separator'
-import { activityPath, earnPath, homePath, dashboardPath, tradePath } from '@/paths'
+import { earnPath, homePath, dashboardPath, tradePath } from '@/paths'
 import { useActivity } from '@/contexts/ActivityProvider/useActivity'
 
 const FOOTER_SECTIONS = [
@@ -37,16 +37,15 @@ export const Layout = ({ children, dashboard }: LayoutProps) => {
       >
         <nav
           style={{ viewTransitionName: 'top-nav' }}
-          className="flex items-center justify-between px-6 h-16"
+          className="flex items-center justify-between px-6 h-16 bg-background border-b border-border"
         >
           <Link to={homePath()} viewTransition className="text-xl font-bold">
-            <img src={Logo} alt="Privana" className="h-5 min-w-25 dark:brightness-0 dark:invert" />
+            <img src={Logo} alt="Privana" className="h-[22px] min-w-25 dark:brightness-0 dark:invert" />
           </Link>
           <div className="hidden md:flex items-center gap-1">
-            <MenuItem to={dashboardPath()} label="Home" />
+            <MenuItem to={dashboardPath()} label="Portfolio" />
             <MenuItem to={earnPath()} label="Earn" />
             <MenuItem to={tradePath()} label="Swap" />
-            <MenuItem to={activityPath()} label="Activity" badge={pendingCount} />
           </div>
 
           <div className="flex items-center gap-4">
