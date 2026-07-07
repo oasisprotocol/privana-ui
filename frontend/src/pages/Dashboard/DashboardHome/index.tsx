@@ -1,14 +1,14 @@
 import { Button } from '@/components/ui/button'
 import { Zap, ArrowLeftRight, TrendingUp } from 'lucide-react'
 import { ComponentProps, useState, type ReactNode } from 'react'
-import { PrivanaModal } from '@oasisprotocol/privana-sdk'
+import { PrivanaModal, getTokenIcon } from '@oasisprotocol/privana-sdk'
 import { Skeleton } from '@/components/ui/skeleton'
 import { SurfaceCard } from '@/components/SurfaceCard'
 import { formatApyBps, apyBpsToFraction } from '@/lib/apy'
-import { formatFiat } from '@/lib/tokens'
+import { formatFiat, formatAmount } from '@/lib/tokens'
 import { earnPath, tradePath } from '@/paths'
 import { Link } from 'react-router'
-import { useFunds } from '@/hooks/useFunds'
+import { useFunds, type TokenBreakdown } from '@/hooks/useFunds'
 import { BalanceAmount } from '@/components/BalanceAmount'
 import { PortfolioChart } from '@/components/PortfolioChart'
 import { LatestActivity } from './LatestActivity'
@@ -19,23 +19,79 @@ const CTA_BUTTON = 'h-14 px-8 text-base w-full sm:w-auto sm:min-w-[200px]'
 const BreakdownRow = ({
   dotClass,
   label,
-  value,
+  tokens,
+  fiatFallback,
   error,
 }: {
   dotClass: string
   label: string
-  value: number | undefined
+  tokens: TokenBreakdown[]
+  fiatFallback: number | undefined
   error: boolean
 }) => (
   <div className="flex items-center gap-2">
     <span className={`size-2 rounded-full ${dotClass}`} />
     <span className="font-semibold text-foreground">{label}</span>
-    {error ? (
+    {tokens.length > 0 ? (
+      <span className="inline-flex flex-wrap items-center gap-x-2 gap-y-1">
+        {tokens.map(token => (
+          <TokenAmountInline key={token.symbol} token={token} />
+        ))}
+      </span>
+    ) : error ? (
       <span className="text-muted-foreground">-</span>
-    ) : value === undefined ? (
+    ) : fiatFallback === undefined ? (
       <Skeleton className="h-4 w-16" />
     ) : (
-      <span className="text-muted-foreground">{formatFiat(value)}</span>
+      <span className="text-muted-foreground">{formatFiat(fiatFallback)}</span>
+    )}
+  </div>
+)
+
+const TokenAmountInline = ({ token }: { token: TokenBreakdown }) => (
+  <span className="inline-flex items-center gap-1.5 tabular-nums text-sm">
+    <span className="font-medium text-foreground">{formatAmount(token.amount, token.decimals)}</span>
+    <span className="inline-flex items-center gap-1 text-muted-foreground">
+      <span className="size-3 self-center overflow-hidden rounded-full">
+        {getTokenIcon(token.symbol, 12)}
+      </span>
+      {token.symbol}
+    </span>
+  </span>
+)
+
+const DesktopBreakdownRow = ({
+  dotClass,
+  label,
+  tokens,
+  fiatFallback,
+  error,
+}: {
+  dotClass: string
+  label: string
+  tokens: TokenBreakdown[]
+  fiatFallback: number | undefined
+  error: boolean
+}) => (
+  <div className="flex items-center justify-between gap-4">
+    <span className="inline-flex items-center gap-2.5 font-medium text-foreground">
+      <span aria-hidden className={`size-2.5 rounded-full ${dotClass}`} />
+      {label}
+    </span>
+    {tokens.length > 0 ? (
+      <span className="inline-flex flex-wrap items-center justify-end gap-x-2 gap-y-1">
+        {tokens.map(token => (
+          <span key={token.symbol} className="inline-flex items-center gap-2">
+            <TokenAmountInline token={token} />
+          </span>
+        ))}
+      </span>
+    ) : error ? (
+      <span className="text-muted-foreground">-</span>
+    ) : fiatFallback === undefined ? (
+      <Skeleton className="h-4 w-16" />
+    ) : (
+      <span className="text-muted-foreground">{formatFiat(fiatFallback)}</span>
     )}
   </div>
 )
@@ -97,6 +153,8 @@ export const DashboardHome = () => {
     availableFiatValue,
     earningFiatValue,
     totalFiatValue,
+    availableTokens,
+    earningTokens,
     bestApyBps,
     pricesError,
   } = useFunds()
@@ -112,13 +170,13 @@ export const DashboardHome = () => {
           <div className="flex flex-col gap-8 w-full">
             <div className="flex flex-col md:hidden">
               <span className="text-sm font-medium text-muted-foreground leading-5">Total balance</span>
-              <BalanceAmount value={totalFiatValue ?? 0} className="mt-3" />
+              <BalanceAmount value={totalFiatValue ?? 0} className="mt-3 animate-fade-in" />
             </div>
 
             <SurfaceCard className="hidden md:grid md:grid-cols-2 md:gap-8 rounded-3xl p-8">
               <div className="flex flex-col">
                 <span className="text-sm font-medium text-muted-foreground">Total balance</span>
-                <BalanceAmount value={totalFiatValue ?? 0} className="mt-3 text-6xl" />
+                <BalanceAmount value={totalFiatValue ?? 0} className="mt-3 text-6xl animate-fade-in" />
               </div>
               <div className="flex flex-col justify-center">
                 <div className="flex min-h-[180px] items-center justify-center rounded-2xl border border-dashed border-border dark:border-[#31363f] text-sm text-muted-foreground">
@@ -157,44 +215,88 @@ export const DashboardHome = () => {
         )}
         {!isLoading && hasFunds && (
           <div className="flex flex-col gap-8 w-full">
-            <div className="flex flex-col gap-3">
+            {/* Desktop: two-column balance card (balance + breakdown + CTA | chart) */}
+            <SurfaceCard className="hidden md:grid md:grid-cols-2 md:gap-8 rounded-3xl p-8">
               <div className="flex flex-col">
-                <span className="text-sm font-medium text-muted-foreground leading-5">Total balance</span>
+                <span className="text-sm font-medium text-muted-foreground">Total balance</span>
                 {pricesError ? (
-                  <span className="mt-3 text-5xl font-semibold tracking-tight text-foreground">-</span>
+                  <span className="mt-3 text-6xl font-semibold tracking-tight text-foreground">-</span>
                 ) : totalFiatValue === undefined ? (
-                  <Skeleton className="mt-3 h-12 w-44 rounded-md" />
+                  <Skeleton className="mt-3 h-14 w-56 rounded-md" />
                 ) : (
-                  <BalanceAmount value={totalFiatValue} className="mt-3" />
+                  <BalanceAmount value={totalFiatValue} className="mt-3 text-6xl animate-fade-in" />
                 )}
-              </div>
-              <div className="flex flex-col gap-1 text-sm">
-                <BreakdownRow
-                  dotClass="bg-chart-positive"
-                  label="Earning"
-                  value={earningFiatValue}
-                  error={pricesError}
-                />
-                <BreakdownRow
-                  dotClass="bg-primary"
-                  label="Available"
-                  value={availableFiatValue}
-                  error={pricesError}
-                />
-              </div>
-            </div>
-
-            <div className="flex flex-col gap-6">
-              <PortfolioChart />
-              <div className="flex justify-center">
-                <Button size="lg" className={CTA_BUTTON} onClick={() => setModalOpen('deposit')}>
+                <div className="mt-6 space-y-4">
+                  <DesktopBreakdownRow
+                    dotClass="bg-chart-positive"
+                    label="Earning"
+                    tokens={earningTokens}
+                    fiatFallback={earningFiatValue}
+                    error={pricesError}
+                  />
+                  <DesktopBreakdownRow
+                    dotClass="bg-primary"
+                    label="Available"
+                    tokens={availableTokens}
+                    fiatFallback={availableFiatValue}
+                    error={pricesError}
+                  />
+                </div>
+                <Button
+                  size="lg"
+                  className="mt-8 h-14 px-8 text-base w-full sm:w-auto sm:self-start sm:px-10"
+                  onClick={() => setModalOpen('deposit')}
+                >
                   Deposit
                 </Button>
+              </div>
+              <div className="flex flex-col justify-center">
+                <PortfolioChart />
+              </div>
+            </SurfaceCard>
+
+            <div className="flex flex-col gap-8 md:hidden">
+              <div className="flex flex-col gap-3">
+                <div className="flex flex-col">
+                  <span className="text-sm font-medium text-muted-foreground leading-5">Total balance</span>
+                  {pricesError ? (
+                    <span className="mt-3 text-5xl font-semibold tracking-tight text-foreground">-</span>
+                  ) : totalFiatValue === undefined ? (
+                    <Skeleton className="mt-3 h-12 w-44 rounded-md" />
+                  ) : (
+                    <BalanceAmount value={totalFiatValue} className="mt-3 animate-fade-in" />
+                  )}
+                </div>
+                <div className="flex flex-col gap-1 text-sm">
+                  <BreakdownRow
+                    dotClass="bg-chart-positive"
+                    label="Earning"
+                    tokens={earningTokens}
+                    fiatFallback={earningFiatValue}
+                    error={pricesError}
+                  />
+                  <BreakdownRow
+                    dotClass="bg-primary"
+                    label="Available"
+                    tokens={availableTokens}
+                    fiatFallback={availableFiatValue}
+                    error={pricesError}
+                  />
+                </div>
+              </div>
+
+              <div className="flex flex-col gap-6">
+                <PortfolioChart />
+                <div className="flex justify-center">
+                  <Button size="lg" className={CTA_BUTTON} onClick={() => setModalOpen('deposit')}>
+                    Deposit
+                  </Button>
+                </div>
               </div>
             </div>
 
             {hasAvailableBalance && (
-              <SurfaceCard className="p-6">
+              <SurfaceCard className="p-6 w-full md:max-w-2xl">
                 <h2 className="text-2xl font-semibold tracking-tight text-foreground">
                   Put your deposit to work
                 </h2>
@@ -206,13 +308,13 @@ export const DashboardHome = () => {
                   month, or swap it privately.
                 </p>
                 <DepositFeatures bestApyBps={bestApyBps} />
-                <div className="mt-6 flex flex-col items-center gap-3">
-                  <Button asChild size="lg" className={CTA_BUTTON}>
+                <div className="mt-6 flex flex-col gap-3">
+                  <Button asChild size="lg" className="h-14 px-8 text-base w-full">
                     <Link to={earnPath()} viewTransition>
                       Earn daily
                     </Link>
                   </Button>
-                  <Button asChild variant="outline" size="lg" className={CTA_BUTTON}>
+                  <Button asChild variant="outline" size="lg" className="h-14 px-8 text-base w-full">
                     <Link to={tradePath()} viewTransition>
                       Swap privately
                     </Link>

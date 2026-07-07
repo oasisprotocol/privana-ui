@@ -9,6 +9,12 @@ import { formatUnits } from 'viem'
 import { useEarnPools, useEarnBalance } from '@/api/earn'
 import { useTokenPrices } from '@/api/coin-gecko'
 
+export interface TokenBreakdown {
+  symbol: string
+  amount: bigint
+  decimals: number
+}
+
 export interface Funds {
   /** True until every place funds can live has resolved. */
   isLoading: boolean
@@ -22,6 +28,10 @@ export interface Funds {
   /** Fiat value held in earn positions. */
   earningFiatValue: number | undefined
   totalFiatValue: number | undefined
+  /** Per-token available (idle) balances, for token-denominated display. */
+  availableTokens: TokenBreakdown[]
+  /** Per-token earn-position balances, for token-denominated display. */
+  earningTokens: TokenBreakdown[]
   /** Highest pool APY in basis points, or null when no pools. */
   bestApyBps: number | null
   pricesError: boolean
@@ -84,6 +94,37 @@ export function useFunds(): Funds {
     return { availableFiatValue: available, earningFiatValue: earning, totalFiatValue: total }
   }, [balances, locks, earnBalance, prices, getTokenById])
 
+  // Per-token amounts for token-denominated display (Earning / Available rows).
+  // Merged by symbol so token ids that share a ticker (e.g. several USDC ids)
+  // collapse into one row. Independent of prices, so it survives a price error.
+  const { availableTokens, earningTokens } = useMemo(() => {
+    const mergeBySymbol = (
+      items: { tokenId: string; amount: string; symbol?: string }[],
+    ): TokenBreakdown[] => {
+      const bySymbol = new Map<string, TokenBreakdown>()
+      for (const it of items) {
+        const amount = BigInt(it.amount || '0')
+        if (amount <= 0n) continue
+        const token = getTokenById(it.tokenId)
+        const symbol = it.symbol ?? token?.symbol
+        const decimals = token?.decimals
+        if (!symbol || decimals == null) continue
+        const existing = bySymbol.get(symbol)
+        if (existing) existing.amount += amount
+        else bySymbol.set(symbol, { symbol, amount, decimals })
+      }
+      return [...bySymbol.values()]
+    }
+    return {
+      availableTokens: mergeBySymbol(
+        balances.map(b => ({ tokenId: b.token_id, amount: b.balance, symbol: b.token_symbol })),
+      ),
+      earningTokens: mergeBySymbol(
+        (earnBalance?.positions ?? []).map(p => ({ tokenId: p.token_id, amount: p.underlying_amount })),
+      ),
+    }
+  }, [balances, earnBalance, getTokenById])
+
   // Funds live in several places, not just the available wallet balance: locked
   // funds, active earn positions, and in-flight (pending) withdrawals all mean the
   // user is past onboarding. Treat the user as funded if any bucket is non-zero.
@@ -106,6 +147,8 @@ export function useFunds(): Funds {
     availableFiatValue,
     earningFiatValue,
     totalFiatValue,
+    availableTokens,
+    earningTokens,
     bestApyBps,
     pricesError,
   }

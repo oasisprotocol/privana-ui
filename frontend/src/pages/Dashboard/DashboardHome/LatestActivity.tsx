@@ -15,7 +15,7 @@ export const LatestActivity = () => {
   return (
     <div className="flex flex-col gap-4">
       <div className="flex items-center justify-between">
-        <h2 className="text-base font-semibold text-foreground">Latest activity</h2>
+        <h2 className="text-base md:text-lg md:tracking-tight font-semibold text-foreground">Latest activity</h2>
         <Link
           to={activityPath()}
           viewTransition
