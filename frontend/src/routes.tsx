@@ -10,8 +10,7 @@ import { EarnCreate } from './pages/Earn/EarnCreate'
 import { EarnWithdraw } from './pages/Earn/EarnWithdraw'
 import { Apps } from './pages/Apps'
 import { Activity } from './pages/Activity'
-import { OnRamp } from './pages/OnRamp'
-import { activityPath, appsPath, earnPath, homePath, dashboardPath, onRampPath, tradePath } from './paths'
+import { activityPath, appsPath, earnPath, homePath, dashboardPath, tradePath } from './paths'
 
 export const router = createBrowserRouter([
   {
@@ -80,16 +79,6 @@ export const router = createBrowserRouter([
           {
             index: true,
             element: <Activity />,
-          },
-        ],
-      },
-      {
-        path: onRampPath(),
-        element: <ProtectedLayout />,
-        children: [
-          {
-            index: true,
-            element: <OnRamp />,
           },
         ],
       },
