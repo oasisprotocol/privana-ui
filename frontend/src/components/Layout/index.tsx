@@ -1,5 +1,6 @@
 import type { ReactNode } from 'react'
 import { Link } from 'react-router'
+import { useAccount } from 'wagmi'
 import { ConnectButton } from '../ConnectButton'
 import Logo from '../../assets/logo.svg'
 import { MenuItem } from './menu-item'
@@ -22,6 +23,9 @@ interface LayoutProps {
 }
 
 export const Layout = ({ children }: LayoutProps) => {
+  const { address, isConnected } = useAccount()
+  const isWalletConnected = isConnected && !!address
+
   return (
     <div className="min-h-screen [background-image:var(--app-gradient)] text-foreground">
       <div className="w-full pb-20 md:pb-0">
@@ -32,11 +36,13 @@ export const Layout = ({ children }: LayoutProps) => {
           <Link to={homePath()} viewTransition className="text-xl font-bold">
             <img src={Logo} alt="Privana" className="h-6 min-w-25 dark:brightness-0 dark:invert" />
           </Link>
-          <div className="hidden md:flex items-center gap-1">
-            <MenuItem to={dashboardPath()} label="Portfolio" />
-            <MenuItem to={earnPath()} label="Earn" />
-            <MenuItem to={tradePath()} label="Swap" />
-          </div>
+          {isWalletConnected && (
+            <div className="hidden md:flex items-center gap-1">
+              <MenuItem to={dashboardPath()} label="Portfolio" />
+              <MenuItem to={earnPath()} label="Earn" />
+              <MenuItem to={tradePath()} label="Swap" />
+            </div>
+          )}
 
           <div className="flex items-center gap-4">
             <ConnectButton />
@@ -86,7 +92,7 @@ export const Layout = ({ children }: LayoutProps) => {
         </footer>
       </div>
 
-      <MobileBottomNav />
+      {isWalletConnected && <MobileBottomNav />}
     </div>
   )
 }
