@@ -1,6 +1,5 @@
 import type { ReactNode } from 'react'
 import { Link } from 'react-router'
-import { cn } from '@/lib/utils'
 import { ConnectButton } from '../ConnectButton'
 import Logo from '../../assets/logo.svg'
 import { MenuItem } from './menu-item'
@@ -21,26 +20,19 @@ const FOOTER_SECTIONS = [
 
 interface LayoutProps {
   children: ReactNode
-  dashboard?: boolean
 }
 
-export const Layout = ({ children, dashboard }: LayoutProps) => {
+export const Layout = ({ children }: LayoutProps) => {
   const { pendingCount } = useActivity()
   return (
-    <div className="min-h-screen bg-background text-foreground">
-      <div
-        className={cn(
-          'w-full pb-20 md:pb-0',
-          dashboard &&
-            'bg-[linear-gradient(to_bottom,#F3F4F6_0px,#FFFFFF_460px)] dark:bg-[linear-gradient(to_bottom,#21242C_0px,#181B20_180px,#111318_460px)]',
-        )}
-      >
+    <div className="min-h-screen [background-image:var(--app-gradient)] text-foreground">
+      <div className="w-full pb-20 md:pb-0">
         <nav
           style={{ viewTransitionName: 'top-nav' }}
-          className="flex items-center justify-between px-6 h-16 bg-background border-b border-border"
+          className="relative md:sticky md:top-0 z-40 flex items-center justify-between px-6 py-3.5 backdrop-blur bg-[#fafafa]/85 dark:bg-background/85 border-b border-border/70"
         >
           <Link to={homePath()} viewTransition className="text-xl font-bold">
-            <img src={Logo} alt="Privana" className="h-[22px] min-w-25 dark:brightness-0 dark:invert" />
+            <img src={Logo} alt="Privana" className="h-6 min-w-25 dark:brightness-0 dark:invert" />
           </Link>
           <div className="hidden md:flex items-center gap-1">
             <MenuItem to={dashboardPath()} label="Portfolio" />

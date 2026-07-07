@@ -3,7 +3,7 @@ import { Layout } from '../../components/Layout'
 
 export const Dashboard = () => {
   return (
-    <Layout dashboard>
+    <Layout>
       <Outlet />
     </Layout>
   )
