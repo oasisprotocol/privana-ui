@@ -17,7 +17,7 @@ export const MenuItem = ({ label, to, badge }: MenuItemProps) => {
         cn(
           'inline-flex items-center gap-1.5 text-sm font-medium px-4 py-2 rounded-full transition-colors duration-250',
           isActive
-            ? 'bg-secondary text-foreground'
+            ? 'bg-secondary dark:bg-[#2d3139] text-foreground'
             : 'text-muted-foreground hover:bg-secondary/60 hover:text-foreground',
         )
       }

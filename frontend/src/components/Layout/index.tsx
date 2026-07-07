@@ -27,7 +27,7 @@ export const Layout = ({ children }: LayoutProps) => {
       <div className="w-full pb-20 md:pb-0">
         <nav
           style={{ viewTransitionName: 'top-nav' }}
-          className="relative md:sticky md:top-0 z-40 flex items-center justify-between px-6 py-3.5 backdrop-blur bg-[#fafafa]/85 dark:bg-background/85 border-b border-border/70"
+          className="relative md:sticky md:top-0 z-40 flex items-center justify-between px-6 py-3.5 backdrop-blur bg-[#fafafa]/85 dark:bg-background/85 border-b border-border/70 dark:border-[rgba(49,54,63,0.7)]"
         >
           <Link to={homePath()} viewTransition className="text-xl font-bold">
             <img src={Logo} alt="Privana" className="h-6 min-w-25 dark:brightness-0 dark:invert" />

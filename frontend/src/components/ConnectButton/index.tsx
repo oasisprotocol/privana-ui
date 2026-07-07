@@ -90,7 +90,7 @@ export const ConnectButton: FC = () => {
             aria-label="Account menu"
             className={cn(
               'inline-flex h-10 w-10 items-center justify-center rounded-full text-foreground transition-colors hover:bg-muted cursor-pointer',
-              'md:h-9 md:w-auto md:gap-2 md:border md:border-border md:bg-background md:dark:bg-card md:py-1.5 md:pl-1.5 md:pr-3 md:text-sm md:font-medium md:shadow-xs md:hover:bg-secondary/60',
+              'md:h-auto md:w-auto md:gap-2 md:border md:border-border md:dark:border-[#31363f] md:bg-background md:dark:bg-card md:py-1.5 md:pl-1.5 md:pr-3 md:text-sm md:font-medium md:shadow-xs md:hover:bg-secondary/60',
             )}
           >
             <Wallet className="size-6 md:hidden" />
@@ -101,7 +101,11 @@ export const ConnectButton: FC = () => {
             </span>
           </button>
         </DropdownMenuTrigger>
-        <DropdownMenuContent align="end" className="w-72 rounded-2xl p-3 dark:bg-card dark:border-[#31363f]">
+        <DropdownMenuContent
+          align="end"
+          sideOffset={8}
+          className="w-72 rounded-2xl p-3 dark:bg-card dark:border-[#31363f]"
+        >
           <div className="rounded-xl bg-muted p-3">
             <span className="text-[11px] uppercase tracking-wide text-muted-foreground">Wallet</span>
             <div className="mt-1 flex items-center gap-2">

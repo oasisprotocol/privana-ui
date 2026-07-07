@@ -92,7 +92,13 @@
 
 .dark {
   --background: #111318;
-  --app-gradient: linear-gradient(180deg, hsl(220 14% 15%), hsl(220 15% 11%) 180px, hsl(220 16% 8%) 460px, hsl(220 16% 8%));
+  --app-gradient: linear-gradient(
+    180deg,
+    hsl(220 14% 15%),
+    hsl(220 15% 11%) 180px,
+    hsl(220 16% 8%) 460px,
+    hsl(220 16% 8%)
+  );
   --foreground: #fafafa;
   --card: #1d2026;
   --card-foreground: #fafafa;
