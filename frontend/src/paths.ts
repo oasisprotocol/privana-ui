@@ -15,5 +15,3 @@ export const activityPath = () => '/activity'
 export const copyTradingPath = () => '/copy-trading'
 export const copyTradingCreatePath = () => '/copy-trading/create'
 export const copyTradingStrategyPath = (id: string) => `/copy-trading/${id}`
-
-export const onRampPath = () => '/on-ramp'

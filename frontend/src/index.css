@@ -60,6 +60,7 @@
 :root {
   --radius: 0.625rem;
   --background: #ffffff;
+  --app-gradient: linear-gradient(180deg, hsl(220 14% 93%), hsl(220 13% 96%) 180px, #ffffff 460px, #ffffff);
   --foreground: #0a0a0a;
   --card: #f3f4f6;
   --card-foreground: #0a0a0a;
@@ -70,7 +71,7 @@
   --secondary: #e5e5e5;
   --secondary-foreground: #404040;
   --tertiary-foreground: #a1a1aa;
-  --muted: #f5f5f5;
+  --muted: #f3f4f6;
   --muted-foreground: #737373;
   --accent: #f5f5f5;
   --accent-foreground: #0a0a0a;
@@ -91,6 +92,13 @@
 
 .dark {
   --background: #111318;
+  --app-gradient: linear-gradient(
+    180deg,
+    hsl(220 14% 15%),
+    hsl(220 15% 11%) 180px,
+    hsl(220 16% 8%) 460px,
+    hsl(220 16% 8%)
+  );
   --foreground: #fafafa;
   --card: #1d2026;
   --card-foreground: #fafafa;

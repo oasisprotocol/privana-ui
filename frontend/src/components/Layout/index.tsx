@@ -1,13 +1,11 @@
 import type { ReactNode } from 'react'
 import { Link } from 'react-router'
-import { cn } from '@/lib/utils'
 import { ConnectButton } from '../ConnectButton'
 import Logo from '../../assets/logo.svg'
 import { MenuItem } from './menu-item'
 import { MobileBottomNav } from './MobileBottomNav'
 import { Separator } from '../ui/separator'
-import { activityPath, earnPath, homePath, dashboardPath, tradePath } from '@/paths'
-import { useActivity } from '@/contexts/ActivityProvider/useActivity'
+import { earnPath, homePath, dashboardPath, tradePath } from '@/paths'
 
 const FOOTER_SECTIONS = [
   { title: 'Company', links: ['About Us', 'Partners'] },
@@ -21,32 +19,23 @@ const FOOTER_SECTIONS = [
 
 interface LayoutProps {
   children: ReactNode
-  dashboard?: boolean
 }
 
-export const Layout = ({ children, dashboard }: LayoutProps) => {
-  const { pendingCount } = useActivity()
+export const Layout = ({ children }: LayoutProps) => {
   return (
-    <div className="min-h-screen bg-background text-foreground">
-      <div
-        className={cn(
-          'w-full pb-20 md:pb-0',
-          dashboard &&
-            'bg-[linear-gradient(to_bottom,#F3F4F6_0px,#FFFFFF_460px)] dark:bg-[linear-gradient(to_bottom,#21242C_0px,#181B20_180px,#111318_460px)]',
-        )}
-      >
+    <div className="min-h-screen [background-image:var(--app-gradient)] text-foreground">
+      <div className="w-full pb-20 md:pb-0">
         <nav
           style={{ viewTransitionName: 'top-nav' }}
-          className="flex items-center justify-between px-6 h-16"
+          className="relative md:sticky md:top-0 z-40 flex items-center justify-between px-6 py-3.5 backdrop-blur bg-[#fafafa]/85 dark:bg-background/85 border-b border-border/70 dark:border-[rgba(49,54,63,0.7)]"
         >
           <Link to={homePath()} viewTransition className="text-xl font-bold">
-            <img src={Logo} alt="Privana" className="h-5 min-w-25 dark:brightness-0 dark:invert" />
+            <img src={Logo} alt="Privana" className="h-6 min-w-25 dark:brightness-0 dark:invert" />
           </Link>
           <div className="hidden md:flex items-center gap-1">
-            <MenuItem to={dashboardPath()} label="Home" />
+            <MenuItem to={dashboardPath()} label="Portfolio" />
             <MenuItem to={earnPath()} label="Earn" />
             <MenuItem to={tradePath()} label="Swap" />
-            <MenuItem to={activityPath()} label="Activity" badge={pendingCount} />
           </div>
 
           <div className="flex items-center gap-4">
@@ -57,10 +46,10 @@ export const Layout = ({ children, dashboard }: LayoutProps) => {
         <div className="w-full max-w-7xl px-6 py-12 mx-auto" style={{ viewTransitionName: 'page-content' }}>
           {children}
         </div>
-        <footer className="w-full max-w-7xl py-12 mx-auto flex flex-col justify-start items-center gap-16 text-xs text-muted-foreground px-6">
+        <footer className="w-full max-w-7xl py-12 mx-auto flex flex-col justify-start items-center gap-16 text-xs text-muted-foreground px-6 border-t border-border/70">
           <div className="flex flex-col md:flex-row gap-8 md:gap-6 items-start w-full">
             <div className="flex-1">
-              <img src={Logo} alt="Privana" className="h-5 dark:brightness-0 dark:invert" />
+              <img src={Logo} alt="Privana" className="h-6 dark:brightness-0 dark:invert" />
             </div>
             {FOOTER_SECTIONS.map(section => (
               <div key={section.title} className="flex-1 flex flex-col gap-4 min-w-0">
@@ -97,7 +86,7 @@ export const Layout = ({ children, dashboard }: LayoutProps) => {
         </footer>
       </div>
 
-      <MobileBottomNav activityBadge={pendingCount} />
+      <MobileBottomNav />
     </div>
   )
 }

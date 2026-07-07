@@ -1,6 +1,7 @@
 import { useTurnkey, WalletSource } from '@turnkey/react-wallet-kit'
-import { KeyRound } from 'lucide-react'
-import { WALLET_MENU_ROW } from './walletMenuRow'
+import { ChevronRight, KeyRound } from 'lucide-react'
+import { cn } from '@/lib/utils'
+import { WALLET_CARD_ROW } from './walletMenuRow'
 
 export const ExportEmbeddedWallet = () => {
   const { handleExportWallet, wallets } = useTurnkey()
@@ -9,11 +10,12 @@ export const ExportEmbeddedWallet = () => {
   return (
     <button
       type="button"
-      className={WALLET_MENU_ROW}
+      className={cn(WALLET_CARD_ROW, 'mt-2')}
       onClick={() => void handleExportWallet({ walletId: wallet.walletId })}
     >
-      <KeyRound className="size-4" />
+      <KeyRound className="size-4 text-muted-foreground" />
       Export wallet
+      <ChevronRight className="ml-auto size-4 text-muted-foreground" />
     </button>
   )
 }
