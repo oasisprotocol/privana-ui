@@ -7,8 +7,7 @@ import { Skeleton } from '@/components/ui/skeleton'
 import { useBalance } from '@oasisprotocol/privana-sdk'
 import { formatUnits, parseUnits } from 'viem'
 import { useAccount, useWalletClient, useSwitchChain } from 'wagmi'
-import { ArrowUpDown, EyeOff } from 'lucide-react'
-import { PageHeading } from '@/components/PageHeading'
+import { ArrowLeft, ArrowUpDown, EyeOff } from 'lucide-react'
 import { extractErrorMessage } from '@/lib/errors'
 import { activityPath } from '@/paths'
 import { SWAPPABLE_TOKEN_IDS } from '@/config/tokens'
@@ -147,6 +146,11 @@ export const SwapDashboard = () => {
     if (signed) navigate(activityPath())
   }
 
+  const handleBack = () => {
+    resetSubmit()
+    setStep(0)
+  }
+
   const handleSwapDirection = () => {
     const prevFromId = fromTokenId
     setFromTokenId(toTokenId)
@@ -155,57 +159,59 @@ export const SwapDashboard = () => {
     resetQuote()
   }
 
-  // Review step keeps the heading above and its own internal cards.
-  if (step === 1) {
-    return (
-      <div className="flex flex-col gap-8">
-        <PageHeading title="Review swap" description="Confirm before executing." className="max-w-200" />
-
-        {switchChainError && (
-          <p className="text-sm text-center text-destructive mb-4">{extractErrorMessage(switchChainError)}</p>
-        )}
-
-        {data && (
-          <ReviewStep
-            fromToken={fromToken}
-            toToken={toToken}
-            fromAmount={fromAmount}
-            toAmount={toAmount}
-            summary={summary}
-            quoteLoading={quoteLoading}
-            canConfirm={canSwap}
-            expiresAt={quoteData?.expires_at}
-            toAmountExact={toAmountExact}
-            isCorrectChain={isCorrectChain}
-            onSwitchChain={() => switchChain({ chainId: CHAIN_ID })}
-            onBack={() => {
-              resetSubmit()
-              setStep(0)
-            }}
-            onConfirm={handleSwap}
-            loading={swapLoading}
-            error={swapError}
-          />
-        )}
-      </div>
-    )
-  }
-
-  // Swap step: heading + form wrapped in a card on desktop, flat on mobile.
+  // Both steps share the same card wrapper (desktop card, flat on mobile) with
+  // the heading inside; only the content below the heading swaps per step.
   return (
     <div className={cn('mx-auto flex w-full max-w-lg flex-col', DESKTOP_CARD)}>
-      <div className="flex flex-col gap-1">
-        <h1 className="text-foreground text-3xl font-semibold tracking-tight leading-9">Swap</h1>
-        <p className="text-muted-foreground text-sm font-normal leading-5">
-          Choose the asset you want to swap &amp; the asset you wish to receive.
-        </p>
-      </div>
+      {step === 0 ? (
+        <div className="flex flex-col gap-1">
+          <h1 className="text-foreground text-3xl font-semibold tracking-tight leading-9">Swap</h1>
+          <p className="text-muted-foreground text-sm font-normal leading-5">
+            Choose the asset you want to swap &amp; the asset you wish to receive.
+          </p>
+        </div>
+      ) : (
+        <div>
+          <div className="flex items-center justify-between">
+            <button
+              type="button"
+              onClick={handleBack}
+              aria-label="Back"
+              className="flex h-8 w-8 items-center justify-center rounded-full text-muted-foreground hover:bg-muted"
+            >
+              <ArrowLeft className="h-5 w-5" />
+            </button>
+            <h1 className="text-foreground text-xl font-semibold tracking-tight">Review swap</h1>
+            <div className="w-8" />
+          </div>
+          <p className="mt-4 text-sm text-muted-foreground">Confirm before executing.</p>
+        </div>
+      )}
 
       {switchChainError && (
         <p className="mt-4 text-sm text-center text-destructive">{extractErrorMessage(switchChainError)}</p>
       )}
 
-      {isLoading && (
+      {step === 1 && data && (
+        <ReviewStep
+          fromToken={fromToken}
+          toToken={toToken}
+          fromAmount={fromAmount}
+          toAmount={toAmount}
+          summary={summary}
+          quoteLoading={quoteLoading}
+          canConfirm={canSwap}
+          expiresAt={quoteData?.expires_at}
+          toAmountExact={toAmountExact}
+          isCorrectChain={isCorrectChain}
+          onSwitchChain={() => switchChain({ chainId: CHAIN_ID })}
+          onConfirm={handleSwap}
+          loading={swapLoading}
+          error={swapError}
+        />
+      )}
+
+      {step === 0 && isLoading && (
         <div className="mt-6 flex flex-col gap-4">
           <div className="flex flex-col gap-2">
             <Skeleton className="h-5 w-16" />
@@ -221,9 +227,9 @@ export const SwapDashboard = () => {
           <Skeleton className="h-12 w-full" />
         </div>
       )}
-      {error && <p className="mt-6">Failed to load tokens: {error.message}</p>}
+      {step === 0 && error && <p className="mt-6">Failed to load tokens: {error.message}</p>}
 
-      {data && (
+      {step === 0 && data && (
         <div className="mt-6 flex flex-col gap-4">
           <div className="flex flex-col gap-2">
             <p className="text-sm font-normal text-muted-foreground">You pay</p>
