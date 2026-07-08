@@ -15,12 +15,8 @@ export const QuoteInfo = ({ summary }: QuoteInfoProps) => (
       </span>
     </div>
     <div className="flex items-center justify-between px-0.5 text-muted-foreground">
-      <p>Network &amp; route fee</p>
-      <p>{summary.routeCostFiatLabel}</p>
-    </div>
-    <div className="flex items-center justify-between px-0.5 text-muted-foreground">
-      <p>Service fee</p>
-      <p>{summary.feeFiatLabel}</p>
+      <p>Fee</p>
+      <p>{summary.totalFeeFiatLabel}</p>
     </div>
   </div>
 )

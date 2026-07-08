@@ -151,7 +151,7 @@ export const SwapDashboard = () => {
       fromToken,
       toToken,
       rateLabel: summary.rateLabel,
-      feeFiat: summary.feeFiat,
+      feeFiat: summary.totalFeeFiat,
     })
     if (id) {
       setSwapActivityId(id)

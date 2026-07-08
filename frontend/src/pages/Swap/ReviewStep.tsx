@@ -112,8 +112,7 @@ export const ReviewStep = ({
               </span>
             ),
           },
-          { label: 'Network & route fee', value: summary.routeCostFiatLabel, mutedValue: true },
-          { label: 'Service fee', value: summary.feeFiatLabel, mutedValue: true },
+          { label: 'Fee', value: summary.totalFeeFiatLabel, mutedValue: true },
           { label: 'Estimated time', value: '< 20s', mutedValue: true },
         ].map(row => (
           <Row
