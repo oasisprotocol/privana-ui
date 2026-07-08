@@ -256,7 +256,7 @@ export const SwapDashboard = () => {
             <Skeleton className="h-5 w-20" />
             <Skeleton className="h-12 w-full" />
           </div>
-          <Skeleton className="h-12 w-full" />
+          <Skeleton className="h-14 w-full" />
         </div>
       )}
       {step === 0 && error && <p className="mt-6">Failed to load tokens: {error.message}</p>}
@@ -327,7 +327,7 @@ export const SwapDashboard = () => {
             {!isCorrectChain ? (
               <Button
                 size="lg"
-                className="flex-1 h-12 text-base"
+                className="flex-1 h-14 text-base"
                 onClick={() => switchChain({ chainId: CHAIN_ID })}
               >
                 Switch Network
@@ -335,7 +335,7 @@ export const SwapDashboard = () => {
             ) : (
               <Button
                 size="lg"
-                className="flex-1 h-12 text-base"
+                className="flex-1 h-14 text-base"
                 disabled={!canSwap || quoteLoading}
                 onClick={() => setStep(1)}
               >
