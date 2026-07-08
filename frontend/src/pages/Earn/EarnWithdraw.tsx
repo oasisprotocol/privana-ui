@@ -8,6 +8,7 @@ import { useResetBalanceCaches } from '@/hooks/use-reset-balance-caches'
 import { extractErrorMessage } from '@/lib/errors'
 import { activityPath, earnPath } from '@/paths'
 import { cn } from '@/lib/utils'
+import { DESKTOP_CARD } from '@/lib/surface'
 import { useActivity } from '@/contexts/ActivityProvider/useActivity'
 import { PROTOCOL_LABELS } from './labels'
 import { formatApyBps } from '@/lib/apy'
@@ -18,9 +19,6 @@ import { useSubmitEarnWithdraw } from './useSubmitEarnWithdraw'
 import type { AppChainId } from '@/wagmi-config'
 
 const CHAIN_ID = parseInt(import.meta.env.VITE_CHAIN_ID, 10) as AppChainId
-
-// Desktop-only card surface (flat on mobile), matching the swap flow.
-const DESKTOP_CARD = 'md:rounded-3xl md:bg-white md:p-6 md:dark:bg-card md:shadow-[var(--card-shadow)]'
 
 export const EarnWithdraw = () => {
   const { poolId } = useParams<{ poolId: string }>()

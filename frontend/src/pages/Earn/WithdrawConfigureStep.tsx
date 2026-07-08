@@ -4,10 +4,8 @@ import type { TokenInfo } from '@/api/swap'
 import { Button } from '@/components/ui/button'
 import { Skeleton } from '@/components/ui/skeleton'
 import { exceedsAmount, formatAmount, isPositiveAmount } from '@/lib/tokens'
-import { formatApyBps } from '@/lib/apy'
 import { EarnAmountField } from './EarnAmountField'
-import { ProtocolIcon } from './ProtocolLabel'
-import { PROTOCOL_LABELS } from './labels'
+import { VenueHeader } from './VenueHeader'
 
 type WithdrawConfigureStepProps = {
   pool: EarnPool | undefined
@@ -29,7 +27,6 @@ export const WithdrawConfigureStep = ({
   onReview,
 }: WithdrawConfigureStepProps) => {
   const decimals = token?.token_decimals
-  const protocol = pool ? (PROTOCOL_LABELS[pool.strategy] ?? pool.strategy) : ''
   const tokenSymbol = token?.token_symbol ?? token?.token_type_name ?? ''
   const chain = token?.chain_name ?? ''
 
@@ -64,20 +61,7 @@ export const WithdrawConfigureStep = ({
 
   return (
     <div className="flex flex-col items-center gap-6 w-full max-w-110 mx-auto">
-      <div className="flex w-full items-center gap-3">
-        <span className="flex size-10 shrink-0 items-center justify-center overflow-hidden rounded-lg bg-muted text-base [&>img]:size-full [&>svg]:size-6">
-          <ProtocolIcon strategy={pool.strategy} size={24} />
-        </span>
-        <div className="min-w-0 flex-1">
-          <div className="text-base font-semibold leading-tight text-foreground">{protocol}</div>
-          <p className="mt-0.5 text-xs text-muted-foreground">
-            {tokenSymbol} · {chain}
-          </p>
-        </div>
-        <span className="inline-flex shrink-0 items-center rounded-full bg-chart-positive/15 px-2.5 py-1 text-xs font-semibold text-chart-positive">
-          {formatApyBps(pool.apy_bps)} APY
-        </span>
-      </div>
+      <VenueHeader strategyKey={pool.strategy} asset={tokenSymbol} chain={chain} apyBps={pool.apy_bps} />
 
       <EarnAmountField
         amount={amount}

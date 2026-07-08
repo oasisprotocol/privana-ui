@@ -6,11 +6,15 @@ import { useEarnPools } from '@/api/earn'
 import { useTokens } from '@/api/swap'
 import { useResetBalanceCaches } from '@/hooks/use-reset-balance-caches'
 import { extractErrorMessage } from '@/lib/errors'
-import { activityPath, earnCreatePath } from '@/paths'
+import { activityPath, earnCreatePath, earnPath } from '@/paths'
+import { cn } from '@/lib/utils'
+import { DESKTOP_CARD } from '@/lib/surface'
+import { useActivity } from '@/contexts/ActivityProvider/useActivity'
 import { ConfigureStep } from './ConfigureStep'
 import { PROTOCOL_LABELS } from './labels'
 import { formatApyBps } from '@/lib/apy'
 import { ReviewStep } from './ReviewStep'
+import { EarnDepositResult } from './EarnDepositResult'
 import { useEarnDepositQuote } from './useEarnDepositQuote'
 import { useSubmitEarnDeposit } from './useSubmitEarnDeposit'
 import type { AppChainId } from '@/wagmi-config'
@@ -26,6 +30,8 @@ export const EarnCreate = () => {
   const { switchChain, error: switchChainError } = useSwitchChain()
   const [amount, setAmount] = useState('')
   const [step, setStep] = useState(0)
+  const [depositActivityId, setDepositActivityId] = useState<string | null>(null)
+  const { activities } = useActivity()
   // At mount: if poolId came in via URL (e.g., "Add to active strategy"),
   // the user shouldn't be able to switch strategies. Picking a pool on /create
   // afterwards still navigates to /create/:poolId but mustn't flip this back to locked.
@@ -77,10 +83,19 @@ export const EarnCreate = () => {
   const protocol = pool ? (PROTOCOL_LABELS[pool.strategy] ?? pool.strategy) : ''
   const apyLabel = pool ? `${formatApyBps(pool.apy_bps)} APY` : undefined
 
+  const depositActivity = useMemo(() => {
+    if (!depositActivityId) return undefined
+    const found = activities.find(a => a.id === depositActivityId)
+    return found?.type === 'earn' ? found : undefined
+  }, [activities, depositActivityId])
+
   const handleConfirm = async () => {
     if (!quote || !walletClient || !address || !pool || !token || !poolId) return
-    const ok = await runDeposit({ quote, walletClient, address, token, poolId, protocol, apyLabel })
-    if (ok) navigate(activityPath())
+    const id = await runDeposit({ quote, walletClient, address, token, poolId, protocol, apyLabel })
+    if (id) {
+      setDepositActivityId(id)
+      setStep(2)
+    }
   }
 
   const handleBack = () => {
@@ -89,10 +104,17 @@ export const EarnCreate = () => {
     setStep(0)
   }
 
+  const handleDone = () => {
+    resetDeposit()
+    resetQuote()
+    setDepositActivityId(null)
+    navigate(earnPath())
+  }
+
   const reviewError = depositError ?? (switchChainError ? extractErrorMessage(switchChainError) : null)
 
   return (
-    <div>
+    <div className={cn('mx-auto flex w-full max-w-lg flex-col', DESKTOP_CARD)}>
       {step === 0 && (
         <ConfigureStep
           poolId={poolId}
@@ -120,6 +142,14 @@ export const EarnCreate = () => {
           onConfirm={handleConfirm}
           loading={depositLoading}
           error={reviewError}
+        />
+      )}
+
+      {step === 2 && depositActivity && (
+        <EarnDepositResult
+          activity={depositActivity}
+          onDone={handleDone}
+          onViewActivity={() => navigate(activityPath())}
         />
       )}
     </div>

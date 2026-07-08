@@ -6,8 +6,8 @@ import { QuoteCountdown } from '@/components/QuoteCountdown'
 import { formatFiat } from '@/lib/tokens'
 import { apyBpsToFraction } from '@/lib/apy'
 import { useAmountFiat } from '@/hooks/useAmountFiat'
-import { ApyValue } from './ApyValue'
 import { PROTOCOL_LABELS } from './labels'
+import { VenueHeader } from './VenueHeader'
 import {
   ReviewAmountCard,
   ReviewConfirmButton,
@@ -52,6 +52,7 @@ export const ReviewStep = ({
 }: ReviewStepProps) => {
   const tokenSymbol = token?.token_symbol ?? token?.token_type_name ?? ''
   const protocol = pool ? (PROTOCOL_LABELS[pool.strategy] ?? pool.strategy) : ''
+  const chain = token?.chain_name ?? ''
 
   const fiatAmount = useAmountFiat(token, amount)
   const projected = useMemo(() => {
@@ -76,22 +77,24 @@ export const ReviewStep = ({
   }
 
   const rows: ReviewDetailRow[] = [
-    { label: 'From', value: 'Available balance' },
-    { label: 'To', value: protocol },
-    { label: 'Rate', value: <ApyValue bps={pool.apy_bps} /> },
-    { label: 'Lock-up', value: 'None — withdraw anytime', muted: true },
+    { label: 'Lock-up', value: 'None — withdraw anytime' },
+    { label: 'Performance fee', value: '0.1% of yield' },
     ...(projected
       ? [
           { label: 'Projected / month', value: formatFiat(projected.perMonth), muted: true },
           { label: 'Projected / year', value: formatFiat(projected.perYear), muted: true },
         ]
       : []),
-    { label: 'Fee', value: 'Free', muted: true },
+    { label: 'Returns to', value: 'Available balance' },
   ]
 
   return (
     <div className="flex flex-col gap-4 w-full max-w-110 mx-auto">
       <ReviewHeader title="Review move" onBack={onBack} disabled={loading} />
+
+      <div className="flex justify-end">
+        <QuoteCountdown quoteLoading={quoteLoading} expiresAt={expiresAt} />
+      </div>
 
       <ReviewAmountCard
         eyebrow="You're moving"
@@ -100,14 +103,17 @@ export const ReviewStep = ({
         subline={`Available → ${protocol}`}
       />
 
-      <ReviewDetails rows={rows} />
+      <ReviewDetails
+        header={
+          <VenueHeader strategyKey={pool.strategy} asset={tokenSymbol} chain={chain} apyBps={pool.apy_bps} />
+        }
+        rows={rows}
+      />
 
       <ReviewDisclaimer>
         Funds move from your Available balance into {protocol} and start earning right away. No lock-up — move
         them back anytime.
       </ReviewDisclaimer>
-
-      <QuoteCountdown quoteLoading={quoteLoading} expiresAt={expiresAt} />
 
       {quoteError && (
         <p className="text-center text-sm text-destructive">Failed to fetch quote: {quoteError}</p>

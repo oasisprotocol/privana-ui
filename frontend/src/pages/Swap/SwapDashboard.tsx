@@ -13,6 +13,7 @@ import { activityPath } from '@/paths'
 import { SWAPPABLE_TOKEN_IDS } from '@/config/tokens'
 import { cn } from '@/lib/utils'
 import { useResetBalanceCaches } from '@/hooks/use-reset-balance-caches'
+import { DESKTOP_CARD } from '@/lib/surface'
 import { useActivity } from '@/contexts/ActivityProvider/useActivity'
 import { AssetRow } from './AssetRow'
 import { QuoteInfo } from './QuoteInfo'
@@ -24,10 +25,6 @@ import { useQuoteSummary } from './useQuoteSummary'
 import type { AppChainId } from '@/wagmi-config'
 
 const CHAIN_ID = parseInt(import.meta.env.VITE_CHAIN_ID, 10) as AppChainId
-
-// Desktop-only card surface (flat on mobile), matching SurfaceCard's look so the
-// swap form reads like the onboarding card on md+ but stays edge-to-edge on phones.
-const DESKTOP_CARD = 'md:rounded-3xl md:bg-white md:p-6 md:dark:bg-card md:shadow-[var(--card-shadow)]'
 
 export const SwapDashboard = () => {
   const [step, setStep] = useState(0)
