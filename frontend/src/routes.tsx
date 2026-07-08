@@ -4,8 +4,8 @@ import { Dashboard } from './pages/Dashboard'
 import { DashboardHome } from './pages/Dashboard/DashboardHome'
 import { NotFound } from './components/NotFound'
 import { ProtectedLayout } from './components/ProtectedLayout'
-import { Swap } from './pages/Swap'
-import { Earn } from './pages/Earn'
+import { SwapDashboard } from './pages/Swap/SwapDashboard'
+import { EarnDashboard } from './pages/Earn/EarnDashboard'
 import { EarnCreate } from './pages/Earn/EarnCreate'
 import { EarnWithdraw } from './pages/Earn/EarnWithdraw'
 import { Activity } from './pages/Activity'
@@ -34,36 +34,38 @@ export const router = createBrowserRouter([
       },
       {
         path: tradePath(),
-        element: <Swap />,
-      },
-      {
-        path: earnPath(),
+        element: <ProtectedLayout />,
         children: [
           {
             index: true,
-            element: <Earn />,
+            element: <SwapDashboard />,
+          },
+        ],
+      },
+      {
+        path: earnPath(),
+        element: <ProtectedLayout />,
+        children: [
+          {
+            index: true,
+            element: <EarnDashboard />,
           },
           {
-            element: <ProtectedLayout />,
+            path: 'create',
             children: [
               {
-                path: 'create',
-                children: [
-                  {
-                    index: true,
-                    element: <EarnCreate />,
-                  },
-                  {
-                    path: ':poolId',
-                    element: <EarnCreate />,
-                  },
-                ],
+                index: true,
+                element: <EarnCreate />,
               },
               {
-                path: 'withdraw/:poolId',
-                element: <EarnWithdraw />,
+                path: ':poolId',
+                element: <EarnCreate />,
               },
             ],
+          },
+          {
+            path: 'withdraw/:poolId',
+            element: <EarnWithdraw />,
           },
         ],
       },
