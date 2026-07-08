@@ -110,8 +110,19 @@ export function useFunds(): Funds {
         const decimals = token?.decimals
         if (!symbol || decimals == null) continue
         const existing = bySymbol.get(symbol)
-        if (existing) existing.amount += amount
-        else bySymbol.set(symbol, { symbol, amount, decimals })
+        if (!existing) {
+          bySymbol.set(symbol, { symbol, amount, decimals })
+        } else if (existing.decimals === decimals) {
+          existing.amount += amount
+        } else {
+          // Same ticker, different token decimals: raw base-unit amounts aren't
+          // directly addable, so align both to the larger precision first.
+          const maxDecimals = Math.max(existing.decimals, decimals)
+          existing.amount =
+            existing.amount * 10n ** BigInt(maxDecimals - existing.decimals) +
+            amount * 10n ** BigInt(maxDecimals - decimals)
+          existing.decimals = maxDecimals
+        }
       }
       return [...bySymbol.values()]
     }
