@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 import { useNavigate } from 'react-router'
 import { Button } from '@/components/ui/button'
 import { useTokens } from '@/api/swap'
@@ -27,10 +27,7 @@ const CHAIN_ID = parseInt(import.meta.env.VITE_CHAIN_ID, 10) as AppChainId
 
 // Desktop-only card surface (flat on mobile), matching SurfaceCard's look so the
 // swap form reads like the onboarding card on md+ but stays edge-to-edge on phones.
-const DESKTOP_CARD =
-  'md:rounded-3xl md:bg-white md:p-6 md:dark:bg-card ' +
-  'md:shadow-[inset_0_1px_0_0_rgba(255,255,255,0.9),0_1px_2px_0_rgba(87,97,117,0.05),0_4px_10px_0_rgba(87,97,117,0.08)] ' +
-  'md:dark:shadow-[inset_0_1px_0_0_rgba(255,255,255,0.05),0_1px_2px_0_rgba(0,0,0,0.4),0_4px_12px_0_rgba(0,0,0,0.5)]'
+const DESKTOP_CARD = 'md:rounded-3xl md:bg-white md:p-6 md:dark:bg-card md:shadow-[var(--card-shadow)]'
 
 export const SwapDashboard = () => {
   const [step, setStep] = useState(0)
@@ -141,6 +138,22 @@ export const SwapDashboard = () => {
     const found = activities.find(a => a.id === swapActivityId)
     return found?.type === 'swap' ? found : undefined
   }, [activities, swapActivityId])
+
+  // Reset the flow when the connected account changes. ActivityProvider reloads
+  // its list per-address, so a swap tracked for the previous account would no
+  // longer be found and the result step would render a blank card.
+  const prevAddressRef = useRef(address)
+  useEffect(() => {
+    if (prevAddressRef.current === address) return
+    prevAddressRef.current = address
+    resetSubmit()
+    resetQuote()
+    setSwapActivityId(null)
+    setFromTokenId('')
+    setToTokenId('')
+    setFromAmount('')
+    setStep(0)
+  }, [address, resetSubmit, resetQuote])
 
   const handleSwap = async () => {
     if (!canSwap || !quoteData || !walletClient || !address || !fromToken || !toToken) return

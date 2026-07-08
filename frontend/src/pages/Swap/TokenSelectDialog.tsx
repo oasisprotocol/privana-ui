@@ -17,10 +17,7 @@ import { getTokenIcon, useBatchBalances } from '@oasisprotocol/privana-sdk'
 
 const tokenLabel = (token: TokenInfo) => token.token_symbol ?? token.token_type_name
 
-const CARD_ROW =
-  'bg-white dark:bg-card ' +
-  'shadow-[inset_0_1px_0_0_rgba(255,255,255,0.9),0_1px_2px_0_rgba(87,97,117,0.05),0_4px_10px_0_rgba(87,97,117,0.08)] ' +
-  'dark:shadow-[inset_0_1px_0_0_rgba(255,255,255,0.05),0_1px_2px_0_rgba(0,0,0,0.4),0_4px_12px_0_rgba(0,0,0,0.5)]'
+const CARD_ROW = 'bg-white dark:bg-card shadow-[var(--card-shadow)]'
 
 type TokenSelectDialogProps = {
   tokens: TokenInfo[]
