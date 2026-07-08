@@ -26,7 +26,7 @@ export const ProtectedLayout: FC = () => {
     return isReconnecting ? (
       <div className="flex flex-1" />
     ) : (
-      <div className="flex flex-col flex-1 gap-4 justify-center items-center text-center">
+      <div className="flex flex-col flex-1 gap-4 justify-center items-center text-center py-24 md:py-32">
         <p className="text-sm text-muted-foreground max-w-md">Please connect your wallet to continue.</p>
         <Button onClick={signIn}>Sign in</Button>
       </div>
@@ -35,7 +35,7 @@ export const ProtectedLayout: FC = () => {
 
   if (!isAuthenticated) {
     return (
-      <div className="flex flex-col flex-1 gap-4 justify-center items-center text-center">
+      <div className="flex flex-col flex-1 gap-4 justify-center items-center text-center py-24 md:py-32">
         <p className="text-sm text-muted-foreground max-w-md">
           Wallet is connected. Sign in to Privana to continue.
         </p>

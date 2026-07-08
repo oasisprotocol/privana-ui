@@ -1,4 +1,4 @@
-import { type ComponentProps, type FC, useState } from 'react'
+import { type FC, useState } from 'react'
 import { useAccount, useChainId, useDisconnect, useSwitchChain } from 'wagmi'
 import { Link } from 'react-router'
 import {
@@ -13,7 +13,7 @@ import {
   Sun,
   Wallet,
 } from 'lucide-react'
-import { PrivanaModal } from '@oasisprotocol/privana-sdk'
+import { DepositModal, WithdrawModal } from '@oasisprotocol/privana-sdk'
 import { Button } from '../ui/button'
 import { DropdownMenu, DropdownMenuContent, DropdownMenuTrigger } from '../ui/dropdown-menu'
 import { AccountAvatar } from '../AccountAvatar'
@@ -51,10 +51,10 @@ export const ConnectButton: FC = () => {
   const { pendingCount } = useActivity()
 
   const [menuOpen, setMenuOpen] = useState(false)
-  const [modalTab, setModalTab] = useState<ComponentProps<typeof PrivanaModal>['defaultTab']>(undefined)
-  const openModal = (tab: 'deposit' | 'withdraw') => {
+  const [activeModal, setActiveModal] = useState<'deposit' | 'withdraw' | null>(null)
+  const openModal = (modal: 'deposit' | 'withdraw') => {
     setMenuOpen(false)
-    setModalTab(tab)
+    setActiveModal(modal)
   }
 
   // Connected (external) wallets have no Turnkey session to log out of, so we
@@ -195,12 +195,8 @@ export const ConnectButton: FC = () => {
         </DropdownMenuContent>
       </DropdownMenu>
 
-      <PrivanaModal
-        open={!!modalTab}
-        onClose={() => setModalTab(undefined)}
-        showLockedFunds={false}
-        defaultTab={modalTab}
-      />
+      <DepositModal open={activeModal === 'deposit'} onClose={() => setActiveModal(null)} />
+      <WithdrawModal open={activeModal === 'withdraw'} onClose={() => setActiveModal(null)} />
     </div>
   )
 }
