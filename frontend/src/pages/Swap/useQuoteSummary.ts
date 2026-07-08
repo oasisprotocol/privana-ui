@@ -9,6 +9,8 @@ export type QuoteSummary = {
   feeFiat: number | undefined
   feeFiatLabel: string
   routeCostFiatLabel: string
+  totalFeeFiat: number | undefined
+  totalFeeFiatLabel: string
 }
 
 const formatRow = (n: number | undefined): string => (n != null ? `~${formatFiat(n)}` : '-')
@@ -19,6 +21,8 @@ const EMPTY: QuoteSummary = {
   feeFiat: undefined,
   feeFiatLabel: '-',
   routeCostFiatLabel: '-',
+  totalFeeFiat: undefined,
+  totalFeeFiatLabel: '-',
 }
 
 export const useQuoteSummary = (
@@ -34,12 +38,16 @@ export const useQuoteSummary = (
     const routeCostFiat = computeRouteCostFiat(quote, fromToken, toToken, prices)
     const fromPrice = fromToken ? prices?.[fromToken.token_id] : undefined
     const suffix = rate && fromPrice != null ? ` (≈${formatFiat(fromPrice)})` : ''
+    const totalFeeFiat =
+      feeFiat == null && routeCostFiat == null ? undefined : (feeFiat ?? 0) + (routeCostFiat ?? 0)
     return {
       rateLabel: rate ?? '',
       rateLabelDetailed: rate ? `${rate}${suffix}` : '',
       feeFiat,
       feeFiatLabel: formatRow(feeFiat),
       routeCostFiatLabel: formatRow(routeCostFiat),
+      totalFeeFiat,
+      totalFeeFiatLabel: formatRow(totalFeeFiat),
     }
   }, [quote, fromToken, toToken, prices])
 }

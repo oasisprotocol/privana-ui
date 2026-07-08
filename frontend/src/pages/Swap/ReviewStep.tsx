@@ -22,7 +22,6 @@ type ReviewStepProps = {
   expiresAt?: number
   isCorrectChain: boolean
   onSwitchChain: () => void
-  onBack: () => void
   onConfirm: () => void
   loading?: boolean
   error?: string | null
@@ -40,13 +39,12 @@ export const ReviewStep = ({
   expiresAt,
   isCorrectChain,
   onSwitchChain,
-  onBack,
   onConfirm,
   loading,
   error,
 }: ReviewStepProps) => {
   return (
-    <div className="flex flex-col gap-4 w-full max-w-120 mx-auto">
+    <div className="mt-6 flex flex-col gap-4">
       <div className="flex justify-end">
         <QuoteCountdown quoteLoading={quoteLoading} expiresAt={expiresAt} />
       </div>
@@ -114,8 +112,7 @@ export const ReviewStep = ({
               </span>
             ),
           },
-          { label: 'Network & route fee', value: summary.routeCostFiatLabel, mutedValue: true },
-          { label: 'Service fee', value: summary.feeFiatLabel, mutedValue: true },
+          { label: 'Fee', value: summary.totalFeeFiatLabel, mutedValue: true },
           { label: 'Estimated time', value: '< 20s', mutedValue: true },
         ].map(row => (
           <Row
@@ -129,25 +126,20 @@ export const ReviewStep = ({
         ))}
       </SurfaceCard>
 
-      <div className="flex gap-5 w-full">
-        <Button variant="secondary" size="lg" className="flex-1" onClick={onBack} disabled={loading}>
-          Back
+      {!isCorrectChain ? (
+        <Button size="lg" className="h-14 w-full text-base" onClick={onSwitchChain} disabled={loading}>
+          Switch Network
         </Button>
-        {!isCorrectChain ? (
-          <Button size="lg" className="flex-1" onClick={onSwitchChain} disabled={loading}>
-            Switch Network
-          </Button>
-        ) : (
-          <Button
-            size="lg"
-            className="flex-1"
-            onClick={onConfirm}
-            disabled={loading || quoteLoading || !canConfirm}
-          >
-            {loading ? 'Signing & submitting...' : 'Confirm swap'}
-          </Button>
-        )}
-      </div>
+      ) : (
+        <Button
+          size="lg"
+          className="h-14 w-full text-base"
+          onClick={onConfirm}
+          disabled={loading || quoteLoading || !canConfirm}
+        >
+          {loading ? 'Signing & submitting...' : 'Confirm swap'}
+        </Button>
+      )}
 
       {error && <p className="text-sm text-center text-destructive">{error}</p>}
     </div>

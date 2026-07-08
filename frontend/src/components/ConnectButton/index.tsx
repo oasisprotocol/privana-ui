@@ -170,7 +170,7 @@ export const ConnectButton: FC = () => {
                     className={cn(
                       'inline-flex items-center gap-1 rounded-full px-2.5 py-1 transition-colors',
                       active
-                        ? 'bg-background dark:bg-card text-foreground shadow-sm dark:shadow-[inset_0_1px_0_0_rgba(255,255,255,0.05),0_1px_2px_0_rgba(0,0,0,0.4),0_4px_12px_0_rgba(0,0,0,0.5)]'
+                        ? 'bg-background dark:bg-card text-foreground shadow-sm dark:shadow-[var(--card-shadow)]'
                         : 'text-muted-foreground',
                     )}
                   >
