@@ -13,9 +13,11 @@ import { activityPath } from '@/paths'
 import { SWAPPABLE_TOKEN_IDS } from '@/config/tokens'
 import { cn } from '@/lib/utils'
 import { useResetBalanceCaches } from '@/hooks/use-reset-balance-caches'
+import { useActivity } from '@/contexts/ActivityProvider/useActivity'
 import { AssetRow } from './AssetRow'
 import { QuoteInfo } from './QuoteInfo'
 import { ReviewStep } from './ReviewStep'
+import { SwapResult } from './SwapResult'
 import { useSwapQuote } from './useSwapQuote'
 import { useSubmitSwap } from './useSubmitSwap'
 import { useQuoteSummary } from './useQuoteSummary'
@@ -38,9 +40,11 @@ export const SwapDashboard = () => {
   const { switchChain, error: switchChainError } = useSwitchChain()
   const resetBalanceCaches = useResetBalanceCaches()
   const navigate = useNavigate()
+  const { activities } = useActivity()
   const [fromTokenId, setFromTokenId] = useState('')
   const [toTokenId, setToTokenId] = useState('')
   const [fromAmount, setFromAmount] = useState('')
+  const [swapActivityId, setSwapActivityId] = useState<string | null>(null)
   const tokens = useMemo(
     () => (data?.tokens ?? []).filter(t => (SWAPPABLE_TOKEN_IDS as string[]).includes(t.token_id)),
     [data],
@@ -132,9 +136,15 @@ export const SwapDashboard = () => {
   const canSwap =
     !!quoteData && !!walletClient && !!address && isCorrectChain && !insufficientFunds && quoteMatchesInput
 
+  const swapActivity = useMemo(() => {
+    if (!swapActivityId) return undefined
+    const found = activities.find(a => a.id === swapActivityId)
+    return found?.type === 'swap' ? found : undefined
+  }, [activities, swapActivityId])
+
   const handleSwap = async () => {
     if (!canSwap || !quoteData || !walletClient || !address || !fromToken || !toToken) return
-    const signed = await runSwap({
+    const id = await runSwap({
       quote: quoteData,
       walletClient,
       address,
@@ -143,11 +153,24 @@ export const SwapDashboard = () => {
       rateLabel: summary.rateLabel,
       feeFiat: summary.feeFiat,
     })
-    if (signed) navigate(activityPath())
+    if (id) {
+      setSwapActivityId(id)
+      setStep(2)
+    }
   }
 
   const handleBack = () => {
     resetSubmit()
+    setStep(0)
+  }
+
+  const handleDone = () => {
+    resetSubmit()
+    resetQuote()
+    setSwapActivityId(null)
+    setFromTokenId('')
+    setToTokenId('')
+    setFromAmount('')
     setStep(0)
   }
 
@@ -163,14 +186,15 @@ export const SwapDashboard = () => {
   // the heading inside; only the content below the heading swaps per step.
   return (
     <div className={cn('mx-auto flex w-full max-w-lg flex-col', DESKTOP_CARD)}>
-      {step === 0 ? (
+      {step === 0 && (
         <div className="flex flex-col gap-1">
           <h1 className="text-foreground text-3xl font-semibold tracking-tight leading-9">Swap</h1>
           <p className="text-muted-foreground text-sm font-normal leading-5">
             Choose the asset you want to swap &amp; the asset you wish to receive.
           </p>
         </div>
-      ) : (
+      )}
+      {step === 1 && (
         <div>
           <div className="flex items-center justify-between">
             <button
@@ -188,8 +212,16 @@ export const SwapDashboard = () => {
         </div>
       )}
 
-      {switchChainError && (
+      {step !== 2 && switchChainError && (
         <p className="mt-4 text-sm text-center text-destructive">{extractErrorMessage(switchChainError)}</p>
+      )}
+
+      {step === 2 && swapActivity && (
+        <SwapResult
+          activity={swapActivity}
+          onDone={handleDone}
+          onViewActivity={() => navigate(activityPath())}
+        />
       )}
 
       {step === 1 && data && (

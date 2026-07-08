@@ -29,11 +29,14 @@ export const useSubmitSwap = ({ onSuccess }: Params = {}) => {
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
 
-  const execute = async (params: SubmitSwapParams): Promise<boolean> => {
+  // Resolves to the created activity's id (so the caller can track its live
+  // status for the swapping/result screens) or null if signing failed / was
+  // rejected before an activity was created.
+  const execute = async (params: SubmitSwapParams): Promise<string | null> => {
     const { quote, walletClient, address, fromToken, toToken, rateLabel, feeFiat } = params
     if (fromToken.token_decimals == null || toToken.token_decimals == null) {
       setError('Missing token decimals')
-      return false
+      return null
     }
     setLoading(true)
     setError(null)
@@ -99,11 +102,11 @@ export const useSubmitSwap = ({ onSuccess }: Params = {}) => {
           })
         })
 
-      return true
+      return id
     } catch (err) {
       setError(extractErrorMessage(err, 'Swap failed'))
       setLoading(false)
-      return false
+      return null
     }
   }
 
