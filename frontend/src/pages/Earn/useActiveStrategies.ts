@@ -6,6 +6,8 @@ export type ActiveStrategy = {
   poolId: string
   /** Formatted underlying amount + symbol, e.g. "200.00 USDC". */
   earning: string
+  /** Estimated daily accrual (position × APY / 365), formatted + symbol, or null. */
+  earningToday: string | null
 }
 
 export const useActiveStrategies = (): { strategies: ActiveStrategy[]; isLoading: boolean } => {
@@ -31,12 +33,16 @@ export const useActiveStrategies = (): { strategies: ActiveStrategy[]; isLoading
       const pool = poolsById.get(pos.pool_id)
       const token = pool ? tokensById.get(pool.token_id) : tokensById.get(pos.token_id)
       const decimals = token?.token_decimals
+      const symbol = token?.token_symbol ?? ''
+      const underlying = BigInt(pos.underlying_amount)
+      // Estimated daily accrual in base units: underlying × apy_bps / (10000 × 365).
+      const apyBps = pool?.apy_bps ?? 0
+      const todayRaw = apyBps > 0 ? (underlying * BigInt(apyBps)) / BigInt(10000 * 365) : 0n
       return {
         poolId: pos.pool_id,
-        earning:
-          decimals != null
-            ? `${formatAmount(BigInt(pos.underlying_amount), decimals)} ${token?.token_symbol ?? ''}`
-            : '-',
+        earning: decimals != null ? `${formatAmount(underlying, decimals)} ${symbol}` : '-',
+        earningToday:
+          decimals != null && todayRaw > 0n ? `${formatAmount(todayRaw, decimals)} ${symbol}` : null,
       }
     })
 
