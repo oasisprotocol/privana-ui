@@ -5,7 +5,8 @@ import { setConnectedTurnkeyWallet } from '@/wallet/turnkeyBridge'
 import { walletConnectToEip1193 } from '@/wallet/walletConnectEip1193'
 import { extractErrorMessage } from '@/lib/errors'
 import { ConnectWalletContext, type ConnectWalletContextValue } from './ConnectWalletContext'
-import { SignInDialog, type ExternalWalletOption } from './SignInDialog'
+import { SignInDialog } from './SignInDialog'
+import { type ExternalWalletOption } from './SignInForm'
 import { IS_TURNKEY_ENABLED } from '../TurnkeyAuthProvider'
 
 // Stable identity per injected wallet; falls back to uuid/name.
