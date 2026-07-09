@@ -38,20 +38,6 @@ export interface SwapResponse {
   tx_hash: string | null
 }
 
-export interface SwapStatusResponse {
-  swap_id: string
-  status: string
-  from_token_id: string
-  to_token_id: string
-  from_amount: string
-  to_amount_estimate: string
-  to_amount_actual: string | null
-  swap_tx_hash: string | null
-  error: string | null
-  created_at: number
-  updated_at: number
-}
-
 export interface TokenInfo {
   token_id: string
   token_type: number

@@ -5,7 +5,6 @@ import type {
   QuoteResponse,
   SwapRequest,
   SwapResponse,
-  SwapStatusResponse,
   TokenListResponse,
 } from './types'
 
@@ -41,10 +40,6 @@ export function executeSwap(body: SwapRequest) {
     method: 'POST',
     body: JSON.stringify(body),
   })
-}
-
-export function getSwapStatus(swapId: string) {
-  return request<SwapStatusResponse>(`/v1/swap/${swapId}/status`)
 }
 
 export function getTokens() {
