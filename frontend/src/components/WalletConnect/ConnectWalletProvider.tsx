@@ -6,7 +6,7 @@ import { walletConnectToEip1193 } from '@/wallet/walletConnectEip1193'
 import { extractErrorMessage } from '@/lib/errors'
 import { ConnectWalletContext, type ConnectWalletContextValue } from './ConnectWalletContext'
 import { SignInDialog } from './SignInDialog'
-import { type ExternalWalletOption } from './SignInForm'
+import { type ExternalWalletOption, type SignInFormState } from './SignInForm'
 import { IS_TURNKEY_ENABLED } from '../TurnkeyAuthProvider'
 
 // Stable identity per injected wallet; falls back to uuid/name.
@@ -109,28 +109,39 @@ const TurnkeyConnect = ({ children }: { children: ReactNode }) => {
     if (!open) cancelConnecting()
   }
 
-  const value = useMemo<ConnectWalletContextValue>(() => ({ signIn: () => setModalOpen(true) }), [])
+  const signInForm: SignInFormState = {
+    onEmailContinue: handleEmailContinue,
+    options,
+    connectingKey,
+    error,
+    onSelect: key => void handleSelect(key),
+    qrActive,
+    qrUri,
+  }
+
+  const value: ConnectWalletContextValue = { signIn: () => setModalOpen(true), signInForm }
 
   return (
     <ConnectWalletContext.Provider value={value}>
       {children}
-      <SignInDialog
-        open={modalOpen}
-        onOpenChange={handleOpenChange}
-        onEmailContinue={handleEmailContinue}
-        options={options}
-        connectingKey={connectingKey}
-        error={error}
-        onSelect={key => void handleSelect(key)}
-        qrActive={qrActive}
-        qrUri={qrUri}
-      />
+      <SignInDialog open={modalOpen} onOpenChange={handleOpenChange} {...signInForm} />
     </ConnectWalletContext.Provider>
   )
 }
 
-// Turnkey isn't configured → no way to connect; provide a no-op.
-const DISABLED_VALUE: ConnectWalletContextValue = { signIn: () => {} }
+// Turnkey isn't configured. No way to connect; provide a no-op + empty form.
+const DISABLED_VALUE: ConnectWalletContextValue = {
+  signIn: () => {},
+  signInForm: {
+    onEmailContinue: () => {},
+    options: [],
+    connectingKey: null,
+    error: null,
+    onSelect: () => {},
+    qrActive: false,
+    qrUri: undefined,
+  },
+}
 
 export const ConnectWalletProvider = ({ children }: { children: ReactNode }) => {
   if (!IS_TURNKEY_ENABLED) {
