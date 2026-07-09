@@ -115,6 +115,7 @@ const TurnkeyConnect = ({ children }: { children: ReactNode }) => {
     connectingKey,
     error,
     onSelect: key => void handleSelect(key),
+    onCancel: cancelConnecting,
     qrActive,
     qrUri,
   }
@@ -138,6 +139,7 @@ const DISABLED_VALUE: ConnectWalletContextValue = {
     connectingKey: null,
     error: null,
     onSelect: () => {},
+    onCancel: () => {},
     qrActive: false,
     qrUri: undefined,
   },

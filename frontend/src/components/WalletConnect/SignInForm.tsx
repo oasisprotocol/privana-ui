@@ -1,5 +1,5 @@
 import { QRCodeSVG } from 'qrcode.react'
-import { Wallet } from 'lucide-react'
+import { ArrowLeft, ArrowRight, Wallet } from 'lucide-react'
 import { Button } from '../ui/button'
 
 export type ExternalWalletOption = { key: string; name: string; icon?: string }
@@ -10,6 +10,9 @@ export type SignInFormState = {
   connectingKey: string | null
   error: string | null
   onSelect: (key: string) => void
+  // Abandons an in-flight connect (e.g. the WalletConnect QR) and returns to the
+  // wallet list — the inline form has no modal to close, so it needs this.
+  onCancel: () => void
   qrActive: boolean
   qrUri?: string
 }
@@ -20,6 +23,7 @@ export const SignInForm = ({
   connectingKey,
   error,
   onSelect,
+  onCancel,
   qrActive,
   qrUri,
 }: SignInFormState) => {
@@ -41,25 +45,30 @@ export const SignInForm = ({
           </div>
         )}
         {error && <p className="text-center text-sm text-destructive">{error}</p>}
+        <Button type="button" variant="outline" size="lg" className="px-6 text-base" onClick={onCancel}>
+          <ArrowLeft />
+          Back
+        </Button>
       </div>
     )
   }
 
   return (
-    <div className="flex flex-col gap-4">
+    <div className="flex flex-col">
       <Button
         type="button"
         size="lg"
-        className="h-12 w-full text-base"
+        className="h-14 w-full px-6 text-base"
         disabled={connecting}
         onClick={onEmailContinue}
       >
         Continue with email
+        <ArrowRight />
       </Button>
 
-      <div className="flex items-center gap-3">
+      <div className="my-6 flex items-center gap-3 text-xs text-muted-foreground">
         <span className="h-px flex-1 bg-border" />
-        <span className="text-xs font-medium uppercase tracking-wide text-muted-foreground">or</span>
+        or connect a wallet
         <span className="h-px flex-1 bg-border" />
       </div>
 
@@ -70,30 +79,32 @@ export const SignInForm = ({
       ) : (
         <div className="flex flex-col gap-2">
           {options.map(option => (
-            <button
+            <Button
               key={option.key}
               type="button"
+              variant="outline"
+              size="lg"
               disabled={connecting}
               onClick={() => onSelect(option.key)}
-              className="flex items-center gap-3 rounded-xl border border-border bg-white px-4 py-3 text-left text-sm font-semibold text-foreground transition-colors hover:border-muted-foreground disabled:opacity-50 dark:bg-card"
+              className="h-14 w-full justify-start gap-3 px-6 text-base font-medium"
             >
               {option.icon ? (
-                <img src={option.icon} alt="" className="size-7 rounded-full" />
+                <img src={option.icon} alt="" className="size-6 shrink-0 rounded-md" />
               ) : (
-                <span className="flex size-7 items-center justify-center rounded-full bg-muted">
+                <span className="flex size-6 shrink-0 items-center justify-center rounded-md bg-muted">
                   <Wallet className="size-4" />
                 </span>
               )}
-              <span className="flex-1">{option.name}</span>
+              <span className="flex-1 text-left">{option.name}</span>
               {connectingKey === option.key && (
                 <span className="text-xs text-muted-foreground">Connecting…</span>
               )}
-            </button>
+            </Button>
           ))}
         </div>
       )}
 
-      {error && <p className="text-center text-sm text-destructive">{error}</p>}
+      {error && <p className="mt-4 text-center text-sm text-destructive">{error}</p>}
     </div>
   )
 }

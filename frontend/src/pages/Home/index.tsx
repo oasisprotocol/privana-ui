@@ -1,60 +1,122 @@
+import { useEffect, useRef } from 'react'
 import { Navigate } from 'react-router'
-import { useAccount, useDisconnect } from 'wagmi'
+import { useAccount } from 'wagmi'
 import { useSiweAuth } from '@oasisprotocol/privana-sdk'
+import { Loader2, ShieldCheck } from 'lucide-react'
 import { Button } from '@/components/ui/button'
-import { SurfaceCard } from '@/components/SurfaceCard'
+import { Layout } from '@/components/Layout'
 import { SignInForm } from '@/components/WalletConnect/SignInForm'
 import { useSignInForm } from '@/components/WalletConnect/useConnectWallet'
+import { useSignOut } from '@/hooks/useSignOut'
 import { dashboardPath } from '@/paths'
 import Logo from '../../assets/logo.svg'
 
+// "/" is the auth entry, not a marketing landing. Rendered inside the app Layout
+// (same header + footer). Users stay here until fully signed in (wallet connected
+// + SIWE authenticated), then go to the dashboard:
+//   - not connected      → pick a wallet / continue with email (SignInForm)
+//   - connected, no SIWE  → sign the message to finish (same surface, no bounce)
+//   - fully signed in     → redirect to the dashboard
 export const Home = () => {
   const { isConnected, status } = useAccount()
-  const { disconnect } = useDisconnect()
   const { isAuthenticated, isLoading: isAuthLoading, error: authError, login } = useSiweAuth()
   const signInForm = useSignInForm()
+  const signOut = useSignOut()
+
+  const autoLoginTried = useRef(false)
+  useEffect(() => {
+    if (!isConnected) {
+      autoLoginTried.current = false
+      return
+    }
+    if (!isAuthenticated && !isAuthLoading && !authError && !autoLoginTried.current) {
+      autoLoginTried.current = true
+      void login().catch(() => {})
+    }
+  }, [isConnected, isAuthenticated, isAuthLoading, authError, login])
 
   if (isConnected && isAuthenticated) return <Navigate to={dashboardPath()} replace />
 
+  // While wagmi restores a prior session on load, don't flash the form at a
+  // returning user who's about to be redirected.
   if (status === 'reconnecting') {
-    return <div className="min-h-screen [background-image:var(--app-gradient)]" />
+    return (
+      <Layout>
+        <div className="min-h-[50vh]" />
+      </Layout>
+    )
   }
 
   return (
-    <div className="flex min-h-screen flex-col items-center justify-center [background-image:var(--app-gradient)] px-6 py-12 text-foreground">
-      <div className="w-full max-w-sm">
-        <div className="mb-6 flex flex-col items-center text-center">
-          <img src={Logo} alt="Privana" className="h-7 dark:brightness-0 dark:invert" />
-          <p className="mt-3 text-sm text-muted-foreground">Sign in to continue</p>
-        </div>
-        <SurfaceCard className="p-6">
+    <Layout>
+      <div className="mx-auto flex w-full max-w-md flex-col px-6">
+        <header className="mb-10 flex items-center justify-center">
+          <img src={Logo} alt="Privana" className="h-5 w-auto dark:brightness-0 dark:invert" />
+        </header>
+
+        <div className="flex flex-1 flex-col animate-fade-in">
           {isConnected ? (
-            <div className="flex flex-col gap-4 text-center">
-              <p className="text-sm text-muted-foreground">
-                Wallet connected. Sign the message to finish signing in.
-              </p>
-              <Button
-                size="lg"
-                className="h-12 w-full text-base"
-                disabled={isAuthLoading}
-                onClick={() => void login().catch(() => {})}
-              >
-                {isAuthLoading ? 'Signing in…' : 'Sign in'}
-              </Button>
-              <Button variant="outline" onClick={() => disconnect()}>
-                Use a different wallet
-              </Button>
-              {authError && (
-                <p role="alert" className="text-sm text-destructive">
-                  {authError.message}
-                </p>
+            // Auth step: wallet connected, finish with the SIWE signature. Kept on
+            // this surface (not bounced to /dashboard) as a distinct confirm step.
+            <div className="flex flex-col items-center text-center">
+              <span className="flex size-14 items-center justify-center rounded-full bg-muted">
+                <ShieldCheck className="size-7 text-muted-foreground" />
+              </span>
+              <h1 className="mt-6 text-3xl font-semibold tracking-tight text-foreground">
+                Authenticate to Privana
+              </h1>
+
+              {authError ? (
+                <>
+                  <p className="mt-2 text-sm text-muted-foreground">
+                    Sign a message to finish signing in — it&apos;s free and never moves your funds.
+                  </p>
+                  <p role="alert" className="mt-4 text-sm text-destructive">
+                    Signature request wasn&apos;t completed. Please try again.
+                  </p>
+                  <Button
+                    size="lg"
+                    className="mt-8 h-14 w-full px-6 text-base"
+                    onClick={() => void login().catch(() => {})}
+                  >
+                    Sign message
+                  </Button>
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="lg"
+                    onClick={signOut}
+                    className="mt-2 h-14 w-full px-6 text-base font-medium"
+                  >
+                    Disconnect
+                  </Button>
+                </>
+              ) : (
+                <>
+                  <p className="mt-2 text-sm text-muted-foreground">
+                    Authenticating to Privana. Please confirm in your wallet.
+                  </p>
+                  <Loader2 className="mt-8 size-6 animate-spin text-muted-foreground" />
+                </>
               )}
             </div>
           ) : (
-            <SignInForm {...signInForm} />
+            <>
+              <h1 className="text-3xl font-semibold tracking-tight text-foreground">Welcome back</h1>
+              <p className="mt-2 text-sm text-muted-foreground">
+                Enter your email to sign in or create an account. We&apos;ll set up a secure wallet for you.
+              </p>
+              <div className="mt-8">
+                <SignInForm {...signInForm} />
+              </div>
+            </>
           )}
-        </SurfaceCard>
+
+          <p className="mt-auto pt-8 text-center text-xs text-muted-foreground">
+            By continuing you agree to our Terms and Privacy Policy.
+          </p>
+        </div>
       </div>
-    </div>
+    </Layout>
   )
 }
