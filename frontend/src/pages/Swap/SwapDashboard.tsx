@@ -136,9 +136,9 @@ export const SwapDashboard = () => {
     return found?.type === 'swap' ? found : undefined
   }, [activities, swapActivityId])
 
-  // Reset the flow when the connected account changes. ActivityProvider reloads
-  // its list per-address, so a swap tracked for the previous account would no
-  // longer be found and the result step would render a blank card.
+  // Reset the flow when the connected account changes. ActivityProvider drops its
+  // list per-address, so a swap tracked for the previous account would no longer
+  // be found and the result step would render a blank card.
   const prevAddressRef = useRef(address)
   useEffect(() => {
     if (prevAddressRef.current === address) return
