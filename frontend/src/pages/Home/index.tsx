@@ -1,79 +1,32 @@
-import { useEffect } from 'react'
 import { Navigate } from 'react-router'
 import { useAccount } from 'wagmi'
-import { useSiweAuth } from '@oasisprotocol/privana-sdk'
-import { Button } from '@/components/ui/button'
-import { ArrowRight, Check } from 'lucide-react'
-import { Layout } from '../../components/Layout'
+import { SurfaceCard } from '@/components/SurfaceCard'
+import { SignInForm } from '@/components/WalletConnect/SignInForm'
+import { useSignInForm } from '@/components/WalletConnect/useConnectWallet'
 import { dashboardPath } from '@/paths'
-
-// One-shot per page load: the first time a fully signed-in user (wallet connected
-// + SIWE authenticated) lands on the marketing home, send them to their
-// dashboard. After that they can navigate back to "/" and stay — we don't trap
-// them here.
-let autoRedirected = false
+import Logo from '../../assets/logo.svg'
 
 export const Home = () => {
-  const { isConnected } = useAccount()
-  const { isAuthenticated } = useSiweAuth()
-  const signedIn = isConnected && isAuthenticated
-  const shouldRedirect = signedIn && !autoRedirected
+  const { isConnected, status } = useAccount()
+  const signInForm = useSignInForm()
 
-  useEffect(() => {
-    autoRedirected = signedIn
-  }, [signedIn])
+  if (isConnected) return <Navigate to={dashboardPath()} replace />
 
-  if (shouldRedirect) return <Navigate to={dashboardPath()} replace />
+  if (status === 'reconnecting' || status === 'connecting') {
+    return <div className="min-h-screen [background-image:var(--app-gradient)]" />
+  }
 
   return (
-    <Layout>
-      <section className="flex flex-col items-center py-24 px-6">
-        <p className="text-sm font-bold text-foreground mb-4">Private & diversified</p>
-        <h1 className="text-5xl font-normal text-foreground text-center tracking-tight mb-8">
-          Trade in absolute privacy and leverage diversification
-        </h1>
-        <Button>
-          Get started
-          <ArrowRight />
-        </Button>
-      </section>
-
-      <section className="py-24 px-6 max-w-7xl mx-auto">
-        <div className="flex gap-16 items-center">
-          <div className="flex-1">
-            <p className="text-muted-foreground font-semibold mb-5">Hero section</p>
-            <h2 className="text-5xl font-bold mb-5">
-              Headline that solves user's <span className="text-primary">main problem</span>
-            </h2>
-            <p className="text-lg text-muted-foreground mb-8">
-              Follow with one or two sentences that expand on your value proposition. Focus on key benefits
-              and address why users should take action now.
-            </p>
-            <div className="flex flex-col gap-3 mb-8">
-              <div className="flex items-center gap-3">
-                <Check className="text-foreground" size={20} />
-                <span className="font-medium">Benefit driven feature title</span>
-              </div>
-              <div className="flex items-center gap-3">
-                <Check className="text-foreground" size={20} />
-                <span className="font-medium">Benefit driven feature title</span>
-              </div>
-              <div className="flex items-center gap-3">
-                <Check className="text-foreground" size={20} />
-                <span className="font-medium">Benefit driven feature title</span>
-              </div>
-            </div>
-            <div className="flex gap-3">
-              <Button>Get started</Button>
-              <Button variant="ghost">
-                Explore
-                <ArrowRight />
-              </Button>
-            </div>
-          </div>
-          <div className="flex-1 bg-muted rounded-md aspect-video"></div>
+    <div className="flex min-h-screen flex-col items-center justify-center [background-image:var(--app-gradient)] px-6 py-12 text-foreground">
+      <div className="w-full max-w-sm">
+        <div className="mb-6 flex flex-col items-center text-center">
+          <img src={Logo} alt="Privana" className="h-7 dark:brightness-0 dark:invert" />
+          <p className="mt-3 text-sm text-muted-foreground">Sign in to continue</p>
         </div>
-      </section>
-    </Layout>
+        <SurfaceCard className="p-6">
+          <SignInForm {...signInForm} />
+        </SurfaceCard>
+      </div>
+    </div>
   )
 }
