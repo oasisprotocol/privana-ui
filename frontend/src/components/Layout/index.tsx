@@ -1,6 +1,7 @@
 import type { ReactNode } from 'react'
 import { Link } from 'react-router'
 import { useAccount } from 'wagmi'
+import { useSiweAuth } from '@oasisprotocol/privana-sdk'
 import { ConnectButton } from '../ConnectButton'
 import Logo from '../../assets/logo.svg'
 import { MenuItem } from './menu-item'
@@ -24,7 +25,8 @@ interface LayoutProps {
 
 export const Layout = ({ children }: LayoutProps) => {
   const { address, isConnected } = useAccount()
-  const isWalletConnected = isConnected && !!address
+  const { isAuthenticated } = useSiweAuth()
+  const isSignedIn = isConnected && !!address && isAuthenticated
 
   return (
     <div className="min-h-screen [background-image:var(--app-gradient)] text-foreground">
@@ -33,14 +35,10 @@ export const Layout = ({ children }: LayoutProps) => {
           style={{ viewTransitionName: 'top-nav' }}
           className="relative md:sticky md:top-0 z-40 flex items-center justify-between px-6 py-3.5 backdrop-blur bg-[#fafafa]/85 dark:bg-background/85 border-b border-border/70 dark:border-[rgba(49,54,63,0.7)]"
         >
-          <Link
-            to={isWalletConnected ? dashboardPath() : homePath()}
-            viewTransition
-            className="text-xl font-bold"
-          >
+          <Link to={isSignedIn ? dashboardPath() : homePath()} viewTransition className="text-xl font-bold">
             <img src={Logo} alt="Privana" className="h-6 min-w-25 dark:brightness-0 dark:invert" />
           </Link>
-          {isWalletConnected && (
+          {isSignedIn && (
             <div className="hidden md:flex items-center gap-1">
               <MenuItem to={dashboardPath()} label="Portfolio" />
               <MenuItem to={earnPath()} label="Earn" />
@@ -48,9 +46,11 @@ export const Layout = ({ children }: LayoutProps) => {
             </div>
           )}
 
-          <div className="flex items-center gap-4">
-            <ConnectButton />
-          </div>
+          {isSignedIn && (
+            <div className="flex items-center gap-4">
+              <ConnectButton />
+            </div>
+          )}
         </nav>
 
         <div
@@ -99,7 +99,7 @@ export const Layout = ({ children }: LayoutProps) => {
         </footer>
       </div>
 
-      {isWalletConnected && <MobileBottomNav />}
+      {isSignedIn && <MobileBottomNav />}
     </div>
   )
 }
