@@ -31,16 +31,19 @@ export const useSubmitEarnWithdraw = ({ onSuccess }: Params = {}) => {
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
 
-  const execute = async (params: SubmitEarnWithdrawParams): Promise<boolean> => {
+  // Resolves to the created activity's id (so the caller can track its live
+  // status for the removing/result screens) or null if signing failed before an
+  // activity was created.
+  const execute = async (params: SubmitEarnWithdrawParams): Promise<string | null> => {
     const { amount, walletClient, address, token, poolId, protocol, apyLabel } = params
     if (token.token_decimals == null) {
       setError('Missing token decimals')
-      return false
+      return null
     }
     const jwt = accessToken
     if (!jwt) {
       setError('Not signed in')
-      return false
+      return null
     }
     setLoading(true)
     setError(null)
@@ -125,11 +128,11 @@ export const useSubmitEarnWithdraw = ({ onSuccess }: Params = {}) => {
         })
         .finally(() => setLoading(false))
 
-      return true
+      return id
     } catch (err) {
       setError(extractErrorMessage(err, 'Withdraw failed'))
       setLoading(false)
-      return false
+      return null
     }
   }
 

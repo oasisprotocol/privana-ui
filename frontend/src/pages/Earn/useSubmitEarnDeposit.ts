@@ -29,11 +29,14 @@ export const useSubmitEarnDeposit = ({ onSuccess }: Params = {}) => {
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
 
-  const execute = async (params: SubmitEarnDepositParams): Promise<boolean> => {
+  // Resolves to the created activity's id (so the caller can track its live
+  // status for the moving/result screens) or null if signing failed before an
+  // activity was created.
+  const execute = async (params: SubmitEarnDepositParams): Promise<string | null> => {
     const { quote, walletClient, address, token, poolId, protocol, apyLabel } = params
     if (token.token_decimals == null) {
       setError('Missing token decimals')
-      return false
+      return null
     }
     setLoading(true)
     setError(null)
@@ -97,11 +100,11 @@ export const useSubmitEarnDeposit = ({ onSuccess }: Params = {}) => {
         })
         .finally(() => setLoading(false))
 
-      return true
+      return id
     } catch (err) {
       setError(extractErrorMessage(err, 'Deposit failed'))
       setLoading(false)
-      return false
+      return null
     }
   }
 

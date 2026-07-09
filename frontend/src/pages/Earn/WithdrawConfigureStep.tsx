@@ -5,7 +5,7 @@ import { Button } from '@/components/ui/button'
 import { Skeleton } from '@/components/ui/skeleton'
 import { exceedsAmount, formatAmount, isPositiveAmount } from '@/lib/tokens'
 import { EarnAmountField } from './EarnAmountField'
-import { PROTOCOL_LABELS } from './labels'
+import { VenueHeader } from './VenueHeader'
 
 type WithdrawConfigureStepProps = {
   pool: EarnPool | undefined
@@ -27,8 +27,8 @@ export const WithdrawConfigureStep = ({
   onReview,
 }: WithdrawConfigureStepProps) => {
   const decimals = token?.token_decimals
-  const protocol = pool ? (PROTOCOL_LABELS[pool.strategy] ?? pool.strategy) : ''
   const tokenSymbol = token?.token_symbol ?? token?.token_type_name ?? ''
+  const chain = token?.chain_name ?? ''
 
   const positionWei = useMemo(() => {
     if (!position?.underlying_amount) return 0n
@@ -61,7 +61,7 @@ export const WithdrawConfigureStep = ({
 
   return (
     <div className="flex flex-col items-center gap-6 w-full max-w-110 mx-auto">
-      <h2 className="text-xl font-semibold text-foreground">Remove from {protocol}</h2>
+      <VenueHeader strategyKey={pool.strategy} asset={tokenSymbol} chain={chain} apyBps={pool.apy_bps} />
 
       <EarnAmountField
         amount={amount}
