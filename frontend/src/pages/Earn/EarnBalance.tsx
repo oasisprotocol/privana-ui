@@ -3,14 +3,21 @@ import { Skeleton } from '@/components/ui/skeleton'
 import { SurfaceCard } from '@/components/SurfaceCard'
 import { BalanceAmount } from '@/components/BalanceAmount'
 import { PortfolioChart, type PortfolioPoint } from '@/components/PortfolioChart'
-import { formatFiat } from '@/lib/tokens'
-import { formatApyBps, apyBpsToFraction } from '@/lib/apy'
+import { formatFiat, formatAmount } from '@/lib/tokens'
+import { formatApyBps } from '@/lib/apy'
 import { cn } from '@/lib/utils'
+import type { TokenAmount } from './useActiveStrategies'
 
 // Mock until the API exposes accrued yield since deposit + a real period delta.
 // TODO: replace with real accrued-yield / change figures.
 const TOTAL_EARNED_MOCK = 7.5
 const MOCK_CHANGE_PCT = 0.8
+
+// Earned is still a *fiat (USD) mock* — the backend doesn't report accrued-yield-
+// since-deposit yet, so there's no per-token figure to break it down by. A USD mock
+// only makes sense against a $1 stablecoin, so it's labelled USDC. Projected below is
+// real and per-token; make Earned per-token too once the accrued-yield endpoint lands.
+const EARN_DISPLAY_SYMBOL = 'USDC'
 
 // Empty-state placeholder curve — matches the design's dimmed "trend" chart: a
 // smoothstep S-curve from startValueUsd → endValueUsd over `days` points.
@@ -26,7 +33,7 @@ const PLACEHOLDER_CHART = trendCurve(250, 1000, 30)
 const formatToken = (value: number) =>
   value.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })
 
-const TokenValue = ({ value, positive }: { value: number; positive?: boolean }) => (
+const TokenValue = ({ symbol, amount, positive }: { symbol: string; amount: string; positive?: boolean }) => (
   <span
     className={cn(
       'inline-flex items-center gap-1 font-medium tabular-nums',
@@ -34,11 +41,11 @@ const TokenValue = ({ value, positive }: { value: number; positive?: boolean }) 
     )}
   >
     {positive ? '+' : ''}
-    {formatToken(value)}
+    {amount}
     <span className="inline-flex size-4 shrink-0 overflow-hidden rounded-full">
-      {getTokenIcon('USDC', 16)}
+      {getTokenIcon(symbol, 16)}
     </span>
-    USDC
+    {symbol}
   </span>
 )
 
@@ -46,13 +53,12 @@ type EarnBalanceProps = {
   earningFiatValue: number | undefined
   bestApyBps: number | null
   pricesError: boolean
+  projected: TokenAmount[]
 }
 
-export const EarnBalance = ({ earningFiatValue, bestApyBps, pricesError }: EarnBalanceProps) => {
+export const EarnBalance = ({ earningFiatValue, bestApyBps, pricesError, projected }: EarnBalanceProps) => {
   const isEarning = (earningFiatValue ?? 0) > 0
   const earned = isEarning ? TOTAL_EARNED_MOCK : 0
-  // Rough "earn about $X / month": balance × annual APY ÷ 12 months.
-  const projectedMonthly = ((earningFiatValue ?? 0) * apyBpsToFraction(bestApyBps ?? 0)) / 12
   const changeUsd = (earningFiatValue ?? 0) * (MOCK_CHANGE_PCT / 100)
 
   return (
@@ -85,16 +91,27 @@ export const EarnBalance = ({ earningFiatValue, bestApyBps, pricesError }: EarnB
           <div className="flex items-center gap-3">
             <span aria-hidden className="size-2.5 shrink-0 rounded-full bg-chart-positive" />
             <span className="font-medium">Earned</span>
-            <TokenValue value={earned} positive />
+            <TokenValue symbol={EARN_DISPLAY_SYMBOL} amount={formatToken(earned)} positive />
           </div>
           <div>
-            <div className="flex items-center gap-3">
+            <div className="flex flex-wrap items-center gap-x-3 gap-y-1">
               <span aria-hidden className="size-2.5 shrink-0 rounded-full bg-primary" />
               <span className="font-medium">Projected</span>
-              <TokenValue value={projectedMonthly} />
+              {projected.length > 0 ? (
+                projected.map(t => (
+                  <TokenValue
+                    key={t.symbol}
+                    symbol={t.symbol}
+                    amount={formatAmount(t.amount, t.decimals)}
+                    positive
+                  />
+                ))
+              ) : (
+                <span className="text-muted-foreground">—</span>
+              )}
             </div>
             <p className="mt-0.5 pl-[1.375rem] text-xs text-muted-foreground">
-              Monthly rewards for available funds
+              Estimated monthly rewards at current APY
             </p>
           </div>
         </div>

@@ -15,7 +15,7 @@ export const EarnDashboard = () => {
   const { data: poolsData, isLoading: poolsLoading, error: poolsError } = useEarnPools()
   const { data: tokensData, isLoading: tokensLoading, error: tokensError } = useTokens()
   const { earningFiatValue, bestApyBps, pricesError, availableTokenIds } = useFunds()
-  const { strategies: activePositions, isLoading: positionsLoading } = useActiveStrategies()
+  const { strategies: activePositions, projectedMonthly, isLoading: positionsLoading } = useActiveStrategies()
   const isLoading = poolsLoading || tokensLoading || positionsLoading
   const [depositOpen, setDepositOpen] = useState(false)
 
@@ -50,7 +50,12 @@ export const EarnDashboard = () => {
       />
 
       <div className="w-full max-w-200 md:max-w-none mx-auto mt-8 flex flex-col gap-8">
-        <EarnBalance earningFiatValue={earningFiatValue} bestApyBps={bestApyBps} pricesError={pricesError} />
+        <EarnBalance
+          earningFiatValue={earningFiatValue}
+          bestApyBps={bestApyBps}
+          pricesError={pricesError}
+          projected={projectedMonthly}
+        />
 
         {(poolsError || tokensError) && <p className="text-destructive">Unable to load earn pools</p>}
 
