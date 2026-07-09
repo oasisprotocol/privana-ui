@@ -54,9 +54,16 @@ type EarnBalanceProps = {
   bestApyBps: number | null
   pricesError: boolean
   projected: TokenAmount[]
+  loading: boolean
 }
 
-export const EarnBalance = ({ earningFiatValue, bestApyBps, pricesError, projected }: EarnBalanceProps) => {
+export const EarnBalance = ({
+  earningFiatValue,
+  bestApyBps,
+  pricesError,
+  projected,
+  loading,
+}: EarnBalanceProps) => {
   const isEarning = (earningFiatValue ?? 0) > 0
   const earned = isEarning ? TOTAL_EARNED_MOCK : 0
   const changeUsd = (earningFiatValue ?? 0) * (MOCK_CHANGE_PCT / 100)
@@ -66,14 +73,16 @@ export const EarnBalance = ({ earningFiatValue, bestApyBps, pricesError, project
       <div className="flex flex-col">
         <div className="flex items-center justify-between">
           <span className="text-sm font-medium leading-5 text-muted-foreground">Earn balance</span>
-          {isEarning && bestApyBps != null && (
+          {!loading && isEarning && bestApyBps != null && (
             <span className="inline-flex items-center gap-1 rounded-full bg-chart-positive px-2.5 py-1 text-xs font-semibold text-white">
               {formatApyBps(bestApyBps)} APY
             </span>
           )}
         </div>
 
-        {pricesError ? (
+        {loading ? (
+          <Skeleton className="mt-3 h-14 w-48 rounded-md" />
+        ) : pricesError ? (
           <span className="mt-3 text-6xl font-semibold tracking-tight text-foreground">-</span>
         ) : earningFiatValue === undefined ? (
           <Skeleton className="mt-3 h-14 w-48 rounded-md" />
@@ -81,44 +90,53 @@ export const EarnBalance = ({ earningFiatValue, bestApyBps, pricesError, project
           <BalanceAmount value={earningFiatValue} className="mt-3 text-6xl" />
         )}
 
-        {isEarning && (
+        {!loading && isEarning && (
           <span className="mt-2 text-sm font-medium text-chart-positive">
             +{formatFiat(changeUsd)} (+{MOCK_CHANGE_PCT.toFixed(2)}%)
           </span>
         )}
 
-        <div className="mt-6 space-y-2.5 text-lg">
-          <div className="flex items-center gap-3">
-            <span aria-hidden className="size-2.5 shrink-0 rounded-full bg-chart-positive" />
-            <span className="font-medium">Earned</span>
-            <TokenValue symbol={EARN_DISPLAY_SYMBOL} amount={formatToken(earned)} positive />
+        {loading ? (
+          <div className="mt-6 space-y-3">
+            <Skeleton className="h-6 w-40 rounded-md" />
+            <Skeleton className="h-6 w-52 rounded-md" />
           </div>
-          <div>
-            <div className="flex flex-wrap items-center gap-x-3 gap-y-1">
-              <span aria-hidden className="size-2.5 shrink-0 rounded-full bg-primary" />
-              <span className="font-medium">Projected</span>
-              {projected.length > 0 ? (
-                projected.map(t => (
-                  <TokenValue
-                    key={t.symbol}
-                    symbol={t.symbol}
-                    amount={formatAmount(t.amount, t.decimals)}
-                    positive
-                  />
-                ))
-              ) : (
-                <span className="text-muted-foreground">—</span>
-              )}
+        ) : (
+          <div className="mt-6 space-y-2.5 text-lg">
+            <div className="flex items-center gap-3">
+              <span aria-hidden className="size-2.5 shrink-0 rounded-full bg-chart-positive" />
+              <span className="font-medium">Earned</span>
+              <TokenValue symbol={EARN_DISPLAY_SYMBOL} amount={formatToken(earned)} positive />
             </div>
-            <p className="mt-0.5 pl-[1.375rem] text-xs text-muted-foreground">
-              Estimated monthly rewards at current APY
-            </p>
+            <div>
+              <div className="flex flex-wrap items-center gap-x-3 gap-y-1">
+                <span aria-hidden className="size-2.5 shrink-0 rounded-full bg-primary" />
+                <span className="font-medium">Projected</span>
+                {projected.length > 0 ? (
+                  projected.map(t => (
+                    <TokenValue
+                      key={t.symbol}
+                      symbol={t.symbol}
+                      amount={formatAmount(t.amount, t.decimals)}
+                      positive
+                    />
+                  ))
+                ) : (
+                  <span className="text-muted-foreground">—</span>
+                )}
+              </div>
+              <p className="mt-0.5 pl-[1.375rem] text-xs text-muted-foreground">
+                Estimated monthly rewards at current APY
+              </p>
+            </div>
           </div>
-        </div>
+        )}
       </div>
 
       <div className="flex items-center">
-        {isEarning ? (
+        {loading ? (
+          <Skeleton className="h-40 w-full rounded-2xl" />
+        ) : isEarning ? (
           <div className="w-full">
             <PortfolioChart />
           </div>
