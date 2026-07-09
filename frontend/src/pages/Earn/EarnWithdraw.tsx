@@ -6,11 +6,15 @@ import { useEarnBalance, useEarnPools } from '@/api/earn'
 import { useTokens } from '@/api/swap'
 import { useResetBalanceCaches } from '@/hooks/use-reset-balance-caches'
 import { extractErrorMessage } from '@/lib/errors'
-import { activityPath } from '@/paths'
+import { activityPath, earnPath } from '@/paths'
+import { cn } from '@/lib/utils'
+import { DESKTOP_CARD } from '@/lib/surface'
+import { useActivity } from '@/contexts/ActivityProvider/useActivity'
 import { PROTOCOL_LABELS } from './labels'
 import { formatApyBps } from '@/lib/apy'
 import { WithdrawConfigureStep } from './WithdrawConfigureStep'
 import { WithdrawReviewStep } from './WithdrawReviewStep'
+import { EarnWithdrawResult } from './EarnWithdrawResult'
 import { useSubmitEarnWithdraw } from './useSubmitEarnWithdraw'
 import type { AppChainId } from '@/wagmi-config'
 
@@ -25,6 +29,8 @@ export const EarnWithdraw = () => {
   const { switchChain, error: switchChainError } = useSwitchChain()
   const [amount, setAmount] = useState('')
   const [step, setStep] = useState(0)
+  const [withdrawActivityId, setWithdrawActivityId] = useState<string | null>(null)
+  const { activities } = useActivity()
 
   const { data: poolsData, isLoading: poolsLoading } = useEarnPools()
   const { data: balanceData, isLoading: balanceLoading } = useEarnBalance()
@@ -61,9 +67,15 @@ export const EarnWithdraw = () => {
 
   const canConfirm = !!address && !!walletClient && !!token && !!position && !!poolId && !!amountBaseUnits
 
+  const withdrawActivity = useMemo(() => {
+    if (!withdrawActivityId) return undefined
+    const found = activities.find(a => a.id === withdrawActivityId)
+    return found?.type === 'earn' ? found : undefined
+  }, [activities, withdrawActivityId])
+
   const handleConfirm = async () => {
     if (!canConfirm || !address || !walletClient || !token || !poolId) return
-    const ok = await runWithdraw({
+    const id = await runWithdraw({
       amount: amountBaseUnits,
       walletClient,
       address,
@@ -72,7 +84,10 @@ export const EarnWithdraw = () => {
       protocol,
       apyLabel,
     })
-    if (ok) navigate(activityPath())
+    if (id) {
+      setWithdrawActivityId(id)
+      setStep(2)
+    }
   }
 
   const handleBack = () => {
@@ -80,12 +95,18 @@ export const EarnWithdraw = () => {
     setStep(0)
   }
 
+  const handleDone = () => {
+    resetWithdraw()
+    setWithdrawActivityId(null)
+    navigate(earnPath())
+  }
+
   const reviewError = withdrawError ?? (switchChainError ? extractErrorMessage(switchChainError) : null)
 
   if (!poolId) return null
 
   return (
-    <div>
+    <div className={cn('mx-auto flex w-full max-w-lg flex-col', DESKTOP_CARD)}>
       {step === 0 && (
         <WithdrawConfigureStep
           pool={pool}
@@ -112,6 +133,14 @@ export const EarnWithdraw = () => {
           onConfirm={handleConfirm}
           loading={withdrawLoading}
           error={reviewError}
+        />
+      )}
+
+      {step === 2 && withdrawActivity && (
+        <EarnWithdrawResult
+          activity={withdrawActivity}
+          onDone={handleDone}
+          onViewActivity={() => navigate(activityPath())}
         />
       )}
     </div>

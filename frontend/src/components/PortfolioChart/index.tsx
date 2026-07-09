@@ -1,7 +1,9 @@
 import { Area, AreaChart, XAxis, YAxis } from 'recharts'
 import { ChartConfig, ChartContainer } from '@/components/ui/chart'
 
-const data = [
+export type PortfolioPoint = { date: string; value: number }
+
+const DEFAULT_DATA: PortfolioPoint[] = [
   { date: '1', value: 1000 },
   { date: '2', value: 1008 },
   { date: '3', value: 1004 },
@@ -19,7 +21,7 @@ const chartConfig = {
   },
 } satisfies ChartConfig
 
-export const PortfolioChart = () => {
+export const PortfolioChart = ({ data = DEFAULT_DATA }: { data?: PortfolioPoint[] }) => {
   return (
     <ChartContainer config={chartConfig} className="h-40 w-full">
       <AreaChart data={data} margin={{ top: 0, right: 0, bottom: 0, left: 0 }}>

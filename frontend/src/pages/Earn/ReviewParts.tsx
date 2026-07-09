@@ -53,8 +53,9 @@ export const ReviewAmountCard = ({
 
 export type ReviewDetailRow = { label: string; value: ReactNode; muted?: boolean }
 
-export const ReviewDetails = ({ rows }: { rows: ReviewDetailRow[] }) => (
+export const ReviewDetails = ({ header, rows }: { header?: ReactNode; rows: ReviewDetailRow[] }) => (
   <SurfaceCard className="flex flex-col px-5">
+    {header && <div className="border-b border-border py-4">{header}</div>}
     {rows.map((r, i) => (
       <Row
         key={r.label}
