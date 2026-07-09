@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useMemo, useRef } from 'react'
-import { useHistory } from '@oasisprotocol/privana-sdk'
+import { useHistory, type HistoryEntry } from '@oasisprotocol/privana-sdk'
 import { useEarnPools, type EarnPool } from '@/api/earn'
 import { useTokens } from '@/api/swap'
 import { useUnsettledOperations, type UnsettledOperation } from '@/api/operations'
@@ -22,9 +22,8 @@ export interface UseMergedActivityResult {
   isError: boolean
 }
 
-// Fetches just the most recent page of history. The contract supports paging
-// via offset/limit (per-call max ~100);
-// TODO: add multi-page assembly if/when user regularly exceed this window.
+// Shows the newest HISTORY_PAGE_SIZE entries; older ones aren't reachable yet.
+// TODO: paginate once users routinely exceed this window.
 const HISTORY_PAGE_SIZE = 100
 
 const mapStatus = (s: UnsettledOperation['status']): ActivityStatus =>
@@ -76,8 +75,47 @@ export function mapOperationToActivity(
   }
 }
 
+interface LatestHistoryResult {
+  entries: HistoryEntry[]
+  isLoading: boolean
+  isError: boolean
+  refetch: () => void
+}
+
+// Accounting's `offset` is a *page index* anchored to the oldest entry, not a row
+// offset, so the short page lands at the newest end: with 101 entries and a page
+// size of 100, page -1 holds a single row. Whenever the newest page is short, pull
+// the full page behind it and keep the newest HISTORY_PAGE_SIZE of the two.
+function useLatestHistory(): LatestHistoryResult {
+  const newest = useHistory({ offset: -1, limit: HISTORY_PAGE_SIZE })
+  const isShortPage = newest.total > HISTORY_PAGE_SIZE && newest.total % HISTORY_PAGE_SIZE !== 0
+  const prior = useHistory({ offset: -2, limit: HISTORY_PAGE_SIZE, enabled: isShortPage })
+
+  // Pages are ascending (oldest first), so the tail of the pair is the newest window.
+  const entries = useMemo(
+    () => (isShortPage ? [...prior.history, ...newest.history].slice(-HISTORY_PAGE_SIZE) : newest.history),
+    [isShortPage, prior.history, newest.history],
+  )
+
+  const refetchNewest = newest.refetch
+  const refetchPrior = prior.refetch
+  const refetch = useCallback(() => {
+    refetchNewest()
+    if (isShortPage) refetchPrior()
+  }, [refetchNewest, refetchPrior, isShortPage])
+
+  return {
+    entries,
+    // Render the short page only once its companion has landed, or the list would
+    // flash a lone row before settling.
+    isLoading: newest.isLoading || (isShortPage && prior.isLoading),
+    isError: newest.isError || (isShortPage && prior.isError),
+    refetch,
+  }
+}
+
 export function useMergedActivity(): UseMergedActivityResult {
-  const history = useHistory({ offset: -1, limit: HISTORY_PAGE_SIZE })
+  const history = useLatestHistory()
   const { data: poolsData, isLoading: poolsLoading, isError: poolsError } = useEarnPools()
   const { data: tokensData, isLoading: tokensLoading } = useTokens()
   const unsettled = useUnsettledOperations()
@@ -109,8 +147,8 @@ export function useMergedActivity(): UseMergedActivityResult {
   }, [tokensData])
 
   const chainRows = useMemo(
-    () => classifyHistory(history.history, poolsByAddress),
-    [history.history, poolsByAddress],
+    () => classifyHistory(history.entries, poolsByAddress),
+    [history.entries, poolsByAddress],
   )
 
   const unsettledOps = useMemo(() => unsettled.data?.operations ?? [], [unsettled.data])
