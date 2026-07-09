@@ -87,7 +87,7 @@ export const EarnBalance = ({
         ) : earningFiatValue === undefined ? (
           <Skeleton className="mt-3 h-14 w-48 rounded-md" />
         ) : (
-          <BalanceAmount value={earningFiatValue} className="mt-3 text-6xl" />
+          <BalanceAmount value={earningFiatValue} className="mt-3 text-6xl animate-fade-in" />
         )}
 
         {!loading && isEarning && (
