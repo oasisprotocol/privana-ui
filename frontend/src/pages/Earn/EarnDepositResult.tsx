@@ -1,4 +1,3 @@
-import { useEffect, useState } from 'react'
 import { Check, Loader2, X } from 'lucide-react'
 import { getTokenIcon } from '@oasisprotocol/privana-sdk'
 import { Button } from '@/components/ui/button'
@@ -6,11 +5,8 @@ import { Row } from '@/components/Row'
 import { SurfaceCard } from '@/components/SurfaceCard'
 import { formatAmount } from '@/lib/tokens'
 import { cn } from '@/lib/utils'
+import { useSlowSettlement } from '@/hooks/useSlowSettlement'
 import type { EarnActivity } from '@/contexts/ActivityProvider/context'
-
-// If settlement blows past this, surface a reassurance + escape hatch rather
-// than leaving the user on an indefinite spinner (mirrors the withdraw result).
-const SLOW_SETTLEMENT_MS = 20_000
 
 type EarnDepositResultProps = {
   activity: EarnActivity
@@ -22,15 +18,7 @@ export const EarnDepositResult = ({ activity, onDone, onViewActivity }: EarnDepo
   const { token, amount, protocol, status, error } = activity
   const amountFormatted = formatAmount(BigInt(amount || '0'), token.decimals)
 
-  const [slow, setSlow] = useState(false)
-  useEffect(() => {
-    if (status !== 'in-progress') {
-      setSlow(false)
-      return
-    }
-    const timer = window.setTimeout(() => setSlow(true), SLOW_SETTLEMENT_MS)
-    return () => window.clearTimeout(timer)
-  }, [status])
+  const slow = useSlowSettlement(status)
 
   if (status === 'in-progress') {
     return (

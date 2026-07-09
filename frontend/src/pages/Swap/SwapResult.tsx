@@ -1,4 +1,3 @@
-import { useEffect, useState } from 'react'
 import { ArrowRight, Check, EyeOff, Loader2, X } from 'lucide-react'
 import { getTokenIcon } from '@oasisprotocol/privana-sdk'
 import { Button } from '@/components/ui/button'
@@ -6,11 +5,8 @@ import { Row } from '@/components/Row'
 import { SurfaceCard } from '@/components/SurfaceCard'
 import { formatAmount, formatFiat } from '@/lib/tokens'
 import { cn } from '@/lib/utils'
+import { useSlowSettlement } from '@/hooks/useSlowSettlement'
 import type { ActivityTokenInfo, SwapActivity } from '@/contexts/ActivityProvider/context'
-
-// Estimated settlement is "< 20s"; if we blow past that, surface a reassurance
-// and an escape hatch so the user isn't stuck watching an indefinite spinner.
-const SLOW_SETTLEMENT_MS = 20_000
 
 const TokenAmount = ({
   wei,
@@ -45,15 +41,7 @@ export const SwapResult = ({ activity, onDone, onViewActivity }: SwapResultProps
   const { fromToken, toToken, fromAmount, toAmount, rateLabel, feeFiat, status, error } = activity
   const receiveFormatted = formatAmount(BigInt(toAmount || '0'), toToken.decimals)
 
-  const [slow, setSlow] = useState(false)
-  useEffect(() => {
-    if (status !== 'in-progress') {
-      setSlow(false)
-      return
-    }
-    const timer = window.setTimeout(() => setSlow(true), SLOW_SETTLEMENT_MS)
-    return () => window.clearTimeout(timer)
-  }, [status])
+  const slow = useSlowSettlement(status)
 
   if (status === 'in-progress') {
     return (
