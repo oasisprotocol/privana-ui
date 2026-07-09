@@ -5,16 +5,19 @@ import { useTokens } from '@/api/swap'
 import { useUnsettledOperations, type UnsettledOperation } from '@/api/operations'
 import { useActivity } from '@/contexts/ActivityProvider/useActivity'
 import type { Activity, ActivityStatus, ActivityTokenInfo } from '@/contexts/ActivityProvider/context'
-import { classifyHistory, matchesLocal, type ClassifiedHistoryEntry } from '@/pages/Activity/historyMapping'
+import {
+  classifyHistory,
+  matchesLocal,
+  type ClassifiedHistoryEntry,
+  type HistoryWindow,
+} from '@/pages/Activity/historyMapping'
 
 export type MergedRow =
   | { source: 'chain'; timestamp: number; row: ClassifiedHistoryEntry }
   | { source: 'local'; timestamp: number; activity: Activity }
 
 export const rowKey = (r: MergedRow): string =>
-  r.source === 'local'
-    ? `local:${r.activity.id}`
-    : `chain:${r.timestamp}:${r.row.entry.kind}:${r.row.counterparty ?? '-'}:${r.row.amount ?? '-'}`
+  r.source === 'local' ? `local:${r.activity.id}` : `chain:${r.row.index}`
 
 export interface UseMergedActivityResult {
   rows: MergedRow[]
@@ -77,6 +80,7 @@ export function mapOperationToActivity(
 
 interface LatestHistoryResult {
   entries: HistoryEntry[]
+  window: HistoryWindow
   isLoading: boolean
   isError: boolean
   refetch: () => void
@@ -84,32 +88,44 @@ interface LatestHistoryResult {
 
 // Accounting's `offset` is a *page index* anchored to the oldest entry, not a row
 // offset, so the short page lands at the newest end: with 101 entries and a page
-// size of 100, page -1 holds a single row. Whenever the newest page is short, pull
-// the full page behind it and keep the newest HISTORY_PAGE_SIZE of the two.
+// size of 100, page -1 holds a single row. Past one page we always pull the page
+// behind it too and keep the newest HISTORY_PAGE_SIZE of the pair, plus the one
+// entry before them so classifyHistory can spot a swap the window cut through.
 function useLatestHistory(): LatestHistoryResult {
   const newest = useHistory({ offset: -1, limit: HISTORY_PAGE_SIZE })
-  const isShortPage = newest.total > HISTORY_PAGE_SIZE && newest.total % HISTORY_PAGE_SIZE !== 0
-  const prior = useHistory({ offset: -2, limit: HISTORY_PAGE_SIZE, enabled: isShortPage })
+  const total = newest.total
+  const needsPrior = total > HISTORY_PAGE_SIZE
+  const prior = useHistory({ offset: -2, limit: HISTORY_PAGE_SIZE, enabled: needsPrior })
 
   // Pages are ascending (oldest first), so the tail of the pair is the newest window.
-  const entries = useMemo(
-    () => (isShortPage ? [...prior.history, ...newest.history].slice(-HISTORY_PAGE_SIZE) : newest.history),
-    [isShortPage, prior.history, newest.history],
+  const { entries, leadIn } = useMemo(() => {
+    if (!needsPrior) return { entries: newest.history, leadIn: undefined }
+    const combined = [...prior.history, ...newest.history]
+    return {
+      entries: combined.slice(-HISTORY_PAGE_SIZE),
+      leadIn: combined[combined.length - HISTORY_PAGE_SIZE - 1],
+    }
+  }, [needsPrior, prior.history, newest.history])
+
+  const window = useMemo(
+    () => ({ startIndex: Math.max(0, total - entries.length), leadIn }),
+    [total, entries, leadIn],
   )
 
   const refetchNewest = newest.refetch
   const refetchPrior = prior.refetch
   const refetch = useCallback(() => {
     refetchNewest()
-    if (isShortPage) refetchPrior()
-  }, [refetchNewest, refetchPrior, isShortPage])
+    if (needsPrior) refetchPrior()
+  }, [refetchNewest, refetchPrior, needsPrior])
 
   return {
     entries,
-    // Render the short page only once its companion has landed, or the list would
-    // flash a lone row before settling.
-    isLoading: newest.isLoading || (isShortPage && prior.isLoading),
-    isError: newest.isError || (isShortPage && prior.isError),
+    window,
+    // Render the newest page only once its companion has landed, or the list
+    // would flash a lone row before settling.
+    isLoading: newest.isLoading || (needsPrior && prior.isLoading),
+    isError: newest.isError || (needsPrior && prior.isError),
     refetch,
   }
 }
@@ -146,9 +162,10 @@ export function useMergedActivity(): UseMergedActivityResult {
     return map
   }, [tokensData])
 
+  const historyWindow = history.window
   const chainRows = useMemo(
-    () => classifyHistory(history.entries, poolsByAddress),
-    [history.entries, poolsByAddress],
+    () => classifyHistory(history.entries, poolsByAddress, historyWindow),
+    [history.entries, poolsByAddress, historyWindow],
   )
 
   const unsettledOps = useMemo(() => unsettled.data?.operations ?? [], [unsettled.data])
