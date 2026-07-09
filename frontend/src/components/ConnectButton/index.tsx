@@ -21,7 +21,6 @@ import { trimLongString } from '../../utils/trimLongString'
 import { wagmiConfig, type AppChainId } from '@/wagmi-config'
 import { TURNKEY_CONNECTOR_ID } from '@/wallet/turnkeyConnector'
 import { useTurnkeyWalletIntent } from '@/wallet/turnkeyIntent'
-import { useConnectWallet } from '../WalletConnect/useConnectWallet'
 import { usePendingActivityCount } from '@/hooks/use-merged-activity'
 import { useSignOut } from '@/hooks/useSignOut'
 import { activityPath } from '@/paths'
@@ -41,7 +40,6 @@ export const ConnectButton: FC = () => {
   const { address, isConnected, connector } = useAccount()
   const { switchChain } = useSwitchChain()
   const chainId = useChainId()
-  const signIn = useConnectWallet()
 
   const isTurnkeyActive = connector?.id === TURNKEY_CONNECTOR_ID
   const walletIntent = useTurnkeyWalletIntent()
@@ -61,13 +59,7 @@ export const ConnectButton: FC = () => {
   // Embedded wallets use Turnkey's logout() via TurnkeyLogoutItem.
   const handleSignOut = useSignOut()
 
-  if (!isConnected || !address) {
-    return (
-      <Button type="button" onClick={signIn}>
-        Sign in
-      </Button>
-    )
-  }
+  if (!isConnected || !address) return null
 
   if (!SUPPORTED_CHAIN_IDS.includes(chainId)) {
     return (

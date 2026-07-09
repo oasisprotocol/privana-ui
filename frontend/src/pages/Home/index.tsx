@@ -1,5 +1,5 @@
 import { useEffect, useRef } from 'react'
-import { Navigate } from 'react-router'
+import { Navigate, useLocation } from 'react-router'
 import { useAccount } from 'wagmi'
 import { useSiweAuth } from '@oasisprotocol/privana-sdk'
 import { Loader2, ShieldCheck } from 'lucide-react'
@@ -8,6 +8,8 @@ import { Layout } from '@/components/Layout'
 import { SignInForm } from '@/components/WalletConnect/SignInForm'
 import { useSignInForm } from '@/components/WalletConnect/useConnectWallet'
 import { useSignOut } from '@/hooks/useSignOut'
+import { useSlowSettlement } from '@/hooks/useSlowSettlement'
+import { resolveRedirect } from '@/lib/resolveRedirect'
 import { dashboardPath } from '@/paths'
 import Logo from '../../assets/logo.svg'
 
@@ -22,6 +24,7 @@ export const Home = () => {
   const { isAuthenticated, isLoading: isAuthLoading, error: authError, login } = useSiweAuth()
   const signInForm = useSignInForm()
   const signOut = useSignOut()
+  const location = useLocation()
 
   const autoLoginTried = useRef(false)
   useEffect(() => {
@@ -35,7 +38,13 @@ export const Home = () => {
     }
   }, [isConnected, isAuthenticated, isAuthLoading, authError, login])
 
-  if (isConnected && isAuthenticated) return <Navigate to={dashboardPath()} replace />
+  const authPending = isConnected && !isAuthenticated && !authError
+  const showPendingEscape = useSlowSettlement(authPending ? 'in-progress' : 'completed')
+
+  if (isConnected && isAuthenticated) {
+    const from = (location.state as { from?: string } | null)?.from ?? null
+    return <Navigate to={resolveRedirect(from) ?? dashboardPath()} replace />
+  }
 
   // While wagmi restores a prior session on load, don't flash the form at a
   // returning user who's about to be redirected.
@@ -97,6 +106,22 @@ export const Home = () => {
                     Authenticating to Privana. Please confirm in your wallet.
                   </p>
                   <Loader2 className="mt-8 size-6 animate-spin text-muted-foreground" />
+                  {showPendingEscape && (
+                    <div className="mt-8 flex flex-col items-center gap-3 animate-fade-in">
+                      <p className="max-w-xs text-xs text-muted-foreground">
+                        Taking longer than usual? Check your wallet, or disconnect and try again.
+                      </p>
+                      <Button
+                        type="button"
+                        variant="outline"
+                        size="lg"
+                        onClick={signOut}
+                        className="h-14 w-full px-6 text-base font-medium"
+                      >
+                        Disconnect
+                      </Button>
+                    </div>
+                  )}
                 </>
               )}
             </div>

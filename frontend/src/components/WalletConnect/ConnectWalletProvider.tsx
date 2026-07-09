@@ -5,7 +5,6 @@ import { setConnectedTurnkeyWallet } from '@/wallet/turnkeyBridge'
 import { walletConnectToEip1193 } from '@/wallet/walletConnectEip1193'
 import { extractErrorMessage } from '@/lib/errors'
 import { ConnectWalletContext, type ConnectWalletContextValue } from './ConnectWalletContext'
-import { SignInDialog } from './SignInDialog'
 import { type ExternalWalletOption, type SignInFormState } from './SignInForm'
 import { IS_TURNKEY_ENABLED } from '../TurnkeyAuthProvider'
 
@@ -13,20 +12,17 @@ import { IS_TURNKEY_ENABLED } from '../TurnkeyAuthProvider'
 const providerKey = (p: { info: { rdns?: string; uuid?: string; name: string } }): string =>
   p.info.rdns ?? p.info.uuid ?? p.info.name
 
-// Mounted inside TurnkeyProvider so it can call useTurnkey(). Exposes a single
-// signIn() action through context (so the header button and page CTAs don't each
-// need to call useTurnkey directly, which would throw when Turnkey isn't
-// configured). signIn() opens one modal offering both paths:
+// Mounted inside TurnkeyProvider so it can call useTurnkey(). Produces the live
+// `signInForm` state consumed by the login page ("/"), offering both paths:
 //  - email / passkey / social → hands off to Turnkey's own auth modal → embedded.
 //  - a detected browser wallet → connectWalletAccount (no Turnkey login stamp),
 //    marking the 'connected' intent; TurnkeySync bridges it to wagmi and SIWE
 //    authenticates.
 const TurnkeyConnect = ({ children }: { children: ReactNode }) => {
   const { handleLogin, walletProviders, connectWalletAccount } = useTurnkey()
-  const [modalOpen, setModalOpen] = useState(false)
   const [connectingKey, setConnectingKey] = useState<string | null>(null)
   const [error, setError] = useState<string | null>(null)
-  // Bumped to abandon an in-flight connect (cancel / close / new selection) so a
+  // Bumped to abandon an in-flight connect (cancel / new selection) so a
   // late-resolving promise can't hijack the UI or connect after the user moved on.
   const attemptRef = useRef(0)
 
@@ -81,7 +77,6 @@ const TurnkeyConnect = ({ children }: { children: ReactNode }) => {
         provider: rpcProvider,
         address: account.address as `0x${string}`,
       })
-      setModalOpen(false)
     } catch (err) {
       if (attemptRef.current !== attempt) return
       setError(extractErrorMessage(err))
@@ -90,10 +85,9 @@ const TurnkeyConnect = ({ children }: { children: ReactNode }) => {
     }
   }
 
-  // Email / passkey stays entirely inside Turnkey's own modal — we just close
-  // ours and hand off, never touching the email value.
+  // Email / passkey hands off entirely to Turnkey's own modal — we never touch
+  // the email value.
   const handleEmailContinue = () => {
-    setModalOpen(false)
     void handleLogin()
   }
 
@@ -102,11 +96,6 @@ const TurnkeyConnect = ({ children }: { children: ReactNode }) => {
     attemptRef.current++
     setConnectingKey(null)
     setError(null)
-  }
-
-  const handleOpenChange = (open: boolean) => {
-    setModalOpen(open)
-    if (!open) cancelConnecting()
   }
 
   const signInForm: SignInFormState = {
@@ -120,19 +109,13 @@ const TurnkeyConnect = ({ children }: { children: ReactNode }) => {
     qrUri,
   }
 
-  const value: ConnectWalletContextValue = { signIn: () => setModalOpen(true), signInForm }
+  const value: ConnectWalletContextValue = { signInForm }
 
-  return (
-    <ConnectWalletContext.Provider value={value}>
-      {children}
-      <SignInDialog open={modalOpen} onOpenChange={handleOpenChange} {...signInForm} />
-    </ConnectWalletContext.Provider>
-  )
+  return <ConnectWalletContext.Provider value={value}>{children}</ConnectWalletContext.Provider>
 }
 
 // Turnkey isn't configured. No way to connect; provide a no-op + empty form.
 const DISABLED_VALUE: ConnectWalletContextValue = {
-  signIn: () => {},
   signInForm: {
     onEmailContinue: () => {},
     options: [],

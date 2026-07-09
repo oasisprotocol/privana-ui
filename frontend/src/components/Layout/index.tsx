@@ -1,4 +1,4 @@
-import type { ReactNode } from 'react'
+import { useState, type ReactNode } from 'react'
 import { Link } from 'react-router'
 import { useAccount } from 'wagmi'
 import { useSiweAuth } from '@oasisprotocol/privana-sdk'
@@ -26,7 +26,11 @@ interface LayoutProps {
 export const Layout = ({ children }: LayoutProps) => {
   const { address, isConnected } = useAccount()
   const { isAuthenticated } = useSiweAuth()
-  const isSignedIn = isConnected && !!address && isAuthenticated
+  const signedInNow = isConnected && !!address && isAuthenticated
+  const [everSignedIn, setEverSignedIn] = useState(false)
+  if (signedInNow && !everSignedIn) setEverSignedIn(true)
+  else if (!isConnected && everSignedIn) setEverSignedIn(false)
+  const isSignedIn = signedInNow || (isConnected && everSignedIn)
 
   return (
     <div className="min-h-screen [background-image:var(--app-gradient)] text-foreground">
