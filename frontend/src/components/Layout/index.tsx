@@ -1,7 +1,7 @@
 import { useState, type ReactNode } from 'react'
 import { Link } from 'react-router'
 import { useAccount } from 'wagmi'
-import { useSiweAuth } from '@oasisprotocol/privana-sdk'
+import { useIsSignedIn } from '@/hooks/useIsSignedIn'
 import { ConnectButton } from '../ConnectButton'
 import Logo from '../../assets/logo.svg'
 import { MenuItem } from './menu-item'
@@ -24,9 +24,8 @@ interface LayoutProps {
 }
 
 export const Layout = ({ children }: LayoutProps) => {
-  const { address, isConnected } = useAccount()
-  const { isAuthenticated } = useSiweAuth()
-  const signedInNow = isConnected && !!address && isAuthenticated
+  const { isConnected } = useAccount()
+  const signedInNow = useIsSignedIn()
   const [everSignedIn, setEverSignedIn] = useState(false)
   if (signedInNow && !everSignedIn) setEverSignedIn(true)
   else if (!isConnected && everSignedIn) setEverSignedIn(false)

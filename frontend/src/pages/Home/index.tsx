@@ -7,6 +7,7 @@ import { Button } from '@/components/ui/button'
 import { Layout } from '@/components/Layout'
 import { SignInForm } from '@/components/WalletConnect/SignInForm'
 import { useSignInForm } from '@/components/WalletConnect/useConnectWallet'
+import { useIsSignedIn } from '@/hooks/useIsSignedIn'
 import { useSignOut } from '@/hooks/useSignOut'
 import { useSlowSettlement } from '@/hooks/useSlowSettlement'
 import { resolveRedirect } from '@/lib/resolveRedirect'
@@ -22,6 +23,7 @@ import Logo from '../../assets/logo.svg'
 export const Home = () => {
   const { isConnected, status } = useAccount()
   const { isAuthenticated, isLoading: isAuthLoading, error: authError, login } = useSiweAuth()
+  const isSignedIn = useIsSignedIn()
   const signInForm = useSignInForm()
   const signOut = useSignOut()
   const location = useLocation()
@@ -41,7 +43,7 @@ export const Home = () => {
   const authPending = isConnected && !isAuthenticated && !authError
   const showPendingEscape = useSlowSettlement(authPending ? 'in-progress' : 'completed')
 
-  if (isConnected && isAuthenticated) {
+  if (isSignedIn) {
     const from = (location.state as { from?: string } | null)?.from ?? null
     return <Navigate to={resolveRedirect(from) ?? dashboardPath()} replace />
   }
