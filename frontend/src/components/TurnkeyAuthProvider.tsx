@@ -45,6 +45,12 @@ export const TurnkeyAuthProvider = ({ children }: { children: ReactNode }) => {
               button: '#fcd34d',
               modalBackground: '#f2f2f2',
             },
+            dark: {
+              primary: '#fcd34d',
+              primaryText: '#25292e',
+              button: '#fcd34d',
+              modalBackground: '#1d2026',
+            },
           },
         },
         // Surface external wallets for *connecting* (provider discovery via
