@@ -224,7 +224,7 @@
   --fv-foreground: var(--foreground);
   --fv-primary: var(--primary);
   --fv-primary-foreground: var(--primary-foreground);
-  --fv-secondary: var(--secondary);
+  --fv-secondary: color-mix(in srgb, var(--secondary) 50%, var(--card));
   --fv-secondary-foreground: var(--secondary-foreground);
   --fv-card-foreground: var(--card-foreground);
   --fv-popover: var(--popover);
@@ -243,10 +243,6 @@
 .dark [data-privana] {
   --fv-secondary: var(--muted);
   --fv-input: #2d3139;
-}
-
-html:not(.dark) [data-privana] .bg-secondary.overflow-hidden.gap-2.p-1 {
-  background-color: color-mix(in srgb, var(--fv-secondary) 50%, transparent);
 }
 
 [data-privana][data-slot='dialog-overlay'] {
