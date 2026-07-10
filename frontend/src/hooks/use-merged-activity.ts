@@ -35,6 +35,18 @@ const mapStatus = (s: UnsettledOperation['status']): ActivityStatus =>
 const serverIdOf = (a: Activity): string | undefined =>
   a.type === 'swap' ? a.swapId : a.direction === 'deposit' ? a.depositId : a.withdrawId
 
+// The server now owns this operation, so its optimistic copy is a duplicate.
+const isAdoptedByServer = (a: Activity, unsettledIds: ReadonlySet<string>): boolean => {
+  const sid = serverIdOf(a)
+  return sid != null && unsettledIds.has(sid)
+}
+
+// The single definition of an in-flight local activity. The badge counts these
+// and the list renders these; routing both through one predicate is what keeps
+// them from drifting apart.
+const pendingLocal = (activities: Activity[], unsettledIds: ReadonlySet<string>): Activity[] =>
+  activities.filter(a => a.status === 'in-progress' && !isAdoptedByServer(a, unsettledIds))
+
 export function mapOperationToActivity(
   op: UnsettledOperation,
   resolveToken: (id: string | null) => ActivityTokenInfo,
@@ -100,6 +112,11 @@ function useLatestHistory(): LatestHistoryResult {
   // Pages are ascending (oldest first), so the tail of the pair is the newest window.
   const { entries, leadIn } = useMemo(() => {
     if (!needsPrior) return { entries: newest.history, leadIn: undefined }
+    // Past one page, the newest page alone is the *short* one — a single row at
+    // 101 entries. Publishing it while its companion is still in flight hands a
+    // consumer a plausible-looking one-row list, so withhold the window until
+    // the pair is whole rather than trusting every caller to check isLoading.
+    if (prior.history.length === 0) return { entries: [], leadIn: undefined }
     const combined = [...prior.history, ...newest.history]
     return {
       entries: combined.slice(-HISTORY_PAGE_SIZE),
@@ -199,12 +216,9 @@ export function useMergedActivity(): UseMergedActivityResult {
   }, [unsettledOps, tokensById, poolsById])
 
   const isSupersededOptimistic = useCallback(
-    (a: Activity): boolean => {
-      const sid = serverIdOf(a)
-      if (sid && unsettledIds.has(sid)) return true
-      if (a.status === 'completed' && chainRows.some(r => matchesLocal(r, a))) return true
-      return false
-    },
+    (a: Activity): boolean =>
+      isAdoptedByServer(a, unsettledIds) ||
+      (a.status === 'completed' && chainRows.some(r => matchesLocal(r, a))),
     [unsettledIds, chainRows],
   )
 
@@ -241,16 +255,13 @@ export function useMergedActivity(): UseMergedActivityResult {
   }
 }
 
+// Counts exactly the rows useMergedActivity would render as in-progress: the
+// server's pending operations, plus the local activities it hasn't adopted yet.
 export function usePendingActivityCount(): number {
   const unsettled = useUnsettledOperations()
   const { activities } = useActivity()
   const ops = unsettled.data?.operations ?? []
   const unsettledIds = new Set(ops.map(o => o.operation_id))
   const serverPending = ops.filter(o => o.status === 'pending').length
-  const localPending = activities.filter(a => {
-    if (a.status !== 'in-progress') return false
-    const sid = serverIdOf(a)
-    return !(sid && unsettledIds.has(sid))
-  }).length
-  return serverPending + localPending
+  return serverPending + pendingLocal(activities, unsettledIds).length
 }
