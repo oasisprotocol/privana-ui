@@ -25,6 +25,11 @@ const TurnkeyConnect = ({ children }: { children: ReactNode }) => {
   // Bumped to abandon an in-flight connect (cancel / new selection) so a
   // late-resolving promise can't hijack the UI or connect after the user moved on.
   const attemptRef = useRef(0)
+  // Cancel only detaches *us* from the request — the wallet's own prompt stays
+  // open, and injected wallets queue one unlock per origin, rejecting a second
+  // with -32002 "Already processing". So keep the original promise and re-await
+  // it if the user picks the same wallet again, rather than asking twice.
+  const inFlightRef = useRef(new Map<string, ReturnType<typeof connectWalletAccount>>())
 
   // Connectable external wallets: EVM only, one row per wallet (the same wallet
   // can appear once per chain).
@@ -59,8 +64,15 @@ const TurnkeyConnect = ({ children }: { children: ReactNode }) => {
     const attempt = ++attemptRef.current
     setError(null)
     setConnectingKey(key)
+
+    let pending = inFlightRef.current.get(key)
+    if (!pending) {
+      pending = connectWalletAccount(provider)
+      inFlightRef.current.set(key, pending)
+    }
+
     try {
-      const account = await connectWalletAccount(provider)
+      const account = await pending
       if (attemptRef.current !== attempt) return // cancelled / superseded
       // Turnkey hands back one of several provider shapes (injected EIP-1193 vs.
       // WalletConnect's Wallet-Standard surface). Solana is filtered out above, so
@@ -81,6 +93,9 @@ const TurnkeyConnect = ({ children }: { children: ReactNode }) => {
       if (attemptRef.current !== attempt) return
       setError(extractErrorMessage(err))
     } finally {
+      // Settled, so the wallet's queue is clear — drop it unless a newer call
+      // for this key has already replaced the entry.
+      if (inFlightRef.current.get(key) === pending) inFlightRef.current.delete(key)
       if (attemptRef.current === attempt) setConnectingKey(null)
     }
   }

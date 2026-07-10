@@ -1,6 +1,7 @@
 import { QRCodeSVG } from 'qrcode.react'
-import { ArrowLeft, ArrowRight, Wallet } from 'lucide-react'
+import { ArrowLeft, ArrowRight, Loader2, Wallet } from 'lucide-react'
 import { Button } from '../ui/button'
+import { cn } from '@/lib/utils'
 
 export type ExternalWalletOption = { key: string; name: string; icon?: string }
 
@@ -29,6 +30,7 @@ export const SignInForm = ({
   qrUri,
 }: SignInFormState) => {
   const connecting = connectingKey != null
+  const connectingName = options.find(o => o.key === connectingKey)?.name
 
   if (qrActive) {
     return (
@@ -55,69 +57,87 @@ export const SignInForm = ({
   }
 
   return (
-    <div className="flex flex-col">
-      <Button
-        type="button"
-        size="lg"
-        className="h-14 w-full px-6 text-base"
-        disabled={connecting}
-        onClick={onEmailContinue}
+    <div className="relative flex flex-col">
+      {/* `disabled` alone would leave a wall of dead buttons under the overlay, so
+          the whole stack recedes while a connect is in flight. */}
+      <div
+        className={cn(
+          'flex flex-col transition-[filter,opacity] duration-200',
+          connecting && 'pointer-events-none select-none opacity-50 blur-[3px]',
+        )}
       >
-        Continue with email
-        <ArrowRight />
-      </Button>
+        <Button
+          type="button"
+          size="lg"
+          className="h-14 w-full px-6 text-base"
+          disabled={connecting}
+          onClick={onEmailContinue}
+        >
+          Continue with email
+          <ArrowRight />
+        </Button>
 
-      <div className="my-6 flex items-center gap-3 text-xs text-muted-foreground">
-        <span className="h-px flex-1 bg-border" />
-        or connect a wallet
-        <span className="h-px flex-1 bg-border" />
+        <div className="my-6 flex items-center gap-3 text-xs text-muted-foreground">
+          <span className="h-px flex-1 bg-border" />
+          or connect a wallet
+          <span className="h-px flex-1 bg-border" />
+        </div>
+
+        {options.length === 0 ? (
+          <p className="text-center text-sm text-muted-foreground">
+            No browser wallet detected. Install a wallet extension (e.g. MetaMask or Rabby) to connect one.
+          </p>
+        ) : (
+          <div className="flex flex-col gap-2">
+            {options.map(option => (
+              <Button
+                key={option.key}
+                type="button"
+                variant="outline"
+                size="lg"
+                disabled={connecting}
+                onClick={() => onSelect(option.key)}
+                className="h-14 w-full justify-start gap-3 px-6 text-base font-medium"
+              >
+                {option.icon ? (
+                  <img src={option.icon} alt="" className="size-6 shrink-0 rounded-md" />
+                ) : (
+                  <span className="flex size-6 shrink-0 items-center justify-center rounded-md bg-muted">
+                    <Wallet className="size-4" />
+                  </span>
+                )}
+                <span className="flex-1 text-left">{option.name}</span>
+              </Button>
+            ))}
+          </div>
+        )}
       </div>
 
-      {options.length === 0 ? (
-        <p className="text-center text-sm text-muted-foreground">
-          No browser wallet detected. Install a wallet extension (e.g. MetaMask or Rabby) to connect one.
-        </p>
-      ) : (
-        <div className="flex flex-col gap-2">
-          {options.map(option => (
-            <Button
-              key={option.key}
-              type="button"
-              variant="outline"
-              size="lg"
-              disabled={connecting}
-              onClick={() => onSelect(option.key)}
-              className="h-14 w-full justify-start gap-3 px-6 text-base font-medium"
-            >
-              {option.icon ? (
-                <img src={option.icon} alt="" className="size-6 shrink-0 rounded-md" />
-              ) : (
-                <span className="flex size-6 shrink-0 items-center justify-center rounded-md bg-muted">
-                  <Wallet className="size-4" />
-                </span>
-              )}
-              <span className="flex-1 text-left">{option.name}</span>
-              {connectingKey === option.key && (
-                <span className="text-xs text-muted-foreground">Connecting…</span>
-              )}
-            </Button>
-          ))}
+      {connecting && (
+        <div
+          role="status"
+          className="absolute inset-0 z-10 flex flex-col items-center justify-center gap-4 animate-fade-in"
+        >
+          <Loader2 className="size-6 animate-spin text-muted-foreground" />
+          <p className="text-sm text-muted-foreground">
+            {connectingName ? `Connecting to ${connectingName}…` : 'Connecting…'}
+          </p>
+          <p className="max-w-xs text-center text-xs text-muted-foreground">
+            Confirm in your wallet to continue.
+          </p>
+          <Button
+            type="button"
+            variant="outline"
+            size="lg"
+            onClick={onCancel}
+            className="mt-2 h-14 w-full px-6 text-base font-medium"
+          >
+            Cancel
+          </Button>
         </div>
       )}
 
       {error && <p className="mt-4 text-center text-sm text-destructive">{error}</p>}
-
-      {connecting && (
-        <Button
-          type="button"
-          variant="outline"
-          size="lg"
-          onClick={onCancel}
-          className="mt-2 h-14 w-full px-6 text-base font-medium"
-        >
-          Cancel
-        </Button>
-      )}
     </div>
   )
 }
