@@ -224,17 +224,28 @@
   --fv-foreground: var(--foreground);
   --fv-primary: var(--primary);
   --fv-primary-foreground: var(--primary-foreground);
-  --fv-secondary: var(--secondary);
+  --fv-secondary: color-mix(in srgb, var(--secondary) 50%, var(--card));
   --fv-secondary-foreground: var(--secondary-foreground);
-  --fv-card: var(--card);
   --fv-card-foreground: var(--card-foreground);
   --fv-popover: var(--popover);
   --fv-popover-foreground: var(--popover-foreground);
-  --fv-muted: var(--muted);
   --fv-muted-foreground: var(--muted-foreground);
   --fv-accent: var(--accent);
   --fv-accent-foreground: var(--accent-foreground);
   --fv-border: var(--border);
-  --fv-input: var(--input);
   --fv-destructive: var(--destructive);
+  --fv-card: var(--background);
+  --fv-muted: var(--card);
+  --fv-input: var(--background);
+}
+
+[data-privana].dark,
+.dark [data-privana] {
+  --fv-secondary: var(--muted);
+  --fv-input: #2d3139;
+}
+
+[data-privana][data-slot='dialog-overlay'] {
+  backdrop-filter: blur(6px);
+  -webkit-backdrop-filter: blur(6px);
 }

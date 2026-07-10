@@ -1,5 +1,5 @@
 import { useMemo, useRef, useState, type ReactNode } from 'react'
-import { useTurnkey, WalletInterfaceType } from '@turnkey/react-wallet-kit'
+import { ClientState, useTurnkey, WalletInterfaceType } from '@turnkey/react-wallet-kit'
 import type { EIP1193Provider } from 'viem'
 import { setConnectedTurnkeyWallet } from '@/wallet/turnkeyBridge'
 import { walletConnectToEip1193 } from '@/wallet/walletConnectEip1193'
@@ -19,7 +19,7 @@ const providerKey = (p: { info: { rdns?: string; uuid?: string; name: string } }
 //    marking the 'connected' intent; TurnkeySync bridges it to wagmi and SIWE
 //    authenticates.
 const TurnkeyConnect = ({ children }: { children: ReactNode }) => {
-  const { handleLogin, walletProviders, connectWalletAccount } = useTurnkey()
+  const { handleLogin, walletProviders, connectWalletAccount, clientState } = useTurnkey()
   const [connectingKey, setConnectingKey] = useState<string | null>(null)
   const [error, setError] = useState<string | null>(null)
   // Bumped to abandon an in-flight connect (cancel / new selection) so a
@@ -116,6 +116,7 @@ const TurnkeyConnect = ({ children }: { children: ReactNode }) => {
   const signInForm: SignInFormState = {
     onEmailContinue: handleEmailContinue,
     options,
+    isLoadingOptions: clientState === undefined || clientState === ClientState.Loading,
     connectingKey,
     error,
     onSelect: key => void handleSelect(key),
@@ -134,6 +135,7 @@ const DISABLED_VALUE: ConnectWalletContextValue = {
   signInForm: {
     onEmailContinue: () => {},
     options: [],
+    isLoadingOptions: false,
     connectingKey: null,
     error: null,
     onSelect: () => {},

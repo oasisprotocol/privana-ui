@@ -233,7 +233,13 @@ export function useMergedActivity(): UseMergedActivityResult {
     }
   }, [activities, isSupersededOptimistic, removeActivity])
 
+  const isLoading = history.isLoading || poolsLoading || tokensLoading || unsettled.isLoading
+
   const rows = useMemo<MergedRow[]>(() => {
+    // The unsettled operations land well before the chain history, so a partial
+    // merge would show failed ops on top and then reshuffle once history arrives.
+    if (isLoading) return []
+
     const merged: MergedRow[] = chainRows.map(row => ({
       source: 'chain' as const,
       timestamp: row.timestamp,
@@ -246,11 +252,11 @@ export function useMergedActivity(): UseMergedActivityResult {
     }
     merged.sort((a, b) => b.timestamp - a.timestamp)
     return merged
-  }, [chainRows, unsettledRows, visibleOptimistic])
+  }, [isLoading, chainRows, unsettledRows, visibleOptimistic])
 
   return {
     rows,
-    isLoading: history.isLoading || poolsLoading || tokensLoading || unsettled.isLoading,
+    isLoading,
     isError: history.isError || !!poolsError,
   }
 }
