@@ -1,6 +1,7 @@
 import { QRCodeSVG } from 'qrcode.react'
 import { ArrowLeft, ArrowRight, Loader2, Wallet } from 'lucide-react'
 import { Button } from '../ui/button'
+import { Skeleton } from '../ui/skeleton'
 import { cn } from '@/lib/utils'
 
 export type ExternalWalletOption = { key: string; name: string; icon?: string }
@@ -8,6 +9,7 @@ export type ExternalWalletOption = { key: string; name: string; icon?: string }
 export type SignInFormState = {
   onEmailContinue: () => void
   options: ExternalWalletOption[]
+  isLoadingOptions: boolean
   connectingKey: string | null
   error: string | null
   onSelect: (key: string) => void
@@ -22,6 +24,7 @@ export type SignInFormState = {
 export const SignInForm = ({
   onEmailContinue,
   options,
+  isLoadingOptions,
   connectingKey,
   error,
   onSelect,
@@ -83,7 +86,12 @@ export const SignInForm = ({
           <span className="h-px flex-1 bg-border" />
         </div>
 
-        {options.length === 0 ? (
+        {isLoadingOptions ? (
+          <div className="flex flex-col gap-2">
+            <Skeleton className="h-14 w-full rounded-full" />
+            <Skeleton className="h-14 w-full rounded-full" />
+          </div>
+        ) : options.length === 0 ? (
           <p className="text-center text-sm text-muted-foreground">
             No browser wallet detected. Install a wallet extension (e.g. MetaMask or Rabby) to connect one.
           </p>
