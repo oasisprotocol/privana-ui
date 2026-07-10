@@ -10,8 +10,9 @@ export type SignInFormState = {
   connectingKey: string | null
   error: string | null
   onSelect: (key: string) => void
-  // Abandons an in-flight connect (e.g. the WalletConnect QR) and returns to the
-  // wallet list — the inline form has no modal to close, so it needs this.
+  // Abandons an in-flight connect and returns to the wallet list. The inline form
+  // has no modal to close, so every connecting state has to offer this: a wallet
+  // that never settles would otherwise leave the form permanently disabled.
   onCancel: () => void
   qrActive: boolean
   qrUri?: string
@@ -105,6 +106,18 @@ export const SignInForm = ({
       )}
 
       {error && <p className="mt-4 text-center text-sm text-destructive">{error}</p>}
+
+      {connecting && (
+        <Button
+          type="button"
+          variant="outline"
+          size="lg"
+          onClick={onCancel}
+          className="mt-2 h-14 w-full px-6 text-base font-medium"
+        >
+          Cancel
+        </Button>
+      )}
     </div>
   )
 }
