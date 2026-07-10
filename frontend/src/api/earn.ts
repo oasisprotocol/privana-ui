@@ -1,33 +1,9 @@
 import { useEffect, useRef } from 'react'
 import { useQuery, useQueryClient } from '@tanstack/react-query'
 import { useSiweAuth } from '@oasisprotocol/privana-sdk'
+import { request } from './http'
 
-const BASE_URL = import.meta.env.VITE_PRIVANA_SERVICES_API_URL ?? 'http://localhost:8001'
-
-export class ApiError extends Error {
-  readonly status: number
-  readonly detail: string | null
-  constructor(status: number, detail: string | null) {
-    super(detail ?? `Request failed: ${status}`)
-    this.name = 'ApiError'
-    this.status = status
-    this.detail = detail
-  }
-}
-
-async function request<T>(path: string, init?: RequestInit, bearer?: string): Promise<T> {
-  const headers: Record<string, string> = { 'Content-Type': 'application/json' }
-  if (bearer) headers.Authorization = `Bearer ${bearer}`
-  const res = await fetch(`${BASE_URL}${path}`, {
-    ...init,
-    headers: { ...headers, ...(init?.headers as Record<string, string> | undefined) },
-  })
-  if (!res.ok) {
-    const body = await res.json().catch(() => null)
-    throw new ApiError(res.status, body?.detail ?? null)
-  }
-  return res.json()
-}
+export { ApiError } from './http'
 
 export type EarnPoolStatus = 'active' | 'paused' | 'closed'
 

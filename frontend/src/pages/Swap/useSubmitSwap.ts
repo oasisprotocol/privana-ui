@@ -1,8 +1,10 @@
 import { useState } from 'react'
+import { useQueryClient } from '@tanstack/react-query'
 import { signTransferMessage } from '@oasisprotocol/privana-sdk'
 import type { WalletClient } from 'viem'
 import { executeSwap } from '@/api/swap'
 import type { QuoteResponse, TokenInfo } from '@/api/swap'
+import { operationsKeys } from '@/api/operations'
 import { useActivity } from '@/contexts/ActivityProvider/useActivity'
 import type { ActivityStatus } from '@/contexts/ActivityProvider/context'
 import { extractErrorMessage } from '@/lib/errors'
@@ -26,6 +28,7 @@ export type SubmitSwapParams = {
 
 export const useSubmitSwap = ({ onSuccess }: Params = {}) => {
   const { addActivity, updateActivity } = useActivity()
+  const queryClient = useQueryClient()
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
 
@@ -93,6 +96,7 @@ export const useSubmitSwap = ({ onSuccess }: Params = {}) => {
             txHash: swap.tx_hash ?? undefined,
             status,
           })
+          void queryClient.invalidateQueries({ queryKey: operationsKeys.all })
           onSuccess?.()
         })
         .catch(err => {

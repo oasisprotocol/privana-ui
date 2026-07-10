@@ -5,23 +5,10 @@ import type {
   QuoteResponse,
   SwapRequest,
   SwapResponse,
-  SwapStatusResponse,
   TokenListResponse,
 } from './types'
 
-const BASE_URL = import.meta.env.VITE_PRIVANA_SERVICES_API_URL ?? 'http://localhost:8001'
-
-async function request<T>(path: string, init?: RequestInit): Promise<T> {
-  const res = await fetch(`${BASE_URL}${path}`, {
-    headers: { 'Content-Type': 'application/json' },
-    ...init,
-  })
-  if (!res.ok) {
-    const body = await res.json().catch(() => null)
-    throw new Error(body?.detail ?? `Request failed: ${res.status}`)
-  }
-  return res.json()
-}
+import { request } from '../http'
 
 export function getQuote(params: QuoteParams, signal?: AbortSignal) {
   const search = new URLSearchParams({
@@ -41,10 +28,6 @@ export function executeSwap(body: SwapRequest) {
     method: 'POST',
     body: JSON.stringify(body),
   })
-}
-
-export function getSwapStatus(swapId: string) {
-  return request<SwapStatusResponse>(`/v1/swap/${swapId}/status`)
 }
 
 export function getTokens() {

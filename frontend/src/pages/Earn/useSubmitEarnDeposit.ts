@@ -1,8 +1,10 @@
 import { useState } from 'react'
+import { useQueryClient } from '@tanstack/react-query'
 import type { WalletClient } from 'viem'
 import { signTransferMessage } from '@oasisprotocol/privana-sdk'
 import { depositEarn, type DepositQuoteResponse } from '@/api/earn'
 import type { TokenInfo } from '@/api/swap'
+import { operationsKeys } from '@/api/operations'
 import type { ActivityStatus } from '@/contexts/ActivityProvider/context'
 import { useActivity } from '@/contexts/ActivityProvider/useActivity'
 import { extractErrorMessage } from '@/lib/errors'
@@ -26,6 +28,7 @@ export type SubmitEarnDepositParams = {
 
 export const useSubmitEarnDeposit = ({ onSuccess }: Params = {}) => {
   const { addActivity, updateActivity } = useActivity()
+  const queryClient = useQueryClient()
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
 
@@ -90,6 +93,7 @@ export const useSubmitEarnDeposit = ({ onSuccess }: Params = {}) => {
             txHash: deposit.tx_hash ?? undefined,
             status,
           })
+          void queryClient.invalidateQueries({ queryKey: operationsKeys.all })
           onSuccess?.()
         })
         .catch(err => {
