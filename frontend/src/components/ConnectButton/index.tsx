@@ -1,5 +1,5 @@
 import { type FC, useState } from 'react'
-import { useAccount, useChainId, useDisconnect, useSwitchChain } from 'wagmi'
+import { useAccount, useChainId, useSwitchChain } from 'wagmi'
 import { Link } from 'react-router'
 import {
   ArrowDownToLine,
@@ -21,9 +21,8 @@ import { trimLongString } from '../../utils/trimLongString'
 import { wagmiConfig, type AppChainId } from '@/wagmi-config'
 import { TURNKEY_CONNECTOR_ID } from '@/wallet/turnkeyConnector'
 import { useTurnkeyWalletIntent } from '@/wallet/turnkeyIntent'
-import { clearTurnkeyWallet } from '@/wallet/turnkeyBridge'
-import { useConnectWallet } from '../WalletConnect/useConnectWallet'
 import { usePendingActivityCount } from '@/hooks/use-merged-activity'
+import { useSignOut } from '@/hooks/useSignOut'
 import { activityPath } from '@/paths'
 import { cn } from '@/lib/utils'
 import { setThemePreference, useResolvedTheme } from '@/lib/theme'
@@ -39,10 +38,8 @@ const SUPPORTED_CHAIN_IDS = wagmiConfig.chains.map(c => c.id)
 // (useSiweAuth), which watches the wagmi connection and runs SIWE login/logout.
 export const ConnectButton: FC = () => {
   const { address, isConnected, connector } = useAccount()
-  const { disconnect } = useDisconnect()
   const { switchChain } = useSwitchChain()
   const chainId = useChainId()
-  const signIn = useConnectWallet()
 
   const isTurnkeyActive = connector?.id === TURNKEY_CONNECTOR_ID
   const walletIntent = useTurnkeyWalletIntent()
@@ -57,21 +54,12 @@ export const ConnectButton: FC = () => {
     setActiveModal(modal)
   }
 
-  // Connected (external) wallets have no Turnkey session to log out of, so we
-  // tear down the bridge + intent ourselves and disconnect wagmi (which drives
-  // the SIWE logout). Embedded wallets use Turnkey's logout() via TurnkeyLogoutItem.
-  const handleSignOut = () => {
-    clearTurnkeyWallet()
-    disconnect()
-  }
+  // Connected (external) wallets: full sign-out (bridge teardown + wagmi
+  // disconnect + SIWE logout, which also clears any sticky auth error).
+  // Embedded wallets use Turnkey's logout() via TurnkeyLogoutItem.
+  const handleSignOut = useSignOut()
 
-  if (!isConnected || !address) {
-    return (
-      <Button type="button" onClick={signIn}>
-        Sign in
-      </Button>
-    )
-  }
+  if (!isConnected || !address) return null
 
   if (!SUPPORTED_CHAIN_IDS.includes(chainId)) {
     return (

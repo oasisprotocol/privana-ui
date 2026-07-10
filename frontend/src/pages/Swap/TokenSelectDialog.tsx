@@ -92,7 +92,7 @@ export const TokenSelectDialog = ({
           <DialogDescription className="text-sm">Choose the asset you want to use</DialogDescription>
         </DialogHeader>
 
-        <div className="flex items-center gap-2 rounded-full border border-input bg-card px-3 focus-within:ring-2 focus-within:ring-ring/50 focus-within:ring-offset-1">
+        <div className="flex items-center gap-2 rounded-full border border-input bg-white dark:bg-card px-3 focus-within:ring-2 focus-within:ring-ring/50 focus-within:ring-offset-1">
           <Search className="size-4 shrink-0 text-muted-foreground" />
           <Input
             placeholder="Enter token name"

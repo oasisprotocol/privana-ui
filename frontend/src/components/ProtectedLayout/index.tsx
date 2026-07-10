@@ -1,62 +1,25 @@
 import { type FC } from 'react'
-import { Outlet, useNavigate } from 'react-router'
-import { useAccount, useAccountEffect, useDisconnect } from 'wagmi'
+import { Navigate, Outlet, useLocation } from 'react-router'
+import { useAccount } from 'wagmi'
 import { useSiweAuth } from '@oasisprotocol/privana-sdk'
-import { Button } from '@/components/ui/button'
-import { useConnectWallet } from '@/components/WalletConnect/useConnectWallet'
+import { useIsSignedIn } from '@/hooks/useIsSignedIn'
 
-// Auth gate that renders inside the shared Dashboard layout (which owns the nav
-// and bottom tab bar). It must NOT render its own <Layout>, otherwise the layout
-// would remount on every navigation and the mobile menu would flicker.
+// Auth gate rendered inside the shared Dashboard layout (which owns the nav +
+// bottom tab bar, so this must NOT render its own <Layout>). Sign-in lives
+// entirely on "/", so an unauthenticated user is sent there with a redirect back
+// rather than getting an in-place gate + modal.
 export const ProtectedLayout: FC = () => {
-  const { isConnected, status } = useAccount()
-  const { disconnect } = useDisconnect()
-  const signIn = useConnectWallet()
-  const { isAuthenticated, isLoading: isAuthLoading, error: authError, login } = useSiweAuth()
-  const navigate = useNavigate()
+  const { status } = useAccount()
+  const { isLoading: isAuthLoading } = useSiweAuth()
+  const isSignedIn = useIsSignedIn()
+  const location = useLocation()
 
-  useAccountEffect({
-    onDisconnect() {
-      navigate('/', { replace: true })
-    },
-  })
+  if (isSignedIn) return <Outlet />
 
-  if (!isConnected) {
-    const isReconnecting = status === 'connecting' || status === 'reconnecting'
-    return isReconnecting ? (
-      <div className="flex flex-1" />
-    ) : (
-      <div className="flex flex-col flex-1 gap-4 justify-center items-center text-center py-24 md:py-32">
-        <p className="text-sm text-muted-foreground max-w-md">Please connect your wallet to continue.</p>
-        <Button onClick={signIn}>Sign in</Button>
-      </div>
-    )
+  if (status === 'reconnecting' || status === 'connecting' || isAuthLoading) {
+    return <div className="flex flex-1" />
   }
 
-  if (!isAuthenticated) {
-    return (
-      <div className="flex flex-col flex-1 gap-4 justify-center items-center text-center py-24 md:py-32">
-        <p className="text-sm text-muted-foreground max-w-md">
-          Wallet is connected. Sign in to Privana to continue.
-        </p>
-        <div className="flex items-center gap-3">
-          {/* login() surfaces failures via authError (rendered below) and rethrows; the catch
-              only swallows the rethrow so a rejected signature isn't an unhandled rejection. */}
-          <Button onClick={() => void login().catch(() => {})} disabled={isAuthLoading}>
-            {isAuthLoading ? 'Signing in…' : 'Sign in'}
-          </Button>
-          <Button variant="outline" onClick={() => disconnect()}>
-            Disconnect
-          </Button>
-        </div>
-        {authError && (
-          <p role="alert" className="text-sm text-destructive max-w-md">
-            {authError.message}
-          </p>
-        )}
-      </div>
-    )
-  }
-
-  return <Outlet />
+  // Settled + unauthenticated → sign-in lives on "/"; stash where we came from.
+  return <Navigate to="/" replace state={{ from: `${location.pathname}${location.search}` }} />
 }

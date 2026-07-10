@@ -54,7 +54,7 @@ export const AssetRow = ({
 
   return (
     <div className="flex flex-col gap-2">
-      <div className="flex items-center gap-2 w-full h-[58px] rounded-full border border-input bg-card pl-2 pr-1">
+      <div className="flex items-center gap-2 w-full h-[58px] rounded-full border border-input bg-white dark:bg-card pl-2 pr-1">
         <TokenSelectDialog
           tokens={tokens}
           value={token?.token_id}
