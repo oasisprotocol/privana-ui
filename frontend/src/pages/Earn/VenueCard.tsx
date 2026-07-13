@@ -89,7 +89,7 @@ export const VenueCard = ({
           </div>
         </div>
         <div className="hidden flex-1 items-center justify-center xl:flex">
-          <VenueAPY className="h-10 w-36" />
+          <VenueAPY poolId={poolId} className="h-10 w-36" />
         </div>
         <div className="ml-auto flex shrink-0 justify-end gap-2 xl:ml-0">
           {isEarning ? (
@@ -137,7 +137,7 @@ export const VenueCard = ({
                 </span>
               )}
             </div>
-            <VenueAPY className="h-12 w-full" />
+            <VenueAPY poolId={poolId} className="h-12 w-full" />
             <div className="grid grid-cols-2 gap-2">
               {depositButton('Add funds', 'lg', 'w-full')}
               <Button asChild variant="outline" size="lg" className="w-full">
@@ -152,7 +152,7 @@ export const VenueCard = ({
             <p className="text-sm text-muted-foreground">
               Deposit {asset} to start earning {formatApyBps(apyBps)} APY.
             </p>
-            <VenueAPY className="h-12 w-full" />
+            <VenueAPY poolId={poolId} className="h-12 w-full" />
             {depositButton('Start earning', 'lg', 'w-full')}
           </>
         )}
