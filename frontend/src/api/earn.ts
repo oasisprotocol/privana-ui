@@ -48,6 +48,8 @@ export interface DepositRequest {
 }
 
 export interface DepositResponse {
+  // The operation_id /v1/operations/unsettled reports for this deposit, so an
+  // optimistic activity can be matched against the server's copy of it.
   deposit_id: string
   pool_id: string
   amount: string
@@ -55,6 +57,7 @@ export interface DepositResponse {
   exchange_rate: string | null
   tx_hash: string | null
   status: string
+  error: string | null
 }
 
 export interface WithdrawRequest {
@@ -78,6 +81,7 @@ export interface WithdrawResponse {
   exchange_rate: string | null
   tx_hash: string | null
   status: string
+  error: string | null
 }
 
 export interface EarnBalance {

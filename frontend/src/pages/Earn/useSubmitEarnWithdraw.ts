@@ -116,10 +116,12 @@ export const useSubmitEarnWithdraw = ({ onSuccess }: Params = {}) => {
         .then(withdraw => {
           const status: ActivityStatus =
             withdraw.status === 'completed' || withdraw.status === 'failed' ? withdraw.status : 'in-progress'
+          // withdraw_id is the server's operation id — see useSubmitEarnDeposit.
           updateActivity(id, {
             withdrawId: withdraw.withdraw_id,
             txHash: withdraw.tx_hash ?? undefined,
             status,
+            error: withdraw.error ?? undefined,
           })
           void queryClient.invalidateQueries({ queryKey: operationsKeys.all })
           onSuccess?.()

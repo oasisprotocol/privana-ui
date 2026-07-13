@@ -88,15 +88,21 @@ export const useSubmitEarnDeposit = ({ onSuccess }: Params = {}) => {
         .then(deposit => {
           const status: ActivityStatus =
             deposit.status === 'completed' || deposit.status === 'failed' ? deposit.status : 'in-progress'
+          // deposit_id is the server's operation id. Recording it is what lets the
+          // merged activity list see this entry and the server's unsettled copy as
+          // one operation — without it a failed deposit renders twice.
           updateActivity(id, {
             depositId: deposit.deposit_id,
             txHash: deposit.tx_hash ?? undefined,
             status,
+            error: deposit.error ?? undefined,
           })
           void queryClient.invalidateQueries({ queryKey: operationsKeys.all })
           onSuccess?.()
         })
         .catch(err => {
+          // Only a request that produced no response at all reaches here, so there
+          // is no server-side operation for this entry to be matched against.
           updateActivity(id, {
             status: 'failed',
             error: extractErrorMessage(err, 'Deposit failed'),
