@@ -92,14 +92,30 @@ export interface EarnBalanceListResponse {
   positions: EarnBalance[]
 }
 
+export interface ApyHistoryPoint {
+  timestamp: number
+  apy_bps: number
+}
+
+export interface ApyHistoryResponse {
+  pool_id: string
+  points: ApyHistoryPoint[]
+}
+
 export const earnKeys = {
   all: ['earn'] as const,
   pools: () => [...earnKeys.all, 'pools'] as const,
   balance: (userAddress: string) => [...earnKeys.all, 'balance', userAddress] as const,
+  apyHistory: (poolId: string, days: number) => [...earnKeys.all, 'apy-history', poolId, days] as const,
 }
 
 export function getEarnPools() {
   return request<EarnPoolListResponse>('/v1/earn/pools')
+}
+
+export function getApyHistory(poolId: string, days?: number) {
+  const search = days != null ? `?days=${days}` : ''
+  return request<ApyHistoryResponse>(`/v1/earn/pools/${poolId}/apy-history${search}`)
 }
 
 export function getDepositQuote(params: DepositQuoteParams, signal?: AbortSignal) {
@@ -138,6 +154,15 @@ export function useEarnPools() {
     queryKey: earnKeys.pools(),
     queryFn: getEarnPools,
     staleTime: 30_000,
+  })
+}
+
+export function useApyHistory(poolId: string, days = 30) {
+  return useQuery({
+    queryKey: earnKeys.apyHistory(poolId, days),
+    queryFn: () => getApyHistory(poolId, days),
+    staleTime: 60 * 60 * 1000,
+    enabled: !!poolId,
   })
 }
 
