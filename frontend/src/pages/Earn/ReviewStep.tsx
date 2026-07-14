@@ -78,7 +78,6 @@ export const ReviewStep = ({
 
   const rows: ReviewDetailRow[] = [
     { label: 'Lock-up', value: 'None — withdraw anytime' },
-    { label: 'Performance fee', value: '0.1% of yield' },
     ...(projected
       ? [
           { label: 'Projected / month', value: formatFiat(projected.perMonth), muted: true },
