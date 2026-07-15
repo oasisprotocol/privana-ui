@@ -27,7 +27,8 @@ export interface Funds {
   availableFiatValue: number | undefined
   /** Fiat value held in earn positions. */
   earningFiatValue: number | undefined
-  totalFiatValue: number | undefined
+  /** Excludes locked funds (committed to a service) and pending withdrawals (leaving). */
+  availableAndEarningFiatValue: number | undefined
   /** Per-token available (idle) balances, for token-denominated display. */
   availableTokens: TokenBreakdown[]
   /** Per-token earn-position balances, for token-denominated display. */
@@ -44,7 +45,7 @@ export function useFunds(): Funds {
   const { enabledTokens, tokensStatus, getTokenById } = usePrivanaContext()
   const tokenIds = useMemo(() => enabledTokens.map(t => t.id), [enabledTokens])
   const { balances, isLoading: balancesLoading } = useBatchBalances({ tokenIds })
-  const { locks, totalLocked, isLoading: locksLoading } = useLockedFunds()
+  const { totalLocked, isLoading: locksLoading } = useLockedFunds()
   const { data: earnBalance, isLoading: earnLoading } = useEarnBalance()
   const { hasPendingWithdrawals, isLoading: pendingWithdrawalsLoading } = usePendingWithdrawals()
   const { data: prices, isError: pricesError } = useTokenPrices(tokenIds)
@@ -61,9 +62,13 @@ export function useFunds(): Funds {
     return activePools.length ? Math.max(...activePools.map(p => p.apy_bps)) : null
   }, [poolsData])
 
-  const { availableFiatValue, earningFiatValue, totalFiatValue } = useMemo(() => {
+  const { availableFiatValue, earningFiatValue, availableAndEarningFiatValue } = useMemo(() => {
     if (!prices) {
-      return { availableFiatValue: undefined, earningFiatValue: undefined, totalFiatValue: undefined }
+      return {
+        availableFiatValue: undefined,
+        earningFiatValue: undefined,
+        availableAndEarningFiatValue: undefined,
+      }
     }
     const fiatOf = (tokenId: string, amountWei: string): number => {
       const price = prices[tokenId]
@@ -73,26 +78,24 @@ export function useFunds(): Funds {
     }
 
     let available = 0
-    let total = 0
     for (const b of balances) {
-      const availableValue = fiatOf(b.token_id, b.balance)
-      const lockedValue = locks
-        .filter(l => l.token_id === b.token_id)
-        .reduce((sum, l) => sum + fiatOf(l.token_id, l.amount), 0)
-      available += availableValue
-      total += availableValue + lockedValue
+      available += fiatOf(b.token_id, b.balance)
     }
     // Earn positions are transferred into the pool (not held as a lock), so they
-    // are a separate bucket from available/locked - no double counting. Their
-    // underlying_amount already reflects accrued yield. (Pending in-flight
-    // withdrawals are intentionally excluded; those funds are leaving.)
+    // are a separate bucket from available - no double counting. Their
+    // underlying_amount already reflects accrued yield. Locked funds and pending
+    // in-flight withdrawals are both excluded from the total: locks can't be used
+    // within Privana right now, and withdrawing funds are leaving.
     let earning = 0
     for (const p of earnBalance?.positions ?? []) {
       earning += fiatOf(p.token_id, p.underlying_amount)
     }
-    total += earning
-    return { availableFiatValue: available, earningFiatValue: earning, totalFiatValue: total }
-  }, [balances, locks, earnBalance, prices, getTokenById])
+    return {
+      availableFiatValue: available,
+      earningFiatValue: earning,
+      availableAndEarningFiatValue: available + earning,
+    }
+  }, [balances, earnBalance, prices, getTokenById])
 
   // Per-token amounts for token-denominated display (Earning / Available rows).
   // Merged by symbol so token ids that share a ticker (e.g. several USDC ids)
@@ -157,7 +160,7 @@ export function useFunds(): Funds {
     availableTokenIds,
     availableFiatValue,
     earningFiatValue,
-    totalFiatValue,
+    availableAndEarningFiatValue,
     availableTokens,
     earningTokens,
     bestApyBps,

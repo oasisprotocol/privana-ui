@@ -156,7 +156,7 @@ export const DashboardHome = () => {
     hasAvailableBalance,
     availableFiatValue,
     earningFiatValue,
-    totalFiatValue,
+    availableAndEarningFiatValue,
     availableTokens,
     earningTokens,
     bestApyBps,
@@ -174,13 +174,16 @@ export const DashboardHome = () => {
           <div className="flex flex-col gap-8 w-full">
             <div className="flex flex-col md:hidden">
               <span className="text-sm font-medium text-muted-foreground leading-5">Total balance</span>
-              <BalanceAmount value={totalFiatValue ?? 0} className="mt-3 animate-fade-in" />
+              <BalanceAmount value={availableAndEarningFiatValue ?? 0} className="mt-3 animate-fade-in" />
             </div>
 
             <SurfaceCard className="p-6 w-full md:mx-auto md:max-w-xl md:rounded-3xl md:p-8">
               <div className="mb-6 hidden md:block">
                 <div className="text-sm font-medium text-muted-foreground">Total balance</div>
-                <BalanceAmount value={totalFiatValue ?? 0} className="mt-1 text-4xl animate-fade-in" />
+                <BalanceAmount
+                  value={availableAndEarningFiatValue ?? 0}
+                  className="mt-1 text-4xl animate-fade-in"
+                />
               </div>
               <h2 className="text-2xl font-semibold tracking-tight text-foreground">
                 Add funds to get started
@@ -230,10 +233,13 @@ export const DashboardHome = () => {
                 <span className="text-sm font-medium text-muted-foreground">Total balance</span>
                 {pricesError ? (
                   <span className="mt-3 text-6xl font-semibold tracking-tight text-foreground">-</span>
-                ) : totalFiatValue === undefined ? (
+                ) : availableAndEarningFiatValue === undefined ? (
                   <Skeleton className="mt-3 h-14 w-56 rounded-md" />
                 ) : (
-                  <BalanceAmount value={totalFiatValue} className="mt-3 text-6xl animate-fade-in" />
+                  <BalanceAmount
+                    value={availableAndEarningFiatValue}
+                    className="mt-3 text-6xl animate-fade-in"
+                  />
                 )}
                 <div className="mt-6 space-y-2.5">
                   <DesktopBreakdownRow
@@ -270,10 +276,10 @@ export const DashboardHome = () => {
                   <span className="text-sm font-medium text-muted-foreground leading-5">Total balance</span>
                   {pricesError ? (
                     <span className="mt-3 text-5xl font-semibold tracking-tight text-foreground">-</span>
-                  ) : totalFiatValue === undefined ? (
+                  ) : availableAndEarningFiatValue === undefined ? (
                     <Skeleton className="mt-3 h-12 w-44 rounded-md" />
                   ) : (
-                    <BalanceAmount value={totalFiatValue} className="mt-3 animate-fade-in" />
+                    <BalanceAmount value={availableAndEarningFiatValue} className="mt-3 animate-fade-in" />
                   )}
                 </div>
                 <div className="flex flex-col gap-1 text-sm">
