@@ -9,10 +9,12 @@ import { formatFiat, formatAmount } from '@/lib/tokens'
 import { earnPath, tradePath } from '@/paths'
 import { Link } from 'react-router'
 import { useFunds, type TokenBreakdown } from '@/hooks/useFunds'
+import { useMergedActivity } from '@/hooks/use-merged-activity'
 import { cn } from '@/lib/utils'
 import { BalanceAmount } from '@/components/BalanceAmount'
 import { PortfolioChart } from '@/components/PortfolioChart'
 import { LatestActivity } from './LatestActivity'
+import { HISTORY_FETCH_LIMIT } from './latestActivity.constants'
 
 // Shared sizing for the dashboard's primary call-to-action buttons.
 const CTA_BUTTON = 'h-14 px-8 text-base w-full sm:w-auto sm:min-w-[200px]'
@@ -162,6 +164,9 @@ export const DashboardHome = () => {
     bestApyBps,
     pricesError,
   } = useFunds()
+
+  // Hoisted out of LatestActivity so the history/unsettled fetch starts on mount in parallel with very slow balance reads.
+  const { rows: activityRows, isLoading: activityLoading } = useMergedActivity(HISTORY_FETCH_LIMIT)
 
   // Rough "earn about $X / month" estimate: available × annual APY ÷ 12 months.
   const monthlyEarnEstimate = ((availableFiatValue ?? 0) * apyBpsToFraction(bestApyBps ?? 0)) / 12
@@ -340,7 +345,7 @@ export const DashboardHome = () => {
               </SurfaceCard>
             )}
 
-            <LatestActivity />
+            <LatestActivity rows={activityRows} isLoading={activityLoading} />
           </div>
         )}
       </div>

@@ -1,15 +1,11 @@
 import { Link } from 'react-router'
-import { useMergedActivity, rowKey } from '@/hooks/use-merged-activity'
+import { type MergedRow, rowKey } from '@/hooks/use-merged-activity'
 import { Skeleton } from '@/components/ui/skeleton'
 import { activityPath } from '@/paths'
 import { ActivityRow } from '@/pages/Activity/ActivityRow'
+import { MAX_ROWS } from './latestActivity.constants'
 
-const MAX_ROWS = 3
-// In some cases one activity is built from two history rows, so we fetch double the amount of rows to ensure we have enough to display.
-const HISTORY_FETCH_LIMIT = MAX_ROWS * 2
-
-export const LatestActivity = () => {
-  const { rows, isLoading } = useMergedActivity(HISTORY_FETCH_LIMIT)
+export const LatestActivity = ({ rows, isLoading }: { rows: MergedRow[]; isLoading: boolean }) => {
   const latest = rows.slice(0, MAX_ROWS)
 
   if (!isLoading && latest.length === 0) return null
