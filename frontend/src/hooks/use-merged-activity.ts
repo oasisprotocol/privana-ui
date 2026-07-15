@@ -99,30 +99,26 @@ interface LatestHistoryResult {
 }
 
 // Accounting's `offset` is a *page index* anchored to the oldest entry, not a row
-// offset, so the short page lands at the newest end: with 101 entries and a page
-// size of 100, page -1 holds a single row. Past one page we always pull the page
-// behind it too and keep the newest HISTORY_PAGE_SIZE of the pair, plus the one
-// entry before them so classifyHistory can spot a swap the window cut through.
-function useLatestHistory(): LatestHistoryResult {
-  const newest = useHistory({ offset: -1, limit: HISTORY_PAGE_SIZE })
+// offset, so the short page lands at the newest end: with `limit + 1` entries,
+// page -1 holds a single row. Past one page we always pull the page behind it too
+// and keep the newest `limit` of the pair, plus the one entry before them so
+// classifyHistory can spot a swap the window cut through.
+function useLatestHistory(limit: number): LatestHistoryResult {
+  const newest = useHistory({ offset: -1, limit })
   const total = newest.total
-  const needsPrior = total > HISTORY_PAGE_SIZE
-  const prior = useHistory({ offset: -2, limit: HISTORY_PAGE_SIZE, enabled: needsPrior })
+  const needsPrior = total > limit
+  const prior = useHistory({ offset: -2, limit, enabled: needsPrior })
 
   // Pages are ascending (oldest first), so the tail of the pair is the newest window.
   const { entries, leadIn } = useMemo(() => {
     if (!needsPrior) return { entries: newest.history, leadIn: undefined }
-    // Past one page, the newest page alone is the *short* one — a single row at
-    // 101 entries. Publishing it while its companion is still in flight hands a
-    // consumer a plausible-looking one-row list, so withhold the window until
-    // the pair is whole rather than trusting every caller to check isLoading.
     if (prior.history.length === 0) return { entries: [], leadIn: undefined }
     const combined = [...prior.history, ...newest.history]
     return {
-      entries: combined.slice(-HISTORY_PAGE_SIZE),
-      leadIn: combined[combined.length - HISTORY_PAGE_SIZE - 1],
+      entries: combined.slice(-limit),
+      leadIn: combined[combined.length - limit - 1],
     }
-  }, [needsPrior, prior.history, newest.history])
+  }, [needsPrior, prior.history, newest.history, limit])
 
   const window = useMemo(
     () => ({ startIndex: Math.max(0, total - entries.length), leadIn }),
@@ -147,8 +143,8 @@ function useLatestHistory(): LatestHistoryResult {
   }
 }
 
-export function useMergedActivity(): UseMergedActivityResult {
-  const history = useLatestHistory()
+export function useMergedActivity(historyLimit: number = HISTORY_PAGE_SIZE): UseMergedActivityResult {
+  const history = useLatestHistory(historyLimit)
   const { data: poolsData, isLoading: poolsLoading, isError: poolsError } = useEarnPools()
   const { data: tokensData, isLoading: tokensLoading } = useTokens()
   const unsettled = useUnsettledOperations()
