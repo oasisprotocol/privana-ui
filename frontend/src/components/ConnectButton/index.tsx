@@ -4,9 +4,11 @@ import { Link } from 'react-router'
 import {
   ArrowDownToLine,
   ArrowUpFromLine,
+  Check,
   ChevronDown,
   ChevronRight,
   Copy,
+  Globe,
   History,
   LogOut,
   Moon,
@@ -34,6 +36,9 @@ import { WALLET_CARD_ROW, WALLET_MENU_ROW } from './walletMenuRow'
 const APP_CHAIN_ID = parseInt(import.meta.env.VITE_CHAIN_ID, 10) as AppChainId
 const SUPPORTED_CHAIN_IDS = wagmiConfig.chains.map(c => c.id)
 
+const APP_CHAIN = wagmiConfig.chains.find(c => c.id === APP_CHAIN_ID)
+const NETWORK_OPTIONS = wagmiConfig.chains.filter(c => !!c.testnet === !!APP_CHAIN?.testnet)
+
 // Wallet UI only. The Privana session is driven by the SDK's SiweAuthProvider
 // (useSiweAuth), which watches the wagmi connection and runs SIWE login/logout.
 export const ConnectButton: FC = () => {
@@ -48,7 +53,9 @@ export const ConnectButton: FC = () => {
   const pendingCount = usePendingActivityCount()
 
   const [menuOpen, setMenuOpen] = useState(false)
+  const [networkOpen, setNetworkOpen] = useState(false)
   const [activeModal, setActiveModal] = useState<'deposit' | 'withdraw' | null>(null)
+  const currentChain = wagmiConfig.chains.find(c => c.id === chainId)
   const openModal = (modal: 'deposit' | 'withdraw') => {
     setMenuOpen(false)
     setActiveModal(modal)
@@ -169,6 +176,45 @@ export const ConnectButton: FC = () => {
               })}
             </div>
           </div>
+
+          {NETWORK_OPTIONS.length > 1 && (
+            <div className="mt-2 rounded-xl bg-muted">
+              <button
+                type="button"
+                onClick={() => setNetworkOpen(open => !open)}
+                className="flex w-full items-center gap-2 px-3 py-2 text-sm font-medium text-foreground cursor-pointer"
+              >
+                <Globe className="size-4 text-muted-foreground" />
+                Network
+                <span className="ml-auto flex items-center gap-1 text-muted-foreground">
+                  <span className="max-w-[120px] truncate">{currentChain?.name ?? 'Unknown'}</span>
+                  <ChevronDown className={cn('size-4 transition-transform', networkOpen && 'rotate-180')} />
+                </span>
+              </button>
+              {networkOpen && (
+                <div className="px-1.5 pb-1.5">
+                  {NETWORK_OPTIONS.map(chain => {
+                    const active = chain.id === chainId
+                    return (
+                      <button
+                        key={chain.id}
+                        type="button"
+                        disabled={active}
+                        onClick={() => {
+                          switchChain({ chainId: chain.id })
+                          setNetworkOpen(false)
+                        }}
+                        className={cn(WALLET_MENU_ROW, active && 'cursor-default')}
+                      >
+                        {chain.name}
+                        {active && <Check className="ml-auto size-4 text-primary" />}
+                      </button>
+                    )
+                  })}
+                </div>
+              )}
+            </div>
+          )}
 
           <div className="mt-2">
             {isEmbeddedWallet ? (
