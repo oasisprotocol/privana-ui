@@ -1,7 +1,8 @@
-import { useMemo, useRef, useState, type ReactNode } from 'react'
+import { useEffect, useMemo, useRef, useState, type ReactNode } from 'react'
 import { ClientState, useTurnkey, WalletInterfaceType } from '@turnkey/react-wallet-kit'
-import type { EIP1193Provider } from 'viem'
-import { setConnectedTurnkeyWallet } from '@/wallet/turnkeyBridge'
+import { getAddress, type EIP1193Provider } from 'viem'
+import { getTurnkeyActiveWallet, setConnectedTurnkeyWallet } from '@/wallet/turnkeyBridge'
+import { getConnectedWalletRecord, setConnectedWalletRecord } from '@/wallet/turnkeyConnectedWallet'
 import { walletConnectToEip1193 } from '@/wallet/walletConnectEip1193'
 import { extractErrorMessage } from '@/lib/errors'
 import { ConnectWalletContext, type ConnectWalletContextValue } from './ConnectWalletContext'
@@ -51,6 +52,46 @@ const TurnkeyConnect = ({ children }: { children: ReactNode }) => {
     [providers],
   )
 
+  const restoreAttemptedRef = useRef(false)
+  useEffect(() => {
+    if (clientState !== ClientState.Ready || restoreAttemptedRef.current) return
+    const record = getConnectedWalletRecord()
+    if (!record) return
+    if (getTurnkeyActiveWallet()) return
+
+    // Match the Ethereum entry only: a multi-chain wallet can expose a Solana provider
+    // under the same providerKey, and we must never hand that to the EVM restore.
+    const provider = walletProviders.find(
+      p => p.interfaceType === WalletInterfaceType.Ethereum && providerKey(p) === record.providerKey,
+    )
+    if (!provider) {
+      const timer = setTimeout(() => {
+        if (!getTurnkeyActiveWallet()) setConnectedWalletRecord(null)
+      }, 5000)
+      return () => clearTimeout(timer)
+    }
+
+    restoreAttemptedRef.current = true
+    const eip1193 = provider.provider as EIP1193Provider
+    void (async () => {
+      try {
+        const accounts = (await eip1193.request({ method: 'eth_accounts' })) as string[]
+        const active = accounts?.[0]
+        if (!active) {
+          setConnectedWalletRecord(null)
+          return
+        }
+        const address = getAddress(active)
+        if (address.toLowerCase() !== record.address.toLowerCase()) {
+          setConnectedWalletRecord({ providerKey: record.providerKey, address })
+        }
+        setConnectedTurnkeyWallet({ provider: eip1193, address })
+      } catch {
+        setConnectedWalletRecord(null)
+      }
+    })()
+  }, [clientState, walletProviders])
+
   // WalletConnect needs its pairing QR rendered while connectWalletAccount is
   // pending. The connecting provider tells us whether we're in that case; the URI
   // lives on the live WalletConnect provider entry and refreshes reactively.
@@ -89,6 +130,9 @@ const TurnkeyConnect = ({ children }: { children: ReactNode }) => {
         provider: rpcProvider,
         address: account.address as `0x${string}`,
       })
+      if (provider.interfaceType !== WalletInterfaceType.WalletConnect) {
+        setConnectedWalletRecord({ providerKey: key, address: account.address as `0x${string}` })
+      }
     } catch (err) {
       if (attemptRef.current !== attempt) return
       setError(extractErrorMessage(err))

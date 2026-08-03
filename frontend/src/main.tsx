@@ -32,7 +32,7 @@ createRoot(document.getElementById('root')!).render(
               apiUrl: import.meta.env.VITE_PRIVANA_API_URL,
             }}
             tokens={ALLOWED_TOKEN_IDS}
-            siweAuth
+            siweAuth={{ persistJwt: true }}
           >
             <ActivityProvider>
               <TooltipProvider>

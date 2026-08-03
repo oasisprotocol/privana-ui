@@ -2,6 +2,7 @@ import { useEffect, useRef } from 'react'
 import { AuthState, ClientState, useTurnkey, WalletSource } from '@turnkey/react-wallet-kit'
 import { useAccount, useConnect, useDisconnect } from 'wagmi'
 import { clearTurnkeyWallet, getTurnkeyActiveWallet, setTurnkeyActiveWallet } from '@/wallet/turnkeyBridge'
+import { getConnectedWalletRecord } from '@/wallet/turnkeyConnectedWallet'
 import { useTurnkeyWalletIntent } from '@/wallet/turnkeyIntent'
 import { TURNKEY_CONNECTOR_ID } from '@/wallet/turnkeyConnector'
 import type { AppChainId } from '@/wagmi-config'
@@ -48,6 +49,7 @@ export const TurnkeySync = () => {
 
     // Embedded wallets are Turnkey-custodied → they require a Turnkey session.
     if (authState === AuthState.Unauthenticated) {
+      if (getConnectedWalletRecord()) return
       clearTurnkeyWallet()
       if (isTurnkeyActive) void disconnectAsync()
       return
