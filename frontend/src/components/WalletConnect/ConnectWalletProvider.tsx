@@ -68,11 +68,6 @@ const TurnkeyConnect = ({ children }: { children: ReactNode }) => {
     }
 
     restoreAttemptedRef.current = true
-    if (provider.interfaceType !== WalletInterfaceType.Ethereum) {
-      setConnectedWalletRecord(null)
-      return
-    }
-
     const eip1193 = provider.provider as EIP1193Provider
     void (async () => {
       try {
