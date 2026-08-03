@@ -1,6 +1,7 @@
 import type { TurnkeySDKClientBase } from '@turnkey/react-wallet-kit'
 import type { EIP1193Provider } from 'viem'
 import { setTurnkeyWalletIntent } from './turnkeyIntent'
+import { setConnectedWalletRecord } from './turnkeyConnectedWallet'
 
 // The Turnkey wallet currently active in wagmi. The connector lives outside React
 // (built in wagmi-config), so it can't read Turnkey's React context directly —
@@ -53,4 +54,5 @@ export function setConnectedTurnkeyWallet(wallet: {
 export function clearTurnkeyWallet(): void {
   setTurnkeyWalletIntent(null)
   setTurnkeyActiveWallet(null)
+  setConnectedWalletRecord(null)
 }
