@@ -1,8 +1,9 @@
 import { useId } from 'react'
 import { Area, AreaChart, XAxis, YAxis } from 'recharts'
 import { useApyHistory, type ApyHistoryPoint } from '@/api/earn'
-import { ChartContainer, type ChartConfig } from '@/components/ui/chart'
+import { ChartContainer, ChartTooltip, ChartTooltipContent, type ChartConfig } from '@/components/ui/chart'
 import { Skeleton } from '@/components/ui/skeleton'
+import { formatApyBps } from '@/lib/apy'
 import { cn } from '@/lib/utils'
 
 const chartConfig = {
@@ -46,6 +47,34 @@ export const VenueAPY = ({ poolId, className }: { poolId: string; className?: st
         </defs>
         <XAxis dataKey="timestamp" hide />
         <YAxis domain={isPlaceholder ? [0, 2] : ['dataMin', 'dataMax']} hide />
+        {!isPlaceholder && (
+          <ChartTooltip
+            cursor={false}
+            allowEscapeViewBox={{ x: false, y: true }}
+            content={
+              <ChartTooltipContent
+                labelFormatter={(_, payload) => {
+                  const ts = payload?.[0]?.payload?.timestamp as number | undefined
+                  return ts == null
+                    ? ''
+                    : new Date(ts * 1000).toLocaleDateString(undefined, {
+                        year: 'numeric',
+                        month: 'short',
+                        day: 'numeric',
+                      })
+                }}
+                formatter={value => (
+                  <div className="flex w-full justify-between">
+                    <span className="text-muted-foreground">APY</span>
+                    <span className="text-foreground font-mono font-medium tabular-nums">
+                      {formatApyBps(Number(value))}
+                    </span>
+                  </div>
+                )}
+              />
+            }
+          />
+        )}
         <Area
           dataKey="apy_bps"
           type="monotone"
