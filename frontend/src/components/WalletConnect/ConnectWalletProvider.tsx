@@ -59,7 +59,11 @@ const TurnkeyConnect = ({ children }: { children: ReactNode }) => {
     if (!record) return
     if (getTurnkeyActiveWallet()) return
 
-    const provider = walletProviders.find(p => providerKey(p) === record.providerKey)
+    // Match the Ethereum entry only: a multi-chain wallet can expose a Solana provider
+    // under the same providerKey, and we must never hand that to the EVM restore.
+    const provider = walletProviders.find(
+      p => p.interfaceType === WalletInterfaceType.Ethereum && providerKey(p) === record.providerKey,
+    )
     if (!provider) {
       const timer = setTimeout(() => {
         if (!getTurnkeyActiveWallet()) setConnectedWalletRecord(null)
