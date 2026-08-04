@@ -1,5 +1,5 @@
 import { useMemo, useState } from 'react'
-import { PrivanaModal } from '@oasisprotocol/privana-sdk'
+import { DepositModal } from '@oasisprotocol/privana-sdk'
 import { Skeleton } from '@/components/ui/skeleton'
 import { useEarnPools } from '@/api/earn'
 import { useTokens } from '@/api/swap'
@@ -87,12 +87,7 @@ export const EarnDashboard = () => {
         )}
       </div>
 
-      <PrivanaModal
-        open={depositOpen}
-        onClose={() => setDepositOpen(false)}
-        showLockedFunds={false}
-        defaultTab="deposit"
-      />
+      <DepositModal open={depositOpen} onClose={() => setDepositOpen(false)} />
     </>
   )
 }
