@@ -89,7 +89,7 @@ export const ReviewStep = ({
 
   return (
     <div className="flex flex-col gap-4 w-full max-w-110 mx-auto">
-      <ReviewHeader title="Review move" onBack={onBack} disabled={loading} />
+      <ReviewHeader title="Review transaction" onBack={onBack} disabled={loading} />
 
       <div className="flex justify-end">
         <QuoteCountdown quoteLoading={quoteLoading} expiresAt={expiresAt} />

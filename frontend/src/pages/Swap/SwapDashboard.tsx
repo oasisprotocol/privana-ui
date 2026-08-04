@@ -200,7 +200,7 @@ export const SwapDashboard = () => {
         <div className="flex flex-col gap-1">
           <h1 className="text-foreground text-3xl font-semibold tracking-tight leading-9">Swap</h1>
           <p className="text-muted-foreground text-sm font-normal leading-5">
-            Choose the asset you want to swap &amp; the asset you wish to receive.
+            Choose the asset you want to swap.
           </p>
         </div>
       )}
@@ -274,7 +274,7 @@ export const SwapDashboard = () => {
       {step === 0 && data && (
         <div className="mt-6 flex flex-col gap-4">
           <div className="flex flex-col gap-2">
-            <p className="text-sm font-normal text-muted-foreground">You pay</p>
+            <p className="text-sm font-semibold text-foreground">You pay</p>
             <AssetRow
               tokens={tokens}
               token={fromToken}
@@ -310,7 +310,7 @@ export const SwapDashboard = () => {
           </div>
 
           <div className="flex flex-col gap-2">
-            <p className="text-sm font-normal text-muted-foreground">You receive</p>
+            <p className="text-sm font-semibold text-foreground">You receive</p>
             <AssetRow
               tokens={tokens}
               token={toToken}

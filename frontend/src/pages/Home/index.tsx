@@ -12,7 +12,6 @@ import { useSignOut } from '@/hooks/useSignOut'
 import { useSlowSettlement } from '@/hooks/useSlowSettlement'
 import { resolveRedirect } from '@/lib/resolveRedirect'
 import { dashboardPath } from '@/paths'
-import Logo from '../../assets/logo.svg'
 
 // "/" is the auth entry, not a marketing landing. Rendered inside the app Layout
 // (same header + footer). Users stay here until fully signed in (wallet connected
@@ -61,10 +60,6 @@ export const Home = () => {
   return (
     <Layout>
       <div className="mx-auto flex w-full max-w-md flex-col px-6">
-        <header className="mb-10 flex items-center justify-center">
-          <img src={Logo} alt="Privana" className="h-5 w-auto dark:brightness-0 dark:invert" />
-        </header>
-
         <div className="flex flex-1 flex-col animate-fade-in">
           {isConnected ? (
             // Auth step: wallet connected, finish with the SIWE signature. Kept on
@@ -129,10 +124,15 @@ export const Home = () => {
             </div>
           ) : (
             <>
-              <h1 className="text-3xl font-semibold tracking-tight text-foreground">Welcome back</h1>
-              <p className="mt-2 text-sm text-muted-foreground">
-                Enter your email to sign in or create an account. We&apos;ll set up a secure wallet for you.
-              </p>
+              <div className="flex flex-col items-center py-10">
+                <h1 className="text-3xl font-semibold tracking-tight text-foreground text-center">
+                  Your private corner of DeFi
+                </h1>
+                <p className="mt-2 text-sm text-muted-foreground text-center">
+                  Trade, earn, and move your money, privately.
+                </p>
+              </div>
+
               <div className="mt-8">
                 <SignInForm {...signInForm} />
               </div>
