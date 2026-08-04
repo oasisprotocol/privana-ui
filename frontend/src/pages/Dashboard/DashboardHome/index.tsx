@@ -15,6 +15,8 @@ import { BalanceAmount } from '@/components/BalanceAmount'
 import { PortfolioChart } from '@/components/PortfolioChart'
 import { LatestActivity } from './LatestActivity'
 import { HISTORY_FETCH_LIMIT } from './latestActivity.constants'
+import { DashboardBootState } from './DashboardBootState'
+import { useBootPhase } from './useBootPhase'
 
 // Shared sizing for the dashboard's primary call-to-action buttons.
 const CTA_BUTTON = 'h-14 px-8 text-base w-full sm:w-auto sm:min-w-[200px]'
@@ -168,14 +170,17 @@ export const DashboardHome = () => {
   // Hoisted out of LatestActivity so the history/unsettled fetch starts on mount in parallel with very slow balance reads.
   const { rows: activityRows, isLoading: activityLoading } = useMergedActivity(HISTORY_FETCH_LIMIT)
 
+  // Balance reads are slow today; play a short branded boot sequence in place of a bare skeleton.
+  const bootPhase = useBootPhase(isLoading)
+
   // Rough "earn about $X / month" estimate: available × annual APY ÷ 12 months.
   const monthlyEarnEstimate = ((availableFiatValue ?? 0) * apyBpsToFraction(bestApyBps ?? 0)) / 12
 
   return (
     <>
       <div className="flex flex-col gap-6 mb-8 md:mb-12 w-full max-w-200 md:max-w-none mx-auto">
-        {isLoading && <Skeleton className="h-100 w-full" />}
-        {!isLoading && !hasFunds && (
+        {bootPhase !== 'done' && <DashboardBootState phase={bootPhase} />}
+        {bootPhase === 'done' && !hasFunds && (
           <div className="flex flex-col gap-8 w-full">
             <div className="flex flex-col md:hidden">
               <span className="text-sm font-medium text-muted-foreground leading-5">Total balance</span>
@@ -227,7 +232,7 @@ export const DashboardHome = () => {
             </SurfaceCard>
           </div>
         )}
-        {!isLoading && hasFunds && (
+        {bootPhase === 'done' && hasFunds && (
           <div className="flex flex-col gap-8 w-full">
             {/* Desktop: two-column balance card (balance + breakdown + CTA | chart) */}
             <SurfaceCard className="hidden md:grid md:grid-cols-2 md:gap-8 rounded-3xl p-8">
