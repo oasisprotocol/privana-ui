@@ -45,7 +45,7 @@ export const EarnDashboard = () => {
     <>
       <PageHeading
         title="Earn"
-        description="Where your funds are earning — withdraw anytime."
+        description="Put your funds to work. Withdraw anytime."
         className="max-w-200 md:max-w-none"
       />
 

@@ -5,8 +5,6 @@ import { SurfaceCard } from '@/components/SurfaceCard'
 import { Row } from '@/components/Row'
 import { cn } from '@/lib/utils'
 
-// Shared chrome for the deposit / withdraw "Review move" screens.
-
 export const ReviewHeader = ({
   title,
   onBack,
