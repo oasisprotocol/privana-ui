@@ -1,7 +1,8 @@
 import { Button } from '@/components/ui/button'
 import { Zap, ArrowLeftRight, TrendingUp } from 'lucide-react'
 import { useState, type ReactNode } from 'react'
-import { DepositModal, getTokenIcon } from '@oasisprotocol/privana-sdk'
+import { useAccount } from 'wagmi'
+import { DepositModal, getTokenIcon, useSiweAuth } from '@oasisprotocol/privana-sdk'
 import { Skeleton } from '@/components/ui/skeleton'
 import { SurfaceCard } from '@/components/SurfaceCard'
 import { formatApyBps, apyBpsToFraction } from '@/lib/apy'
@@ -171,7 +172,10 @@ export const DashboardHome = () => {
   const { rows: activityRows, isLoading: activityLoading } = useMergedActivity(HISTORY_FETCH_LIMIT)
 
   // Balance reads are slow today; play a short branded boot sequence in place of a bare skeleton.
-  const bootPhase = useBootPhase(isLoading)
+  // Keyed on account + auth so switching accounts or re-authenticating replays it.
+  const { address } = useAccount()
+  const { isAuthenticated } = useSiweAuth()
+  const bootPhase = useBootPhase(isLoading, `${address?.toLowerCase() ?? ''}:${isAuthenticated}`)
 
   // Rough "earn about $X / month" estimate: available × annual APY ÷ 12 months.
   const monthlyEarnEstimate = ((availableFiatValue ?? 0) * apyBpsToFraction(bestApyBps ?? 0)) / 12
