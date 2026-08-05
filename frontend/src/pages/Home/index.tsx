@@ -2,9 +2,9 @@ import { useEffect, useRef } from 'react'
 import { Navigate, useLocation } from 'react-router'
 import { useAccount } from 'wagmi'
 import { useSiweAuth } from '@oasisprotocol/privana-sdk'
-import { Loader2, ShieldCheck } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Layout } from '@/components/Layout'
+import { AuthBadge, AuthenticatingState } from '@/components/AuthenticatingState'
 import { SignInForm } from '@/components/WalletConnect/SignInForm'
 import { useSignInForm } from '@/components/WalletConnect/useSignInForm'
 import { useIsSignedIn } from '@/hooks/useIsSignedIn'
@@ -64,64 +64,58 @@ export const Home = () => {
           {isConnected ? (
             // Auth step: wallet connected, finish with the SIWE signature. Kept on
             // this surface (not bounced to /dashboard) as a distinct confirm step.
-            <div className="flex flex-col items-center text-center">
-              <span className="flex size-14 items-center justify-center rounded-full bg-muted">
-                <ShieldCheck className="size-7 text-muted-foreground" />
-              </span>
-              <h1 className="mt-6 text-3xl font-semibold tracking-tight text-foreground">
-                Authenticate to Privana
-              </h1>
-
-              {authError ? (
-                <>
-                  <p className="mt-2 text-sm text-muted-foreground">
-                    Sign a message to finish signing in — it&apos;s free and never moves your funds.
-                  </p>
-                  <p role="alert" className="mt-4 text-sm text-destructive">
-                    Signature request wasn&apos;t completed. Please try again.
-                  </p>
-                  <Button
-                    size="lg"
-                    className="mt-8 h-14 w-full px-6 text-base"
-                    onClick={() => void login().catch(() => {})}
-                  >
-                    Sign message
-                  </Button>
-                  <Button
-                    type="button"
-                    variant="outline"
-                    size="lg"
-                    onClick={signOut}
-                    className="mt-2 h-14 w-full px-6 text-base font-medium"
-                  >
-                    Disconnect
-                  </Button>
-                </>
-              ) : (
-                <>
-                  <p className="mt-2 text-sm text-muted-foreground">
-                    Authenticating to Privana. Please confirm in your wallet.
-                  </p>
-                  <Loader2 className="mt-8 size-6 animate-spin text-muted-foreground" />
-                  {showPendingEscape && (
-                    <div className="mt-8 flex flex-col items-center gap-3 animate-fade-in">
-                      <p className="max-w-xs text-xs text-muted-foreground">
-                        Taking longer than usual? Check your wallet, or disconnect and try again.
-                      </p>
-                      <Button
-                        type="button"
-                        variant="outline"
-                        size="lg"
-                        onClick={signOut}
-                        className="h-14 w-full px-6 text-base font-medium"
-                      >
-                        Disconnect
-                      </Button>
-                    </div>
-                  )}
-                </>
-              )}
-            </div>
+            authError ? (
+              <div className="flex flex-col items-center text-center">
+                <AuthBadge />
+                <h1 className="mt-6 text-3xl font-semibold tracking-tight text-foreground">
+                  Authenticate to Privana
+                </h1>
+                <p className="mt-2 text-sm text-muted-foreground">
+                  Sign a message to finish signing in — it&apos;s free and never moves your funds.
+                </p>
+                <p role="alert" className="mt-4 text-sm text-destructive">
+                  Signature request wasn&apos;t completed. Please try again.
+                </p>
+                <Button
+                  size="lg"
+                  className="mt-8 h-14 w-full px-6 text-base"
+                  onClick={() => void login().catch(() => {})}
+                >
+                  Sign message
+                </Button>
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="lg"
+                  onClick={signOut}
+                  className="mt-2 h-14 w-full px-6 text-base font-medium"
+                >
+                  Disconnect
+                </Button>
+              </div>
+            ) : (
+              <AuthenticatingState
+                title="Authenticate to Privana"
+                subtitle="Authenticating to Privana. Please confirm in your wallet."
+              >
+                {showPendingEscape && (
+                  <div className="mt-8 flex flex-col items-center gap-3 animate-fade-in">
+                    <p className="max-w-xs text-xs text-muted-foreground">
+                      Taking longer than usual? Check your wallet, or disconnect and try again.
+                    </p>
+                    <Button
+                      type="button"
+                      variant="outline"
+                      size="lg"
+                      onClick={signOut}
+                      className="h-14 w-full px-6 text-base font-medium"
+                    >
+                      Disconnect
+                    </Button>
+                  </div>
+                )}
+              </AuthenticatingState>
+            )
           ) : (
             <>
               <div className="flex flex-col items-center py-10">
