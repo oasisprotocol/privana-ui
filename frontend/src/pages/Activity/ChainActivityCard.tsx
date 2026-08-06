@@ -11,9 +11,6 @@ import {
   TokenAmount,
 } from './ActivityCardParts'
 
-// Chain rows are by definition on-chain settled, so status is fixed.
-const SETTLED = 'completed' as const
-
 type Props = {
   row: ClassifiedHistoryEntry
   timestamp?: number
@@ -33,7 +30,11 @@ export const ChainActivityCard = ({ row, timestamp, divider }: Props) => {
   if (row.kind === 'swap' && token && row.amount && toToken && row.toAmount) {
     return (
       <ActivityCard divider={divider} icon={icon}>
-        <ActivityCardHeader title={ACTIVITY_TITLES.swap} status={SETTLED} timestamp={timestamp} />
+        <ActivityCardHeader
+          title={ACTIVITY_TITLES.swap}
+          timestamp={timestamp}
+          counterparty={row.counterparty}
+        />
         <div className="flex gap-4 items-center justify-center">
           <TokenAmount
             token={{ id: token.id, symbol: token.symbol, decimals: token.decimals }}
@@ -55,7 +56,11 @@ export const ChainActivityCard = ({ row, timestamp, divider }: Props) => {
 
   return (
     <ActivityCard divider={divider} icon={icon}>
-      <ActivityCardHeader title={activityRowTitle(row)} status={SETTLED} timestamp={timestamp} />
+      <ActivityCardHeader
+        title={activityRowTitle(row)}
+        timestamp={timestamp}
+        counterparty={row.counterparty}
+      />
 
       {token && row.amount && (
         <ActivityAmountRow

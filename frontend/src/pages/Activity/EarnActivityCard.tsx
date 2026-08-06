@@ -18,7 +18,7 @@ export const EarnActivityCard = ({ activity, timestamp, divider }: EarnActivityC
 
   return (
     <ActivityCard divider={divider} icon={<ActivityIcon Icon={Icon} toneClass={toneClass} />}>
-      <ActivityCardHeader title={ACTIVITY_TITLES[kind]} status={status} timestamp={timestamp} />
+      <ActivityCardHeader title={ACTIVITY_TITLES[kind]} timestamp={timestamp} />
 
       <ActivityAmountRow kind={kind} token={token} amount={amount} />
 

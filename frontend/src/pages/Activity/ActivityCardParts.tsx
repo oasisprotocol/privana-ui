@@ -1,13 +1,13 @@
-import { ArrowRight, Check, type LucideIcon } from 'lucide-react'
+import { ArrowRight, type LucideIcon } from 'lucide-react'
 import type { ReactNode } from 'react'
 import { getTokenIcon } from '@oasisprotocol/privana-sdk'
-import { Badge } from '@/components/ui/badge'
 import { cn } from '@/lib/utils'
 import { formatAmount } from '@/lib/tokens'
-import type { ActivityStatus, ActivityTokenInfo } from '@/contexts/ActivityProvider/context'
+import type { ActivityTokenInfo } from '@/contexts/ActivityProvider/context'
 import type { DisplayKind } from './historyMapping'
 import { ACTIVITY_AMOUNT_LABELS } from './labels'
 import { formatActivityTime } from './formatTime'
+import { CounterpartyBadge } from './CounterpartyBadge'
 
 export const ActivityIcon = ({ Icon, toneClass }: { Icon: LucideIcon; toneClass: string }) => (
   <span className={cn('flex h-10 w-10 shrink-0 items-center justify-center rounded-xl', toneClass)}>
@@ -32,37 +32,22 @@ export const ActivityCard = ({
 
 type ActivityCardHeaderProps = {
   title: string
-  status: ActivityStatus
   timestamp?: number
+  counterparty?: string | null
 }
-export const ActivityCardHeader = ({ title, status, timestamp }: ActivityCardHeaderProps) => (
+export const ActivityCardHeader = ({ title, timestamp, counterparty }: ActivityCardHeaderProps) => (
   <div className="flex items-center justify-between gap-2">
-    <div className="flex items-center gap-2 min-w-0">
-      <p className="text-base font-semibold text-foreground leading-6 truncate">{title}</p>
-      <StatusBadge status={status} />
+    <p className="min-w-0 truncate text-base font-semibold text-foreground leading-6">{title}</p>
+    <div className="flex items-center gap-2 shrink-0">
+      {timestamp != null && (
+        <span className="text-xs font-normal text-muted-foreground leading-4">
+          {formatActivityTime(timestamp)}
+        </span>
+      )}
+      <CounterpartyBadge counterparty={counterparty} />
     </div>
-    {timestamp != null && (
-      <span className="shrink-0 text-xs font-normal text-muted-foreground leading-4">
-        {formatActivityTime(timestamp)}
-      </span>
-    )}
   </div>
 )
-
-export const StatusBadge = ({ status }: { status: ActivityStatus }) => {
-  if (status === 'completed') {
-    return (
-      <Badge className="bg-chart-positive text-white">
-        <Check />
-        Completed
-      </Badge>
-    )
-  }
-  if (status === 'failed') {
-    return <Badge variant="destructive">Failed</Badge>
-  }
-  return <Badge>In progress</Badge>
-}
 
 export const TokenValue = ({ token, amount }: { token: ActivityTokenInfo; amount: string }) => (
   <div className="flex gap-1 items-center shrink-0">

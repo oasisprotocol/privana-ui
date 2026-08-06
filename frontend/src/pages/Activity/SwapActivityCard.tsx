@@ -16,7 +16,7 @@ export const SwapActivityCard = ({ activity, timestamp, divider }: SwapActivityC
 
   return (
     <ActivityCard divider={divider} icon={<ActivityIcon Icon={Icon} toneClass={toneClass} />}>
-      <ActivityCardHeader title="Swap" status={status} timestamp={timestamp} />
+      <ActivityCardHeader title="Swap" timestamp={timestamp} />
 
       <div className="flex gap-4 items-center justify-center">
         <TokenAmount token={fromToken} amount={fromAmount} align="left" />
