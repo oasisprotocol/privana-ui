@@ -7,6 +7,7 @@ import { useActivity } from '@/contexts/ActivityProvider/useActivity'
 import type { Activity, ActivityStatus, ActivityTokenInfo } from '@/contexts/ActivityProvider/context'
 import {
   classifyHistory,
+  HIDDEN_KINDS,
   matchesLocal,
   type ClassifiedHistoryEntry,
   type HistoryWindow,
@@ -177,7 +178,8 @@ export function useMergedActivity(historyLimit: number = HISTORY_PAGE_SIZE): Use
 
   const historyWindow = history.window
   const chainRows = useMemo(
-    () => classifyHistory(history.entries, poolsByAddress, historyWindow),
+    () =>
+      classifyHistory(history.entries, poolsByAddress, historyWindow).filter(r => !HIDDEN_KINDS.has(r.kind)),
     [history.entries, poolsByAddress, historyWindow],
   )
 

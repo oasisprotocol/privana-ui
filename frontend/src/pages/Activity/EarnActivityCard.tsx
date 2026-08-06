@@ -1,24 +1,33 @@
 import { Progress } from '@/components/ui/progress'
+import { venueForStrategy } from '@/config/apps'
 import type { EarnActivity } from '@/contexts/ActivityProvider/context'
 import type { DisplayKind } from './historyMapping'
-import { ACTIVITY_TITLES } from './labels'
-import { ActivityAmountRow, ActivityCard, ActivityCardHeader } from './ActivityCardParts'
+import { ACTIVITY_TITLES, activityRowSubtitle } from './labels'
+import { resolveActivityVisual, TONE_SIGN, TONE_TEXT } from './activityVisuals'
+import { ActivityAmount, ActivityCard, ActivityIcon, ActivityRowBody } from './ActivityCardParts'
 
 type EarnActivityCardProps = {
   activity: EarnActivity
   timestamp?: number
+  divider?: boolean
 }
 
-export const EarnActivityCard = ({ activity, timestamp }: EarnActivityCardProps) => {
+export const EarnActivityCard = ({ activity, timestamp, divider }: EarnActivityCardProps) => {
   const { status, direction, token, amount } = activity
   const kind: DisplayKind = direction === 'deposit' ? 'earnDeposit' : 'earnWithdraw'
+  const { Icon, tone, iconClass } = resolveActivityVisual({ kind, status })
 
   return (
-    <ActivityCard>
-      <ActivityCardHeader title={ACTIVITY_TITLES[kind]} status={status} timestamp={timestamp} />
-
-      <ActivityAmountRow kind={kind} token={token} amount={amount} />
-
+    <ActivityCard divider={divider} icon={<ActivityIcon Icon={Icon} iconClass={iconClass} />}>
+      <ActivityRowBody
+        title={ACTIVITY_TITLES[kind]}
+        timestamp={timestamp}
+        venue={venueForStrategy(activity.protocol)}
+        subtitle={activityRowSubtitle({ kind, status })}
+        amount={
+          <ActivityAmount sign={TONE_SIGN[tone]} className={TONE_TEXT[tone]} token={token} amount={amount} />
+        }
+      />
       {status === 'in-progress' && <Progress />}
     </ActivityCard>
   )

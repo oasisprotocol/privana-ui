@@ -1,6 +1,8 @@
 import { Link } from 'react-router'
 import { type MergedRow, rowKey } from '@/hooks/use-merged-activity'
 import { Skeleton } from '@/components/ui/skeleton'
+import { SurfaceCard } from '@/components/SurfaceCard'
+import { cn } from '@/lib/utils'
 import { activityPath } from '@/paths'
 import { ActivityRow } from '@/pages/Activity/ActivityRow'
 import { MAX_ROWS } from './latestActivity.constants'
@@ -14,7 +16,7 @@ export const LatestActivity = ({ rows, isLoading }: { rows: MergedRow[]; isLoadi
     <div className="flex flex-col gap-4">
       <div className="flex items-center justify-between">
         <h2 className="text-base md:text-lg md:tracking-tight font-semibold text-foreground">
-          Latest activity
+          Vault activity
         </h2>
         <Link
           to={activityPath()}
@@ -26,13 +28,19 @@ export const LatestActivity = ({ rows, isLoading }: { rows: MergedRow[]; isLoadi
       </div>
 
       {latest.length > 0 ? (
-        latest.map(r => <ActivityRow key={rowKey(r)} row={r} />)
-      ) : (
-        <div className="flex flex-col gap-4">
-          {Array.from({ length: MAX_ROWS }).map((_, i) => (
-            <Skeleton key={i} className="h-[90px] w-full rounded-2xl" />
+        <SurfaceCard className="overflow-hidden">
+          {latest.map((r, i) => (
+            <ActivityRow key={rowKey(r)} row={r} divider={i > 0} />
           ))}
-        </div>
+        </SurfaceCard>
+      ) : (
+        <SurfaceCard className="overflow-hidden">
+          {Array.from({ length: MAX_ROWS }).map((_, i) => (
+            <div key={i} className={cn('p-4', i > 0 && 'border-t border-border')}>
+              <Skeleton className="h-14 w-full" />
+            </div>
+          ))}
+        </SurfaceCard>
       )}
     </div>
   )

@@ -26,6 +26,8 @@ export const PRUNE_ELIGIBLE: ReadonlySet<DisplayKind> = new Set([
   'swap',
 ])
 
+export const HIDDEN_KINDS: ReadonlySet<DisplayKind> = new Set(['reclaimOut', 'reclaimIn', 'unknown'])
+
 export type ClassifiedHistoryEntry = {
   source: 'chain'
   kind: DisplayKind

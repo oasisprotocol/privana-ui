@@ -14,7 +14,6 @@ const TYPE_OPTIONS: readonly { value: FilterType; label: string }[] = [
   { value: 'earnDeposit', label: FILTER_TYPE_LABELS.earnDeposit },
   { value: 'earnWithdraw', label: FILTER_TYPE_LABELS.earnWithdraw },
   { value: 'lock', label: FILTER_TYPE_LABELS.lock },
-  { value: 'reclaim', label: FILTER_TYPE_LABELS.reclaim },
   { value: 'transfer', label: FILTER_TYPE_LABELS.transfer },
 ]
 

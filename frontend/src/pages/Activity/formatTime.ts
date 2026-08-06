@@ -1,14 +1,19 @@
-const RELATIVE_TIME = new Intl.RelativeTimeFormat('en', { numeric: 'auto' })
+const TIME_FORMAT = new Intl.DateTimeFormat('en-US', {
+  hour: '2-digit',
+  minute: '2-digit',
+  hour12: false,
+})
 
-// Timestamps arrive in seconds. Render the coarsest sensible unit ("Yesterday",
-// "5 days ago") to match the PoC, capitalised to read as a header label.
+const DATE_FORMAT = new Intl.DateTimeFormat('en-US', {
+  month: 'short',
+  day: 'numeric',
+  year: 'numeric',
+})
+
 export const formatActivityTime = (timestampSeconds: number): string => {
-  const diffSeconds = timestampSeconds - Date.now() / 1000
-  const absSeconds = Math.abs(diffSeconds)
-  let label: string
-  if (absSeconds < 60) label = 'Just now'
-  else if (absSeconds < 3600) label = RELATIVE_TIME.format(Math.round(diffSeconds / 60), 'minute')
-  else if (absSeconds < 86400) label = RELATIVE_TIME.format(Math.round(diffSeconds / 3600), 'hour')
-  else label = RELATIVE_TIME.format(Math.round(diffSeconds / 86400), 'day')
-  return label.charAt(0).toUpperCase() + label.slice(1)
+  const date = new Date(timestampSeconds * 1000)
+  const startOfToday = new Date().setHours(0, 0, 0, 0)
+  const startOfDate = new Date(timestampSeconds * 1000).setHours(0, 0, 0, 0)
+  if (startOfDate >= startOfToday) return `Today, ${TIME_FORMAT.format(date)}`
+  return DATE_FORMAT.format(date)
 }
