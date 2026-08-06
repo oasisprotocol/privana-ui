@@ -18,3 +18,12 @@ export const KNOWN_APPS: KnownApp[] = [
     tagline: 'Onchain casino · bet with locked chips',
   },
 ]
+
+const knownAppNameByAddress = new Map<string, string>(
+  KNOWN_APPS.map(app => [app.serviceAddress.toLowerCase(), app.name]),
+)
+
+export function appNameForAddress(address: string | null | undefined): string | null {
+  if (!address) return null
+  return knownAppNameByAddress.get(address.toLowerCase()) ?? null
+}

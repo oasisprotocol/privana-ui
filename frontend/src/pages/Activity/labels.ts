@@ -1,19 +1,39 @@
-import type { DisplayKind } from './historyMapping'
+import { appNameForAddress } from '@/config/apps'
+import type { ClassifiedHistoryEntry, DisplayKind } from './historyMapping'
 import type { FilterType } from './filters'
 
 export const ACTIVITY_TITLES: Record<DisplayKind, string> = {
   swap: 'Swap',
   earnDeposit: 'Move to Earn',
   earnWithdraw: 'Withdraw from Earn',
-  deposit: 'Deposit',
-  withdraw: 'Withdraw',
-  lock: 'Lock',
-  lockModified: 'Lock - Modified',
-  lockReleased: 'Lock - Released',
+  deposit: 'Deposit to vault',
+  withdraw: 'Withdrawal',
+  lock: 'Committed',
+  lockModified: 'Commitment increased',
+  lockReleased: 'Released',
   reclaimOut: 'Locked Transfer Sent',
   reclaimIn: 'Locked Transfer Received',
-  transfer: 'Transfer',
+  transfer: 'Sent',
   unknown: 'Activity',
+}
+
+export function activityRowTitle(
+  row: Pick<ClassifiedHistoryEntry, 'kind' | 'counterparty' | 'entry'>,
+): string {
+  switch (row.kind) {
+    case 'lock': {
+      const name = appNameForAddress(row.counterparty)
+      return name ? `Committed to ${name}` : ACTIVITY_TITLES.lock
+    }
+    case 'lockReleased': {
+      const name = appNameForAddress(row.counterparty)
+      return name ? `Released from ${name}` : ACTIVITY_TITLES.lockReleased
+    }
+    case 'transfer':
+      return row.entry.kind === 'transferBalanceIn' ? 'Received' : 'Sent'
+    default:
+      return ACTIVITY_TITLES[row.kind]
+  }
 }
 
 export const ACTIVITY_AMOUNT_LABELS: Record<DisplayKind, string> = {
@@ -35,13 +55,13 @@ export const ACTIVITY_AMOUNT_LABELS: Record<DisplayKind, string> = {
 
 export const FILTER_TYPE_LABELS: Record<FilterType, string> = {
   all: 'All',
-  deposit: ACTIVITY_TITLES.deposit,
-  withdraw: ACTIVITY_TITLES.withdraw,
+  deposit: 'Deposit',
+  withdraw: 'Withdraw',
   swap: ACTIVITY_TITLES.swap,
   earn: 'Earn',
   earnDeposit: ACTIVITY_TITLES.earnDeposit,
   earnWithdraw: ACTIVITY_TITLES.earnWithdraw,
-  lock: ACTIVITY_TITLES.lock,
+  lock: 'Lock',
   reclaim: 'Locked Transfer',
-  transfer: ACTIVITY_TITLES.transfer,
+  transfer: 'Transfer',
 }

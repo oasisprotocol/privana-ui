@@ -1,7 +1,7 @@
 import { ArrowRight } from 'lucide-react'
 import { usePrivanaContext } from '@oasisprotocol/privana-sdk'
 import type { ClassifiedHistoryEntry } from './historyMapping'
-import { ACTIVITY_TITLES } from './labels'
+import { ACTIVITY_TITLES, activityRowTitle } from './labels'
 import { ActivityAmountRow, ActivityCard, ActivityCardHeader, TokenAmount } from './ActivityCardParts'
 
 // Chain rows are by definition on-chain settled, so status is fixed.
@@ -42,7 +42,7 @@ export const ChainActivityCard = ({ row, timestamp }: Props) => {
 
   return (
     <ActivityCard>
-      <ActivityCardHeader title={ACTIVITY_TITLES[row.kind]} status={SETTLED} timestamp={timestamp} />
+      <ActivityCardHeader title={activityRowTitle(row)} status={SETTLED} timestamp={timestamp} />
 
       {token && row.amount && (
         <ActivityAmountRow
