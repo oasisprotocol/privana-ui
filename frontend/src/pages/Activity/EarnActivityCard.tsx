@@ -7,14 +7,15 @@ import { ActivityAmountRow, ActivityCard, ActivityCardHeader } from './ActivityC
 type EarnActivityCardProps = {
   activity: EarnActivity
   timestamp?: number
+  divider?: boolean
 }
 
-export const EarnActivityCard = ({ activity, timestamp }: EarnActivityCardProps) => {
+export const EarnActivityCard = ({ activity, timestamp, divider }: EarnActivityCardProps) => {
   const { status, direction, token, amount } = activity
   const kind: DisplayKind = direction === 'deposit' ? 'earnDeposit' : 'earnWithdraw'
 
   return (
-    <ActivityCard>
+    <ActivityCard divider={divider}>
       <ActivityCardHeader title={ACTIVITY_TITLES[kind]} status={status} timestamp={timestamp} />
 
       <ActivityAmountRow kind={kind} token={token} amount={amount} />

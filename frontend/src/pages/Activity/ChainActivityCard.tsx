@@ -10,16 +10,17 @@ const SETTLED = 'completed' as const
 type Props = {
   row: ClassifiedHistoryEntry
   timestamp?: number
+  divider?: boolean
 }
 
-export const ChainActivityCard = ({ row, timestamp }: Props) => {
+export const ChainActivityCard = ({ row, timestamp, divider }: Props) => {
   const { getTokenById } = usePrivanaContext()
   const token = row.tokenId ? getTokenById(row.tokenId) : undefined
   const toToken = row.toTokenId ? getTokenById(row.toTokenId) : undefined
 
   if (row.kind === 'swap' && token && row.amount && toToken && row.toAmount) {
     return (
-      <ActivityCard>
+      <ActivityCard divider={divider}>
         <ActivityCardHeader title={ACTIVITY_TITLES.swap} status={SETTLED} timestamp={timestamp} />
         <div className="flex gap-4 items-center justify-center">
           <TokenAmount

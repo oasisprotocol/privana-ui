@@ -6,13 +6,14 @@ import { ActivityCard, ActivityCardHeader, TokenAmount } from './ActivityCardPar
 type SwapActivityCardProps = {
   activity: SwapActivity
   timestamp?: number
+  divider?: boolean
 }
 
-export const SwapActivityCard = ({ activity, timestamp }: SwapActivityCardProps) => {
+export const SwapActivityCard = ({ activity, timestamp, divider }: SwapActivityCardProps) => {
   const { status, fromToken, toToken, fromAmount, toAmount } = activity
 
   return (
-    <ActivityCard>
+    <ActivityCard divider={divider}>
       <ActivityCardHeader title="Swap" status={status} timestamp={timestamp} />
 
       <div className="flex gap-4 items-center justify-center">

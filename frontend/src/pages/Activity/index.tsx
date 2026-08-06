@@ -5,6 +5,7 @@ import { PageHeading } from '@/components/PageHeading'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Skeleton } from '@/components/ui/skeleton'
+import { SurfaceCard } from '@/components/SurfaceCard'
 import { cn } from '@/lib/utils'
 import { useMergedActivity, rowKey } from '@/hooks/use-merged-activity'
 import { ActivityFilterSheet } from './ActivityFilterSheet'
@@ -145,11 +146,19 @@ export const Activity = () => {
           </div>
 
           {visible.length > 0 ? (
-            visible.map(r => <ActivityRow key={rowKey(r)} row={r} />)
+            <SurfaceCard className="overflow-hidden">
+              {visible.map((r, i) => (
+                <ActivityRow key={rowKey(r)} row={r} divider={i > 0} />
+              ))}
+            </SurfaceCard>
           ) : isLoading ? (
-            Array.from({ length: 5 }).map((_, i) => (
-              <Skeleton key={i} className="h-[90px] w-full rounded-2xl" />
-            ))
+            <SurfaceCard className="overflow-hidden">
+              {Array.from({ length: 5 }).map((_, i) => (
+                <div key={i} className={cn('p-4', i > 0 && 'border-t border-border')}>
+                  <Skeleton className="h-14 w-full" />
+                </div>
+              ))}
+            </SurfaceCard>
           ) : (
             <p className="text-base text-muted-foreground">No matching activity</p>
           )}

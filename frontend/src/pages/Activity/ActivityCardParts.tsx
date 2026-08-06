@@ -2,7 +2,6 @@ import { ArrowRight, Check } from 'lucide-react'
 import type { ReactNode } from 'react'
 import { getTokenIcon } from '@oasisprotocol/privana-sdk'
 import { Badge } from '@/components/ui/badge'
-import { SurfaceCard } from '@/components/SurfaceCard'
 import { cn } from '@/lib/utils'
 import { formatAmount } from '@/lib/tokens'
 import type { ActivityStatus, ActivityTokenInfo } from '@/contexts/ActivityProvider/context'
@@ -10,8 +9,8 @@ import type { DisplayKind } from './historyMapping'
 import { ACTIVITY_AMOUNT_LABELS } from './labels'
 import { formatActivityTime } from './formatTime'
 
-export const ActivityCard = ({ children }: { children: ReactNode }) => (
-  <SurfaceCard className="flex flex-col gap-3 p-4">{children}</SurfaceCard>
+export const ActivityCard = ({ children, divider }: { children: ReactNode; divider?: boolean }) => (
+  <div className={cn('flex flex-col gap-3 p-4', divider && 'border-t border-border')}>{children}</div>
 )
 
 type ActivityCardHeaderProps = {
