@@ -24,7 +24,9 @@ export const EarnActivityCard = ({ activity, timestamp, divider }: EarnActivityC
         timestamp={timestamp}
         venue={venueForStrategy(activity.protocol)}
         subtitle={activityRowSubtitle({ kind, status })}
-        amount={<ActivityAmount sign={TONE_SIGN[tone]} className={TONE_TEXT[tone]} token={token} amount={amount} />}
+        amount={
+          <ActivityAmount sign={TONE_SIGN[tone]} className={TONE_TEXT[tone]} token={token} amount={amount} />
+        }
       />
       {status === 'in-progress' && <Progress />}
     </ActivityCard>

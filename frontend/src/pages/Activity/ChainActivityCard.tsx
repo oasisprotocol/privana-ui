@@ -48,7 +48,12 @@ export const ChainActivityCard = ({ row, timestamp, divider }: Props) => {
         subtitle={activityRowSubtitle({ kind: row.kind, incoming })}
         amount={
           token && row.amount ? (
-            <ActivityAmount sign={TONE_SIGN[tone]} className={TONE_TEXT[tone]} token={token} amount={row.amount} />
+            <ActivityAmount
+              sign={TONE_SIGN[tone]}
+              className={TONE_TEXT[tone]}
+              token={token}
+              amount={row.amount}
+            />
           ) : undefined
         }
       />
