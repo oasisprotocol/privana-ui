@@ -1,4 +1,5 @@
 import { usePrivanaContext } from '@oasisprotocol/privana-sdk'
+import { venueForStrategy } from '@/config/apps'
 import type { ClassifiedHistoryEntry } from './historyMapping'
 import { ACTIVITY_TITLES, activityRowSubtitle, activityRowTitle } from './labels'
 import { resolveActivityVisual, TONE_SIGN, TONE_TEXT } from './activityVisuals'
@@ -43,6 +44,7 @@ export const ChainActivityCard = ({ row, timestamp, divider }: Props) => {
         title={activityRowTitle(row)}
         timestamp={timestamp}
         counterparty={row.counterparty}
+        venue={venueForStrategy(row.pool?.strategy)}
         subtitle={activityRowSubtitle({ kind: row.kind, incoming })}
         amount={
           token && row.amount ? (

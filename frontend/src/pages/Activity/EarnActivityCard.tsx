@@ -1,4 +1,5 @@
 import { Progress } from '@/components/ui/progress'
+import { venueForStrategy } from '@/config/apps'
 import type { EarnActivity } from '@/contexts/ActivityProvider/context'
 import type { DisplayKind } from './historyMapping'
 import { ACTIVITY_TITLES, activityRowSubtitle } from './labels'
@@ -21,6 +22,7 @@ export const EarnActivityCard = ({ activity, timestamp, divider }: EarnActivityC
       <ActivityRowBody
         title={ACTIVITY_TITLES[kind]}
         timestamp={timestamp}
+        venue={venueForStrategy(activity.protocol)}
         subtitle={activityRowSubtitle({ kind, status })}
         amount={<ActivityAmount sign={TONE_SIGN[tone]} className={TONE_TEXT[tone]} token={token} amount={amount} />}
       />

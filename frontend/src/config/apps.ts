@@ -34,6 +34,18 @@ export function appForAddress(address: string | null | undefined): KnownApp | nu
   return knownAppByAddress.get(address.toLowerCase()) ?? null
 }
 
+const EARN_VENUE_NAMES: Record<string, string> = {
+  midas: 'Midas',
+  aave: 'Aave',
+}
+
+export function venueForStrategy(strategy: string | null | undefined): Venue | null {
+  if (!strategy) return null
+  const key = strategy.toLowerCase()
+  const name = EARN_VENUE_NAMES[key] ?? strategy.charAt(0).toUpperCase() + strategy.slice(1)
+  return { name, color: '#0F4C81' }
+}
+
 const knownAppNameByAddress = new Map<string, string>(
   KNOWN_APPS.map(app => [app.serviceAddress.toLowerCase(), app.name]),
 )

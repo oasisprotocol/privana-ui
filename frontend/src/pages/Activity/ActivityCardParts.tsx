@@ -3,6 +3,7 @@ import type { ReactNode } from 'react'
 import { cn } from '@/lib/utils'
 import { formatAmount } from '@/lib/tokens'
 import type { ActivityTokenInfo } from '@/contexts/ActivityProvider/context'
+import type { Venue } from '@/config/apps'
 import { formatActivityTime } from './formatTime'
 import { CounterpartyBadge } from './CounterpartyBadge'
 
@@ -31,12 +32,14 @@ export const ActivityRowBody = ({
   title,
   timestamp,
   counterparty,
+  venue,
   subtitle,
   amount,
 }: {
   title: string
   timestamp?: number
   counterparty?: string | null
+  venue?: Venue | null
   subtitle?: ReactNode
   amount?: ReactNode
 }) => (
@@ -45,7 +48,7 @@ export const ActivityRowBody = ({
       <p className="truncate text-sm font-semibold leading-tight text-foreground">{title}</p>
       <div className="mt-1 flex items-center gap-2 text-xs text-muted-foreground">
         {timestamp != null && <span>{formatActivityTime(timestamp)}</span>}
-        <CounterpartyBadge counterparty={counterparty} />
+        <CounterpartyBadge counterparty={counterparty} venue={venue} />
       </div>
       {subtitle != null && <p className="mt-1 truncate text-xs text-muted-foreground">{subtitle}</p>}
     </div>
