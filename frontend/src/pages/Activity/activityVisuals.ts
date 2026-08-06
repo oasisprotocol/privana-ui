@@ -15,10 +15,22 @@ import type { DisplayKind } from './historyMapping'
 
 type Tone = 'green' | 'amber' | 'red'
 
-const TONE_CLASS: Record<Tone, string> = {
+const ICON_CLASS: Record<Tone, string> = {
   green: 'bg-chart-positive/15 text-chart-positive',
   amber: 'bg-amber-500/15 text-amber-600 dark:text-amber-400',
   red: 'bg-destructive/15 text-destructive',
+}
+
+export const TONE_TEXT: Record<Tone, string> = {
+  green: 'text-chart-positive',
+  amber: 'text-amber-600 dark:text-amber-400',
+  red: 'text-destructive',
+}
+
+export const TONE_SIGN: Record<Tone, string> = {
+  green: '+',
+  amber: '−',
+  red: '−',
 }
 
 const KIND_VISUAL: Record<DisplayKind, { icon: LucideIcon; tone: Tone }> = {
@@ -40,11 +52,11 @@ export function resolveActivityVisual(params: {
   kind: DisplayKind
   incoming?: boolean
   status?: ActivityStatus
-}): { Icon: LucideIcon; toneClass: string } {
-  if (params.status === 'failed') return { Icon: AlertCircle, toneClass: TONE_CLASS.red }
+}): { Icon: LucideIcon; tone: Tone; iconClass: string } {
+  if (params.status === 'failed') return { Icon: AlertCircle, tone: 'red', iconClass: ICON_CLASS.red }
   if (params.kind === 'transfer' && params.incoming) {
-    return { Icon: ArrowDownLeft, toneClass: TONE_CLASS.green }
+    return { Icon: ArrowDownLeft, tone: 'green', iconClass: ICON_CLASS.green }
   }
   const visual = KIND_VISUAL[params.kind]
-  return { Icon: visual.icon, toneClass: TONE_CLASS[visual.tone] }
+  return { Icon: visual.icon, tone: visual.tone, iconClass: ICON_CLASS[visual.tone] }
 }

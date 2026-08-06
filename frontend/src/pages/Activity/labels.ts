@@ -1,4 +1,5 @@
 import { appNameForAddress } from '@/config/apps'
+import type { ActivityStatus } from '@/contexts/ActivityProvider/context'
 import type { ClassifiedHistoryEntry, DisplayKind } from './historyMapping'
 import type { FilterType } from './filters'
 
@@ -36,21 +37,30 @@ export function activityRowTitle(
   }
 }
 
-export const ACTIVITY_AMOUNT_LABELS: Record<DisplayKind, string> = {
-  swap: 'Sent to swap pool',
-  // earnDeposit/earnWithdraw are rendered by AmountLabel as a "Wallet → Earn"
-  // direction with an icon arrow; these strings are plain-text fallbacks only.
-  earnDeposit: 'Wallet to Earn',
-  earnWithdraw: 'Earn to Wallet',
-  deposit: 'Amount',
-  withdraw: 'Amount',
-  lock: 'Locked',
-  lockModified: 'Locked',
-  lockReleased: 'Returned',
-  reclaimOut: 'Sent from lock',
-  reclaimIn: 'Received from lock',
-  transfer: 'Transferred',
-  unknown: 'Amount',
+const ACTIVITY_SUBTITLES: Record<DisplayKind, string> = {
+  swap: 'Swapped in your vault',
+  earnDeposit: 'Put to work in Earn',
+  earnWithdraw: 'Returned to Available',
+  deposit: 'No lock — stays available',
+  withdraw: 'To external wallet',
+  lock: 'Under allowance policy',
+  lockModified: 'Allowance increased',
+  lockReleased: 'Returned to Available',
+  reclaimOut: 'App consumed allowance',
+  reclaimIn: 'App credited lock',
+  transfer: 'Sent from vault',
+  unknown: 'Unrecognized activity',
+}
+
+export function activityRowSubtitle(params: {
+  kind: DisplayKind
+  incoming?: boolean
+  status?: ActivityStatus
+}): string {
+  if (params.status === 'in-progress') return 'Pending'
+  if (params.status === 'failed') return 'Failed'
+  if (params.kind === 'transfer') return params.incoming ? 'Received to vault' : 'Sent from vault'
+  return ACTIVITY_SUBTITLES[params.kind]
 }
 
 export const FILTER_TYPE_LABELS: Record<FilterType, string> = {

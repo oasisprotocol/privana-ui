@@ -1,15 +1,8 @@
-import { ArrowRight } from 'lucide-react'
 import { usePrivanaContext } from '@oasisprotocol/privana-sdk'
 import type { ClassifiedHistoryEntry } from './historyMapping'
-import { ACTIVITY_TITLES, activityRowTitle } from './labels'
-import { resolveActivityVisual } from './activityVisuals'
-import {
-  ActivityAmountRow,
-  ActivityCard,
-  ActivityCardHeader,
-  ActivityIcon,
-  TokenAmount,
-} from './ActivityCardParts'
+import { ACTIVITY_TITLES, activityRowSubtitle, activityRowTitle } from './labels'
+import { resolveActivityVisual, TONE_SIGN, TONE_TEXT } from './activityVisuals'
+import { ActivityAmount, ActivityCard, ActivityIcon, ActivityRowBody } from './ActivityCardParts'
 
 type Props = {
   row: ClassifiedHistoryEntry
@@ -21,54 +14,42 @@ export const ChainActivityCard = ({ row, timestamp, divider }: Props) => {
   const { getTokenById } = usePrivanaContext()
   const token = row.tokenId ? getTokenById(row.tokenId) : undefined
   const toToken = row.toTokenId ? getTokenById(row.toTokenId) : undefined
-  const { Icon, toneClass } = resolveActivityVisual({
-    kind: row.kind,
-    incoming: row.entry.kind === 'transferBalanceIn',
-  })
-  const icon = <ActivityIcon Icon={Icon} toneClass={toneClass} />
+  const incoming = row.entry.kind === 'transferBalanceIn'
+  const { Icon, tone, iconClass } = resolveActivityVisual({ kind: row.kind, incoming })
+  const icon = <ActivityIcon Icon={Icon} iconClass={iconClass} />
 
   if (row.kind === 'swap' && token && row.amount && toToken && row.toAmount) {
     return (
       <ActivityCard divider={divider} icon={icon}>
-        <ActivityCardHeader
+        <ActivityRowBody
           title={ACTIVITY_TITLES.swap}
           timestamp={timestamp}
           counterparty={row.counterparty}
+          subtitle={activityRowSubtitle({ kind: 'swap' })}
+          amount={
+            <div className="flex flex-col items-end">
+              <ActivityAmount sign="−" className={TONE_TEXT.amber} token={token} amount={row.amount} />
+              <ActivityAmount sign="+" className={TONE_TEXT.green} token={toToken} amount={row.toAmount} />
+            </div>
+          }
         />
-        <div className="flex gap-4 items-center justify-center">
-          <TokenAmount
-            token={{ id: token.id, symbol: token.symbol, decimals: token.decimals }}
-            amount={row.amount}
-            align="left"
-          />
-          <div className="inline-flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-muted">
-            <ArrowRight className="size-4" />
-          </div>
-          <TokenAmount
-            token={{ id: toToken.id, symbol: toToken.symbol, decimals: toToken.decimals }}
-            amount={row.toAmount}
-            align="right"
-          />
-        </div>
       </ActivityCard>
     )
   }
 
   return (
     <ActivityCard divider={divider} icon={icon}>
-      <ActivityCardHeader
+      <ActivityRowBody
         title={activityRowTitle(row)}
         timestamp={timestamp}
         counterparty={row.counterparty}
+        subtitle={activityRowSubtitle({ kind: row.kind, incoming })}
+        amount={
+          token && row.amount ? (
+            <ActivityAmount sign={TONE_SIGN[tone]} className={TONE_TEXT[tone]} token={token} amount={row.amount} />
+          ) : undefined
+        }
       />
-
-      {token && row.amount && (
-        <ActivityAmountRow
-          kind={row.kind}
-          token={{ id: token.id, symbol: token.symbol, decimals: token.decimals }}
-          amount={row.amount}
-        />
-      )}
     </ActivityCard>
   )
 }
