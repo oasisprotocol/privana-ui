@@ -1,4 +1,4 @@
-import { ArrowRight, Check } from 'lucide-react'
+import { ArrowRight, Check, type LucideIcon } from 'lucide-react'
 import type { ReactNode } from 'react'
 import { getTokenIcon } from '@oasisprotocol/privana-sdk'
 import { Badge } from '@/components/ui/badge'
@@ -9,8 +9,25 @@ import type { DisplayKind } from './historyMapping'
 import { ACTIVITY_AMOUNT_LABELS } from './labels'
 import { formatActivityTime } from './formatTime'
 
-export const ActivityCard = ({ children, divider }: { children: ReactNode; divider?: boolean }) => (
-  <div className={cn('flex flex-col gap-3 p-4', divider && 'border-t border-border')}>{children}</div>
+export const ActivityIcon = ({ Icon, toneClass }: { Icon: LucideIcon; toneClass: string }) => (
+  <span className={cn('flex h-10 w-10 shrink-0 items-center justify-center rounded-xl', toneClass)}>
+    <Icon className="h-4 w-4" />
+  </span>
+)
+
+export const ActivityCard = ({
+  children,
+  divider,
+  icon,
+}: {
+  children: ReactNode
+  divider?: boolean
+  icon?: ReactNode
+}) => (
+  <div className={cn('flex items-start gap-3 p-4', divider && 'border-t border-border')}>
+    {icon}
+    <div className="flex min-w-0 flex-1 flex-col gap-3">{children}</div>
+  </div>
 )
 
 type ActivityCardHeaderProps = {

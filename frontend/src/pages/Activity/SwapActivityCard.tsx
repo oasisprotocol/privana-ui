@@ -1,7 +1,8 @@
 import { ArrowRight } from 'lucide-react'
 import { Progress } from '@/components/ui/progress'
 import type { SwapActivity } from '@/contexts/ActivityProvider/context'
-import { ActivityCard, ActivityCardHeader, TokenAmount } from './ActivityCardParts'
+import { resolveActivityVisual } from './activityVisuals'
+import { ActivityCard, ActivityCardHeader, ActivityIcon, TokenAmount } from './ActivityCardParts'
 
 type SwapActivityCardProps = {
   activity: SwapActivity
@@ -11,9 +12,10 @@ type SwapActivityCardProps = {
 
 export const SwapActivityCard = ({ activity, timestamp, divider }: SwapActivityCardProps) => {
   const { status, fromToken, toToken, fromAmount, toAmount } = activity
+  const { Icon, toneClass } = resolveActivityVisual({ kind: 'swap', status })
 
   return (
-    <ActivityCard divider={divider}>
+    <ActivityCard divider={divider} icon={<ActivityIcon Icon={Icon} toneClass={toneClass} />}>
       <ActivityCardHeader title="Swap" status={status} timestamp={timestamp} />
 
       <div className="flex gap-4 items-center justify-center">
