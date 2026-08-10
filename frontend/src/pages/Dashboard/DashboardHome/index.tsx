@@ -2,14 +2,14 @@ import { Button } from '@/components/ui/button'
 import { Zap, ArrowLeftRight, TrendingUp } from 'lucide-react'
 import { useState, type ReactNode } from 'react'
 import { useAccount } from 'wagmi'
-import { DepositModal, getTokenIcon, useSiweAuth } from '@oasisprotocol/privana-sdk'
+import { DepositModal, WithdrawModal, useSiweAuth } from '@oasisprotocol/privana-sdk'
 import { Skeleton } from '@/components/ui/skeleton'
 import { SurfaceCard } from '@/components/SurfaceCard'
 import { formatApyBps, apyBpsToFraction } from '@/lib/apy'
-import { formatFiat, formatAmount } from '@/lib/tokens'
+import { formatFiat } from '@/lib/tokens'
 import { earnPath, tradePath } from '@/paths'
 import { Link } from 'react-router'
-import { useFunds, type TokenBreakdown } from '@/hooks/useFunds'
+import { useFunds } from '@/hooks/useFunds'
 import { useMergedActivity } from '@/hooks/use-merged-activity'
 import { cn } from '@/lib/utils'
 import { BalanceAmount } from '@/components/BalanceAmount'
@@ -19,91 +19,71 @@ import { HISTORY_FETCH_LIMIT } from './latestActivity.constants'
 import { DashboardBootState } from './DashboardBootState'
 import { useBootPhase } from './useBootPhase'
 
-// Shared sizing for the dashboard's primary call-to-action buttons.
-const CTA_BUTTON = 'h-14 px-8 text-base w-full sm:w-auto sm:min-w-[200px]'
+type BalanceSegmentKey = 'available' | 'earning' | 'locked'
 
-const BreakdownRow = ({
-  dotClass,
-  label,
-  tokens,
-  fiatFallback,
+const BALANCE_SEGMENTS: { key: BalanceSegmentKey; label: string; className: string }[] = [
+  { key: 'available', label: 'Available', className: 'bg-primary' },
+  { key: 'earning', label: 'Earning', className: 'bg-chart-positive' },
+  { key: 'locked', label: 'In use', className: 'bg-violet-500' },
+]
+
+const BalanceBreakdownCard = ({
+  available,
+  earning,
+  locked,
   error,
 }: {
-  dotClass: string
-  label: string
-  tokens: TokenBreakdown[]
-  fiatFallback: number | undefined
+  available: number | undefined
+  earning: number | undefined
+  locked: number | undefined
   error: boolean
-}) => (
-  <div className="flex items-center gap-2">
-    <span className={`size-2 shrink-0 rounded-full ${dotClass}`} />
-    <span className="font-semibold text-foreground">{label}</span>
-    {tokens.length > 0 ? (
-      <span className="inline-flex flex-wrap items-center gap-x-2 gap-y-1">
-        {tokens.map(token => (
-          <TokenAmountInline key={token.symbol} token={token} />
-        ))}
-      </span>
-    ) : error ? (
-      <span className="text-muted-foreground">-</span>
-    ) : fiatFallback === undefined ? (
-      <Skeleton className="h-4 w-16" />
-    ) : (
-      <span className="text-muted-foreground">{formatFiat(fiatFallback)}</span>
-    )}
-  </div>
-)
+}) => {
+  const values: Record<BalanceSegmentKey, number | undefined> = { available, earning, locked }
+  const ready = !error && available !== undefined && earning !== undefined && locked !== undefined
+  const total = (available ?? 0) + (earning ?? 0) + (locked ?? 0)
 
-const TokenAmountInline = ({ token, size = 'sm' }: { token: TokenBreakdown; size?: 'sm' | 'lg' }) => {
-  const lg = size === 'lg'
   return (
-    <span className={cn('inline-flex items-center gap-1.5 tabular-nums', lg ? 'text-lg' : 'text-sm')}>
-      <span className={cn('text-foreground', lg ? 'font-semibold' : 'font-medium')}>
-        {formatAmount(token.amount, token.decimals)}
-      </span>
-      <span className="inline-flex items-center gap-1 text-muted-foreground">
-        <span className={cn('self-center overflow-hidden rounded-full', lg ? 'size-4' : 'size-3')}>
-          {getTokenIcon(token.symbol, lg ? 16 : 12)}
-        </span>
-        {token.symbol}
-      </span>
-    </span>
+    <div className="rounded-2xl border border-border p-4">
+      <p className="text-xs font-medium text-muted-foreground">Available to withdraw</p>
+      {ready ? (
+        <p className="mt-0.5 text-lg font-semibold tabular-nums text-foreground">
+          {formatFiat(available ?? 0)}
+        </p>
+      ) : error ? (
+        <p className="mt-0.5 text-lg font-semibold text-foreground">-</p>
+      ) : (
+        <Skeleton className="mt-1 h-6 w-24" />
+      )}
+
+      <div className="mt-3 flex h-2 w-full overflow-hidden rounded-full bg-muted">
+        {ready &&
+          total > 0 &&
+          BALANCE_SEGMENTS.map(segment => {
+            const pct = ((values[segment.key] ?? 0) / total) * 100
+            return pct > 0 ? (
+              <span
+                key={segment.key}
+                className={cn('h-full', segment.className)}
+                style={{ width: `${pct}%` }}
+              />
+            ) : null
+          })}
+      </div>
+
+      <div className="mt-3 flex flex-wrap gap-x-4 gap-y-1.5">
+        {BALANCE_SEGMENTS.map(segment => (
+          <span key={segment.key} className="inline-flex items-center gap-1.5 text-xs">
+            <span aria-hidden className={cn('size-2 shrink-0 rounded-full', segment.className)} />
+            <span className="text-muted-foreground">{segment.label}</span>
+            <span className="font-medium tabular-nums text-foreground">
+              {ready ? formatFiat(values[segment.key] ?? 0) : '-'}
+            </span>
+          </span>
+        ))}
+      </div>
+    </div>
   )
 }
-
-const DesktopBreakdownRow = ({
-  dotClass,
-  label,
-  tokens,
-  fiatFallback,
-  error,
-}: {
-  dotClass: string
-  label: string
-  tokens: TokenBreakdown[]
-  fiatFallback: number | undefined
-  error: boolean
-}) => (
-  <div className="flex items-start gap-3 text-lg">
-    <span className="inline-flex items-center gap-2.5 font-medium text-foreground">
-      <span aria-hidden className={`size-2.5 shrink-0 rounded-full ${dotClass}`} />
-      {label}
-    </span>
-    {tokens.length > 0 ? (
-      <span className="inline-flex flex-wrap items-center gap-x-3 gap-y-1">
-        {tokens.map(token => (
-          <TokenAmountInline key={token.symbol} token={token} size="lg" />
-        ))}
-      </span>
-    ) : error ? (
-      <span className="text-muted-foreground">-</span>
-    ) : fiatFallback === undefined ? (
-      <Skeleton className="h-5 w-20" />
-    ) : (
-      <span className="text-muted-foreground">{formatFiat(fiatFallback)}</span>
-    )}
-  </div>
-)
 
 const FeatureRow = ({
   icon,
@@ -155,15 +135,15 @@ const DepositFeatures = ({ bestApyBps }: { bestApyBps: number | null }) => (
 
 export const DashboardHome = () => {
   const [depositTab, setDepositTab] = useState<'crypto' | 'credit-card' | null>(null)
+  const [withdrawOpen, setWithdrawOpen] = useState(false)
   const {
     isLoading,
     hasFunds,
     hasAvailableBalance,
     availableFiatValue,
     earningFiatValue,
+    lockedFiatValue,
     totalFiatValue,
-    availableTokens,
-    earningTokens,
     bestApyBps,
     pricesError,
   } = useFunds()
@@ -238,7 +218,7 @@ export const DashboardHome = () => {
         )}
         {bootPhase === 'done' && hasFunds && (
           <div className="flex flex-col gap-8 w-full">
-            {/* Desktop: two-column balance card (balance + breakdown + CTA | chart) */}
+            {/* Desktop: two-column balance card (balance + breakdown + CTAs | chart) */}
             <SurfaceCard className="hidden md:grid md:grid-cols-2 md:gap-8 rounded-3xl p-8">
               <div className="flex flex-col lg:pr-12">
                 <span className="text-sm font-medium text-muted-foreground">Total balance</span>
@@ -249,29 +229,27 @@ export const DashboardHome = () => {
                 ) : (
                   <BalanceAmount value={totalFiatValue} className="mt-3 text-6xl animate-fade-in" />
                 )}
-                <div className="mt-6 space-y-2.5">
-                  <DesktopBreakdownRow
-                    dotClass="bg-chart-positive"
-                    label="Earning"
-                    tokens={earningTokens}
-                    fiatFallback={earningFiatValue}
-                    error={pricesError}
-                  />
-                  <DesktopBreakdownRow
-                    dotClass="bg-primary"
-                    label="Available"
-                    tokens={availableTokens}
-                    fiatFallback={availableFiatValue}
+                <div className="mt-6">
+                  <BalanceBreakdownCard
+                    available={availableFiatValue}
+                    earning={earningFiatValue}
+                    locked={lockedFiatValue}
                     error={pricesError}
                   />
                 </div>
-                <Button
-                  size="lg"
-                  className="mt-8 h-14 text-base w-full sm:w-80 sm:self-start"
-                  onClick={() => setDepositTab('crypto')}
-                >
-                  Deposit
-                </Button>
+                <div className="mt-6 flex gap-3 sm:max-w-md">
+                  <Button size="lg" className="h-14 flex-1 text-base" onClick={() => setDepositTab('crypto')}>
+                    Deposit
+                  </Button>
+                  <Button
+                    size="lg"
+                    variant="outline"
+                    className="h-14 flex-1 text-base"
+                    onClick={() => setWithdrawOpen(true)}
+                  >
+                    Withdraw
+                  </Button>
+                </div>
               </div>
               <div className="flex flex-col justify-center">
                 <PortfolioChart />
@@ -279,7 +257,7 @@ export const DashboardHome = () => {
             </SurfaceCard>
 
             <div className="flex flex-col gap-8 md:hidden">
-              <div className="flex flex-col gap-3">
+              <div className="flex flex-col gap-4">
                 <div className="flex flex-col">
                   <span className="text-sm font-medium text-muted-foreground leading-5">Total balance</span>
                   {pricesError ? (
@@ -290,29 +268,27 @@ export const DashboardHome = () => {
                     <BalanceAmount value={totalFiatValue} className="mt-3 animate-fade-in" />
                   )}
                 </div>
-                <div className="flex flex-col gap-1 text-sm">
-                  <BreakdownRow
-                    dotClass="bg-chart-positive"
-                    label="Earning"
-                    tokens={earningTokens}
-                    fiatFallback={earningFiatValue}
-                    error={pricesError}
-                  />
-                  <BreakdownRow
-                    dotClass="bg-primary"
-                    label="Available"
-                    tokens={availableTokens}
-                    fiatFallback={availableFiatValue}
-                    error={pricesError}
-                  />
-                </div>
+                <BalanceBreakdownCard
+                  available={availableFiatValue}
+                  earning={earningFiatValue}
+                  locked={lockedFiatValue}
+                  error={pricesError}
+                />
               </div>
 
               <div className="flex flex-col gap-6">
                 <PortfolioChart />
-                <div className="flex justify-center">
-                  <Button size="lg" className={CTA_BUTTON} onClick={() => setDepositTab('crypto')}>
+                <div className="flex gap-3">
+                  <Button size="lg" className="h-14 flex-1 text-base" onClick={() => setDepositTab('crypto')}>
                     Deposit
+                  </Button>
+                  <Button
+                    size="lg"
+                    variant="outline"
+                    className="h-14 flex-1 text-base"
+                    onClick={() => setWithdrawOpen(true)}
+                  >
+                    Withdraw
                   </Button>
                 </div>
               </div>
@@ -364,6 +340,8 @@ export const DashboardHome = () => {
         onClose={() => setDepositTab(null)}
         defaultTab={depositTab ?? 'crypto'}
       />
+
+      <WithdrawModal open={withdrawOpen} onClose={() => setWithdrawOpen(false)} />
     </>
   )
 }
