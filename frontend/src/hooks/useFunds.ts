@@ -27,6 +27,8 @@ export interface Funds {
   availableFiatValue: number | undefined
   /** Fiat value held in earn positions. */
   earningFiatValue: number | undefined
+  /** Fiat value held in active app locks ("in use" / not withdrawable). */
+  lockedFiatValue: number | undefined
   totalFiatValue: number | undefined
   /** Per-token available (idle) balances, for token-denominated display. */
   availableTokens: TokenBreakdown[]
@@ -61,9 +63,14 @@ export function useFunds(): Funds {
     return activePools.length ? Math.max(...activePools.map(p => p.apy_bps)) : null
   }, [poolsData])
 
-  const { availableFiatValue, earningFiatValue, totalFiatValue } = useMemo(() => {
+  const { availableFiatValue, lockedFiatValue, earningFiatValue, totalFiatValue } = useMemo(() => {
     if (!prices) {
-      return { availableFiatValue: undefined, earningFiatValue: undefined, totalFiatValue: undefined }
+      return {
+        availableFiatValue: undefined,
+        lockedFiatValue: undefined,
+        earningFiatValue: undefined,
+        totalFiatValue: undefined,
+      }
     }
     const fiatOf = (tokenId: string, amountWei: string): number => {
       const price = prices[tokenId]
@@ -73,14 +80,12 @@ export function useFunds(): Funds {
     }
 
     let available = 0
-    let total = 0
+    let locked = 0
     for (const b of balances) {
-      const availableValue = fiatOf(b.token_id, b.balance)
-      const lockedValue = locks
+      available += fiatOf(b.token_id, b.balance)
+      locked += locks
         .filter(l => l.token_id === b.token_id)
         .reduce((sum, l) => sum + fiatOf(l.token_id, l.amount), 0)
-      available += availableValue
-      total += availableValue + lockedValue
     }
     // Earn positions are transferred into the pool (not held as a lock), so they
     // are a separate bucket from available/locked - no double counting. Their
@@ -90,8 +95,12 @@ export function useFunds(): Funds {
     for (const p of earnBalance?.positions ?? []) {
       earning += fiatOf(p.token_id, p.underlying_amount)
     }
-    total += earning
-    return { availableFiatValue: available, earningFiatValue: earning, totalFiatValue: total }
+    return {
+      availableFiatValue: available,
+      lockedFiatValue: locked,
+      earningFiatValue: earning,
+      totalFiatValue: available + locked + earning,
+    }
   }, [balances, locks, earnBalance, prices, getTokenById])
 
   // Per-token amounts for token-denominated display (Earning / Available rows).
@@ -157,6 +166,7 @@ export function useFunds(): Funds {
     availableTokenIds,
     availableFiatValue,
     earningFiatValue,
+    lockedFiatValue,
     totalFiatValue,
     availableTokens,
     earningTokens,
