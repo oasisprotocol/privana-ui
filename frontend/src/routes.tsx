@@ -9,7 +9,8 @@ import { EarnDashboard } from './pages/Earn/EarnDashboard'
 import { EarnCreate } from './pages/Earn/EarnCreate'
 import { EarnWithdraw } from './pages/Earn/EarnWithdraw'
 import { Activity } from './pages/Activity'
-import { activityPath, earnPath, homePath, dashboardPath, tradePath } from './paths'
+import { Vault } from './pages/Vault'
+import { activityPath, earnPath, homePath, dashboardPath, tradePath, vaultPath } from './paths'
 
 export const router = createBrowserRouter([
   {
@@ -76,6 +77,16 @@ export const router = createBrowserRouter([
           {
             index: true,
             element: <Activity />,
+          },
+        ],
+      },
+      {
+        path: vaultPath(),
+        element: <ProtectedLayout />,
+        children: [
+          {
+            index: true,
+            element: <Vault />,
           },
         ],
       },

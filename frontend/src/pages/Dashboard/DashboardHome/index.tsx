@@ -1,5 +1,5 @@
 import { Button } from '@/components/ui/button'
-import { Zap, ArrowLeftRight, TrendingUp } from 'lucide-react'
+import { Zap, ArrowLeftRight, TrendingUp, ChevronRight } from 'lucide-react'
 import { useState, type ReactNode } from 'react'
 import { useAccount } from 'wagmi'
 import { DepositModal, WithdrawModal, useSiweAuth } from '@oasisprotocol/privana-sdk'
@@ -7,7 +7,7 @@ import { Skeleton } from '@/components/ui/skeleton'
 import { SurfaceCard } from '@/components/SurfaceCard'
 import { formatApyBps, apyBpsToFraction } from '@/lib/apy'
 import { formatFiat } from '@/lib/tokens'
-import { earnPath, tradePath } from '@/paths'
+import { earnPath, tradePath, vaultPath } from '@/paths'
 import { Link } from 'react-router'
 import { useFunds } from '@/hooks/useFunds'
 import { useMergedActivity } from '@/hooks/use-merged-activity'
@@ -43,17 +43,25 @@ const BalanceBreakdownCard = ({
   const total = (available ?? 0) + (earning ?? 0) + (locked ?? 0)
 
   return (
-    <div className="rounded-2xl border border-border p-4">
+    <Link
+      to={vaultPath()}
+      viewTransition
+      className="block rounded-2xl border border-border p-4 transition-colors hover:bg-[rgba(230,230,230,0.4)]"
+    >
       <p className="text-xs font-medium text-muted-foreground">Available to withdraw</p>
-      {ready ? (
-        <p className="mt-0.5 text-lg font-semibold tabular-nums text-foreground">
-          {formatFiat(available ?? 0)}
-        </p>
-      ) : error ? (
-        <p className="mt-0.5 text-lg font-semibold text-foreground">-</p>
-      ) : (
-        <Skeleton className="mt-1 h-6 w-24" />
-      )}
+      <div className="mt-0.5 flex items-center justify-between gap-2">
+        {ready ? (
+          <p className="text-lg font-semibold tabular-nums text-foreground">{formatFiat(available ?? 0)}</p>
+        ) : error ? (
+          <p className="text-lg font-semibold text-foreground">-</p>
+        ) : (
+          <Skeleton className="h-6 w-24" />
+        )}
+        <span className="inline-flex items-center gap-0.5 pb-0.5 text-sm font-medium text-muted-foreground">
+          Vault details
+          <ChevronRight className="size-4" />
+        </span>
+      </div>
 
       <div className="mt-3 flex h-2 w-full overflow-hidden rounded-full bg-muted">
         {ready &&
@@ -81,7 +89,7 @@ const BalanceBreakdownCard = ({
           </span>
         ))}
       </div>
-    </div>
+    </Link>
   )
 }
 

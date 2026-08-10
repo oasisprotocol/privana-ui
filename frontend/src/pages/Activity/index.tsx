@@ -87,11 +87,11 @@ export const Activity = () => {
   return (
     <>
       <PageHeading
-        title="The Vault"
+        title="Vault activity"
         description={
           isEmpty
             ? 'Nothing to show yet. Your swaps, deposits, withdrawals, and earnings will appear here.'
-            : "Where your money is — what's available, what's in use, and every move in and out."
+            : "Where your money is - what's available, what's in use, and every move in and out."
         }
         className="max-w-200"
       />
