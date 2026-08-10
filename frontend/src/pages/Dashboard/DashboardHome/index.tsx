@@ -11,21 +11,13 @@ import { earnPath, tradePath, vaultPath } from '@/paths'
 import { Link } from 'react-router'
 import { useFunds } from '@/hooks/useFunds'
 import { useMergedActivity } from '@/hooks/use-merged-activity'
-import { cn } from '@/lib/utils'
 import { BalanceAmount } from '@/components/BalanceAmount'
+import { BalanceBreakdown } from '@/components/BalanceBreakdown'
 import { PortfolioChart } from '@/components/PortfolioChart'
 import { LatestActivity } from './LatestActivity'
 import { HISTORY_FETCH_LIMIT } from './latestActivity.constants'
 import { DashboardBootState } from './DashboardBootState'
 import { useBootPhase } from './useBootPhase'
-
-type BalanceSegmentKey = 'available' | 'earning' | 'locked'
-
-const BALANCE_SEGMENTS: { key: BalanceSegmentKey; label: string; className: string }[] = [
-  { key: 'available', label: 'Available', className: 'bg-primary' },
-  { key: 'earning', label: 'Earning', className: 'bg-chart-positive' },
-  { key: 'locked', label: 'In use', className: 'bg-violet-500' },
-]
 
 const BalanceBreakdownCard = ({
   available,
@@ -38,9 +30,7 @@ const BalanceBreakdownCard = ({
   locked: number | undefined
   error: boolean
 }) => {
-  const values: Record<BalanceSegmentKey, number | undefined> = { available, earning, locked }
-  const ready = !error && available !== undefined && earning !== undefined && locked !== undefined
-  const total = (available ?? 0) + (earning ?? 0) + (locked ?? 0)
+  const ready = !error && available !== undefined
 
   return (
     <Link
@@ -63,32 +53,14 @@ const BalanceBreakdownCard = ({
         </span>
       </div>
 
-      <div className="mt-3 flex h-2 w-full overflow-hidden rounded-full bg-muted">
-        {ready &&
-          total > 0 &&
-          BALANCE_SEGMENTS.map(segment => {
-            const pct = ((values[segment.key] ?? 0) / total) * 100
-            return pct > 0 ? (
-              <span
-                key={segment.key}
-                className={cn('h-full', segment.className)}
-                style={{ width: `${pct}%` }}
-              />
-            ) : null
-          })}
-      </div>
-
-      <div className="mt-3 flex flex-wrap gap-x-4 gap-y-1.5">
-        {BALANCE_SEGMENTS.map(segment => (
-          <span key={segment.key} className="inline-flex items-center gap-1.5 text-xs">
-            <span aria-hidden className={cn('size-2 shrink-0 rounded-full', segment.className)} />
-            <span className="text-muted-foreground">{segment.label}</span>
-            <span className="font-medium tabular-nums text-foreground">
-              {ready ? formatFiat(values[segment.key] ?? 0) : '-'}
-            </span>
-          </span>
-        ))}
-      </div>
+      <BalanceBreakdown
+        available={available}
+        earning={earning}
+        locked={locked}
+        error={error}
+        size="sm"
+        className="mt-3"
+      />
     </Link>
   )
 }
