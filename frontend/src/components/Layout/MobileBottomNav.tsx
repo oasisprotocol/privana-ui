@@ -5,8 +5,8 @@ import { earnPath, tradePath } from '@/paths'
 type NavItem = { label: string; to: string; icon: LucideIcon }
 
 const items: NavItem[] = [
-  { label: 'Earn', to: earnPath(), icon: PiggyBank },
-  { label: 'Swap', to: tradePath(), icon: ArrowLeftRight },
+  { label: 'Private Earn', to: earnPath(), icon: PiggyBank },
+  { label: 'Private Swap', to: tradePath(), icon: ArrowLeftRight },
 ]
 
 export const MobileBottomNav = () => {
@@ -22,9 +22,9 @@ export const MobileBottomNav = () => {
             key={label}
             to={to}
             viewTransition
-            className="flex items-center gap-2 rounded-full bg-neutral-800 px-8 py-4 text-sm font-medium text-white transition-colors hover:bg-neutral-700 active:scale-95"
+            className="flex items-center gap-2 whitespace-nowrap rounded-full bg-neutral-800 px-6 py-4 text-sm font-medium text-white transition-colors hover:bg-neutral-700 active:scale-95"
           >
-            <Icon className="h-4 w-4" />
+            <Icon className="h-4 w-4 shrink-0" />
             {label}
           </NavLink>
         ))}

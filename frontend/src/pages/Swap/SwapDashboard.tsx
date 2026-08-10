@@ -198,7 +198,7 @@ export const SwapDashboard = () => {
     <div className={cn('mx-auto flex w-full max-w-lg flex-col', DESKTOP_CARD)}>
       {step === 0 && (
         <div className="flex flex-col gap-1">
-          <h1 className="text-foreground text-3xl font-semibold tracking-tight leading-9">Swap</h1>
+          <h1 className="text-foreground text-3xl font-semibold tracking-tight leading-9">Private Swap</h1>
           <p className="text-muted-foreground text-sm font-normal leading-5">
             Choose the asset you want to swap.
           </p>
