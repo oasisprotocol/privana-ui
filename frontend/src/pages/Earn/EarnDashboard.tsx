@@ -44,7 +44,7 @@ export const EarnDashboard = () => {
   return (
     <>
       <PageHeading
-        title="Earn"
+        title="Private Earn"
         description="Put your funds to work. Withdraw anytime."
         className="max-w-200 md:max-w-none"
       />

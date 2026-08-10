@@ -44,8 +44,8 @@ export const Layout = ({ children }: LayoutProps) => {
           {isSignedIn && (
             <div className="hidden md:flex items-center gap-1">
               <MenuItem to={dashboardPath()} label="Portfolio" />
-              <MenuItem to={earnPath()} label="Earn" />
-              <MenuItem to={tradePath()} label="Swap" />
+              <MenuItem to={earnPath()} label="Private Earn" />
+              <MenuItem to={tradePath()} label="Private Swap" />
             </div>
           )}
 
