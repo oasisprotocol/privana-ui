@@ -1,7 +1,7 @@
 import { Link } from 'react-router'
 import type { MergedRow } from '@/hooks/use-merged-activity'
 import { activityPath } from '@/paths'
-import { ActivityList } from '@/pages/Activity/ActivityList'
+import { ActivityList } from '@/components/ActivityList'
 import { MAX_ROWS } from './latestActivity.constants'
 
 export const LatestActivity = ({ rows, isLoading }: { rows: MergedRow[]; isLoading: boolean }) => {

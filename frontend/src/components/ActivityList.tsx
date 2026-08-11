@@ -3,7 +3,7 @@ import { SurfaceCard } from '@/components/SurfaceCard'
 import { Skeleton } from '@/components/ui/skeleton'
 import { cn } from '@/lib/utils'
 import { type MergedRow, rowKey } from '@/hooks/use-merged-activity'
-import { ActivityRow } from './ActivityRow'
+import { ActivityRow } from '@/pages/Activity/ActivityRow'
 
 export const ActivityList = ({
   rows,
