@@ -183,7 +183,11 @@ export const ConnectButton: FC = () => {
         </DropdownMenuContent>
       </DropdownMenu>
 
-      <DepositModal open={activeModal === 'deposit'} onClose={() => setActiveModal(null)} />
+      <DepositModal
+        open={activeModal === 'deposit'}
+        onClose={() => setActiveModal(null)}
+        onDepositSuccess={() => setActiveModal(null)}
+      />
       <WithdrawModal open={activeModal === 'withdraw'} onClose={() => setActiveModal(null)} />
     </div>
   )
