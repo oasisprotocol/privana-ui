@@ -1,5 +1,5 @@
 import { Button } from '@/components/ui/button'
-import { Zap, ArrowLeftRight, TrendingUp } from 'lucide-react'
+import { Zap, ArrowLeftRight, TrendingUp, ChevronRight } from 'lucide-react'
 import { useState, type ReactNode } from 'react'
 import { useAccount } from 'wagmi'
 import { DepositModal, WithdrawModal, useSiweAuth } from '@oasisprotocol/privana-sdk'
@@ -7,25 +7,17 @@ import { Skeleton } from '@/components/ui/skeleton'
 import { SurfaceCard } from '@/components/SurfaceCard'
 import { formatApyBps, apyBpsToFraction } from '@/lib/apy'
 import { formatFiat } from '@/lib/tokens'
-import { earnPath, tradePath } from '@/paths'
+import { earnPath, tradePath, vaultPath } from '@/paths'
 import { Link } from 'react-router'
 import { useFunds } from '@/hooks/useFunds'
 import { useMergedActivity } from '@/hooks/use-merged-activity'
-import { cn } from '@/lib/utils'
 import { BalanceAmount } from '@/components/BalanceAmount'
+import { BalanceBreakdown } from '@/components/BalanceBreakdown'
 import { PortfolioChart } from '@/components/PortfolioChart'
 import { LatestActivity } from './LatestActivity'
 import { HISTORY_FETCH_LIMIT } from './latestActivity.constants'
 import { DashboardBootState } from './DashboardBootState'
 import { useBootPhase } from './useBootPhase'
-
-type BalanceSegmentKey = 'available' | 'earning' | 'locked'
-
-const BALANCE_SEGMENTS: { key: BalanceSegmentKey; label: string; className: string }[] = [
-  { key: 'available', label: 'Available', className: 'bg-primary' },
-  { key: 'earning', label: 'Earning', className: 'bg-chart-positive' },
-  { key: 'locked', label: 'In use', className: 'bg-violet-500' },
-]
 
 const BalanceBreakdownCard = ({
   available,
@@ -38,50 +30,38 @@ const BalanceBreakdownCard = ({
   locked: number | undefined
   error: boolean
 }) => {
-  const values: Record<BalanceSegmentKey, number | undefined> = { available, earning, locked }
-  const ready = !error && available !== undefined && earning !== undefined && locked !== undefined
-  const total = (available ?? 0) + (earning ?? 0) + (locked ?? 0)
+  const ready = !error && available !== undefined
 
   return (
-    <div className="rounded-2xl border border-border p-4">
+    <Link
+      to={vaultPath()}
+      viewTransition
+      className="block rounded-2xl border border-border p-4 transition-colors hover:bg-[rgba(230,230,230,0.4)]"
+    >
       <p className="text-xs font-medium text-muted-foreground">Available to withdraw</p>
-      {ready ? (
-        <p className="mt-0.5 text-lg font-semibold tabular-nums text-foreground">
-          {formatFiat(available ?? 0)}
-        </p>
-      ) : error ? (
-        <p className="mt-0.5 text-lg font-semibold text-foreground">-</p>
-      ) : (
-        <Skeleton className="mt-1 h-6 w-24" />
-      )}
-
-      <div className="mt-3 flex h-2 w-full overflow-hidden rounded-full bg-muted">
-        {ready &&
-          total > 0 &&
-          BALANCE_SEGMENTS.map(segment => {
-            const pct = ((values[segment.key] ?? 0) / total) * 100
-            return pct > 0 ? (
-              <span
-                key={segment.key}
-                className={cn('h-full', segment.className)}
-                style={{ width: `${pct}%` }}
-              />
-            ) : null
-          })}
+      <div className="mt-0.5 flex items-center justify-between gap-2">
+        {ready ? (
+          <p className="text-lg font-semibold tabular-nums text-foreground">{formatFiat(available ?? 0)}</p>
+        ) : error ? (
+          <p className="text-lg font-semibold text-foreground">-</p>
+        ) : (
+          <Skeleton className="h-6 w-24" />
+        )}
+        <span className="inline-flex items-center gap-0.5 pb-0.5 text-sm font-medium text-muted-foreground">
+          Vault details
+          <ChevronRight className="size-4" />
+        </span>
       </div>
 
-      <div className="mt-3 flex flex-wrap gap-x-4 gap-y-1.5">
-        {BALANCE_SEGMENTS.map(segment => (
-          <span key={segment.key} className="inline-flex items-center gap-1.5 text-xs">
-            <span aria-hidden className={cn('size-2 shrink-0 rounded-full', segment.className)} />
-            <span className="text-muted-foreground">{segment.label}</span>
-            <span className="font-medium tabular-nums text-foreground">
-              {ready ? formatFiat(values[segment.key] ?? 0) : '-'}
-            </span>
-          </span>
-        ))}
-      </div>
-    </div>
+      <BalanceBreakdown
+        available={available}
+        earning={earning}
+        locked={locked}
+        error={error}
+        size="sm"
+        className="mt-3"
+      />
+    </Link>
   )
 }
 

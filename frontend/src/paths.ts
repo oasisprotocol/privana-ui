@@ -10,6 +10,8 @@ export const earnWithdrawPath = (poolId: string) => `/earn/withdraw/${poolId}`
 
 export const appsPath = () => '/apps'
 
+export const vaultPath = () => '/vault'
+
 export const activityPath = () => '/activity'
 
 export const copyTradingPath = () => '/copy-trading'
