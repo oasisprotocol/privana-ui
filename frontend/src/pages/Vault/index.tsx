@@ -15,7 +15,7 @@ import { formatFiat } from '@/lib/tokens'
 import { formatApyBps } from '@/lib/apy'
 import { cn } from '@/lib/utils'
 import { earnPath, appsPath, activityPath } from '@/paths'
-import { ActivityList } from '@/pages/Activity/ActivityList'
+import { ActivityList } from '@/components/ActivityList'
 import { HISTORY_FETCH_LIMIT, MAX_ROWS } from '@/pages/Dashboard/DashboardHome/latestActivity.constants'
 
 const daysUntil = (expirySeconds: number, nowSeconds: number): string => {
@@ -97,7 +97,6 @@ export const Vault = () => {
       { address: string; name: string; color: string; fiat: number; expiry: number }
     >()
     for (const lock of locks) {
-      if (lock.is_expired) continue
       const app = appForAddress(lock.service_address)
       const key = app?.id ?? lock.service_address.toLowerCase()
       const entry = byApp.get(key) ?? {
