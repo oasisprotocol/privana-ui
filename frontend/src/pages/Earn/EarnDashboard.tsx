@@ -87,7 +87,11 @@ export const EarnDashboard = () => {
         )}
       </div>
 
-      <DepositModal open={depositOpen} onClose={() => setDepositOpen(false)} />
+      <DepositModal
+        open={depositOpen}
+        onClose={() => setDepositOpen(false)}
+        onDepositSuccess={() => setDepositOpen(false)}
+      />
     </>
   )
 }
