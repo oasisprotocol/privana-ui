@@ -322,7 +322,11 @@ export const DashboardHome = () => {
         defaultTab={depositTab ?? 'crypto'}
       />
 
-      <WithdrawModal open={withdrawOpen} onClose={() => setWithdrawOpen(false)} />
+      <WithdrawModal
+        open={withdrawOpen}
+        onClose={() => setWithdrawOpen(false)}
+        onWithdrawSuccess={() => setWithdrawOpen(false)}
+      />
     </>
   )
 }
