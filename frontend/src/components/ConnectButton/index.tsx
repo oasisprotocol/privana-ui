@@ -188,7 +188,11 @@ export const ConnectButton: FC = () => {
         onClose={() => setActiveModal(null)}
         onDepositSuccess={() => setActiveModal(null)}
       />
-      <WithdrawModal open={activeModal === 'withdraw'} onClose={() => setActiveModal(null)} />
+      <WithdrawModal
+        open={activeModal === 'withdraw'}
+        onClose={() => setActiveModal(null)}
+        onWithdrawSuccess={() => setActiveModal(null)}
+      />
     </div>
   )
 }
