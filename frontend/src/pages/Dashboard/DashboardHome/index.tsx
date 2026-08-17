@@ -136,13 +136,13 @@ export const DashboardHome = () => {
           <div className="flex flex-col gap-8 w-full">
             <div className="flex flex-col md:hidden">
               <span className="text-sm font-medium text-muted-foreground leading-5">Account value</span>
-              <BalanceAmount value={totalFiatValue ?? 0} className="mt-3 animate-fade-in" />
+              <BalanceAmount value={totalFiatValue ?? 0} className="mt-2 animate-fade-in" />
             </div>
 
             <SurfaceCard className="p-6 w-full md:mx-auto md:max-w-xl md:rounded-3xl md:p-8">
               <div className="mb-6 hidden md:block">
                 <div className="text-sm font-medium text-muted-foreground">Account value</div>
-                <BalanceAmount value={totalFiatValue ?? 0} className="mt-1 text-4xl animate-fade-in" />
+                <BalanceAmount value={totalFiatValue ?? 0} className="mt-2 text-4xl animate-fade-in" />
               </div>
               <h2 className="text-2xl font-semibold tracking-tight text-foreground">
                 Add funds to get started
@@ -195,7 +195,7 @@ export const DashboardHome = () => {
                 ) : totalFiatValue === undefined ? (
                   <Skeleton className="mt-3 h-14 w-56 rounded-md" />
                 ) : (
-                  <BalanceAmount value={totalFiatValue} className="mt-3 text-6xl animate-fade-in" />
+                  <BalanceAmount value={totalFiatValue} className="mt-2 text-6xl animate-fade-in" />
                 )}
                 <div className="mt-6">
                   <PrivanaVaultCard
@@ -205,7 +205,7 @@ export const DashboardHome = () => {
                     error={pricesError}
                   />
                 </div>
-                <div className="mt-6 flex gap-3 sm:max-w-md">
+                <div className="mt-8 flex gap-3 sm:max-w-md">
                   <Button size="lg" className="h-14 flex-1 text-base" onClick={() => setDepositTab('crypto')}>
                     Deposit
                   </Button>
@@ -232,7 +232,7 @@ export const DashboardHome = () => {
                 ) : totalFiatValue === undefined ? (
                   <Skeleton className="mt-3 h-12 w-44 rounded-md" />
                 ) : (
-                  <BalanceAmount value={totalFiatValue} className="mt-3 animate-fade-in" />
+                  <BalanceAmount value={totalFiatValue} className="mt-2 animate-fade-in" />
                 )}
               </div>
 
