@@ -56,11 +56,10 @@ export const Layout = ({ children }: LayoutProps) => {
           )}
         </nav>
 
-        <div
-          className="w-full max-w-6xl px-6 py-12 mx-auto md:px-8 md:py-10"
-          style={{ viewTransitionName: 'page-content' }}
-        >
-          {children}
+        <div className="px-6 py-12 md:px-8 md:py-10">
+          <div className="mx-auto w-full max-w-5xl" style={{ viewTransitionName: 'page-content' }}>
+            {children}
+          </div>
         </div>
         <footer className="w-full max-w-7xl py-12 mx-auto flex flex-col justify-start items-center gap-16 text-xs text-muted-foreground px-6 border-t border-border/70">
           <div className="flex flex-col md:flex-row gap-8 md:gap-6 items-start w-full">
