@@ -140,7 +140,7 @@ export const Vault = () => {
       </header>
 
       <section>
-        <p className="text-sm font-medium text-muted-foreground">Total balance</p>
+        <p className="text-sm font-medium text-muted-foreground">Account value</p>
         {pricesError ? (
           <span className="mt-1 block text-4xl font-semibold tracking-tight text-foreground">-</span>
         ) : totalFiatValue === undefined ? (

@@ -135,13 +135,13 @@ export const DashboardHome = () => {
         {bootPhase === 'done' && !hasFunds && (
           <div className="flex flex-col gap-8 w-full">
             <div className="flex flex-col md:hidden">
-              <span className="text-sm font-medium text-muted-foreground leading-5">Total balance</span>
+              <span className="text-sm font-medium text-muted-foreground leading-5">Account value</span>
               <BalanceAmount value={totalFiatValue ?? 0} className="mt-3 animate-fade-in" />
             </div>
 
             <SurfaceCard className="p-6 w-full md:mx-auto md:max-w-xl md:rounded-3xl md:p-8">
               <div className="mb-6 hidden md:block">
-                <div className="text-sm font-medium text-muted-foreground">Total balance</div>
+                <div className="text-sm font-medium text-muted-foreground">Account value</div>
                 <BalanceAmount value={totalFiatValue ?? 0} className="mt-1 text-4xl animate-fade-in" />
               </div>
               <h2 className="text-2xl font-semibold tracking-tight text-foreground">
@@ -189,7 +189,7 @@ export const DashboardHome = () => {
             {/* Desktop: two-column balance card (balance + breakdown + CTAs | chart) */}
             <SurfaceCard className="hidden md:grid md:grid-cols-2 md:gap-8 rounded-3xl p-8">
               <div className="flex flex-col lg:pr-12">
-                <span className="text-sm font-medium text-muted-foreground">Total balance</span>
+                <span className="text-sm font-medium text-muted-foreground">Account value</span>
                 {pricesError ? (
                   <span className="mt-3 text-6xl font-semibold tracking-tight text-foreground">-</span>
                 ) : totalFiatValue === undefined ? (
@@ -226,7 +226,7 @@ export const DashboardHome = () => {
 
             <div className="flex flex-col gap-6 md:hidden">
               <div className="flex flex-col">
-                <span className="text-sm font-medium text-muted-foreground leading-5">Total balance</span>
+                <span className="text-sm font-medium text-muted-foreground leading-5">Account value</span>
                 {pricesError ? (
                   <span className="mt-3 text-5xl font-semibold tracking-tight text-foreground">-</span>
                 ) : totalFiatValue === undefined ? (
