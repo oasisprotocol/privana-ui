@@ -1,11 +1,9 @@
-import { useMemo, type ReactNode } from 'react'
+import { type ReactNode } from 'react'
 import { Link } from 'react-router'
 import { ChevronRight } from 'lucide-react'
-import { formatUnits } from 'viem'
-import { usePrivanaContext, useBatchBalances, getTokenIcon } from '@oasisprotocol/privana-sdk'
+import { getTokenIcon } from '@oasisprotocol/privana-sdk'
 import { SurfaceCard } from '@/components/SurfaceCard'
-import { useEarnBalance, useEarnPools } from '@/api/earn'
-import { useTokenPrices } from '@/api/coin-gecko'
+import { useHoldings } from '@/hooks/useHoldings'
 import { formatAmount, formatFiat } from '@/lib/tokens'
 import { formatApyBps } from '@/lib/apy'
 import { earnPath, tradePath } from '@/paths'
@@ -47,73 +45,8 @@ const HoldingRow = ({
   </Link>
 )
 
-interface TokenHolding {
-  symbol: string
-  name: string
-  amount: bigint
-  decimals: number
-  fiat: number | undefined
-}
-
 export const HoldingsSection = () => {
-  const { enabledTokens, getTokenById } = usePrivanaContext()
-  const tokenIds = useMemo(() => enabledTokens.map(t => t.id), [enabledTokens])
-  const { balances } = useBatchBalances({ tokenIds })
-  const { data: prices } = useTokenPrices(tokenIds)
-  const { data: earnBalance } = useEarnBalance()
-  const { data: poolsData } = useEarnPools()
-
-  const tokenHoldings = useMemo(() => {
-    const bySymbol = new Map<string, TokenHolding>()
-    for (const b of balances) {
-      const amount = BigInt(b.balance || '0')
-      if (amount <= 0n) continue
-      const token = getTokenById(b.token_id)
-      if (!token) continue
-      const price = prices?.[b.token_id]
-      const fiat = price != null ? Number(formatUnits(amount, token.decimals)) * price : undefined
-      const existing = bySymbol.get(token.symbol)
-      if (!existing) {
-        bySymbol.set(token.symbol, {
-          symbol: token.symbol,
-          name: token.name,
-          amount,
-          decimals: token.decimals,
-          fiat,
-        })
-      } else {
-        const maxDecimals = Math.max(existing.decimals, token.decimals)
-        existing.amount =
-          existing.amount * 10n ** BigInt(maxDecimals - existing.decimals) +
-          amount * 10n ** BigInt(maxDecimals - token.decimals)
-        existing.decimals = maxDecimals
-        existing.fiat = existing.fiat != null && fiat != null ? existing.fiat + fiat : undefined
-      }
-    }
-    return [...bySymbol.values()]
-  }, [balances, prices, getTokenById])
-
-  const earnHoldings = useMemo(() => {
-    const poolsById = new Map((poolsData?.pools ?? []).map(p => [p.pool_id, p]))
-    return (earnBalance?.positions ?? [])
-      .filter(p => BigInt(p.underlying_amount || '0') > 0n)
-      .map(p => {
-        const pool = poolsById.get(p.pool_id)
-        const token = getTokenById(p.token_id)
-        const price = prices?.[p.token_id]
-        const fiat =
-          token && price != null
-            ? Number(formatUnits(BigInt(p.underlying_amount || '0'), token.decimals)) * price
-            : undefined
-        return {
-          poolId: p.pool_id,
-          strategy: pool?.strategy,
-          symbol: token?.symbol,
-          apyBps: pool?.apy_bps,
-          fiat,
-        }
-      })
-  }, [earnBalance, poolsData, prices, getTokenById])
+  const { tokenHoldings, earnHoldings } = useHoldings()
 
   if (tokenHoldings.length === 0 && earnHoldings.length === 0) return null
 
