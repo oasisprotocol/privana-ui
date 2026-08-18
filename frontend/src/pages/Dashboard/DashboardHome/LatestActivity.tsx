@@ -11,7 +11,7 @@ export const LatestActivity = ({ rows, isLoading }: { rows: MergedRow[]; isLoadi
     <div className="flex flex-col gap-4">
       <div className="flex items-center justify-between">
         <h2 className="text-base md:text-lg md:tracking-tight font-semibold text-foreground">
-          Latest activity
+          Vault activity
         </h2>
         <Link
           to={activityPath()}
