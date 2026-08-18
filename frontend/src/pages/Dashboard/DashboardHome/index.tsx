@@ -1,5 +1,5 @@
 import { Button } from '@/components/ui/button'
-import { Zap, ArrowLeftRight, TrendingUp, ChevronRight } from 'lucide-react'
+import { Zap, ArrowLeftRight, TrendingUp, ChevronRight, ShieldCheck } from 'lucide-react'
 import { useState, type ReactNode } from 'react'
 import { useAccount } from 'wagmi'
 import { DepositModal, WithdrawModal, useSiweAuth } from '@oasisprotocol/privana-sdk'
@@ -19,7 +19,7 @@ import { HISTORY_FETCH_LIMIT } from './latestActivity.constants'
 import { DashboardBootState } from './DashboardBootState'
 import { useBootPhase } from './useBootPhase'
 
-const BalanceBreakdownCard = ({
+const PrivanaVaultCard = ({
   available,
   earning,
   locked,
@@ -29,41 +29,29 @@ const BalanceBreakdownCard = ({
   earning: number | undefined
   locked: number | undefined
   error: boolean
-}) => {
-  const ready = !error && available !== undefined
-
-  return (
-    <Link
-      to={vaultPath()}
-      viewTransition
-      className="block rounded-2xl border border-border p-4 transition-colors hover:bg-[rgba(230,230,230,0.4)]"
-    >
-      <p className="text-xs font-medium text-muted-foreground">Available to withdraw</p>
-      <div className="mt-0.5 flex items-center justify-between gap-2">
-        {ready ? (
-          <p className="text-lg font-semibold tabular-nums text-foreground">{formatFiat(available ?? 0)}</p>
-        ) : error ? (
-          <p className="text-lg font-semibold text-foreground">-</p>
-        ) : (
-          <Skeleton className="h-6 w-24" />
-        )}
-        <span className="inline-flex items-center gap-0.5 pb-0.5 text-sm font-medium text-muted-foreground">
-          Vault details
-          <ChevronRight className="size-4" />
-        </span>
-      </div>
-
-      <BalanceBreakdown
-        available={available}
-        earning={earning}
-        locked={locked}
-        error={error}
-        size="sm"
-        className="mt-3"
-      />
+}) => (
+  <div>
+    <Link to={vaultPath()} viewTransition className="group flex items-center justify-between gap-3">
+      <h2 className="flex items-center gap-1.5 text-base font-semibold tracking-tight text-foreground">
+        <ShieldCheck className="h-4 w-4 shrink-0" />
+        Privana vault
+      </h2>
+      <span className="flex shrink-0 items-center gap-0.5 text-sm font-medium text-muted-foreground transition-colors group-hover:text-foreground">
+        Details
+        <ChevronRight className="h-4 w-4 transition-transform group-hover:translate-x-0.5" />
+      </span>
     </Link>
-  )
-}
+
+    <BalanceBreakdown
+      available={available}
+      earning={earning}
+      locked={locked}
+      error={error}
+      size="sm"
+      className="mt-3"
+    />
+  </div>
+)
 
 const FeatureRow = ({
   icon,
@@ -147,14 +135,14 @@ export const DashboardHome = () => {
         {bootPhase === 'done' && !hasFunds && (
           <div className="flex flex-col gap-8 w-full">
             <div className="flex flex-col md:hidden">
-              <span className="text-sm font-medium text-muted-foreground leading-5">Total balance</span>
-              <BalanceAmount value={totalFiatValue ?? 0} className="mt-3 animate-fade-in" />
+              <span className="text-sm font-medium text-muted-foreground leading-5">Account value</span>
+              <BalanceAmount value={totalFiatValue ?? 0} className="mt-2 animate-fade-in" />
             </div>
 
             <SurfaceCard className="p-6 w-full md:mx-auto md:max-w-xl md:rounded-3xl md:p-8">
               <div className="mb-6 hidden md:block">
-                <div className="text-sm font-medium text-muted-foreground">Total balance</div>
-                <BalanceAmount value={totalFiatValue ?? 0} className="mt-1 text-4xl animate-fade-in" />
+                <div className="text-sm font-medium text-muted-foreground">Account value</div>
+                <BalanceAmount value={totalFiatValue ?? 0} className="mt-2 text-4xl animate-fade-in" />
               </div>
               <h2 className="text-2xl font-semibold tracking-tight text-foreground">
                 Add funds to get started
@@ -201,23 +189,23 @@ export const DashboardHome = () => {
             {/* Desktop: two-column balance card (balance + breakdown + CTAs | chart) */}
             <SurfaceCard className="hidden md:grid md:grid-cols-2 md:gap-8 rounded-3xl p-8">
               <div className="flex flex-col lg:pr-12">
-                <span className="text-sm font-medium text-muted-foreground">Total balance</span>
+                <span className="text-sm font-medium text-muted-foreground">Account value</span>
                 {pricesError ? (
                   <span className="mt-3 text-6xl font-semibold tracking-tight text-foreground">-</span>
                 ) : totalFiatValue === undefined ? (
                   <Skeleton className="mt-3 h-14 w-56 rounded-md" />
                 ) : (
-                  <BalanceAmount value={totalFiatValue} className="mt-3 text-6xl animate-fade-in" />
+                  <BalanceAmount value={totalFiatValue} className="mt-2 text-6xl animate-fade-in" />
                 )}
                 <div className="mt-6">
-                  <BalanceBreakdownCard
+                  <PrivanaVaultCard
                     available={availableFiatValue}
                     earning={earningFiatValue}
                     locked={lockedFiatValue}
                     error={pricesError}
                   />
                 </div>
-                <div className="mt-6 flex gap-3 sm:max-w-md">
+                <div className="mt-8 flex gap-3 sm:max-w-md">
                   <Button size="lg" className="h-14 flex-1 text-base" onClick={() => setDepositTab('crypto')}>
                     Deposit
                   </Button>
@@ -236,41 +224,39 @@ export const DashboardHome = () => {
               </div>
             </SurfaceCard>
 
-            <div className="flex flex-col gap-8 md:hidden">
-              <div className="flex flex-col gap-4">
-                <div className="flex flex-col">
-                  <span className="text-sm font-medium text-muted-foreground leading-5">Total balance</span>
-                  {pricesError ? (
-                    <span className="mt-3 text-5xl font-semibold tracking-tight text-foreground">-</span>
-                  ) : totalFiatValue === undefined ? (
-                    <Skeleton className="mt-3 h-12 w-44 rounded-md" />
-                  ) : (
-                    <BalanceAmount value={totalFiatValue} className="mt-3 animate-fade-in" />
-                  )}
-                </div>
-                <BalanceBreakdownCard
-                  available={availableFiatValue}
-                  earning={earningFiatValue}
-                  locked={lockedFiatValue}
-                  error={pricesError}
-                />
+            <div className="flex flex-col gap-6 md:hidden">
+              <div className="flex flex-col">
+                <span className="text-sm font-medium text-muted-foreground leading-5">Account value</span>
+                {pricesError ? (
+                  <span className="mt-3 text-5xl font-semibold tracking-tight text-foreground">-</span>
+                ) : totalFiatValue === undefined ? (
+                  <Skeleton className="mt-3 h-12 w-44 rounded-md" />
+                ) : (
+                  <BalanceAmount value={totalFiatValue} className="mt-2 animate-fade-in" />
+                )}
               </div>
 
-              <div className="flex flex-col gap-6">
-                <PortfolioChart />
-                <div className="flex gap-3">
-                  <Button size="lg" className="h-14 flex-1 text-base" onClick={() => setDepositTab('crypto')}>
-                    Deposit
-                  </Button>
-                  <Button
-                    size="lg"
-                    variant="outline"
-                    className="h-14 flex-1 text-base"
-                    onClick={() => setWithdrawOpen(true)}
-                  >
-                    Withdraw
-                  </Button>
-                </div>
+              <PortfolioChart />
+
+              <PrivanaVaultCard
+                available={availableFiatValue}
+                earning={earningFiatValue}
+                locked={lockedFiatValue}
+                error={pricesError}
+              />
+
+              <div className="flex gap-3">
+                <Button size="lg" className="h-14 flex-1 text-base" onClick={() => setDepositTab('crypto')}>
+                  Deposit
+                </Button>
+                <Button
+                  size="lg"
+                  variant="outline"
+                  className="h-14 flex-1 text-base"
+                  onClick={() => setWithdrawOpen(true)}
+                >
+                  Withdraw
+                </Button>
               </div>
             </div>
 

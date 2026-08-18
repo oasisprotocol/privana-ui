@@ -6,7 +6,7 @@ type BalanceSegmentKey = 'available' | 'earning' | 'locked'
 const SEGMENTS: { key: BalanceSegmentKey; label: string; className: string }[] = [
   { key: 'available', label: 'Available', className: 'bg-primary' },
   { key: 'earning', label: 'Earning', className: 'bg-chart-positive' },
-  { key: 'locked', label: 'In use', className: 'bg-violet-500' },
+  { key: 'locked', label: 'In use', className: 'bg-violet-600' },
 ]
 
 export const BalanceBreakdown = ({
@@ -31,7 +31,7 @@ export const BalanceBreakdown = ({
 
   return (
     <div className={className}>
-      <div className="flex h-2 w-full overflow-hidden rounded-full bg-muted">
+      <div className="flex h-2 w-full overflow-hidden rounded-full bg-black/5 dark:bg-white/10">
         {ready &&
           total > 0 &&
           SEGMENTS.map(segment => {
@@ -48,21 +48,20 @@ export const BalanceBreakdown = ({
 
       <div
         className={cn(
-          'mt-3 flex flex-wrap items-center gap-y-1.5',
-          md ? 'gap-x-5 text-sm' : 'gap-x-4 text-xs',
+          'mt-3 flex gap-x-5',
+          md
+            ? 'flex-wrap items-center gap-y-1.5 text-sm'
+            : 'touch-pan-x overflow-x-auto pb-0.5 text-xs [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden',
         )}
       >
         {SEGMENTS.map(segment => (
-          <span key={segment.key} className="inline-flex items-center gap-1.5">
-            <span
-              aria-hidden
-              className={cn('shrink-0 rounded-full', md ? 'size-2.5' : 'size-2', segment.className)}
-            />
+          <span key={segment.key} className="inline-flex shrink-0 items-center gap-1.5 whitespace-nowrap">
+            <span aria-hidden className={cn('size-2.5 shrink-0 rounded-full', segment.className)} />
             <span className={md ? 'font-medium text-foreground' : 'text-muted-foreground'}>
               {segment.label}
             </span>
             <span
-              className={cn('tabular-nums', md ? 'text-muted-foreground' : 'font-medium text-foreground')}
+              className={cn('tabular-nums', md ? 'text-muted-foreground' : 'font-semibold text-foreground')}
             >
               {ready ? formatFiat(values[segment.key] ?? 0) : '-'}
             </span>
