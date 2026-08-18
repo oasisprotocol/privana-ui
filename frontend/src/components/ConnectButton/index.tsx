@@ -18,6 +18,7 @@ import { Button } from '../ui/button'
 import { DropdownMenu, DropdownMenuContent, DropdownMenuTrigger } from '../ui/dropdown-menu'
 import { AccountAvatar } from '../AccountAvatar'
 import { trimLongString } from '../../utils/trimLongString'
+import { sapphire, sapphireTestnet, baseSepolia, sepolia } from 'viem/chains'
 import { wagmiConfig, type AppChainId } from '@/wagmi-config'
 import { TURNKEY_CONNECTOR_ID } from '@/wallet/turnkeyConnector'
 import { useTurnkeyWalletIntent } from '@/wallet/turnkeyIntent'
@@ -34,12 +35,21 @@ import { WALLET_CARD_ROW, WALLET_MENU_ROW } from './walletMenuRow'
 const APP_CHAIN_ID = parseInt(import.meta.env.VITE_CHAIN_ID, 10) as AppChainId
 const SUPPORTED_CHAIN_IDS = wagmiConfig.chains.map(c => c.id)
 
+const CHAIN_BADGES: Record<AppChainId, { label: string; color: string }> = {
+  [sapphire.id]: { label: 'Sapphire', color: '#0500E2' },
+  [sapphireTestnet.id]: { label: 'Sapphire Testnet', color: '#0500E2' },
+  [baseSepolia.id]: { label: 'Base Sepolia', color: '#0052FF' },
+  [sepolia.id]: { label: 'Sepolia', color: '#6b7280' },
+}
+
 // Wallet UI only. The Privana session is driven by the SDK's SiweAuthProvider
 // (useSiweAuth), which watches the wagmi connection and runs SIWE login/logout.
 export const ConnectButton: FC = () => {
   const { address, isConnected, connector } = useAccount()
   const { switchChain } = useSwitchChain()
   const chainId = useChainId()
+
+  const chainBadge: { label: string; color: string } | undefined = CHAIN_BADGES[chainId as AppChainId]
 
   const isTurnkeyActive = connector?.id === TURNKEY_CONNECTOR_ID
   const walletIntent = useTurnkeyWalletIntent()
@@ -103,6 +113,16 @@ export const ConnectButton: FC = () => {
               <span className="truncate font-mono text-base font-semibold text-foreground">
                 {trimLongString(address)}
               </span>
+              {chainBadge && (
+                <span className="inline-flex shrink-0 items-center gap-1.5 rounded-full bg-background px-2 py-0.5 text-[11px] font-medium text-foreground">
+                  <span
+                    aria-hidden
+                    className="h-2 w-2 rounded-full"
+                    style={{ background: chainBadge.color }}
+                  />
+                  {chainBadge.label}
+                </span>
+              )}
               <button
                 type="button"
                 aria-label="Copy wallet address"
@@ -134,7 +154,7 @@ export const ConnectButton: FC = () => {
               className={cn(WALLET_CARD_ROW, 'mt-2')}
             >
               <History className="size-4 text-muted-foreground" />
-              Activity
+              Vault activity
               {pendingCount > 0 && (
                 <span className="inline-flex h-5 min-w-5 items-center justify-center rounded-full bg-primary px-1.5 text-xs font-semibold leading-none text-primary-foreground">
                   {pendingCount}

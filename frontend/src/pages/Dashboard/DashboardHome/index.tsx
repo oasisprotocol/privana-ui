@@ -15,6 +15,7 @@ import { BalanceAmount } from '@/components/BalanceAmount'
 import { BalanceBreakdown } from '@/components/BalanceBreakdown'
 import { PortfolioChart } from '@/components/PortfolioChart'
 import { LatestActivity } from './LatestActivity'
+import { HoldingsSection } from './HoldingsSection'
 import { HISTORY_FETCH_LIMIT } from './latestActivity.constants'
 import { DashboardBootState } from './DashboardBootState'
 import { useBootPhase } from './useBootPhase'
@@ -295,6 +296,8 @@ export const DashboardHome = () => {
                 </div>
               </SurfaceCard>
             )}
+
+            <HoldingsSection />
 
             <LatestActivity rows={activityRows} isLoading={activityLoading} />
           </div>

@@ -5,8 +5,8 @@ import { earnPath, tradePath } from '@/paths'
 type NavItem = { label: string; to: string; icon: LucideIcon }
 
 const items: NavItem[] = [
-  { label: 'Private Earn', to: earnPath(), icon: PiggyBank },
-  { label: 'Private Swap', to: tradePath(), icon: ArrowLeftRight },
+  { label: 'Earn', to: earnPath(), icon: PiggyBank },
+  { label: 'Swap', to: tradePath(), icon: ArrowLeftRight },
 ]
 
 export const MobileBottomNav = () => {

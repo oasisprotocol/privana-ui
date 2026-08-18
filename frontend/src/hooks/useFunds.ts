@@ -8,6 +8,7 @@ import {
 import { formatUnits } from 'viem'
 import { useEarnPools, useEarnBalance } from '@/api/earn'
 import { useTokenPrices } from '@/api/coin-gecko'
+import { mergeTokensBySymbol } from '@/lib/tokens'
 
 export interface TokenBreakdown {
   symbol: string
@@ -106,44 +107,19 @@ export function useFunds(): Funds {
   // Per-token amounts for token-denominated display (Earning / Available rows).
   // Merged by symbol so token ids that share a ticker (e.g. several USDC ids)
   // collapse into one row. Independent of prices, so it survives a price error.
-  const { availableTokens, earningTokens } = useMemo(() => {
-    const mergeBySymbol = (
-      items: { tokenId: string; amount: string; symbol?: string }[],
-    ): TokenBreakdown[] => {
-      const bySymbol = new Map<string, TokenBreakdown>()
-      for (const it of items) {
-        const amount = BigInt(it.amount || '0')
-        if (amount <= 0n) continue
-        const token = getTokenById(it.tokenId)
-        const symbol = it.symbol ?? token?.symbol
-        const decimals = token?.decimals
-        if (!symbol || decimals == null) continue
-        const existing = bySymbol.get(symbol)
-        if (!existing) {
-          bySymbol.set(symbol, { symbol, amount, decimals })
-        } else if (existing.decimals === decimals) {
-          existing.amount += amount
-        } else {
-          // Same ticker, different token decimals: raw base-unit amounts aren't
-          // directly addable, so align both to the larger precision first.
-          const maxDecimals = Math.max(existing.decimals, decimals)
-          existing.amount =
-            existing.amount * 10n ** BigInt(maxDecimals - existing.decimals) +
-            amount * 10n ** BigInt(maxDecimals - decimals)
-          existing.decimals = maxDecimals
-        }
-      }
-      return [...bySymbol.values()]
-    }
-    return {
-      availableTokens: mergeBySymbol(
+  const { availableTokens, earningTokens } = useMemo(
+    () => ({
+      availableTokens: mergeTokensBySymbol(
         balances.map(b => ({ tokenId: b.token_id, amount: b.balance, symbol: b.token_symbol })),
+        getTokenById,
       ),
-      earningTokens: mergeBySymbol(
+      earningTokens: mergeTokensBySymbol(
         (earnBalance?.positions ?? []).map(p => ({ tokenId: p.token_id, amount: p.underlying_amount })),
+        getTokenById,
       ),
-    }
-  }, [balances, earnBalance, getTokenById])
+    }),
+    [balances, earnBalance, getTokenById],
+  )
 
   // Funds live in several places, not just the available wallet balance: locked
   // funds, active earn positions, and in-flight (pending) withdrawals all mean the
