@@ -1,8 +1,10 @@
+import { useMemo } from 'react'
 import { getTokenIcon } from '@oasisprotocol/privana-sdk'
+import { useEarnHistory } from '@/api/portfolio'
 import { Skeleton } from '@/components/ui/skeleton'
 import { SurfaceCard } from '@/components/SurfaceCard'
 import { BalanceAmount } from '@/components/BalanceAmount'
-import { PortfolioChart, type PortfolioPoint } from '@/components/PortfolioChart'
+import { PortfolioChart, PortfolioChartPlaceholder } from '@/components/PortfolioChart'
 import { formatFiat, formatAmount } from '@/lib/tokens'
 import { formatApyBps } from '@/lib/apy'
 import { cn } from '@/lib/utils'
@@ -18,17 +20,6 @@ const MOCK_CHANGE_PCT = 0.8
 // only makes sense against a $1 stablecoin, so it's labelled USDC. Projected below is
 // real and per-token; make Earned per-token too once the accrued-yield endpoint lands.
 const EARN_DISPLAY_SYMBOL = 'USDC'
-
-// Empty-state placeholder curve — matches the design's dimmed "trend" chart: a
-// smoothstep S-curve from startValueUsd → endValueUsd over `days` points.
-const trendCurve = (start: number, end: number, days: number): PortfolioPoint[] =>
-  Array.from({ length: days }, (_, i) => {
-    const a = days <= 1 ? 1 : i / (days - 1)
-    const smoothstep = a * a * (3 - 2 * a)
-    return { date: String(i + 1), value: start + (end - start) * smoothstep }
-  })
-
-const PLACEHOLDER_CHART = trendCurve(250, 1000, 30)
 
 const formatToken = (value: number) =>
   value.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })
@@ -65,6 +56,11 @@ export const EarnBalance = ({
   loading,
 }: EarnBalanceProps) => {
   const isEarning = (earningFiatValue ?? 0) > 0
+  const { data: earnHistory, isLoading: chartLoading } = useEarnHistory()
+  const chartData = useMemo(
+    () => (earnHistory?.points ?? []).map(p => ({ date: String(p.timestamp), value: Number(p.value_usd) })),
+    [earnHistory],
+  )
   const earned = isEarning ? TOTAL_EARNED_MOCK : 0
   const changeUsd = (earningFiatValue ?? 0) * (MOCK_CHANGE_PCT / 100)
 
@@ -134,21 +130,14 @@ export const EarnBalance = ({
       </div>
 
       <div className="flex items-center">
-        {loading ? (
+        {loading || (isEarning && chartLoading) ? (
           <Skeleton className="h-40 w-full rounded-2xl" />
-        ) : isEarning ? (
+        ) : isEarning && chartData.length > 1 ? (
           <div className="w-full">
-            <PortfolioChart />
+            <PortfolioChart data={chartData} />
           </div>
         ) : (
-          <div className="w-full">
-            <div aria-hidden className="pointer-events-none opacity-25 grayscale">
-              <PortfolioChart data={PLACEHOLDER_CHART} />
-            </div>
-            <p className="mt-3 text-center text-xs text-muted-foreground">
-              Your performance chart appears once you start earning.
-            </p>
-          </div>
+          <PortfolioChartPlaceholder label="Your performance chart appears once you start earning." />
         )}
       </div>
     </SurfaceCard>

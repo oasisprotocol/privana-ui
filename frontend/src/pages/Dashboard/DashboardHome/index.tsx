@@ -1,6 +1,6 @@
 import { Button } from '@/components/ui/button'
 import { Zap, ArrowLeftRight, TrendingUp, ChevronRight, ShieldCheck } from 'lucide-react'
-import { useState, type ReactNode } from 'react'
+import { useMemo, useState, type ReactNode } from 'react'
 import { useAccount } from 'wagmi'
 import { DepositModal, WithdrawModal, useSiweAuth } from '@oasisprotocol/privana-sdk'
 import { Skeleton } from '@/components/ui/skeleton'
@@ -10,10 +10,11 @@ import { formatFiat } from '@/lib/tokens'
 import { earnPath, tradePath, vaultPath } from '@/paths'
 import { Link } from 'react-router'
 import { useFunds } from '@/hooks/useFunds'
+import { usePortfolioHistory } from '@/api/portfolio'
 import { useMergedActivity } from '@/hooks/use-merged-activity'
 import { BalanceAmount } from '@/components/BalanceAmount'
 import { BalanceBreakdown } from '@/components/BalanceBreakdown'
-import { PortfolioChart } from '@/components/PortfolioChart'
+import { PortfolioChart, PortfolioChartPlaceholder } from '@/components/PortfolioChart'
 import { LatestActivity } from './LatestActivity'
 import { HoldingsSection } from './HoldingsSection'
 import { HISTORY_FETCH_LIMIT } from './latestActivity.constants'
@@ -120,6 +121,13 @@ export const DashboardHome = () => {
   // Hoisted out of LatestActivity so the history/unsettled fetch starts on mount in parallel with very slow balance reads.
   const { rows: activityRows, isLoading: activityLoading } = useMergedActivity(HISTORY_FETCH_LIMIT)
 
+  const { data: portfolioHistory, isLoading: chartLoading } = usePortfolioHistory()
+  const chartData = useMemo(
+    () =>
+      (portfolioHistory?.points ?? []).map(p => ({ date: String(p.timestamp), value: Number(p.total_usd) })),
+    [portfolioHistory],
+  )
+
   // Balance reads are slow today; play a short branded boot sequence in place of a bare skeleton.
   // Keyed on account + auth so switching accounts or re-authenticating replays it.
   const { address } = useAccount()
@@ -221,7 +229,13 @@ export const DashboardHome = () => {
                 </div>
               </div>
               <div className="flex flex-col justify-center">
-                <PortfolioChart />
+                {chartLoading ? (
+                  <Skeleton className="h-40 w-full rounded-2xl" />
+                ) : chartData.length > 1 ? (
+                  <PortfolioChart data={chartData} />
+                ) : (
+                  <PortfolioChartPlaceholder label="Your performance history isn't available yet." />
+                )}
               </div>
             </SurfaceCard>
 
@@ -237,7 +251,13 @@ export const DashboardHome = () => {
                 )}
               </div>
 
-              <PortfolioChart />
+              {chartLoading ? (
+                <Skeleton className="h-40 w-full rounded-2xl" />
+              ) : chartData.length > 1 ? (
+                <PortfolioChart data={chartData} />
+              ) : (
+                <PortfolioChartPlaceholder label="Your performance history isn't available yet." />
+              )}
 
               <PrivanaVaultCard
                 available={availableFiatValue}

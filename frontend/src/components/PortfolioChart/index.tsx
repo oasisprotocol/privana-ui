@@ -3,16 +3,25 @@ import { ChartConfig, ChartContainer } from '@/components/ui/chart'
 
 export type PortfolioPoint = { date: string; value: number }
 
-const DEFAULT_DATA: PortfolioPoint[] = [
-  { date: '1', value: 1000 },
-  { date: '2', value: 1008 },
-  { date: '3', value: 1004 },
-  { date: '4', value: 1018 },
-  { date: '5', value: 1012 },
-  { date: '6', value: 1030 },
-  { date: '7', value: 1075 },
-  { date: '8', value: 1180 },
-]
+// Empty-state placeholder curve — matches the design's dimmed "trend" chart: a
+// smoothstep S-curve from startValueUsd → endValueUsd over `days` points.
+const trendCurve = (start: number, end: number, days: number): PortfolioPoint[] =>
+  Array.from({ length: days }, (_, i) => {
+    const a = days <= 1 ? 1 : i / (days - 1)
+    const smoothstep = a * a * (3 - 2 * a)
+    return { date: String(i + 1), value: start + (end - start) * smoothstep }
+  })
+
+const PLACEHOLDER_DATA = trendCurve(250, 1000, 30)
+
+export const PortfolioChartPlaceholder = ({ label }: { label: string }) => (
+  <div className="w-full">
+    <div aria-hidden className="pointer-events-none opacity-25 grayscale">
+      <PortfolioChart data={PLACEHOLDER_DATA} />
+    </div>
+    <p className="mt-3 text-center text-xs text-muted-foreground">{label}</p>
+  </div>
+)
 
 const chartConfig = {
   value: {
@@ -21,7 +30,7 @@ const chartConfig = {
   },
 } satisfies ChartConfig
 
-export const PortfolioChart = ({ data = DEFAULT_DATA }: { data?: PortfolioPoint[] }) => {
+export const PortfolioChart = ({ data }: { data: PortfolioPoint[] }) => {
   return (
     <ChartContainer config={chartConfig} className="h-40 w-full">
       <AreaChart data={data} margin={{ top: 0, right: 0, bottom: 0, left: 0 }}>
