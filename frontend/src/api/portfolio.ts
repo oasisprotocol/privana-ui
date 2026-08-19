@@ -67,8 +67,7 @@ function useHistoryQuery<T>(queryKey: readonly unknown[], fetch: (jwt: string) =
     enabled: !!address && !!accessToken,
     staleTime: 5 * 60_000,
     // 4xx answers (auth expiry, endpoint not deployed) won't change on retry.
-    retry: (failureCount, error) =>
-      !(error instanceof ApiError && error.status < 500) && failureCount < 3,
+    retry: (failureCount, error) => !(error instanceof ApiError && error.status < 500) && failureCount < 3,
   })
 }
 

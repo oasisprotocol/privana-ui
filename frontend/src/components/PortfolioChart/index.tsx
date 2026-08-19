@@ -3,6 +3,26 @@ import { ChartConfig, ChartContainer } from '@/components/ui/chart'
 
 export type PortfolioPoint = { date: string; value: number }
 
+// Empty-state placeholder curve — matches the design's dimmed "trend" chart: a
+// smoothstep S-curve from startValueUsd → endValueUsd over `days` points.
+const trendCurve = (start: number, end: number, days: number): PortfolioPoint[] =>
+  Array.from({ length: days }, (_, i) => {
+    const a = days <= 1 ? 1 : i / (days - 1)
+    const smoothstep = a * a * (3 - 2 * a)
+    return { date: String(i + 1), value: start + (end - start) * smoothstep }
+  })
+
+const PLACEHOLDER_DATA = trendCurve(250, 1000, 30)
+
+export const PortfolioChartPlaceholder = ({ label }: { label: string }) => (
+  <div className="w-full">
+    <div aria-hidden className="pointer-events-none opacity-25 grayscale">
+      <PortfolioChart data={PLACEHOLDER_DATA} />
+    </div>
+    <p className="mt-3 text-center text-xs text-muted-foreground">{label}</p>
+  </div>
+)
+
 const chartConfig = {
   value: {
     label: 'Portfolio',

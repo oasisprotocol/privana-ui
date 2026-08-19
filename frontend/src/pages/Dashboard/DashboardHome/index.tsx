@@ -14,7 +14,7 @@ import { usePortfolioHistory } from '@/api/portfolio'
 import { useMergedActivity } from '@/hooks/use-merged-activity'
 import { BalanceAmount } from '@/components/BalanceAmount'
 import { BalanceBreakdown } from '@/components/BalanceBreakdown'
-import { PortfolioChart } from '@/components/PortfolioChart'
+import { PortfolioChart, PortfolioChartPlaceholder } from '@/components/PortfolioChart'
 import { LatestActivity } from './LatestActivity'
 import { HoldingsSection } from './HoldingsSection'
 import { HISTORY_FETCH_LIMIT } from './latestActivity.constants'
@@ -123,7 +123,8 @@ export const DashboardHome = () => {
 
   const { data: portfolioHistory, isLoading: chartLoading } = usePortfolioHistory()
   const chartData = useMemo(
-    () => (portfolioHistory?.points ?? []).map(p => ({ date: String(p.timestamp), value: Number(p.total_usd) })),
+    () =>
+      (portfolioHistory?.points ?? []).map(p => ({ date: String(p.timestamp), value: Number(p.total_usd) })),
     [portfolioHistory],
   )
 
@@ -228,7 +229,13 @@ export const DashboardHome = () => {
                 </div>
               </div>
               <div className="flex flex-col justify-center">
-                {chartLoading ? <Skeleton className="h-40 w-full rounded-2xl" /> : <PortfolioChart data={chartData} />}
+                {chartLoading ? (
+                  <Skeleton className="h-40 w-full rounded-2xl" />
+                ) : chartData.length > 1 ? (
+                  <PortfolioChart data={chartData} />
+                ) : (
+                  <PortfolioChartPlaceholder label="Your performance history isn't available yet." />
+                )}
               </div>
             </SurfaceCard>
 
@@ -244,7 +251,13 @@ export const DashboardHome = () => {
                 )}
               </div>
 
-              {chartLoading ? <Skeleton className="h-40 w-full rounded-2xl" /> : <PortfolioChart data={chartData} />}
+              {chartLoading ? (
+                <Skeleton className="h-40 w-full rounded-2xl" />
+              ) : chartData.length > 1 ? (
+                <PortfolioChart data={chartData} />
+              ) : (
+                <PortfolioChartPlaceholder label="Your performance history isn't available yet." />
+              )}
 
               <PrivanaVaultCard
                 available={availableFiatValue}
