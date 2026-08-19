@@ -1,4 +1,6 @@
+import { useMemo } from 'react'
 import { getTokenIcon } from '@oasisprotocol/privana-sdk'
+import { useEarnHistory } from '@/api/portfolio'
 import { Skeleton } from '@/components/ui/skeleton'
 import { SurfaceCard } from '@/components/SurfaceCard'
 import { BalanceAmount } from '@/components/BalanceAmount'
@@ -65,6 +67,11 @@ export const EarnBalance = ({
   loading,
 }: EarnBalanceProps) => {
   const isEarning = (earningFiatValue ?? 0) > 0
+  const { data: earnHistory, isLoading: chartLoading } = useEarnHistory()
+  const chartData = useMemo(
+    () => (earnHistory?.points ?? []).map(p => ({ date: String(p.timestamp), value: Number(p.value_usd) })),
+    [earnHistory],
+  )
   const earned = isEarning ? TOTAL_EARNED_MOCK : 0
   const changeUsd = (earningFiatValue ?? 0) * (MOCK_CHANGE_PCT / 100)
 
@@ -134,11 +141,11 @@ export const EarnBalance = ({
       </div>
 
       <div className="flex items-center">
-        {loading ? (
+        {loading || (isEarning && chartLoading) ? (
           <Skeleton className="h-40 w-full rounded-2xl" />
         ) : isEarning ? (
           <div className="w-full">
-            <PortfolioChart />
+            <PortfolioChart data={chartData} />
           </div>
         ) : (
           <div className="w-full">

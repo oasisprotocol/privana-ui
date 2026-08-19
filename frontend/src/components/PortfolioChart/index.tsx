@@ -3,17 +3,6 @@ import { ChartConfig, ChartContainer } from '@/components/ui/chart'
 
 export type PortfolioPoint = { date: string; value: number }
 
-const DEFAULT_DATA: PortfolioPoint[] = [
-  { date: '1', value: 1000 },
-  { date: '2', value: 1008 },
-  { date: '3', value: 1004 },
-  { date: '4', value: 1018 },
-  { date: '5', value: 1012 },
-  { date: '6', value: 1030 },
-  { date: '7', value: 1075 },
-  { date: '8', value: 1180 },
-]
-
 const chartConfig = {
   value: {
     label: 'Portfolio',
@@ -21,7 +10,7 @@ const chartConfig = {
   },
 } satisfies ChartConfig
 
-export const PortfolioChart = ({ data = DEFAULT_DATA }: { data?: PortfolioPoint[] }) => {
+export const PortfolioChart = ({ data }: { data: PortfolioPoint[] }) => {
   return (
     <ChartContainer config={chartConfig} className="h-40 w-full">
       <AreaChart data={data} margin={{ top: 0, right: 0, bottom: 0, left: 0 }}>
