@@ -15,7 +15,7 @@ function reflectMetadataPolyfill(): Plugin {
         tag: 'script',
         injectTo: 'head-prepend',
         children: fs.readFileSync(
-          path.resolve(__dirname, 'node_modules/reflect-metadata/Reflect.js'),
+          path.resolve(import.meta.dirname, 'node_modules/reflect-metadata/Reflect.js'),
           'utf8',
         ),
       },
@@ -30,7 +30,7 @@ export default defineConfig({
   },
   resolve: {
     alias: {
-      '@': path.resolve(__dirname, './src'),
+      '@': path.resolve(import.meta.dirname, './src'),
     },
   },
 })
