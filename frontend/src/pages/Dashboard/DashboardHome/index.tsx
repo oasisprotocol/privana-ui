@@ -10,11 +10,11 @@ import { formatFiat } from '@/lib/tokens'
 import { earnPath, tradePath, vaultPath } from '@/paths'
 import { Link } from 'react-router'
 import { useFunds } from '@/hooks/useFunds'
-import { usePortfolioHistory } from '@/api/portfolio'
+import { CHART_RANGE_DAYS, usePortfolioHistory, type ChartRange } from '@/api/portfolio'
 import { useMergedActivity } from '@/hooks/use-merged-activity'
 import { BalanceAmount } from '@/components/BalanceAmount'
 import { BalanceBreakdown } from '@/components/BalanceBreakdown'
-import { PortfolioChart, PortfolioChartPlaceholder } from '@/components/PortfolioChart'
+import { PortfolioChartSection } from '@/components/PortfolioChart'
 import { LatestActivity } from './LatestActivity'
 import { HoldingsSection } from './HoldingsSection'
 import { HISTORY_FETCH_LIMIT } from './latestActivity.constants'
@@ -121,7 +121,10 @@ export const DashboardHome = () => {
   // Hoisted out of LatestActivity so the history/unsettled fetch starts on mount in parallel with very slow balance reads.
   const { rows: activityRows, isLoading: activityLoading } = useMergedActivity(HISTORY_FETCH_LIMIT)
 
-  const { data: portfolioHistory, isLoading: chartLoading } = usePortfolioHistory()
+  const [chartRange, setChartRange] = useState<ChartRange>('all')
+  const { data: portfolioHistory, isLoading: chartLoading } = usePortfolioHistory(
+    CHART_RANGE_DAYS[chartRange],
+  )
   const chartData = useMemo(
     () =>
       (portfolioHistory?.points ?? []).map(p => ({ date: String(p.timestamp), value: Number(p.total_usd) })),
@@ -231,10 +234,13 @@ export const DashboardHome = () => {
               <div className="flex flex-col justify-center">
                 {chartLoading ? (
                   <Skeleton className="h-40 w-full rounded-2xl" />
-                ) : chartData.length > 1 ? (
-                  <PortfolioChart data={chartData} />
                 ) : (
-                  <PortfolioChartPlaceholder label="Your performance history isn't available yet." />
+                  <PortfolioChartSection
+                    data={chartData}
+                    range={chartRange}
+                    onRangeChange={setChartRange}
+                    emptyLabel="Your performance history isn't available yet."
+                  />
                 )}
               </div>
             </SurfaceCard>
@@ -253,10 +259,13 @@ export const DashboardHome = () => {
 
               {chartLoading ? (
                 <Skeleton className="h-40 w-full rounded-2xl" />
-              ) : chartData.length > 1 ? (
-                <PortfolioChart data={chartData} />
               ) : (
-                <PortfolioChartPlaceholder label="Your performance history isn't available yet." />
+                <PortfolioChartSection
+                  data={chartData}
+                  range={chartRange}
+                  onRangeChange={setChartRange}
+                  emptyLabel="Your performance history isn't available yet."
+                />
               )}
 
               <PrivanaVaultCard
