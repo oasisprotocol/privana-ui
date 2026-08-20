@@ -34,15 +34,9 @@ export const ConnectedAppCard = ({ app, locks }: Props) => {
   }, [])
 
   // Optimistic UI update as unlockFunds resolves on tx submission, not on-chain settlement
-  const [reclaimingIds, setReclaimingIds] = useState<Set<number>>(new Set())
-  useEffect(() => {
-    setReclaimingIds(prev => {
-      if (prev.size === 0) return prev
-      const present = new Set(locks.map(l => l.lock_id))
-      const next = new Set([...prev].filter(id => present.has(id)))
-      return next.size === prev.size ? prev : next
-    })
-  }, [locks])
+  const [requestedReclaimIds, setRequestedReclaimIds] = useState<Set<number>>(new Set())
+  const presentLockIds = new Set(locks.map(l => l.lock_id))
+  const reclaimingIds = new Set([...requestedReclaimIds].filter(id => presentLockIds.has(id)))
 
   const expired = locks.filter(l => l.is_expired)
   const active = locks.filter(l => !l.is_expired)
@@ -64,12 +58,12 @@ export const ConnectedAppCard = ({ app, locks }: Props) => {
 
   const handleReclaim = async () => {
     // Loop over all locks, unlockAllExpired has no service filter
-    setReclaimingIds(prev => new Set([...prev, ...group.map(l => l.lock_id)]))
+    setRequestedReclaimIds(prev => new Set([...prev, ...group.map(l => l.lock_id)]))
     for (const lock of group) {
       try {
         await unlockFunds({ lockId: lock.lock_id })
       } catch {
-        setReclaimingIds(prev => {
+        setRequestedReclaimIds(prev => {
           const next = new Set(prev)
           next.delete(lock.lock_id)
           return next
