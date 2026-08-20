@@ -1,5 +1,6 @@
 import { Area, AreaChart, XAxis, YAxis } from 'recharts'
-import { ChartConfig, ChartContainer } from '@/components/ui/chart'
+import { ChartConfig, ChartContainer, ChartTooltip, ChartTooltipContent } from '@/components/ui/chart'
+import { formatFiat } from '@/lib/tokens'
 
 export type PortfolioPoint = { date: string; value: number }
 
@@ -42,6 +43,33 @@ export const PortfolioChart = ({ data }: { data: PortfolioPoint[] }) => {
         </defs>
         <XAxis dataKey="date" hide />
         <YAxis hide />
+        <ChartTooltip
+          cursor={false}
+          allowEscapeViewBox={{ x: false, y: true }}
+          content={
+            <ChartTooltipContent
+              labelFormatter={(_, payload) => {
+                const ts = Number(payload?.[0]?.payload?.date)
+                return Number.isFinite(ts)
+                  ? new Date(ts * 1000).toLocaleString(undefined, {
+                      month: 'short',
+                      day: 'numeric',
+                      hour: 'numeric',
+                      minute: '2-digit',
+                    })
+                  : ''
+              }}
+              formatter={value => (
+                <div className="flex w-full justify-between gap-4">
+                  <span className="text-muted-foreground">Value</span>
+                  <span className="text-foreground font-mono font-medium tabular-nums">
+                    {formatFiat(Number(value))}
+                  </span>
+                </div>
+              )}
+            />
+          }
+        />
         <Area
           dataKey="value"
           type="monotone"
