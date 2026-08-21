@@ -1,10 +1,10 @@
-import { useMemo } from 'react'
+import { useMemo, useState } from 'react'
 import { getTokenIcon } from '@oasisprotocol/privana-sdk'
-import { useEarnHistory } from '@/api/portfolio'
+import { CHART_RANGE_DAYS, useEarnHistory, type ChartRange } from '@/api/portfolio'
 import { Skeleton } from '@/components/ui/skeleton'
 import { SurfaceCard } from '@/components/SurfaceCard'
 import { BalanceAmount } from '@/components/BalanceAmount'
-import { PortfolioChart, PortfolioChartPlaceholder } from '@/components/PortfolioChart'
+import { PortfolioChartPlaceholder, PortfolioChartSection } from '@/components/PortfolioChart'
 import { formatFiat, formatAmount } from '@/lib/tokens'
 import { formatApyBps } from '@/lib/apy'
 import { cn } from '@/lib/utils'
@@ -56,7 +56,8 @@ export const EarnBalance = ({
   loading,
 }: EarnBalanceProps) => {
   const isEarning = (earningFiatValue ?? 0) > 0
-  const { data: earnHistory, isLoading: chartLoading } = useEarnHistory()
+  const [chartRange, setChartRange] = useState<ChartRange>('all')
+  const { data: earnHistory, isLoading: chartLoading } = useEarnHistory(CHART_RANGE_DAYS[chartRange])
   const chartData = useMemo(
     () => (earnHistory?.points ?? []).map(p => ({ date: String(p.timestamp), value: Number(p.value_usd) })),
     [earnHistory],
@@ -132,10 +133,13 @@ export const EarnBalance = ({
       <div className="flex items-center">
         {loading || (isEarning && chartLoading) ? (
           <Skeleton className="h-40 w-full rounded-2xl" />
-        ) : isEarning && chartData.length > 1 ? (
-          <div className="w-full">
-            <PortfolioChart data={chartData} />
-          </div>
+        ) : isEarning ? (
+          <PortfolioChartSection
+            data={chartData}
+            range={chartRange}
+            onRangeChange={setChartRange}
+            emptyLabel="Your performance chart appears once you start earning."
+          />
         ) : (
           <PortfolioChartPlaceholder label="Your performance chart appears once you start earning." />
         )}

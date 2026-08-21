@@ -25,6 +25,16 @@ export interface EarnHistoryResponse {
   points: EarnHistoryPoint[]
 }
 
+export type ChartRange = 'day' | 'week' | 'month' | 'year' | 'all'
+
+export const CHART_RANGE_DAYS: Record<ChartRange, number | undefined> = {
+  day: 1,
+  week: 7,
+  month: 30,
+  year: 365,
+  all: undefined,
+}
+
 export const historyKeys = {
   all: ['history'] as const,
   portfolio: (address: string, days: number | undefined) =>
@@ -65,6 +75,8 @@ function useHistoryQuery<T>(queryKey: readonly unknown[], fetch: (jwt: string) =
     queryKey,
     queryFn: () => fetch(accessToken!),
     enabled: !!address && !!accessToken,
+    placeholderData: (previousData, previousQuery) =>
+      previousQuery && previousQuery.queryKey[2] === address ? previousData : undefined,
     staleTime: 5 * 60_000,
     // 4xx answers (auth expiry, endpoint not deployed) won't change on retry.
     retry: (failureCount, error) => !(error instanceof ApiError && error.status < 500) && failureCount < 3,
