@@ -1,0 +1,31 @@
+{
+  "$schema": "https://docs.renovatebot.com/renovate-schema.json",
+  "extends": ["config:recommended", ":disableDependencyDashboard"],
+  "packageRules": [
+    {
+      "groupName": "lint dependencies",
+      "matchPackageNames": ["/eslint/", "/prettier/"]
+    },
+    {
+      "groupName": "react dependencies",
+      "matchPackageNames": ["/react/"]
+    },
+    {
+      "groupName": "wallet dependencies",
+      "matchPackageNames": ["/viem/", "/wagmi/", "@turnkey/**"]
+    },
+    {
+      "groupName": "tailwind dependencies",
+      "matchPackageNames": ["/tailwind/", "tw-animate-css"]
+    },
+    {
+      "groupName": "TypeScript type definitions",
+      "matchPackageNames": ["@types/**"]
+    },
+    {
+      "groupName": "CI github-actions",
+      "matchManagers": ["github-actions"]
+    }
+  ],
+  "rangeStrategy": "bump"
+}
