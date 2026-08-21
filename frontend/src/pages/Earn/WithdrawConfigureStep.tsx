@@ -1,4 +1,3 @@
-import { useMemo } from 'react'
 import type { EarnBalance, EarnPool } from '@/api/earn'
 import type { TokenInfo } from '@/api/swap'
 import { Button } from '@/components/ui/button'
@@ -6,6 +5,15 @@ import { Skeleton } from '@/components/ui/skeleton'
 import { exceedsAmount, formatAmount, isPositiveAmount } from '@/lib/tokens'
 import { EarnAmountField } from './EarnAmountField'
 import { VenueHeader } from './VenueHeader'
+
+const toPositionWei = (underlyingAmount: string | undefined): bigint => {
+  if (!underlyingAmount) return 0n
+  try {
+    return BigInt(underlyingAmount)
+  } catch {
+    return 0n
+  }
+}
 
 type WithdrawConfigureStepProps = {
   pool: EarnPool | undefined
@@ -30,14 +38,7 @@ export const WithdrawConfigureStep = ({
   const tokenSymbol = token?.token_symbol ?? token?.token_type_name ?? ''
   const chain = token?.chain_name ?? ''
 
-  const positionWei = useMemo(() => {
-    if (!position?.underlying_amount) return 0n
-    try {
-      return BigInt(position.underlying_amount)
-    } catch {
-      return 0n
-    }
-  }, [position])
+  const positionWei = toPositionWei(position?.underlying_amount)
   const positionLabel = decimals != null ? formatAmount(positionWei, decimals) : '-'
 
   const canReview =
