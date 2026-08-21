@@ -1,5 +1,5 @@
 import { type FC, useState } from 'react'
-import { useAccount, useChainId, useSwitchChain } from 'wagmi'
+import { useConnection, useChainId, useSwitchChain } from 'wagmi'
 import { Link } from 'react-router'
 import {
   ArrowDownToLine,
@@ -45,8 +45,8 @@ const CHAIN_BADGES: Record<AppChainId, { label: string; color: string }> = {
 // Wallet UI only. The Privana session is driven by the SDK's SiweAuthProvider
 // (useSiweAuth), which watches the wagmi connection and runs SIWE login/logout.
 export const ConnectButton: FC = () => {
-  const { address, isConnected, connector } = useAccount()
-  const { switchChain } = useSwitchChain()
+  const { address, isConnected, connector } = useConnection()
+  const { mutate: switchChain } = useSwitchChain()
   const chainId = useChainId()
 
   const chainBadge: { label: string; color: string } | undefined = CHAIN_BADGES[chainId as AppChainId]

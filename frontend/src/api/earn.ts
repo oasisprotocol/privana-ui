@@ -174,7 +174,7 @@ export function useEarnBalance() {
   const { session, accessToken } = useSiweAuth()
   // Key the cache off the authenticated address so the queryKey and queryFn
   // always agree on which identity the request is for. Using wagmi's address
-  // would race during wallet switches (the token can rotate before useAccount
+  // would race during wallet switches (the token can rotate before useConnection
   // propagates).
   const address = session?.address
   const jwt = accessToken

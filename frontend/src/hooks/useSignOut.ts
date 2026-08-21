@@ -3,7 +3,7 @@ import { useSiweAuth } from '@oasisprotocol/privana-sdk'
 import { clearTurnkeyWallet } from '@/wallet/turnkeyBridge'
 
 export const useSignOut = (): (() => void) => {
-  const { disconnect } = useDisconnect()
+  const { mutate: disconnect } = useDisconnect()
   const { logout } = useSiweAuth()
 
   return () => {

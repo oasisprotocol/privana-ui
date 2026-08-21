@@ -1,7 +1,7 @@
 import { Button } from '@/components/ui/button'
 import { Zap, ArrowLeftRight, TrendingUp, ChevronRight, ShieldCheck } from 'lucide-react'
 import { useMemo, useState, type ReactNode } from 'react'
-import { useAccount } from 'wagmi'
+import { useConnection } from 'wagmi'
 import { DepositModal, WithdrawModal, useSiweAuth } from '@oasisprotocol/privana-sdk'
 import { Skeleton } from '@/components/ui/skeleton'
 import { SurfaceCard } from '@/components/SurfaceCard'
@@ -133,7 +133,7 @@ export const DashboardHome = () => {
 
   // Balance reads are slow today; play a short branded boot sequence in place of a bare skeleton.
   // Keyed on account + auth so switching accounts or re-authenticating replays it.
-  const { address } = useAccount()
+  const { address } = useConnection()
   const { isAuthenticated } = useSiweAuth()
   const bootPhase = useBootPhase(isLoading, `${address?.toLowerCase() ?? ''}:${isAuthenticated}`)
 

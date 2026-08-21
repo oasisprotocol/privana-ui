@@ -1,6 +1,6 @@
 import { useEffect, useRef } from 'react'
 import { AuthState, ClientState, useTurnkey, WalletSource } from '@turnkey/react-wallet-kit'
-import { useAccount, useConnect, useDisconnect } from 'wagmi'
+import { useConnection, useConnect, useConnectors, useDisconnect } from 'wagmi'
 import { clearTurnkeyWallet, getTurnkeyActiveWallet, setTurnkeyActiveWallet } from '@/wallet/turnkeyBridge'
 import { getConnectedWalletRecord } from '@/wallet/turnkeyConnectedWallet'
 import { useTurnkeyWalletIntent } from '@/wallet/turnkeyIntent'
@@ -12,9 +12,10 @@ const APP_CHAIN_ID = parseInt(import.meta.env.VITE_CHAIN_ID, 10) as AppChainId
 export const TurnkeySync = () => {
   const { authState, clientState, httpClient, session, wallets, createWallet, refreshWallets } = useTurnkey()
   const intent = useTurnkeyWalletIntent()
-  const { connectAsync, connectors } = useConnect()
-  const { disconnectAsync } = useDisconnect()
-  const { connector: activeConnector, isConnected } = useAccount()
+  const { mutateAsync: connectAsync } = useConnect()
+  const connectors = useConnectors()
+  const { mutateAsync: disconnectAsync } = useDisconnect()
+  const { connector: activeConnector, isConnected } = useConnection()
   const connectingRef = useRef(false)
   const creatingWalletRef = useRef(false)
 

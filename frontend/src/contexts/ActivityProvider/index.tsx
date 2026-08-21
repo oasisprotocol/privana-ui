@@ -1,11 +1,11 @@
 import { useCallback, useMemo, useState, type ReactNode } from 'react'
-import { useAccount } from 'wagmi'
+import { useConnection } from 'wagmi'
 import { ActivityContext, type Activity } from './context'
 
 type ActivityState = { address: string | null; activities: Activity[] }
 
 export const ActivityProvider = ({ children }: { children: ReactNode }) => {
-  const { address } = useAccount()
+  const { address } = useConnection()
   const owner = address?.toLowerCase() ?? null
   const [state, setState] = useState<ActivityState>({ address: owner, activities: [] })
   if (state.address !== owner) setState({ address: owner, activities: [] })
