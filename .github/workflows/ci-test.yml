@@ -1,5 +1,5 @@
 # NOTE: This name appears in GitHub's Checks API and in workflow's status badge.
-name: ci-lint
+name: ci-test
 
 # Trigger the workflow when:
 on:
@@ -15,10 +15,15 @@ on:
       - master
       - stable/*
 
+# Limit secrets.GITHUB_TOKEN to reading the repository: the checkout of this
+# private repo needs it, and nothing here needs more.
+permissions:
+  contents: read
+
 jobs:
-  lint:
+  test:
     # NOTE: This name appears in GitHub's Checks API.
-    name: lint
+    name: test
     runs-on: ubuntu-latest
     steps:
       - name: Checkout code
@@ -35,24 +40,6 @@ jobs:
       - name: Install dependencies
         run: yarn install --frozen-lockfile
         working-directory: frontend
-      - name: Lint documentation
-        run: yarn lint-docs
+      - name: Run tests
+        run: yarn test
         working-directory: frontend
-        # Always run this step so that all linting errors can be seen at once.
-        if: always()
-      - name: Prettier
-        run: yarn prettier-check
-        working-directory: frontend
-        # Always run this step so that all linting errors can be seen at once.
-        if: always()
-      - name: ESLint
-        # Disallow warnings and always throw errors.
-        run: yarn lint --max-warnings 0
-        working-directory: frontend
-        # Always run this step so that all linting errors can be seen at once.
-        if: always()
-      - name: Validate TypeScript
-        run: yarn checkTs
-        working-directory: frontend
-        # Always run this step so that all linting errors can be seen at once.
-        if: always()
