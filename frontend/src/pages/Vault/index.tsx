@@ -1,6 +1,6 @@
 import { useMemo, useState } from 'react'
 import { Link } from 'react-router'
-import { ChevronRight } from 'lucide-react'
+import { ChevronRight, LockOpen } from 'lucide-react'
 import { formatUnits } from 'viem'
 import { useLockedFunds, usePrivanaContext } from '@oasisprotocol/privana-sdk'
 import { SurfaceCard } from '@/components/SurfaceCard'
@@ -12,7 +12,6 @@ import { useMergedActivity } from '@/hooks/use-merged-activity'
 import { useTokenPrices } from '@/api/coin-gecko'
 import { appForAddress } from '@/config/apps'
 import { formatFiat } from '@/lib/tokens'
-import { formatApyBps } from '@/lib/apy'
 import { cn } from '@/lib/utils'
 import { earnPath, appsPath, activityPath } from '@/paths'
 import { ActivityList } from '@/components/ActivityList'
@@ -37,15 +36,17 @@ const VaultRow = ({
   to,
   color,
   initial,
+  logoUrl,
   name,
   subtitle,
   amount,
 }: {
   to: string
-  color: string
-  initial: string
+  color?: string
+  initial?: string
+  logoUrl?: string
   name: string
-  subtitle: string
+  subtitle: React.ReactNode
   amount: number
 }) => (
   <Link
@@ -53,13 +54,17 @@ const VaultRow = ({
     viewTransition
     className="flex items-center gap-3 px-4 py-3.5 transition-colors hover:bg-secondary/40"
   >
-    <span
-      aria-hidden
-      className="flex size-9 shrink-0 items-center justify-center rounded-lg text-sm font-semibold text-white"
-      style={{ background: color }}
-    >
-      {initial}
-    </span>
+    {logoUrl ? (
+      <img src={logoUrl} alt="" className="size-9 shrink-0 rounded-lg" />
+    ) : (
+      <span
+        aria-hidden
+        className="flex size-9 shrink-0 items-center justify-center rounded-lg text-sm font-semibold text-white"
+        style={{ background: color }}
+      >
+        {initial}
+      </span>
+    )}
     <div className="min-w-0 flex-1">
       <p className="truncate text-sm font-semibold text-foreground">{name}</p>
       <p className="truncate text-xs text-muted-foreground">{subtitle}</p>
@@ -70,8 +75,7 @@ const VaultRow = ({
 )
 
 export const Vault = () => {
-  const { availableFiatValue, earningFiatValue, lockedFiatValue, totalFiatValue, bestApyBps, pricesError } =
-    useFunds()
+  const { availableFiatValue, earningFiatValue, lockedFiatValue, totalFiatValue, pricesError } = useFunds()
   const { locks } = useLockedFunds()
   const { enabledTokens, getTokenById } = usePrivanaContext()
   const tokenIds = useMemo(() => enabledTokens.map(t => t.id), [enabledTokens])
@@ -131,7 +135,7 @@ export const Vault = () => {
   }, [ready, availableFiatValue, earningFiatValue, lockedFiatValue])
 
   return (
-    <div className="mx-auto flex w-full max-w-xl flex-col gap-8">
+    <div className="mx-auto flex w-full flex-col gap-8">
       <header>
         <h1 className="text-3xl font-semibold tracking-tight text-foreground">Vault</h1>
         <p className="mt-2 text-sm text-muted-foreground">
@@ -139,7 +143,7 @@ export const Vault = () => {
         </p>
       </header>
 
-      <section>
+      <SurfaceCard className="p-6 md:rounded-3xl md:p-8">
         <p className="text-sm font-medium text-muted-foreground">Account value</p>
         {pricesError ? (
           <span className="mt-1 block text-4xl font-semibold tracking-tight text-foreground">-</span>
@@ -161,72 +165,68 @@ export const Vault = () => {
         {summary && (
           <p className="mt-3 rounded-xl bg-muted/60 px-3 py-2.5 text-xs text-muted-foreground">{summary}</p>
         )}
-      </section>
+      </SurfaceCard>
 
-      {apps.length > 0 && (
-        <section className="flex flex-col gap-3">
-          <SectionHeading title="In use by connected app" />
-          <SurfaceCard className="overflow-hidden">
-            {apps.map((app, i) => (
-              <div key={app.address} className={cn(i > 0 && 'border-t border-border')}>
+      <div className="grid gap-8 lg:grid-cols-2 lg:items-start">
+        <div className="flex flex-col gap-8">
+          {apps.length > 0 && (
+            <section className="flex flex-col gap-3">
+              <SectionHeading title="In use by connected app" />
+              <SurfaceCard className="overflow-hidden">
+                {apps.map((app, i) => (
+                  <div key={app.address} className={cn(i > 0 && 'border-t border-border')}>
+                    <VaultRow
+                      to={appsPath()}
+                      color={app.color}
+                      initial={app.name.charAt(0).toUpperCase()}
+                      name={app.name}
+                      subtitle={app.subtitle}
+                      amount={app.fiat}
+                    />
+                  </div>
+                ))}
+              </SurfaceCard>
+            </section>
+          )}
+
+          {(earningFiatValue ?? 0) > 0 && (
+            <section className="flex flex-col gap-3">
+              <SectionHeading title="Earn" />
+              <SurfaceCard className="overflow-hidden">
                 <VaultRow
-                  to={appsPath()}
-                  color={app.color}
-                  initial={app.name.charAt(0).toUpperCase()}
-                  name={app.name}
-                  subtitle={app.subtitle}
-                  amount={app.fiat}
+                  to={earnPath()}
+                  logoUrl="/app-privana.png"
+                  name="Privana Earn"
+                  subtitle={
+                    <span className="inline-flex items-center gap-1">
+                      <LockOpen className="size-3 shrink-0" />
+                      No lock · withdraw anytime
+                    </span>
+                  }
+                  amount={earningFiatValue ?? 0}
                 />
-              </div>
-            ))}
-          </SurfaceCard>
-        </section>
-      )}
+              </SurfaceCard>
+            </section>
+          )}
+        </div>
 
-      {(earningFiatValue ?? 0) > 0 && (
         <section className="flex flex-col gap-3">
-          <SectionHeading title="Earn" />
-          <SurfaceCard className="overflow-hidden">
-            <VaultRow
-              to={earnPath()}
-              color="#0500E2"
-              initial="E"
-              name="Private Earn"
-              subtitle={
-                bestApyBps != null
-                  ? `No lock · withdraw anytime · ${formatApyBps(bestApyBps)} APY`
-                  : 'No lock · withdraw anytime'
-              }
-              amount={earningFiatValue ?? 0}
-            />
-          </SurfaceCard>
+          <SectionHeading title="Vault activity" />
+          <ActivityList
+            rows={activityRows}
+            isLoading={activityLoading}
+            max={MAX_ROWS}
+            emptyState={<p className="text-sm text-muted-foreground">No vault activity yet.</p>}
+          />
+          <Link
+            to={activityPath()}
+            viewTransition
+            className="self-center text-sm font-medium text-foreground hover:underline"
+          >
+            See all activities
+          </Link>
         </section>
-      )}
-
-      <section className="flex flex-col gap-3">
-        <SectionHeading
-          title="Vault activity"
-          action={
-            <Link
-              to={activityPath()}
-              viewTransition
-              className="text-sm font-medium text-foreground transition-colors hover:text-muted-foreground"
-            >
-              See all
-            </Link>
-          }
-        />
-        <ActivityList
-          rows={activityRows}
-          isLoading={activityLoading}
-          max={MAX_ROWS}
-          emptyState={<p className="text-sm text-muted-foreground">No vault activity yet.</p>}
-        />
-        <p className="text-xs text-muted-foreground">
-          Deposits and releases add to Available; commits and withdrawals subtract. In use ticks down live as
-          an app spends its allowance — with no row, by design.
-        </p>
-      </section>
+      </div>
     </div>
   )
 }
