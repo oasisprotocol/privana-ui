@@ -1,19 +1,12 @@
 import { describe, expect, it } from 'vitest'
-import {
-  ALLOWED_TOKEN_IDS,
-  getGeckoId,
-  getMoonpayCode,
-  ONRAMPABLE_TOKEN_IDS,
-  SWAPPABLE_TOKEN_IDS,
-} from '@/config/tokens'
+import { ALLOWED_TOKEN_IDS, getGeckoId, SWAPPABLE_TOKEN_IDS } from '@/config/tokens'
 
 describe('token id lists', () => {
-  it('derives swappable and onrampable ids as subsets of the allowed ids', () => {
+  it('derives swappable ids as a subset of the allowed ids', () => {
     const allowed = new Set<string>(ALLOWED_TOKEN_IDS)
     expect(ALLOWED_TOKEN_IDS.length).toBeGreaterThan(0)
     expect(SWAPPABLE_TOKEN_IDS.length).toBeGreaterThan(0)
     for (const id of SWAPPABLE_TOKEN_IDS) expect(allowed.has(id)).toBe(true)
-    for (const id of ONRAMPABLE_TOKEN_IDS) expect(allowed.has(id)).toBe(true)
   })
 })
 
@@ -24,19 +17,5 @@ describe('getGeckoId', () => {
 
   it('returns undefined for an unknown token id', () => {
     expect(getGeckoId('0xdead')).toBeUndefined()
-  })
-})
-
-describe('getMoonpayCode', () => {
-  it('returns a code exactly for the onrampable tokens', () => {
-    const onrampable = new Set<string>(ONRAMPABLE_TOKEN_IDS)
-    for (const id of ALLOWED_TOKEN_IDS) {
-      if (onrampable.has(id)) expect(getMoonpayCode(id)).toBeTruthy()
-      else expect(getMoonpayCode(id)).toBeUndefined()
-    }
-  })
-
-  it('returns undefined for an unknown token id', () => {
-    expect(getMoonpayCode('0xdead')).toBeUndefined()
   })
 })
