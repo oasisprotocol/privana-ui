@@ -88,9 +88,23 @@ export const Layout = ({ children }: LayoutProps) => {
           </div>
           <Separator className="data-[orientation=horizontal]:h-[0.5px]" />
           <div className="self-stretch inline-flex justify-between items-center">
-            <div className="justify-start">
-              Copyright © <span className="md:hidden">OPF</span>
-              <span className="hidden md:inline">Oasis Protocol Foundation</span> {new Date().getFullYear()}
+            <div className="flex items-center gap-2 md:gap-2">
+              <span className="justify-start">
+                Copyright © <span className="md:hidden">OPF</span>
+                <span className="hidden md:inline">Oasis Protocol Foundation</span> {new Date().getFullYear()}
+              </span>
+              <span>·</span>
+              <span className="justify-start">
+                Price data by{' '}
+                <a
+                  href="https://www.coingecko.com/"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="hover:text-foreground hover:underline transition-colors"
+                >
+                  CoinGecko
+                </a>
+              </span>
             </div>
             <div className="flex items-center gap-4 md:gap-8">
               <span className="justify-start">Privacy Policy</span>
