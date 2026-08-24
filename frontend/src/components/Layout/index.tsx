@@ -61,7 +61,7 @@ export const Layout = ({ children }: LayoutProps) => {
             {children}
           </div>
         </div>
-        <footer className="w-full max-w-7xl py-12 mx-auto flex flex-col justify-start items-center gap-16 text-xs text-muted-foreground px-6 border-t border-border/70">
+        <footer className="w-full max-w-7xl py-12 mx-auto flex flex-col justify-start items-center gap-12 md:gap-16 text-xs text-muted-foreground px-6 border-t border-border/70">
           <div className="flex flex-col md:flex-row gap-8 md:gap-6 items-start w-full">
             <div className="flex-1">
               <img src={Logo} alt="Privana" className="h-6 dark:brightness-0 dark:invert" />
@@ -87,15 +87,29 @@ export const Layout = ({ children }: LayoutProps) => {
             ))}
           </div>
           <Separator className="data-[orientation=horizontal]:h-[0.5px]" />
-          <div className="self-stretch inline-flex justify-between items-center">
-            <div className="justify-start">
-              Copyright © <span className="md:hidden">OPF</span>
-              <span className="hidden md:inline">Oasis Protocol Foundation</span> {new Date().getFullYear()}
+          <div className="self-stretch flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
+            <div className="flex flex-col gap-3 md:flex-row md:items-center md:gap-2">
+              <span>
+                Copyright © <span className="md:hidden">OPF</span>
+                <span className="hidden md:inline">Oasis Protocol Foundation</span> {new Date().getFullYear()}
+              </span>
+              <span className="hidden md:inline">·</span>
+              <span>
+                Price data by{' '}
+                <a
+                  href="https://www.coingecko.com/"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="hover:text-foreground hover:underline transition-colors"
+                >
+                  CoinGecko
+                </a>
+              </span>
             </div>
-            <div className="flex items-center gap-4 md:gap-8">
-              <span className="justify-start">Privacy Policy</span>
-              <span className="justify-start">Terms of Service</span>
-              <span className="justify-start">Cookies Settings</span>
+            <div className="flex flex-col gap-3 md:flex-row md:items-center md:gap-8">
+              <span>Privacy Policy</span>
+              <span>Terms of Service</span>
+              <span>Cookies Settings</span>
             </div>
           </div>
         </footer>
