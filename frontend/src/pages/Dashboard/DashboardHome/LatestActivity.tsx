@@ -9,20 +9,17 @@ export const LatestActivity = ({ rows, isLoading }: { rows: MergedRow[]; isLoadi
 
   return (
     <div className="flex flex-col gap-4">
-      <div className="flex items-center justify-between">
-        <h2 className="text-base md:text-lg md:tracking-tight font-semibold text-foreground">
-          Vault activity
-        </h2>
-        <Link
-          to={activityPath()}
-          viewTransition
-          className="text-sm font-medium text-foreground hover:text-muted-foreground transition-colors"
-        >
-          See all
-        </Link>
-      </div>
+      <h2 className="text-base md:text-lg md:tracking-tight font-semibold text-foreground">Vault activity</h2>
 
       <ActivityList rows={rows} isLoading={isLoading} max={MAX_ROWS} />
+
+      <Link
+        to={activityPath()}
+        viewTransition
+        className="self-center text-sm font-medium text-foreground hover:underline"
+      >
+        See all activities
+      </Link>
     </div>
   )
 }
