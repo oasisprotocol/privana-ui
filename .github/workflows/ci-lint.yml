@@ -28,7 +28,8 @@ jobs:
       - name: Set up Node.js 22
         uses: actions/setup-node@v6
         with:
-          node-version: '22.x'
+          # Reuse the version pinned by .nvmrc instead of a floating 22.x.
+          node-version-file: frontend/.nvmrc
           cache: yarn
           cache-dependency-path: frontend/yarn.lock
       - name: Install dependencies
