@@ -1,3 +1,4 @@
+/// <reference types="vitest/config" />
 import fs from 'node:fs'
 import path from 'path'
 import { defineConfig, type Plugin } from 'vite'
@@ -32,5 +33,8 @@ export default defineConfig({
     alias: {
       '@': path.resolve(import.meta.dirname, './src'),
     },
+  },
+  test: {
+    include: ['src/**/*.test.ts'],
   },
 })
