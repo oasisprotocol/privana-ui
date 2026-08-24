@@ -1,6 +1,6 @@
 import { useState, type ReactNode } from 'react'
 import { Link } from 'react-router'
-import { useAccount } from 'wagmi'
+import { useConnection } from 'wagmi'
 import { useIsSignedIn } from '@/hooks/useIsSignedIn'
 import { ConnectButton } from '../ConnectButton'
 import Logo from '../../assets/logo.svg'
@@ -24,7 +24,7 @@ interface LayoutProps {
 }
 
 export const Layout = ({ children }: LayoutProps) => {
-  const { isConnected } = useAccount()
+  const { isConnected } = useConnection()
   const signedInNow = useIsSignedIn()
   const [everSignedIn, setEverSignedIn] = useState(false)
   if (signedInNow && !everSignedIn) setEverSignedIn(true)

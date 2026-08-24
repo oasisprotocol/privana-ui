@@ -1,6 +1,6 @@
 import { useMemo, useState } from 'react'
 import { useNavigate, useParams } from 'react-router'
-import { useAccount, useSwitchChain, useWalletClient } from 'wagmi'
+import { useConnection, useSwitchChain, useWalletClient } from 'wagmi'
 import { parseUnits } from 'viem'
 import { useEarnPools } from '@/api/earn'
 import { useTokens } from '@/api/swap'
@@ -25,9 +25,9 @@ export const EarnCreate = () => {
   const { poolId } = useParams<{ poolId?: string }>()
   const navigate = useNavigate()
   const resetBalanceCaches = useResetBalanceCaches()
-  const { address, chainId } = useAccount()
+  const { address, chainId } = useConnection()
   const { data: walletClient } = useWalletClient()
-  const { switchChain, error: switchChainError } = useSwitchChain()
+  const { mutate: switchChain, error: switchChainError } = useSwitchChain()
   const [amount, setAmount] = useState('')
   const [step, setStep] = useState(0)
   const [depositActivityId, setDepositActivityId] = useState<string | null>(null)

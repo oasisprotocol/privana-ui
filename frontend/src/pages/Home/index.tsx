@@ -1,6 +1,6 @@
 import { useEffect, useRef } from 'react'
 import { Navigate, useLocation } from 'react-router'
-import { useAccount } from 'wagmi'
+import { useConnection } from 'wagmi'
 import { useSiweAuth } from '@oasisprotocol/privana-sdk'
 import { Button } from '@/components/ui/button'
 import { Layout } from '@/components/Layout'
@@ -20,7 +20,7 @@ import { dashboardPath } from '@/paths'
 //   - connected, no SIWE  → sign the message to finish (same surface, no bounce)
 //   - fully signed in     → redirect to the dashboard
 export const Home = () => {
-  const { isConnected, status } = useAccount()
+  const { isConnected, status } = useConnection()
   const { isAuthenticated, isLoading: isAuthLoading, error: authError, login } = useSiweAuth()
   const isSignedIn = useIsSignedIn()
   const signInForm = useSignInForm()

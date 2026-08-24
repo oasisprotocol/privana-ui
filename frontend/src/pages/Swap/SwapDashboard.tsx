@@ -6,7 +6,7 @@ import { useTokenPrices } from '@/api/coin-gecko'
 import { Skeleton } from '@/components/ui/skeleton'
 import { useBalance } from '@oasisprotocol/privana-sdk'
 import { formatUnits, parseUnits } from 'viem'
-import { useAccount, useWalletClient, useSwitchChain } from 'wagmi'
+import { useConnection, useWalletClient, useSwitchChain } from 'wagmi'
 import { ArrowLeft, ArrowUpDown, EyeOff } from 'lucide-react'
 import { extractErrorMessage } from '@/lib/errors'
 import { activityPath } from '@/paths'
@@ -29,9 +29,9 @@ const CHAIN_ID = parseInt(import.meta.env.VITE_CHAIN_ID, 10) as AppChainId
 export const SwapDashboard = () => {
   const [step, setStep] = useState(0)
   const { data, isLoading, error } = useTokens()
-  const { address, chainId } = useAccount()
+  const { address, chainId } = useConnection()
   const { data: walletClient } = useWalletClient()
-  const { switchChain, error: switchChainError } = useSwitchChain()
+  const { mutate: switchChain, error: switchChainError } = useSwitchChain()
   const resetBalanceCaches = useResetBalanceCaches()
   const navigate = useNavigate()
   const { activities } = useActivity()

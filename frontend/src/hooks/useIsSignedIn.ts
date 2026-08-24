@@ -1,4 +1,4 @@
-import { useAccount } from 'wagmi'
+import { useConnection } from 'wagmi'
 import { useSiweAuth } from '@oasisprotocol/privana-sdk'
 
 // Fully signed in = a connected wallet *and* a live SIWE session. The two settle
@@ -6,7 +6,7 @@ import { useSiweAuth } from '@oasisprotocol/privana-sdk'
 // so every gate in the app has to require both. Single definition, since a route
 // guard that disagrees with the nav is how you get a redirect loop.
 export const useIsSignedIn = (): boolean => {
-  const { address, isConnected } = useAccount()
+  const { address, isConnected } = useConnection()
   const { isAuthenticated } = useSiweAuth()
   return isConnected && !!address && isAuthenticated
 }
