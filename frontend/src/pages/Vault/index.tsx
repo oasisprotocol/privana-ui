@@ -25,11 +25,8 @@ const daysUntil = (expirySeconds: number, nowSeconds: number): string => {
   return `Unlocks in ${days} days`
 }
 
-const SectionHeading = ({ title, action }: { title: string; action?: React.ReactNode }) => (
-  <div className="flex items-center justify-between">
-    <h2 className="text-lg font-semibold tracking-tight text-foreground">{title}</h2>
-    {action}
-  </div>
+const SectionHeading = ({ title }: { title: string }) => (
+  <h2 className="text-lg font-semibold tracking-tight text-foreground">{title}</h2>
 )
 
 const VaultRow = ({
