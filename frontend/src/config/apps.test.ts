@@ -1,13 +1,15 @@
 import { describe, expect, it } from 'vitest'
-import { appForAddress, appNameForAddress, KNOWN_APPS, venueForStrategy } from '@/config/apps'
+import { appForAddress, appNameForAddress, venueForStrategy } from '@/config/apps'
 
-const honoroll = KNOWN_APPS[0]
+// Deliberately a literal, not KNOWN_APPS[0]: asserting against the same source
+// the code reads from would make the test vacuous. Update on address rotation.
+const HONOROLL_ADDRESS = '0xDCFF0891F0Aea40b0ae4A7Ca3e00AD1012Fc2d16'
 
 describe('appForAddress', () => {
   it('matches a known service address regardless of casing', () => {
-    expect(appForAddress(honoroll.serviceAddress)).toBe(honoroll)
-    expect(appForAddress(honoroll.serviceAddress.toLowerCase())).toBe(honoroll)
-    expect(appForAddress(honoroll.serviceAddress.toUpperCase().replace('0X', '0x'))).toBe(honoroll)
+    expect(appForAddress(HONOROLL_ADDRESS)?.name).toBe('Honoroll')
+    expect(appForAddress(HONOROLL_ADDRESS.toLowerCase())?.name).toBe('Honoroll')
+    expect(appForAddress(HONOROLL_ADDRESS.toUpperCase().replace('0X', '0x'))?.name).toBe('Honoroll')
   })
 
   it('returns null for unknown or missing addresses', () => {
@@ -20,7 +22,7 @@ describe('appForAddress', () => {
 
 describe('appNameForAddress', () => {
   it('returns the app name for a known address', () => {
-    expect(appNameForAddress(honoroll.serviceAddress.toLowerCase())).toBe(honoroll.name)
+    expect(appNameForAddress(HONOROLL_ADDRESS.toLowerCase())).toBe('Honoroll')
   })
 
   it('returns null for unknown or missing addresses', () => {
