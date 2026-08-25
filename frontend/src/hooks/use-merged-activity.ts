@@ -9,6 +9,7 @@ import {
   classifyHistory,
   HIDDEN_KINDS,
   matchesLocal,
+  suppressUndeployedHistory,
   type ClassifiedHistoryEntry,
   type HistoryWindow,
 } from '@/pages/Activity/historyMapping'
@@ -31,7 +32,7 @@ export interface UseMergedActivityResult {
 const HISTORY_PAGE_SIZE = 100
 
 const mapStatus = (s: UnsettledOperation['status']): ActivityStatus =>
-  s === 'pending' ? 'in-progress' : 'failed'
+  s === 'pending' || s === 'undeployed' ? 'in-progress' : 'failed'
 
 const serverIdOf = (a: Activity): string | undefined =>
   a.type === 'swap' ? a.swapId : a.direction === 'deposit' ? a.depositId : a.withdrawId
@@ -176,14 +177,19 @@ export function useMergedActivity(historyLimit: number = HISTORY_PAGE_SIZE): Use
     return map
   }, [tokensData])
 
+  const unsettledOps = useMemo(() => unsettled.data?.operations ?? [], [unsettled.data])
+
   const historyWindow = history.window
   const chainRows = useMemo(
     () =>
-      classifyHistory(history.entries, poolsByAddress, historyWindow).filter(r => !HIDDEN_KINDS.has(r.kind)),
-    [history.entries, poolsByAddress, historyWindow],
+      suppressUndeployedHistory(
+        classifyHistory(history.entries, poolsByAddress, historyWindow).filter(
+          r => !HIDDEN_KINDS.has(r.kind),
+        ),
+        unsettledOps,
+      ),
+    [history.entries, poolsByAddress, historyWindow, unsettledOps],
   )
-
-  const unsettledOps = useMemo(() => unsettled.data?.operations ?? [], [unsettled.data])
 
   const unsettledIds = useMemo(() => new Set(unsettledOps.map(o => o.operation_id)), [unsettledOps])
 
@@ -266,6 +272,6 @@ export function usePendingActivityCount(): number {
   const { activities } = useActivity()
   const ops = unsettled.data?.operations ?? []
   const unsettledIds = new Set(ops.map(o => o.operation_id))
-  const serverPending = ops.filter(o => o.status === 'pending').length
+  const serverPending = ops.filter(o => o.status === 'pending' || o.status === 'undeployed').length
   return serverPending + pendingLocal(activities, unsettledIds).length
 }

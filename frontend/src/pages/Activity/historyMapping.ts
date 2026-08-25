@@ -1,5 +1,6 @@
 import type { HistoryEntry } from '@oasisprotocol/privana-sdk'
 import type { EarnPool } from '@/api/earn'
+import type { UnsettledOperation } from '@/api/operations'
 import type { Activity } from '@/contexts/ActivityProvider/context'
 import { isSwapLpAddress } from '@/config/swap'
 
@@ -171,6 +172,44 @@ function resolveKind(
     default:
       return { kind: 'unknown' }
   }
+}
+
+// An "undeployed" earn deposit settled on the accounting ledger (its history
+// entry exists) while the operation still awaits strategy redeploy in the
+// services store — the one case where the two sources overlap. Rendering both
+// would show the same deposit twice with contradictory statuses, so the
+// history copy is suppressed and the unsettled row (rendered as in-progress)
+// represents the operation. Once the redeploy completes, the op leaves
+// the unsettled list and the history row takes over.
+const UNDEPLOYED_MATCH_WINDOW_SECONDS = 600
+
+export function suppressUndeployedHistory(
+  rows: ClassifiedHistoryEntry[],
+  operations: UnsettledOperation[],
+): ClassifiedHistoryEntry[] {
+  const candidates = operations.filter(
+    op => op.operation_type === 'earn_deposit' && op.status === 'undeployed',
+  )
+  if (candidates.length === 0) return rows
+
+  // Each op suppresses at most one row, and picks the row *closest in time* —
+  // first-match-in-array-order would let an op claim an earlier identical
+  // deposit's row and hide the wrong one of the two.
+  const suppressed = new Set<ClassifiedHistoryEntry>()
+  for (const op of candidates) {
+    let best: ClassifiedHistoryEntry | undefined
+    for (const row of rows) {
+      if (suppressed.has(row) || row.kind !== 'earnDeposit') continue
+      if (row.pool?.pool_id !== op.pool_id || row.tokenId !== op.token_id || row.amount !== op.amount) {
+        continue
+      }
+      const distance = Math.abs(row.timestamp - op.created_at)
+      if (distance > UNDEPLOYED_MATCH_WINDOW_SECONDS) continue
+      if (!best || distance < Math.abs(best.timestamp - op.created_at)) best = row
+    }
+    if (best) suppressed.add(best)
+  }
+  return rows.filter(row => !suppressed.has(row))
 }
 
 // Match between a chain row and a local activity for prune effect.

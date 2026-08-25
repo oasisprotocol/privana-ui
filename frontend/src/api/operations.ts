@@ -6,9 +6,12 @@ import { request } from './http'
 // Pending/failed swap + earn operations, served by service from its own
 // DB (swaps + earn_transactions). Completed history lives on-chain in Accounting
 // (SDK `useHistory`); these two sets are disjoint by status - an op leaves this
-// list once it settles and shows up in history instead.
+// list once it settles and shows up in history instead. The exception is
+// "undeployed": the accounting transfer settled (a history entry exists) but
+// the funds still await operator redeploy into the strategy, so the op stays
+// listed here at the same time.
 export type UnsettledOperationType = 'swap' | 'earn_deposit' | 'earn_withdraw'
-export type UnsettledOperationStatus = 'pending' | 'failed' | 'canceled'
+export type UnsettledOperationStatus = 'pending' | 'failed' | 'canceled' | 'undeployed'
 
 export interface UnsettledOperation {
   operation_id: string
@@ -64,8 +67,13 @@ export function useUnsettledOperations() {
     queryKey: operationsKeys.unsettled(address ?? ''),
     queryFn: () => getUnsettledOperations(jwt!),
     enabled: !!address && !!jwt,
+    // Poll while any non-terminal op exists: "pending" resolves on its own and
+    // "undeployed" settles when the operator redeploys — without polling a
+    // session would never observe either transition.
     refetchInterval: query =>
-      query.state.data?.operations.some(o => o.status === 'pending') ? 10_000 : false,
+      query.state.data?.operations.some(o => o.status === 'pending' || o.status === 'undeployed')
+        ? 10_000
+        : false,
     staleTime: 5_000,
   })
 }
