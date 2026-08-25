@@ -1,0 +1,48 @@
+name: deploy-mainnet
+
+on:
+  push:
+    tags:
+      - '*'
+
+permissions:
+  contents: read
+
+concurrency:
+  group: deploy-mainnet
+  cancel-in-progress: false
+
+jobs:
+  deploy:
+    name: deploy
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v6
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v6
+        with:
+          node-version-file: frontend/.nvmrc
+          cache: yarn
+          cache-dependency-path: frontend/yarn.lock
+
+      - name: Install dependencies
+        run: yarn install --frozen-lockfile
+        working-directory: frontend
+
+      - name: Build app
+        run: yarn build:mainnet
+        working-directory: frontend
+
+      - name: Publish to Cloudflare Pages
+        uses: cloudflare/wrangler-action@v3
+        with:
+          packageManager: yarn
+          workingDirectory: frontend
+          # Token with Cloudflare Pages edit permission only generated in Cloudflare dashboard -> Manage Account -> Account API Tokens
+          apiToken: ${{ secrets.CLOUDFLARE_PAGES_API_TOKEN }}
+          # Acquired from Cloudflare dashboard -> Compute > Workers & Pages or dashboard url: https://dash.cloudflare.com/<account-id>/
+          accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          # Project created via Cloudflare dashboard or CLI command "npx wrangler pages project create <project-name>"
+          command: pages deploy ./dist --project-name=privana-ui-mainnet --branch=production
