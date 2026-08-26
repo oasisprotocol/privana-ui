@@ -1,6 +1,7 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { renderHook, waitFor } from '@testing-library/react'
 import { createQueryWrapper } from '@/test/query'
+import { signInAs, siweAuth } from '@/test/siwe'
 import { ApiError, request } from '@/api/http'
 import { usePortfolioHistory, type PortfolioHistoryResponse } from '@/api/portfolio'
 
@@ -16,10 +17,7 @@ vi.mock('@/api/http', () => {
   return { ApiError, request: vi.fn() }
 })
 
-let auth: { session: { address: string } | null; accessToken: string | null }
-vi.mock('@oasisprotocol/privana-sdk', () => ({
-  useSiweAuth: () => auth,
-}))
+vi.mock('@oasisprotocol/privana-sdk', () => ({ useSiweAuth: () => siweAuth.state }))
 
 const ADDRESS = '0x705b2433b76c383C20AE0d60803334f0AD13b6e8'
 const OTHER_ADDRESS = '0x152E6a7125665764a4F1F1df80E8f5D49Bf0239c'
@@ -40,7 +38,7 @@ const deferred = <T,>() => {
 
 describe('usePortfolioHistory', () => {
   beforeEach(() => {
-    auth = { session: { address: ADDRESS }, accessToken: 'test-jwt' }
+    signInAs(ADDRESS)
   })
 
   afterEach(() => {
@@ -82,7 +80,7 @@ describe('usePortfolioHistory', () => {
     await waitFor(() => expect(result.current.data).toBeDefined())
 
     mockedRequest.mockReturnValueOnce(deferred<PortfolioHistoryResponse>().promise)
-    auth = { session: { address: OTHER_ADDRESS }, accessToken: 'other-jwt' }
+    signInAs(OTHER_ADDRESS, 'other-jwt')
     rerender()
     // The switch starts a fresh fetch under the new session…
     expect(mockedRequest).toHaveBeenCalledTimes(2)

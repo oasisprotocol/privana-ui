@@ -1,6 +1,7 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { act, renderHook, waitFor } from '@testing-library/react'
 import { createQueryWrapper } from '@/test/query'
+import { signInAs, siweAuth } from '@/test/siwe'
 import { request } from '@/api/http'
 import {
   operationsKeys,
@@ -11,10 +12,7 @@ import {
 
 vi.mock('@/api/http', () => ({ request: vi.fn() }))
 
-let auth: { session: { address: string } | null; accessToken: string | null }
-vi.mock('@oasisprotocol/privana-sdk', () => ({
-  useSiweAuth: () => auth,
-}))
+vi.mock('@oasisprotocol/privana-sdk', () => ({ useSiweAuth: () => siweAuth.state }))
 
 const ADDRESS = '0x705b2433b76c383C20AE0d60803334f0AD13b6e8'
 
@@ -43,7 +41,7 @@ const respondWith = (...operations: UnsettledOperation[]) => mockedRequest.mockR
 
 describe('useUnsettledOperations', () => {
   beforeEach(() => {
-    auth = { session: { address: ADDRESS }, accessToken: 'test-jwt' }
+    signInAs(ADDRESS)
   })
 
   afterEach(() => {
@@ -52,7 +50,7 @@ describe('useUnsettledOperations', () => {
   })
 
   it('does not fetch until a session and JWT exist', () => {
-    auth = { session: null, accessToken: null }
+    siweAuth.state = { session: null, accessToken: null }
     const { Wrapper } = createQueryWrapper()
     const { result } = renderHook(() => useUnsettledOperations(), { wrapper: Wrapper })
     expect(mockedRequest).not.toHaveBeenCalled()
@@ -112,7 +110,7 @@ describe('useUnsettledOperations', () => {
     await waitFor(() => expect(result.current.data).toBeDefined())
     expect(client.getQueryData(operationsKeys.unsettled(ADDRESS))).toBeDefined()
 
-    auth = { session: { address: ADDRESS }, accessToken: null }
+    siweAuth.state = { session: { address: ADDRESS }, accessToken: null }
     rerender()
     await waitFor(() => expect(client.getQueryData(operationsKeys.unsettled(ADDRESS))).toBeUndefined())
   })
