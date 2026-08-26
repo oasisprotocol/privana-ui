@@ -5,17 +5,10 @@ import { signInAs, siweAuth } from '@/test/siwe'
 import { ApiError, request } from '@/api/http'
 import { usePortfolioHistory, type PortfolioHistoryResponse } from '@/api/portfolio'
 
-vi.mock('@/api/http', () => {
-  class ApiError extends Error {
-    constructor(
-      readonly status: number,
-      readonly detail: string | null,
-    ) {
-      super(detail ?? `Request failed: ${status}`)
-    }
-  }
-  return { ApiError, request: vi.fn() }
-})
+vi.mock('@/api/http', async importOriginal => ({
+  ...(await importOriginal<typeof import('@/api/http')>()),
+  request: vi.fn(),
+}))
 
 vi.mock('@oasisprotocol/privana-sdk', () => ({ useSiweAuth: () => siweAuth.state }))
 
