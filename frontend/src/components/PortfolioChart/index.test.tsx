@@ -15,12 +15,13 @@ const noop = () => {}
 
 describe('PortfolioChartSection', () => {
   it('renders the chart and switcher when there is enough data', () => {
-    render(
+    const { container } = render(
       <PortfolioChartSection data={points(5)} range="all" onRangeChange={noop} emptyLabel="Nothing yet" />,
     )
     expect(screen.queryByText('Nothing yet')).not.toBeInTheDocument()
     expect(screen.queryByText('No data for this period.')).not.toBeInTheDocument()
     expect(screen.getAllByRole('button')).toHaveLength(5)
+    expect(container.querySelector('path.recharts-area-area')?.getAttribute('d')).toMatch(/^M/)
   })
 
   it('shows the empty label and hides the switcher when "all" has no data', () => {
@@ -70,6 +71,6 @@ describe('PortfolioChartPlaceholder', () => {
   it('renders its label and hides the dimmed chart from assistive tech', () => {
     const { container } = render(<PortfolioChartPlaceholder label="No history" />)
     expect(screen.getByText('No history')).toBeInTheDocument()
-    expect(container.querySelector('[aria-hidden]')).not.toBeNull()
+    expect(container.querySelector('[aria-hidden] path.recharts-area-area')).not.toBeNull()
   })
 })

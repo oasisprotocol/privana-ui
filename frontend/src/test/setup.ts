@@ -6,13 +6,16 @@ import { cleanup } from '@testing-library/react'
 // afterEach, and vitest globals are off in this project.
 afterEach(cleanup)
 
-// recharts' ResponsiveContainer (via ui/chart.tsx) requires a ResizeObserver;
-// provide a no-op when the test DOM doesn't ship one.
-if (typeof globalThis.ResizeObserver === 'undefined') {
-  class ResizeObserverStub {
-    observe() {}
-    unobserve() {}
-    disconnect() {}
+// happy-dom computes no layout, so measured sizes are all 0×0 and recharts'
+// ResponsiveContainer collapses every chart to nothing. Replace its
+// ResizeObserver with one reporting a fixed size, so charts actually draw
+// and tests can assert on the rendered SVG.
+class FixedSizeResizeObserver implements ResizeObserver {
+  constructor(private readonly callback: ResizeObserverCallback) {}
+  observe(target: Element) {
+    this.callback([{ target, contentRect: { width: 800, height: 400 } } as ResizeObserverEntry], this)
   }
-  globalThis.ResizeObserver = ResizeObserverStub as unknown as typeof ResizeObserver
+  unobserve() {}
+  disconnect() {}
 }
+globalThis.ResizeObserver = FixedSizeResizeObserver
