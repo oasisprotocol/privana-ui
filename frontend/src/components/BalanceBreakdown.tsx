@@ -39,6 +39,7 @@ export const BalanceBreakdown = ({
             return pct > 0 ? (
               <span
                 key={segment.key}
+                data-testid="balance-bar-segment"
                 className={cn('h-full', segment.className)}
                 style={{ width: `${pct}%` }}
               />

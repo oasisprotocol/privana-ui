@@ -13,6 +13,7 @@ export const BalanceAmount = ({ value, className }: { value: number; className?:
       return (
         <span
           key={i}
+          data-testid="amount-part"
           className={cn(part.type === 'currency' && 'text-[0.75em]', muted && 'text-muted-foreground')}
         >
           {part.value}

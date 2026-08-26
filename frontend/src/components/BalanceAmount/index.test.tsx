@@ -1,8 +1,8 @@
 import { describe, expect, it } from 'vitest'
-import { render } from '@testing-library/react'
+import { render, screen } from '@testing-library/react'
 import { BalanceAmount } from '@/components/BalanceAmount'
 
-const partSpans = (container: HTMLElement) => Array.from(container.querySelectorAll('span > span'))
+const partSpans = () => screen.getAllByTestId('amount-part')
 
 describe('BalanceAmount', () => {
   it('renders the full formatted amount', () => {
@@ -11,8 +11,8 @@ describe('BalanceAmount', () => {
   })
 
   it('mutes only the currency symbol and the fractional part', () => {
-    const { container } = render(<BalanceAmount value={1234.5} />)
-    const spans = partSpans(container)
+    render(<BalanceAmount value={1234.5} />)
+    const spans = partSpans()
     const mutedText = spans
       .filter(s => s.classList.contains('text-muted-foreground'))
       .map(s => s.textContent)
@@ -26,8 +26,8 @@ describe('BalanceAmount', () => {
   })
 
   it('shrinks the currency symbol', () => {
-    const { container } = render(<BalanceAmount value={5} />)
-    const currency = partSpans(container).find(s => s.textContent === '$')
+    render(<BalanceAmount value={5} />)
+    const currency = partSpans().find(s => s.textContent === '$')
     expect(currency).toHaveClass('text-[0.75em]')
   })
 })
