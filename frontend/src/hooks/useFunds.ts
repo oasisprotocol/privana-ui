@@ -8,6 +8,7 @@ import {
 import { formatUnits } from 'viem'
 import { useEarnPools, useEarnBalance } from '@/api/earn'
 import { useTokenPrices } from '@/api/coin-gecko'
+import { computeEarnChange24h } from '@/lib/earn'
 import { mergeTokensBySymbol } from '@/lib/tokens'
 
 export interface TokenBreakdown {
@@ -105,30 +106,12 @@ export function useFunds(): Funds {
         earning += fiatOf(p.token_id, p.underlying_amount)
       }
 
-      // Yield-only 24h change. change_24h is null whenever the backend cannot
-      // compute it honestly, and a partial sum would understate the move, so the
-      // badge only shows when every live position reports one. The percent is
-      // recomputed over the aggregate: Σ change / Σ window-start value (which is
-      // underlying − change, since the backend guarantees no cashflow touched
-      // the window).
-      const live = (earnBalance?.positions ?? []).filter(p => BigInt(p.shares || '0') > 0n)
-      let earnChange: { usd: number; pct: number } | null = null
-      if (live.length > 0 && live.every(p => p.change_24h != null)) {
-        const usd = live.reduce((sum, p) => sum + fiatOf(p.token_id, p.change_24h!), 0)
-        const baseUsd = live.reduce(
-          (sum, p) =>
-            sum + fiatOf(p.token_id, (BigInt(p.underlying_amount) - BigInt(p.change_24h!)).toString()),
-          0,
-        )
-        if (baseUsd > 0) earnChange = { usd, pct: (usd / baseUsd) * 100 }
-      }
-
       return {
         availableFiatValue: available,
         lockedFiatValue: locked,
         earningFiatValue: earning,
         totalFiatValue: available + locked + earning,
-        earnChange24h: earnChange,
+        earnChange24h: computeEarnChange24h(earnBalance?.positions ?? [], fiatOf),
       }
     }, [balances, locks, earnBalance, prices, getTokenById])
 
