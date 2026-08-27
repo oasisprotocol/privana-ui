@@ -5,6 +5,7 @@ import { Skeleton } from '@/components/ui/skeleton'
 import { SurfaceCard } from '@/components/SurfaceCard'
 import { BalanceAmount } from '@/components/BalanceAmount'
 import { PortfolioChartPlaceholder, PortfolioChartSection } from '@/components/PortfolioChart'
+import type { EarnChange24h } from '@/lib/earn'
 import { formatFiat, formatAmount, formatAmountTrimmed } from '@/lib/tokens'
 import { formatApyBps } from '@/lib/apy'
 import { cn } from '@/lib/utils'
@@ -34,7 +35,7 @@ type EarnBalanceProps = {
   /** Per-token accrued yield, or null when the backend can't report it honestly. */
   earned: TokenAmount[] | null
   /** Yield-only 24h change (fiat + percent), or null to hide the badge. */
-  change: { usd: number; pct: number } | null
+  change: EarnChange24h | null
   loading: boolean
 }
 

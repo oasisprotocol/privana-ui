@@ -8,7 +8,7 @@ import {
 import { formatUnits } from 'viem'
 import { useEarnPools, useEarnBalance } from '@/api/earn'
 import { useTokenPrices } from '@/api/coin-gecko'
-import { computeEarnChange24h } from '@/lib/earn'
+import { computeEarnChange24h, type EarnChange24h } from '@/lib/earn'
 import { mergeTokensBySymbol } from '@/lib/tokens'
 
 export interface TokenBreakdown {
@@ -34,7 +34,7 @@ export interface Funds {
    * (0.8 means +0.8%). Null whenever any position's change is unknown —
    * hide the badge rather than show a partial or fabricated figure.
    */
-  earnChange24h: { usd: number; pct: number } | null
+  earnChange24h: EarnChange24h | null
   /** Fiat value held in active app locks ("in use" / not withdrawable). */
   lockedFiatValue: number | undefined
   totalFiatValue: number | undefined
