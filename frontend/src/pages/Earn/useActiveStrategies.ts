@@ -15,6 +15,12 @@ export type TokenAmount = { symbol: string; amount: bigint; decimals: number }
 export const useActiveStrategies = (): {
   strategies: ActiveStrategy[]
   projectedMonthly: TokenAmount[]
+  /**
+   * Per-token yield accrued on the shares still held, or null when the backend
+   * cannot stand behind a figure for every active position (the UI shows a
+   * dash rather than an understated sum).
+   */
+  earned: TokenAmount[] | null
   isLoading: boolean
 } => {
   const { data: balanceData, isLoading: balanceLoading } = useEarnBalance()
@@ -52,33 +58,53 @@ export const useActiveStrategies = (): {
     }
   })
 
+  // Aggregate by symbol so multiple pools of the same token collapse into one
+  // figure. Same ticker with different token decimals aligns to the larger
+  // precision.
+  const addBySymbol = (map: Map<string, TokenAmount>, symbol: string, amount: bigint, decimals: number) => {
+    const existing = map.get(symbol)
+    if (!existing) {
+      map.set(symbol, { symbol, amount, decimals })
+    } else if (existing.decimals === decimals) {
+      existing.amount += amount
+    } else {
+      const max = Math.max(existing.decimals, decimals)
+      existing.amount =
+        existing.amount * 10n ** BigInt(max - existing.decimals) + amount * 10n ** BigInt(max - decimals)
+      existing.decimals = max
+    }
+  }
+
   // Per-token projected monthly rewards on the active positions:
-  // underlying × apy_bps / (10000 × 12), aggregated by symbol so multiple pools
-  // of the same token collapse into one figure.
+  // underlying × apy_bps / (10000 × 12).
   const projectedBySymbol = new Map<string, TokenAmount>()
   for (const pos of activePositions) {
     const pool = poolsById.get(pos.pool_id)
     const token = pool ? tokensById.get(pool.token_id) : tokensById.get(pos.token_id)
-    const decimals = token?.token_decimals
-    const symbol = token?.token_symbol
     const apyBps = pool?.apy_bps ?? 0
-    if (decimals == null || !symbol || apyBps <= 0) continue
+    if (token?.token_decimals == null || !token.token_symbol || apyBps <= 0) continue
     const monthly = (BigInt(pos.underlying_amount) * BigInt(apyBps)) / BigInt(10000 * 12)
     if (monthly <= 0n) continue
-    const existing = projectedBySymbol.get(symbol)
-    if (!existing) {
-      projectedBySymbol.set(symbol, { symbol, amount: monthly, decimals })
-    } else if (existing.decimals === decimals) {
-      existing.amount += monthly
-    } else {
-      // Same ticker, different token decimals: align both to the larger precision.
-      const max = Math.max(existing.decimals, decimals)
-      existing.amount =
-        existing.amount * 10n ** BigInt(max - existing.decimals) + monthly * 10n ** BigInt(max - decimals)
-      existing.decimals = max
-    }
+    addBySymbol(projectedBySymbol, token.token_symbol, monthly, token.token_decimals)
   }
   const projectedMonthly = [...projectedBySymbol.values()]
 
-  return { strategies, projectedMonthly, isLoading }
+  // Per-token earned on the active positions. The backend sets earned_active
+  // only when it can stand behind the figure (earned_active_status "ok"); any
+  // active position without one makes the total unknown, so report null rather
+  // than an understated sum.
+  const earnedBySymbol = new Map<string, TokenAmount>()
+  let earnedKnown = true
+  for (const pos of activePositions) {
+    const pool = poolsById.get(pos.pool_id)
+    const token = pool ? tokensById.get(pool.token_id) : tokensById.get(pos.token_id)
+    if (pos.earned_active == null || token?.token_decimals == null || !token.token_symbol) {
+      earnedKnown = false
+      break
+    }
+    addBySymbol(earnedBySymbol, token.token_symbol, BigInt(pos.earned_active), token.token_decimals)
+  }
+  const earned = earnedKnown ? [...earnedBySymbol.values()] : null
+
+  return { strategies, projectedMonthly, earned, isLoading }
 }

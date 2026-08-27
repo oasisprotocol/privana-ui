@@ -5,24 +5,10 @@ import { Skeleton } from '@/components/ui/skeleton'
 import { SurfaceCard } from '@/components/SurfaceCard'
 import { BalanceAmount } from '@/components/BalanceAmount'
 import { PortfolioChartPlaceholder, PortfolioChartSection } from '@/components/PortfolioChart'
-import { formatFiat, formatAmount } from '@/lib/tokens'
+import { formatFiat, formatAmount, formatAmountTrimmed } from '@/lib/tokens'
 import { formatApyBps } from '@/lib/apy'
 import { cn } from '@/lib/utils'
 import type { TokenAmount } from './useActiveStrategies'
-
-// Mock until the API exposes accrued yield since deposit + a real period delta.
-// TODO: replace with real accrued-yield / change figures.
-const TOTAL_EARNED_MOCK = 7.5
-const MOCK_CHANGE_PCT = 0.8
-
-// Earned is still a *fiat (USD) mock* — the backend doesn't report accrued-yield-
-// since-deposit yet, so there's no per-token figure to break it down by. A USD mock
-// only makes sense against a $1 stablecoin, so it's labelled USDC. Projected below is
-// real and per-token; make Earned per-token too once the accrued-yield endpoint lands.
-const EARN_DISPLAY_SYMBOL = 'USDC'
-
-const formatToken = (value: number) =>
-  value.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })
 
 const TokenValue = ({ symbol, amount, positive }: { symbol: string; amount: string; positive?: boolean }) => (
   <span
@@ -45,6 +31,10 @@ type EarnBalanceProps = {
   bestApyBps: number | null
   pricesError: boolean
   projected: TokenAmount[]
+  /** Per-token accrued yield, or null when the backend can't report it honestly. */
+  earned: TokenAmount[] | null
+  /** Yield-only 24h change (fiat + percent), or null to hide the badge. */
+  change: { usd: number; pct: number } | null
   loading: boolean
 }
 
@@ -53,6 +43,8 @@ export const EarnBalance = ({
   bestApyBps,
   pricesError,
   projected,
+  earned,
+  change,
   loading,
 }: EarnBalanceProps) => {
   const isEarning = (earningFiatValue ?? 0) > 0
@@ -62,9 +54,6 @@ export const EarnBalance = ({
     () => (earnHistory?.points ?? []).map(p => ({ date: String(p.timestamp), value: Number(p.value_usd) })),
     [earnHistory],
   )
-  const earned = isEarning ? TOTAL_EARNED_MOCK : 0
-  const changeUsd = (earningFiatValue ?? 0) * (MOCK_CHANGE_PCT / 100)
-
   return (
     <SurfaceCard className="grid gap-6 rounded-3xl p-6 md:gap-8 md:p-8 lg:grid-cols-2">
       <div className="flex flex-col">
@@ -87,9 +76,16 @@ export const EarnBalance = ({
           <BalanceAmount value={earningFiatValue} className="mt-3 text-6xl animate-fade-in" />
         )}
 
-        {!loading && isEarning && (
-          <span className="mt-2 text-sm font-medium text-chart-positive">
-            +{formatFiat(changeUsd)} (+{MOCK_CHANGE_PCT.toFixed(2)}%)
+        {!loading && isEarning && change && (
+          <span
+            className={cn(
+              'mt-2 text-sm font-medium',
+              change.usd < 0 ? 'text-destructive' : 'text-chart-positive',
+            )}
+          >
+            {change.usd < 0 ? '' : '+'}
+            {formatFiat(change.usd)} ({change.pct < 0 ? '' : '+'}
+            {change.pct.toFixed(2)}%)
           </span>
         )}
 
@@ -100,10 +96,21 @@ export const EarnBalance = ({
           </div>
         ) : (
           <div className="mt-6 space-y-2.5 text-lg">
-            <div className="flex items-center gap-3">
+            <div className="flex flex-wrap items-center gap-x-3 gap-y-1">
               <span aria-hidden className="size-2.5 shrink-0 rounded-full bg-chart-positive" />
               <span className="font-medium">Earned</span>
-              <TokenValue symbol={EARN_DISPLAY_SYMBOL} amount={formatToken(earned)} positive />
+              {earned && earned.length > 0 ? (
+                earned.map(t => (
+                  <TokenValue
+                    key={t.symbol}
+                    symbol={t.symbol}
+                    amount={formatAmountTrimmed(t.amount, t.decimals)}
+                    positive={t.amount >= 0n}
+                  />
+                ))
+              ) : (
+                <span className="text-muted-foreground">—</span>
+              )}
             </div>
             <div>
               <div className="flex flex-wrap items-center gap-x-3 gap-y-1">
