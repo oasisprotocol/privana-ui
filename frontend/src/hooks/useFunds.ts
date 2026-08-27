@@ -8,6 +8,7 @@ import {
 import { formatUnits } from 'viem'
 import { useEarnPools, useEarnBalance } from '@/api/earn'
 import { useTokenPrices } from '@/api/coin-gecko'
+import { computeEarnChange24h, type EarnChange24h } from '@/lib/earn'
 import { mergeTokensBySymbol } from '@/lib/tokens'
 
 export interface TokenBreakdown {
@@ -28,6 +29,12 @@ export interface Funds {
   availableFiatValue: number | undefined
   /** Fiat value held in earn positions. */
   earningFiatValue: number | undefined
+  /**
+   * Yield-only 24h change across earn positions: fiat delta and percent
+   * (0.8 means +0.8%). Null whenever any position's change is unknown —
+   * hide the badge rather than show a partial or fabricated figure.
+   */
+  earnChange24h: EarnChange24h | null
   /** Fiat value held in active app locks ("in use" / not withdrawable). */
   lockedFiatValue: number | undefined
   totalFiatValue: number | undefined
@@ -64,45 +71,49 @@ export function useFunds(): Funds {
     return activePools.length ? Math.max(...activePools.map(p => p.apy_bps)) : null
   }, [poolsData])
 
-  const { availableFiatValue, lockedFiatValue, earningFiatValue, totalFiatValue } = useMemo(() => {
-    if (!prices) {
-      return {
-        availableFiatValue: undefined,
-        lockedFiatValue: undefined,
-        earningFiatValue: undefined,
-        totalFiatValue: undefined,
+  const { availableFiatValue, lockedFiatValue, earningFiatValue, totalFiatValue, earnChange24h } =
+    useMemo(() => {
+      if (!prices) {
+        return {
+          availableFiatValue: undefined,
+          lockedFiatValue: undefined,
+          earningFiatValue: undefined,
+          totalFiatValue: undefined,
+          earnChange24h: null,
+        }
       }
-    }
-    const fiatOf = (tokenId: string, amountWei: string): number => {
-      const price = prices[tokenId]
-      const decimals = getTokenById(tokenId)?.decimals
-      if (price == null || decimals == null) return 0
-      return Number(formatUnits(BigInt(amountWei || '0'), decimals)) * price
-    }
+      const fiatOf = (tokenId: string, amountWei: string): number => {
+        const price = prices[tokenId]
+        const decimals = getTokenById(tokenId)?.decimals
+        if (price == null || decimals == null) return 0
+        return Number(formatUnits(BigInt(amountWei || '0'), decimals)) * price
+      }
 
-    let available = 0
-    let locked = 0
-    for (const b of balances) {
-      available += fiatOf(b.token_id, b.balance)
-      locked += locks
-        .filter(l => l.token_id === b.token_id)
-        .reduce((sum, l) => sum + fiatOf(l.token_id, l.amount), 0)
-    }
-    // Earn positions are transferred into the pool (not held as a lock), so they
-    // are a separate bucket from available/locked - no double counting. Their
-    // underlying_amount already reflects accrued yield. (Pending in-flight
-    // withdrawals are intentionally excluded; those funds are leaving.)
-    let earning = 0
-    for (const p of earnBalance?.positions ?? []) {
-      earning += fiatOf(p.token_id, p.underlying_amount)
-    }
-    return {
-      availableFiatValue: available,
-      lockedFiatValue: locked,
-      earningFiatValue: earning,
-      totalFiatValue: available + locked + earning,
-    }
-  }, [balances, locks, earnBalance, prices, getTokenById])
+      let available = 0
+      let locked = 0
+      for (const b of balances) {
+        available += fiatOf(b.token_id, b.balance)
+        locked += locks
+          .filter(l => l.token_id === b.token_id)
+          .reduce((sum, l) => sum + fiatOf(l.token_id, l.amount), 0)
+      }
+      // Earn positions are transferred into the pool (not held as a lock), so they
+      // are a separate bucket from available/locked - no double counting. Their
+      // underlying_amount already reflects accrued yield. (Pending in-flight
+      // withdrawals are intentionally excluded; those funds are leaving.)
+      let earning = 0
+      for (const p of earnBalance?.positions ?? []) {
+        earning += fiatOf(p.token_id, p.underlying_amount)
+      }
+
+      return {
+        availableFiatValue: available,
+        lockedFiatValue: locked,
+        earningFiatValue: earning,
+        totalFiatValue: available + locked + earning,
+        earnChange24h: computeEarnChange24h(earnBalance?.positions ?? [], fiatOf),
+      }
+    }, [balances, locks, earnBalance, prices, getTokenById])
 
   // Per-token amounts for token-denominated display (Earning / Available rows).
   // Merged by symbol so token ids that share a ticker (e.g. several USDC ids)
@@ -142,6 +153,7 @@ export function useFunds(): Funds {
     availableTokenIds,
     availableFiatValue,
     earningFiatValue,
+    earnChange24h,
     lockedFiatValue,
     totalFiatValue,
     availableTokens,

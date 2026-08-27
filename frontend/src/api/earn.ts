@@ -84,12 +84,21 @@ export interface WithdrawResponse {
   error: string | null
 }
 
+export type EarnedActiveStatus = 'ok' | 'ledger_incomplete' | 'pending_settlement' | 'unsupported'
+
 export interface EarnBalance {
   pool_id: string
   token_id: string
   shares: string
   underlying_amount: string
   exchange_rate: string
+  change_24h: string | null
+  change_24h_pct: string | null
+  earned_active: string | null
+  earned_active_status: EarnedActiveStatus
+  cost_basis: string | null
+  deposit_count: number
+  first_deposit_at: number | null
 }
 
 export interface EarnBalanceListResponse {

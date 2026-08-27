@@ -14,8 +14,20 @@ const VenueCardSkeleton = () => <Skeleton className="h-44 w-full rounded-2xl md:
 export const EarnDashboard = () => {
   const { data: poolsData, isLoading: poolsLoading, error: poolsError } = useEarnPools()
   const { data: tokensData, isLoading: tokensLoading, error: tokensError } = useTokens()
-  const { earningFiatValue, bestApyBps, pricesError, availableTokenIds, isLoading: fundsLoading } = useFunds()
-  const { strategies: activePositions, projectedMonthly, isLoading: positionsLoading } = useActiveStrategies()
+  const {
+    earningFiatValue,
+    earnChange24h,
+    bestApyBps,
+    pricesError,
+    availableTokenIds,
+    isLoading: fundsLoading,
+  } = useFunds()
+  const {
+    strategies: activePositions,
+    projectedMonthly,
+    earned,
+    isLoading: positionsLoading,
+  } = useActiveStrategies()
   const isLoading = poolsLoading || tokensLoading || positionsLoading
   const [depositOpen, setDepositOpen] = useState(false)
 
@@ -55,6 +67,8 @@ export const EarnDashboard = () => {
           bestApyBps={bestApyBps}
           pricesError={pricesError}
           projected={projectedMonthly}
+          earned={earned}
+          change={earnChange24h}
           loading={fundsLoading}
         />
 
