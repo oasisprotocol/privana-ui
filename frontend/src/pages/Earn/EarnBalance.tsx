@@ -86,7 +86,7 @@ export const EarnBalance = ({
           >
             {change.usd < 0 ? '' : '+'}
             {formatFiat(change.usd)} ({change.pct < 0 ? '' : '+'}
-            {change.pct.toFixed(2)}%)
+            {change.pct.toFixed(2)}%) <span className="text-muted-foreground">24h</span>
           </span>
         )}
 
