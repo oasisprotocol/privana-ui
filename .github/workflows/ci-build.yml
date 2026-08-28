@@ -25,6 +25,9 @@ jobs:
         uses: actions/checkout@v6
         with:
           submodules: true
+      - name: Enable Corepack
+        # Must run before setup-node so its yarn cache resolution sees yarn 4
+        run: corepack enable
       - name: Set up Node.js 22
         uses: actions/setup-node@v6
         with:
@@ -33,7 +36,7 @@ jobs:
           cache: yarn
           cache-dependency-path: frontend/yarn.lock
       - name: Install dependencies
-        run: yarn install --frozen-lockfile
+        run: yarn install --immutable
         working-directory: frontend
       - name: Set workflow variables
         # Id is needed to access output in a next step.
