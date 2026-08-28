@@ -6990,9 +6990,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"privana@workspace:.":
+"privana-ui@workspace:.":
   version: 0.0.0-use.local
-  resolution: "privana@workspace:."
+  resolution: "privana-ui@workspace:."
   dependencies:
     "@eslint/js": "npm:^10.0.1"
     "@fontsource-variable/geist": "npm:^5.3.0"
