@@ -8,7 +8,7 @@
     "build": "vite build --mode testnet",
     "build:mainnet": "vite build --mode mainnet",
     "preview": "vite preview",
-    "checkTs": "tsc --noEmit",
+    "checkTs": "tsc --noEmit && tsc --noEmit -p e2e/tsconfig.json",
     "test": "vitest run --mode testnet",
     "test:watch": "vitest --mode testnet",
     "test:e2e": "playwright test",
