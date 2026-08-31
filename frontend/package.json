@@ -11,10 +11,12 @@
     "checkTs": "tsc --noEmit",
     "test": "vitest run --mode testnet",
     "test:watch": "vitest --mode testnet",
+    "test:e2e": "playwright test",
+    "test:e2e:ui": "playwright test --ui",
     "lint": "eslint . --max-warnings 0",
     "lint-docs": "markdownlint --ignore '**/node_modules/**' '**/*.md'",
-    "prettier-check": "prettier src --check",
-    "prettier": "prettier src --write"
+    "prettier-check": "prettier src e2e playwright.config.ts --check",
+    "prettier": "prettier src e2e playwright.config.ts --write"
   },
   "dependencies": {
     "@fontsource-variable/geist": "^5.3.0",
