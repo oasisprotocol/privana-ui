@@ -1,0 +1,84 @@
+# NOTE: This name appears in GitHub's Checks API and in workflow's status badge.
+name: ci-e2e
+
+# Trigger the workflow when:
+on:
+  # A push occurs to one of the matched branches.
+  push:
+    branches:
+      - master
+      - stable/*
+  # Or when a pull request event occurs for a pull request against one of the
+  # matched branches.
+  pull_request:
+    branches:
+      - master
+      - stable/*
+
+# Limit secrets.GITHUB_TOKEN to reading the repository: the checkout of this
+# private repo needs it, and nothing here needs more.
+permissions:
+  contents: read
+
+jobs:
+  e2e:
+    # NOTE: This name appears in GitHub's Checks API.
+    name: e2e
+    runs-on: ubuntu-latest
+    # Tripwire: the stubbed suite runs in seconds; anything approaching this
+    # limit is a hang to investigate, not a reason to raise the limit.
+    timeout-minutes: 10
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v6
+        with:
+          submodules: true
+      - name: Enable Corepack
+        # Must run before setup-node so its yarn cache resolution sees yarn 4.
+        # corepack@latest first: Node 25+ no longer bundles corepack
+        run: |
+          npm install -g corepack@latest
+          corepack enable
+      - name: Set up Node.js 22
+        uses: actions/setup-node@v6
+        with:
+          # Reuse the version pinned by .nvmrc instead of a floating 22.x.
+          node-version-file: frontend/.nvmrc
+          cache: yarn
+          cache-dependency-path: frontend/yarn.lock
+      - name: Install dependencies
+        run: yarn install --immutable
+        working-directory: frontend
+      - name: Resolve Playwright version
+        # Keys the browser cache below, so a Playwright bump refreshes it.
+        id: playwright-version
+        run: echo "version=$(yarn info @playwright/test --json | jq -r .children.Version)" >> "$GITHUB_OUTPUT"
+        working-directory: frontend
+      - name: Cache Playwright browsers
+        id: playwright-cache
+        uses: actions/cache@v4
+        with:
+          path: ~/.cache/ms-playwright
+          key: playwright-chromium-${{ steps.playwright-version.outputs.version }}
+      - name: Install Playwright chromium
+        if: steps.playwright-cache.outputs.cache-hit != 'true'
+        run: yarn playwright install --with-deps chromium
+        working-directory: frontend
+      - name: Install Playwright system dependencies
+        # Browser binaries came from the cache, but OS packages don't persist
+        # across runners.
+        if: steps.playwright-cache.outputs.cache-hit == 'true'
+        run: yarn playwright install-deps chromium
+        working-directory: frontend
+      - name: Run e2e tests
+        run: yarn test:e2e
+        working-directory: frontend
+      - name: Upload Playwright report
+        # Not failure(): a flaky test that passes on retry still leaves its
+        # first-attempt trace in the report, and that evidence must not be lost.
+        if: ${{ !cancelled() }}
+        uses: actions/upload-artifact@v4
+        with:
+          name: playwright-report
+          path: frontend/playwright-report
+          retention-days: 7
