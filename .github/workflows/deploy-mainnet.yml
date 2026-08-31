@@ -21,8 +21,11 @@ jobs:
         uses: actions/checkout@v6
 
       - name: Enable Corepack
-        # Must run before setup-node so its yarn cache resolution sees yarn 4
-        run: corepack enable
+        # Must run before setup-node so its yarn cache resolution sees yarn 4.
+        # corepack@latest first: Node 25+ no longer bundles corepack
+        run: |
+          npm install -g corepack@latest
+          corepack enable
 
       - name: Set up Node.js
         uses: actions/setup-node@v6
