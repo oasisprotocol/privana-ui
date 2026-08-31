@@ -94,8 +94,14 @@ const json = (route: Route, body: unknown) =>
  * a host without an explicit stub is aborted and reported — a test must never
  * hang on (or silently depend on) an unstubbed backend.
  */
+const unstubbedByPage = new WeakMap<Page, Set<string>>()
+
+/** Unstubbed backend requests seen on this page — asserted empty after every test. */
+export const unstubbedRequests = (page: Page): string[] => [...(unstubbedByPage.get(page) ?? [])]
+
 export async function installApi(page: Page, state: StubState) {
   const unstubbed = new Set<string>()
+  unstubbedByPage.set(page, unstubbed)
   await page.route('**/*', route => {
     const url = new URL(route.request().url())
     if (url.hostname === 'localhost' || url.hostname === '127.0.0.1') return route.fallback()

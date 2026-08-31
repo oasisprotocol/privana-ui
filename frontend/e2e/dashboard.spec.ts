@@ -1,5 +1,5 @@
-import { expect, test } from '@playwright/test'
 import { emptyAccount, funded, fundedWithEarn, installApi } from './fixtures/api'
+import { expect, test } from './fixtures/test'
 import { installWallet } from './fixtures/wallet'
 
 test.beforeEach(async ({ page }) => {
