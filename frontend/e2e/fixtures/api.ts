@@ -12,7 +12,13 @@ import type {
   TokenInfoResponse,
   TokenListResponse,
 } from '@oasisprotocol/privana-sdk'
-import type { EarnBalance, EarnBalanceListResponse, EarnPool, EarnPoolListResponse } from '../../src/api/earn'
+import type {
+  ApyHistoryResponse,
+  EarnBalance,
+  EarnBalanceListResponse,
+  EarnPool,
+  EarnPoolListResponse,
+} from '../../src/api/earn'
 import type { UnsettledOperationsResponse } from '../../src/api/operations'
 import type { EarnHistoryResponse, PortfolioHistoryResponse } from '../../src/api/portfolio'
 import type {
@@ -35,10 +41,10 @@ const TOKEN_META: Record<string, { symbol: string; name: string; decimals: numbe
 const metaOf = (tokenId: string) =>
   TOKEN_META[tokenId] ?? { symbol: 'USDC', name: 'USD Coin', decimals: 6, chainId: 84532 }
 
-const USDC_POOL: EarnPool = {
+export const USDC_POOL: EarnPool = {
   pool_id: 'e2e-pool-usdc',
   token_id: USDC_TOKEN_ID,
-  strategy: 'aave_v3',
+  strategy: 'aave-v3',
   total_assets: '5000000000000',
   apy_bps: 1200,
   status: 'active',
@@ -229,6 +235,9 @@ export async function installApi(page: Page, state: StubState) {
 
   await page.route(`${SERVICES_API_URL}/v1/earn/pools`, route =>
     json(route, { pools: state.pools } satisfies EarnPoolListResponse),
+  )
+  await page.route(`${SERVICES_API_URL}/v1/earn/pools/*/apy-history**`, route =>
+    json(route, { pool_id: USDC_POOL.pool_id, points: [] } satisfies ApyHistoryResponse),
   )
   await page.route(`${SERVICES_API_URL}/v1/earn/balance`, route =>
     json(route, { positions: state.earnPositions } satisfies EarnBalanceListResponse),
