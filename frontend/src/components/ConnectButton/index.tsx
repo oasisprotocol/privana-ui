@@ -18,7 +18,7 @@ import { Button } from '../ui/button'
 import { DropdownMenu, DropdownMenuContent, DropdownMenuTrigger } from '../ui/dropdown-menu'
 import { AccountAvatar } from '../AccountAvatar'
 import { trimLongString } from '../../utils/trimLongString'
-import { sapphire, sapphireTestnet, baseSepolia, sepolia } from 'viem/chains'
+import { sapphire, sapphireTestnet, base, mainnet, hyperEvm, baseSepolia, sepolia } from 'viem/chains'
 import { wagmiConfig, type AppChainId } from '@/wagmi-config'
 import { TURNKEY_CONNECTOR_ID } from '@/wallet/turnkeyConnector'
 import { useTurnkeyWalletIntent } from '@/wallet/turnkeyIntent'
@@ -38,6 +38,9 @@ const SUPPORTED_CHAIN_IDS = wagmiConfig.chains.map(c => c.id)
 const CHAIN_BADGES: Record<AppChainId, { label: string; color: string }> = {
   [sapphire.id]: { label: 'Sapphire', color: '#0500E2' },
   [sapphireTestnet.id]: { label: 'Sapphire Testnet', color: '#0500E2' },
+  [base.id]: { label: 'Base', color: '#0052FF' },
+  [mainnet.id]: { label: 'Ethereum', color: '#627EEA' },
+  [hyperEvm.id]: { label: 'HyperEVM', color: '#12A594' },
   [baseSepolia.id]: { label: 'Base Sepolia', color: '#0052FF' },
   [sepolia.id]: { label: 'Sepolia', color: '#6b7280' },
 }
