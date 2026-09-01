@@ -1,5 +1,6 @@
 import type { Page, Route } from '@playwright/test'
 import type {
+  BalanceResponse,
   BatchBalancesResponse,
   HistoryResponse,
   JwtLogoutResponse,
@@ -14,6 +15,8 @@ import type {
 } from '@oasisprotocol/privana-sdk'
 import type {
   ApyHistoryResponse,
+  DepositQuoteResponse,
+  DepositResponse,
   EarnBalance,
   EarnBalanceListResponse,
   EarnPool,
@@ -185,6 +188,17 @@ export async function installApi(page: Page, state: StubState) {
     json(route, { message: 'ok', revoked_tokens: 1 } satisfies JwtLogoutResponse),
   )
 
+  await page.route(`${ACCOUNTING_API_URL}/v1/accounting/balances/*`, route => {
+    const tokenId = new URL(route.request().url()).pathname.split('/').pop()!
+    return json(route, {
+      user_address: e2eAddress,
+      token_id: tokenId as `0x${string}`,
+      balance: state.balances[tokenId] ?? '0',
+      token_symbol: metaOf(tokenId).symbol,
+      chain_id: String(metaOf(tokenId).chainId),
+    } satisfies BalanceResponse)
+  })
+
   const balances: TokenBalance[] = ALLOWED_TOKEN_IDS.map(id => ({
     token_id: id,
     balance: state.balances[id] ?? '0',
@@ -236,6 +250,33 @@ export async function installApi(page: Page, state: StubState) {
   await page.route(`${SERVICES_API_URL}/v1/earn/pools`, route =>
     json(route, { pools: state.pools } satisfies EarnPoolListResponse),
   )
+  await page.route(`${SERVICES_API_URL}/v1/earn/quote**`, route => {
+    const params = new URL(route.request().url()).searchParams
+    return json(route, {
+      quote_id: 'e2e-quote-1',
+      pool_id: params.get('pool_id') ?? USDC_POOL.pool_id,
+      token_id: USDC_TOKEN_ID,
+      amount: params.get('amount') ?? '0',
+      shares_estimate: params.get('amount') ?? '0',
+      exchange_rate: '1.0',
+      pool_address: USDC_POOL.pool_address,
+      transfer_nonce: 7,
+      expires_at: Math.floor(Date.now() / 1000) + 300,
+    } satisfies DepositQuoteResponse)
+  })
+  await page.route(`${SERVICES_API_URL}/v1/earn/deposit`, route => {
+    const body = route.request().postDataJSON() as { pool_id: string; amount: string }
+    return json(route, {
+      deposit_id: 'e2e-deposit-1',
+      pool_id: body.pool_id,
+      amount: body.amount,
+      shares_minted: body.amount,
+      exchange_rate: '1.0',
+      tx_hash: null,
+      status: 'completed',
+      error: null,
+    } satisfies DepositResponse)
+  })
   await page.route(`${SERVICES_API_URL}/v1/earn/pools/*/apy-history**`, route =>
     json(route, { pool_id: USDC_POOL.pool_id, points: [] } satisfies ApyHistoryResponse),
   )

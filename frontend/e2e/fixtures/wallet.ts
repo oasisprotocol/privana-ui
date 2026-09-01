@@ -21,6 +21,7 @@ const E2E_WALLET_ICON =
 declare global {
   interface Window {
     __e2eSignMessage: (message: `0x${string}`) => Promise<`0x${string}`>
+    __e2eSignTypedData: (payload: string) => Promise<`0x${string}`>
   }
 }
 
@@ -44,6 +45,9 @@ export async function installWallet(page: Page, { signedIn = true }: InstallWall
   // keeps the private key and crypto out of serialized page code.
   await page.exposeFunction('__e2eSignMessage', (message: `0x${string}`) =>
     e2eAccount.signMessage({ message: { raw: message } }),
+  )
+  await page.exposeFunction('__e2eSignTypedData', (payload: string) =>
+    e2eAccount.signTypedData(JSON.parse(payload) as Parameters<typeof e2eAccount.signTypedData>[0]),
   )
 
   const seed: Record<string, string> = {}
@@ -91,6 +95,8 @@ export async function installWallet(page: Page, { signedIn = true }: InstallWall
             case 'personal_sign':
               // params: [hex-encoded message, address]
               return window.__e2eSignMessage(params![0] as `0x${string}`)
+            case 'eth_signTypedData_v4':
+              return window.__e2eSignTypedData(params![1] as string)
             case 'wallet_switchEthereumChain':
               chainId = (params![0] as { chainId: string }).chainId
               emit('chainChanged', chainId)
