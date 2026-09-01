@@ -78,7 +78,7 @@ export const VenueCard = ({
               Asset <span className="font-medium text-foreground">{asset}</span>
             </span>
             <span>
-              Protocol <span className="font-medium capitalize text-foreground">{chain}</span>
+              Chain <span className="font-medium text-foreground">{chain}</span>
             </span>
             {isEarning && (
               <span>

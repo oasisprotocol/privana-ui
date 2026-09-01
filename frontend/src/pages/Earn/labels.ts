@@ -1,5 +1,5 @@
 export const PROTOCOL_LABELS: Record<string, string> = {
-  'aave-v3': 'AAVE',
+  'aave-v3': 'Aave',
   'midas-mtbill': 'Midas',
 }
 
