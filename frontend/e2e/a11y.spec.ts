@@ -4,7 +4,8 @@ import { expect, test } from './fixtures/test'
 import { installWallet } from './fixtures/wallet'
 import type { Page } from '@playwright/test'
 
-const scan = (page: Page) => new AxeBuilder({ page }).withTags(['wcag2a', 'wcag2aa']).analyze()
+const scan = (page: Page) =>
+  new AxeBuilder({ page }).withTags(['wcag2a', 'wcag2aa', 'wcag21a', 'wcag21aa', 'wcag22aa']).analyze()
 
 const summarize = (results: Awaited<ReturnType<AxeBuilder['analyze']>>) =>
   results.violations.map(v => ({

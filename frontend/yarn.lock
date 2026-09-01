@@ -7000,7 +7000,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"playwright-core@npm:1.62.1":
+"playwright-core@npm:1.62.1, playwright-core@npm:^1.62.1":
   version: 1.62.1
   resolution: "playwright-core@npm:1.62.1"
   bin:
@@ -7094,6 +7094,7 @@ __metadata:
     happy-dom: "npm:^20.11.6"
     lucide-react: "npm:^1.33.0"
     markdownlint-cli: "npm:^0.49.1"
+    playwright-core: "npm:^1.62.1"
     prettier: "npm:^3.9.6"
     qrcode.react: "npm:^4.2.0"
     radix-ui: "npm:^1.6.7"
