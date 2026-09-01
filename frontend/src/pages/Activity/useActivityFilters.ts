@@ -1,5 +1,6 @@
 import { useCallback, useMemo } from 'react'
 import { useSearchParams } from 'react-router'
+import { KNOWN_APPS } from '@/config/apps'
 import type { ActivityStatus } from '@/contexts/ActivityProvider/context'
 import { DEFAULT_FILTERS, type ActivityFilters, type FilterTimePreset, type FilterType } from './filters'
 
@@ -32,12 +33,19 @@ const isFilterType = (v: string | null): v is FilterType => v != null && v in FI
 const isStatus = (v: string | null): v is 'all' | ActivityStatus => v != null && v in STATUS_FLAGS
 const isTimePreset = (v: string | null): v is FilterTimePreset => v != null && v in TIME_FLAGS
 
+// An app id the sheet can't offer (unknown, or a network where the App group
+// is hidden entirely) must not survive the URL round trip — it would filter
+// the list with no way to clear the selection.
+const VALID_APP_IDS = new Set(['all', ...KNOWN_APPS.map(app => app.id)])
+const isAppId = (v: string | null): v is string => v != null && VALID_APP_IDS.has(v)
+
 function fromParams(params: URLSearchParams): ActivityFilters {
   const type = params.get('type')
   const status = params.get('status')
   const time = params.get('time')
+  const app = params.get('app')
   return {
-    app: params.get('app') ?? DEFAULT_FILTERS.app,
+    app: isAppId(app) ? app : DEFAULT_FILTERS.app,
     type: isFilterType(type) ? type : DEFAULT_FILTERS.type,
     status: isStatus(status) ? status : DEFAULT_FILTERS.status,
     asset: params.get('asset') ?? DEFAULT_FILTERS.asset,
