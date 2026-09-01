@@ -65,12 +65,14 @@ export function ActivityFilterSheet({ filters, onChange, open, onOpenChange }: P
           <DialogTitle>Filter activity</DialogTitle>
         </DialogHeader>
         <div className="flex flex-col gap-4">
-          <FilterChipGroup
-            label="App"
-            options={appOptions}
-            value={filters.app}
-            onChange={v => update('app', v)}
-          />
+          {KNOWN_APPS.length > 0 && (
+            <FilterChipGroup
+              label="App"
+              options={appOptions}
+              value={filters.app}
+              onChange={v => update('app', v)}
+            />
+          )}
           <FilterChipGroup
             label="Type"
             options={TYPE_OPTIONS}
