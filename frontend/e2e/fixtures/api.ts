@@ -2,6 +2,7 @@ import type { Page, Route } from '@playwright/test'
 import type {
   BatchBalancesResponse,
   HistoryResponse,
+  JwtLogoutResponse,
   LockedFundsResponse,
   PendingWithdrawalsResponse,
   SiweDomainResponse,
@@ -124,6 +125,14 @@ export async function installApi(page: Page, state: StubState) {
   // Fired by the kit's WalletConnect bootstrap; irrelevant to the tests but
   // stubbed so the unstubbed-request warning stays meaningful.
   await page.route('https://verify.walletconnect.org/**', route => json(route, {}))
+  // The sign-in form renders the WalletConnect option's icon from here.
+  await page.route('https://raw.githubusercontent.com/WalletConnect/**', route =>
+    route.fulfill({
+      status: 200,
+      contentType: 'image/svg+xml',
+      body: '<svg xmlns="http://www.w3.org/2000/svg"/>',
+    }),
+  )
 
   // --- Accounting API ---
 
@@ -152,7 +161,7 @@ export async function installApi(page: Page, state: StubState) {
   await page.route(`${ACCOUNTING_API_URL}/v1/accounting/auth/nonce**`, route =>
     json(route, {
       address: e2eAddress,
-      nonce: 'e2e-nonce-0000000000000000',
+      nonce: 'e2enonce0000000000000000',
       expires_in: 300,
     } satisfies SiweNonceResponse),
   )
@@ -165,6 +174,9 @@ export async function installApi(page: Page, state: StubState) {
       jwt_expires_in: 86_400,
       jwt_refresh_expires_in: 604_800,
     } satisfies SiweLoginResponse),
+  )
+  await page.route(`${ACCOUNTING_API_URL}/v1/accounting/auth/jwt/logout`, route =>
+    json(route, { message: 'ok', revoked_tokens: 1 } satisfies JwtLogoutResponse),
   )
 
   const balances: TokenBalance[] = ALLOWED_TOKEN_IDS.map(id => ({
