@@ -1,7 +1,9 @@
 import type { Page, Route } from '@playwright/test'
 import type {
+  BalanceResponse,
   BatchBalancesResponse,
   HistoryResponse,
+  JwtLogoutResponse,
   LockedFundsResponse,
   PendingWithdrawalsResponse,
   SiweDomainResponse,
@@ -11,7 +13,15 @@ import type {
   TokenInfoResponse,
   TokenListResponse,
 } from '@oasisprotocol/privana-sdk'
-import type { EarnBalance, EarnBalanceListResponse, EarnPool, EarnPoolListResponse } from '../../src/api/earn'
+import type {
+  ApyHistoryResponse,
+  DepositQuoteResponse,
+  DepositResponse,
+  EarnBalance,
+  EarnBalanceListResponse,
+  EarnPool,
+  EarnPoolListResponse,
+} from '../../src/api/earn'
 import type { UnsettledOperationsResponse } from '../../src/api/operations'
 import type { EarnHistoryResponse, PortfolioHistoryResponse } from '../../src/api/portfolio'
 import type {
@@ -34,10 +44,10 @@ const TOKEN_META: Record<string, { symbol: string; name: string; decimals: numbe
 const metaOf = (tokenId: string) =>
   TOKEN_META[tokenId] ?? { symbol: 'USDC', name: 'USD Coin', decimals: 6, chainId: 84532 }
 
-const USDC_POOL: EarnPool = {
+export const USDC_POOL: EarnPool = {
   pool_id: 'e2e-pool-usdc',
   token_id: USDC_TOKEN_ID,
-  strategy: 'aave_v3',
+  strategy: 'aave-v3',
   total_assets: '5000000000000',
   apy_bps: 1200,
   status: 'active',
@@ -124,6 +134,14 @@ export async function installApi(page: Page, state: StubState) {
   // Fired by the kit's WalletConnect bootstrap; irrelevant to the tests but
   // stubbed so the unstubbed-request warning stays meaningful.
   await page.route('https://verify.walletconnect.org/**', route => json(route, {}))
+  // The sign-in form renders the WalletConnect option's icon from here.
+  await page.route('https://raw.githubusercontent.com/WalletConnect/**', route =>
+    route.fulfill({
+      status: 200,
+      contentType: 'image/svg+xml',
+      body: '<svg xmlns="http://www.w3.org/2000/svg"/>',
+    }),
+  )
 
   // --- Accounting API ---
 
@@ -152,7 +170,7 @@ export async function installApi(page: Page, state: StubState) {
   await page.route(`${ACCOUNTING_API_URL}/v1/accounting/auth/nonce**`, route =>
     json(route, {
       address: e2eAddress,
-      nonce: 'e2e-nonce-0000000000000000',
+      nonce: 'e2enonce0000000000000000',
       expires_in: 300,
     } satisfies SiweNonceResponse),
   )
@@ -166,6 +184,20 @@ export async function installApi(page: Page, state: StubState) {
       jwt_refresh_expires_in: 604_800,
     } satisfies SiweLoginResponse),
   )
+  await page.route(`${ACCOUNTING_API_URL}/v1/accounting/auth/jwt/logout`, route =>
+    json(route, { message: 'ok', revoked_tokens: 1 } satisfies JwtLogoutResponse),
+  )
+
+  await page.route(`${ACCOUNTING_API_URL}/v1/accounting/balances/*`, route => {
+    const tokenId = new URL(route.request().url()).pathname.split('/').pop()!
+    return json(route, {
+      user_address: e2eAddress,
+      token_id: tokenId as `0x${string}`,
+      balance: state.balances[tokenId] ?? '0',
+      token_symbol: metaOf(tokenId).symbol,
+      chain_id: String(metaOf(tokenId).chainId),
+    } satisfies BalanceResponse)
+  })
 
   const balances: TokenBalance[] = ALLOWED_TOKEN_IDS.map(id => ({
     token_id: id,
@@ -217,6 +249,36 @@ export async function installApi(page: Page, state: StubState) {
 
   await page.route(`${SERVICES_API_URL}/v1/earn/pools`, route =>
     json(route, { pools: state.pools } satisfies EarnPoolListResponse),
+  )
+  await page.route(`${SERVICES_API_URL}/v1/earn/quote**`, route => {
+    const params = new URL(route.request().url()).searchParams
+    return json(route, {
+      quote_id: 'e2e-quote-1',
+      pool_id: params.get('pool_id') ?? USDC_POOL.pool_id,
+      token_id: USDC_TOKEN_ID,
+      amount: params.get('amount') ?? '0',
+      shares_estimate: params.get('amount') ?? '0',
+      exchange_rate: '1.0',
+      pool_address: USDC_POOL.pool_address,
+      transfer_nonce: 7,
+      expires_at: Math.floor(Date.now() / 1000) + 300,
+    } satisfies DepositQuoteResponse)
+  })
+  await page.route(`${SERVICES_API_URL}/v1/earn/deposit`, route => {
+    const body = route.request().postDataJSON() as { pool_id: string; amount: string }
+    return json(route, {
+      deposit_id: 'e2e-deposit-1',
+      pool_id: body.pool_id,
+      amount: body.amount,
+      shares_minted: body.amount,
+      exchange_rate: '1.0',
+      tx_hash: null,
+      status: 'completed',
+      error: null,
+    } satisfies DepositResponse)
+  })
+  await page.route(`${SERVICES_API_URL}/v1/earn/pools/*/apy-history**`, route =>
+    json(route, { pool_id: USDC_POOL.pool_id, points: [] } satisfies ApyHistoryResponse),
   )
   await page.route(`${SERVICES_API_URL}/v1/earn/balance`, route =>
     json(route, { positions: state.earnPositions } satisfies EarnBalanceListResponse),
