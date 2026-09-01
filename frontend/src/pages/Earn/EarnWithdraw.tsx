@@ -10,7 +10,7 @@ import { activityPath, earnPath } from '@/paths'
 import { cn } from '@/lib/utils'
 import { DESKTOP_CARD } from '@/lib/surface'
 import { useActivity } from '@/contexts/ActivityProvider/useActivity'
-import { PROTOCOL_LABELS } from './labels'
+import { getProtocolLabel } from '@/config/protocols'
 import { formatApyBps } from '@/lib/apy'
 import { WithdrawConfigureStep } from './WithdrawConfigureStep'
 import { WithdrawReviewStep } from './WithdrawReviewStep'
@@ -44,7 +44,7 @@ export const EarnWithdraw = () => {
   const decimals = token?.token_decimals
   const isLoading = poolsLoading || balanceLoading || tokensLoading
 
-  const protocol = pool ? (PROTOCOL_LABELS[pool.strategy] ?? pool.strategy) : ''
+  const protocol = pool ? getProtocolLabel(pool.strategy) : ''
   const apyLabel = pool ? `${formatApyBps(pool.apy_bps)} APY` : undefined
 
   const amountBaseUnits = useMemo(() => {

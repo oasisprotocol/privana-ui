@@ -6,7 +6,7 @@ import { QuoteCountdown } from '@/components/QuoteCountdown'
 import { formatFiat } from '@/lib/tokens'
 import { apyBpsToFraction } from '@/lib/apy'
 import { useAmountFiat } from '@/hooks/useAmountFiat'
-import { PROTOCOL_LABELS } from './labels'
+import { getProtocolLabel } from '@/config/protocols'
 import { VenueHeader } from './VenueHeader'
 import {
   ReviewAmountCard,
@@ -51,7 +51,7 @@ export const ReviewStep = ({
   error,
 }: ReviewStepProps) => {
   const tokenSymbol = token?.token_symbol ?? token?.token_type_name ?? ''
-  const protocol = pool ? (PROTOCOL_LABELS[pool.strategy] ?? pool.strategy) : ''
+  const protocol = pool ? getProtocolLabel(pool.strategy) : ''
   const chain = token?.chain_name ?? ''
 
   const fiatAmount = useAmountFiat(token, amount)

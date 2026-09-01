@@ -8,7 +8,7 @@ import { formatAmount, formatFiat } from '@/lib/tokens'
 import { formatApyBps } from '@/lib/apy'
 import { earnPath, tradePath } from '@/paths'
 import { ProtocolIcon } from '@/pages/Earn/ProtocolLabel'
-import { getProtocolLabel } from '@/pages/Earn/labels'
+import { getProtocolLabel } from '@/config/protocols'
 
 const HoldingRow = ({
   to,

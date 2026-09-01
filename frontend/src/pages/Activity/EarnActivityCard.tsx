@@ -1,5 +1,5 @@
 import { Progress } from '@/components/ui/progress'
-import { venueForStrategy } from '@/config/apps'
+import { venueForStrategy } from '@/config/protocols'
 import type { EarnActivity } from '@/contexts/ActivityProvider/context'
 import type { DisplayKind } from './historyMapping'
 import { ACTIVITY_TITLES, activityRowSubtitle } from './labels'

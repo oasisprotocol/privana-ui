@@ -1,5 +1,5 @@
 import { ProtocolIcon } from './ProtocolLabel'
-import { getProtocolLabel } from './labels'
+import { getProtocolLabel } from '@/config/protocols'
 import { formatApyBps } from '@/lib/apy'
 
 // Venue identity row: logo tile → name → "TICKER · CHAIN" → APY badge. Shared by

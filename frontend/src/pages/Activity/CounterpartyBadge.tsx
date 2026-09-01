@@ -1,4 +1,5 @@
-import { appForAddress, PRIVANA_VENUE, type Venue } from '@/config/apps'
+import { appForAddress, PRIVANA_VENUE } from '@/config/apps'
+import type { Venue } from '@/config/protocols'
 
 export const CounterpartyBadge = ({
   counterparty,

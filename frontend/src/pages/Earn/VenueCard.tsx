@@ -5,7 +5,7 @@ import { earnCreatePath, earnWithdrawPath } from '@/paths'
 import { formatApyBps } from '@/lib/apy'
 import { ProtocolIcon } from './ProtocolLabel'
 import { VenueAPY } from './VenueAPY'
-import { getProtocolLabel } from './labels'
+import { getProtocolLabel } from '@/config/protocols'
 
 export type Venue = {
   poolId: string
