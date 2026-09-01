@@ -1,5 +1,5 @@
 import type { ReactNode } from 'react'
-import { getProtocolLabel } from './labels'
+import { getProtocolLabel } from '@/config/protocols'
 import aaveLogo from '../../assets/aave-v3.webp'
 
 const AaveIcon = ({ size = 20 }: { size?: number }) => (

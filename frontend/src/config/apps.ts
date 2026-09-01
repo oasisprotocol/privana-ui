@@ -1,3 +1,5 @@
+import type { Venue } from './protocols'
+
 export type KnownApp = {
   id: string
   name: string
@@ -7,8 +9,6 @@ export type KnownApp = {
   appUrl: string
   tagline: string
 }
-
-export type Venue = { name: string; color: string }
 
 export const PRIVANA_VENUE: Venue = { name: 'Privana', color: '#0500E2' }
 
@@ -32,17 +32,6 @@ const knownAppByAddress = new Map<string, KnownApp>(
 export function appForAddress(address: string | null | undefined): KnownApp | null {
   if (!address) return null
   return knownAppByAddress.get(address.toLowerCase()) ?? null
-}
-
-export function venueForStrategy(strategy: string | null | undefined): Venue | null {
-  if (!strategy) return null
-  const key = strategy.toLowerCase()
-  const name = key.startsWith('aave')
-    ? 'Aave'
-    : key.startsWith('midas')
-      ? 'Midas'
-      : strategy.charAt(0).toUpperCase() + strategy.slice(1)
-  return { name, color: '#0F4C81' }
 }
 
 const knownAppNameByAddress = new Map<string, string>(

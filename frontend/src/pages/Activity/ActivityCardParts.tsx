@@ -3,7 +3,7 @@ import type { ReactNode } from 'react'
 import { cn } from '@/lib/utils'
 import { formatAmount } from '@/lib/tokens'
 import type { ActivityTokenInfo } from '@/contexts/ActivityProvider/context'
-import type { Venue } from '@/config/apps'
+import type { Venue } from '@/config/protocols'
 import { formatActivityTime } from './formatTime'
 import { CounterpartyBadge } from './CounterpartyBadge'
 

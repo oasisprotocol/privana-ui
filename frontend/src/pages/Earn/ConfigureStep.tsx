@@ -9,7 +9,7 @@ import { cn } from '@/lib/utils'
 import { ApyValue } from './ApyValue'
 import { EarnAmountField } from './EarnAmountField'
 import { ProtocolLabel } from './ProtocolLabel'
-import { PROTOCOL_LABELS } from './labels'
+import { getProtocolLabel } from '@/config/protocols'
 
 type ConfigureStepProps = {
   poolId: string | undefined
@@ -37,7 +37,7 @@ export const ConfigureStep = ({
   const tokensById = new Map((tokensData?.tokens ?? []).map(t => [t.token_id, t]))
   const selectedPool = activePools.find(p => p.pool_id === poolId)
   const selectedToken = selectedPool ? tokensById.get(selectedPool.token_id) : undefined
-  const protocol = selectedPool ? (PROTOCOL_LABELS[selectedPool.strategy] ?? selectedPool.strategy) : ''
+  const protocol = selectedPool ? getProtocolLabel(selectedPool.strategy) : ''
   const tokenSymbol = selectedToken?.token_symbol ?? selectedToken?.token_type_name ?? ''
   const decimals = selectedToken?.token_decimals
 

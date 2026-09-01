@@ -1,5 +1,5 @@
 import { usePrivanaContext } from '@oasisprotocol/privana-sdk'
-import { venueForStrategy } from '@/config/apps'
+import { venueForStrategy } from '@/config/protocols'
 import type { ClassifiedHistoryEntry } from './historyMapping'
 import { ACTIVITY_TITLES, activityRowSubtitle, activityRowTitle } from './labels'
 import { resolveActivityVisual, TONE_SIGN, TONE_TEXT } from './activityVisuals'

@@ -1,7 +1,7 @@
 import type { EarnBalance, EarnPool } from '@/api/earn'
 import type { TokenInfo } from '@/api/swap'
 import { Skeleton } from '@/components/ui/skeleton'
-import { PROTOCOL_LABELS } from './labels'
+import { getProtocolLabel } from '@/config/protocols'
 import {
   ReviewAmountCard,
   ReviewConfirmButton,
@@ -40,7 +40,7 @@ export const WithdrawReviewStep = ({
   error,
 }: WithdrawReviewStepProps) => {
   const tokenSymbol = token?.token_symbol ?? token?.token_type_name ?? ''
-  const protocol = pool ? (PROTOCOL_LABELS[pool.strategy] ?? pool.strategy) : ''
+  const protocol = pool ? getProtocolLabel(pool.strategy) : ''
 
   if (isLoading) {
     return (

@@ -5,7 +5,7 @@ import { earnCreatePath, earnWithdrawPath } from '@/paths'
 import { formatApyBps } from '@/lib/apy'
 import { ProtocolIcon } from './ProtocolLabel'
 import { VenueAPY } from './VenueAPY'
-import { getProtocolLabel } from './labels'
+import { getProtocolLabel } from '@/config/protocols'
 
 export type Venue = {
   poolId: string
@@ -78,7 +78,7 @@ export const VenueCard = ({
               Asset <span className="font-medium text-foreground">{asset}</span>
             </span>
             <span>
-              Protocol <span className="font-medium capitalize text-foreground">{chain}</span>
+              Chain <span className="font-medium text-foreground">{chain}</span>
             </span>
             {isEarning && (
               <span>
