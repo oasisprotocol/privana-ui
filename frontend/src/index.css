@@ -243,6 +243,10 @@
   background-color: transparent !important;
 }
 
+.tk-modal button[data-testid='email-continue-icon'].bg-primary-light {
+  color: var(--primary) !important;
+}
+
 .tk-modal svg[class*='shadow-primary-light'] {
   box-shadow: none !important;
 }
