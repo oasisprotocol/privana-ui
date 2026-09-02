@@ -10,6 +10,7 @@ import { formatFiat } from '@/lib/tokens'
 import { earnPath, tradePath, vaultPath } from '@/paths'
 import { Link } from 'react-router'
 import { useFunds } from '@/hooks/useFunds'
+import { useResetBalanceCaches } from '@/hooks/use-reset-balance-caches'
 import { CHART_RANGE_DAYS, usePortfolioHistory, type ChartRange } from '@/api/portfolio'
 import { useMergedActivity } from '@/hooks/use-merged-activity'
 import { BalanceAmount } from '@/components/BalanceAmount'
@@ -117,6 +118,7 @@ export const DashboardHome = () => {
     bestApyBps,
     pricesError,
   } = useFunds()
+  const resetBalanceCaches = useResetBalanceCaches()
 
   // Hoisted out of LatestActivity so the history/unsettled fetch starts on mount in parallel with very slow balance reads.
   const { rows: activityRows, isLoading: activityLoading } = useMergedActivity(HISTORY_FETCH_LIMIT)
@@ -144,7 +146,10 @@ export const DashboardHome = () => {
     <>
       <div className="flex flex-col gap-6 mb-8 md:mb-12 w-full max-w-200 md:max-w-none mx-auto">
         {bootPhase !== 'done' && <DashboardBootState phase={bootPhase} />}
-        {bootPhase === 'done' && !hasFunds && (
+        {/* bootPhase latches at 'done', so isLoading can flip back on later (balance
+            caches dropped after a withdraw). Route that window to the funded layout,
+            which degrades to skeletons/dashes — never to the onboarding card. */}
+        {bootPhase === 'done' && !isLoading && !hasFunds && (
           <div className="flex flex-col gap-8 w-full">
             <div className="flex flex-col md:hidden">
               <span className="text-sm font-medium text-muted-foreground leading-5">Account value</span>
@@ -196,7 +201,7 @@ export const DashboardHome = () => {
             </SurfaceCard>
           </div>
         )}
-        {bootPhase === 'done' && hasFunds && (
+        {bootPhase === 'done' && (hasFunds || isLoading) && (
           <div className="flex flex-col gap-8 w-full">
             {/* Desktop: two-column balance card (balance + breakdown + CTAs | chart) */}
             <SurfaceCard className="hidden md:grid md:grid-cols-2 md:gap-8 rounded-3xl p-8">
@@ -336,14 +341,20 @@ export const DashboardHome = () => {
       <DepositModal
         open={depositTab !== null}
         onClose={() => setDepositTab(null)}
-        onDepositSuccess={() => setDepositTab(null)}
+        onDepositSuccess={() => {
+          resetBalanceCaches()
+          setDepositTab(null)
+        }}
         defaultTab={depositTab ?? 'crypto'}
       />
 
       <WithdrawModal
         open={withdrawOpen}
         onClose={() => setWithdrawOpen(false)}
-        onWithdrawSuccess={() => setWithdrawOpen(false)}
+        onWithdrawSuccess={() => {
+          resetBalanceCaches()
+          setWithdrawOpen(false)
+        }}
       />
     </>
   )

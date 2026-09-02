@@ -23,6 +23,7 @@ import { wagmiConfig, type AppChainId } from '@/wagmi-config'
 import { TURNKEY_CONNECTOR_ID } from '@/wallet/turnkeyConnector'
 import { useTurnkeyWalletIntent } from '@/wallet/turnkeyIntent'
 import { usePendingActivityCount } from '@/hooks/use-merged-activity'
+import { useResetBalanceCaches } from '@/hooks/use-reset-balance-caches'
 import { useSignOut } from '@/hooks/useSignOut'
 import { activityPath } from '@/paths'
 import { cn } from '@/lib/utils'
@@ -59,6 +60,7 @@ export const ConnectButton: FC = () => {
   const isEmbeddedWallet = isTurnkeyActive && walletIntent === 'embedded'
   const resolvedTheme = useResolvedTheme()
   const pendingCount = usePendingActivityCount()
+  const resetBalanceCaches = useResetBalanceCaches()
 
   const [menuOpen, setMenuOpen] = useState(false)
   const [activeModal, setActiveModal] = useState<'deposit' | 'withdraw' | null>(null)
@@ -209,12 +211,18 @@ export const ConnectButton: FC = () => {
       <DepositModal
         open={activeModal === 'deposit'}
         onClose={() => setActiveModal(null)}
-        onDepositSuccess={() => setActiveModal(null)}
+        onDepositSuccess={() => {
+          resetBalanceCaches()
+          setActiveModal(null)
+        }}
       />
       <WithdrawModal
         open={activeModal === 'withdraw'}
         onClose={() => setActiveModal(null)}
-        onWithdrawSuccess={() => setActiveModal(null)}
+        onWithdrawSuccess={() => {
+          resetBalanceCaches()
+          setActiveModal(null)
+        }}
       />
     </div>
   )

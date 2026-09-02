@@ -73,7 +73,7 @@ export function useFunds(): Funds {
 
   const { availableFiatValue, lockedFiatValue, earningFiatValue, totalFiatValue, earnChange24h } =
     useMemo(() => {
-      if (!prices) {
+      if (!prices || isLoading) {
         return {
           availableFiatValue: undefined,
           lockedFiatValue: undefined,
@@ -113,7 +113,7 @@ export function useFunds(): Funds {
         totalFiatValue: available + locked + earning,
         earnChange24h: computeEarnChange24h(earnBalance?.positions ?? [], fiatOf),
       }
-    }, [balances, locks, earnBalance, prices, getTokenById])
+    }, [balances, locks, earnBalance, prices, getTokenById, isLoading])
 
   // Per-token amounts for token-denominated display (Earning / Available rows).
   // Merged by symbol so token ids that share a ticker (e.g. several USDC ids)
