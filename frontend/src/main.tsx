@@ -5,8 +5,8 @@ import { router } from './routes'
 import { WagmiProvider } from 'wagmi'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { wagmiConfig } from './wagmi-config.ts'
-import { PrivanaProvider } from '@oasisprotocol/privana-sdk'
-import { ALLOWED_TOKEN_IDS } from './config/tokens'
+import { PrivanaProvider, type OnRampConfig } from '@oasisprotocol/privana-sdk'
+import { ALLOWED_TOKEN_IDS, TESTNET_TRANSAK_TOKEN_ID } from './config/tokens'
 import { ActivityProvider } from './contexts/ActivityProvider'
 import { TurnkeyAuthProvider, IS_TURNKEY_ENABLED } from './components/TurnkeyAuthProvider'
 import { TurnkeySync } from './components/TurnkeySync'
@@ -18,6 +18,14 @@ import './index.css'
 const queryClient = new QueryClient()
 
 const CHAIN_ID = parseInt(import.meta.env.VITE_CHAIN_ID, 10)
+const ON_RAMP_CONFIG: OnRampConfig | undefined =
+  import.meta.env.MODE === 'testnet'
+    ? {
+        provider: 'transak',
+        tokenId: TESTNET_TRANSAK_TOKEN_ID,
+        providerAssetCode: 'usdc',
+      }
+    : undefined
 
 createRoot(document.getElementById('root')!).render(
   <StrictMode>
@@ -32,6 +40,7 @@ createRoot(document.getElementById('root')!).render(
               apiUrl: import.meta.env.VITE_PRIVANA_API_URL,
             }}
             tokens={ALLOWED_TOKEN_IDS}
+            onRamp={ON_RAMP_CONFIG}
             siweAuth={{ persistJwt: true }}
           >
             <ActivityProvider>

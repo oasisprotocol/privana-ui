@@ -3,6 +3,9 @@ interface TokenConfig {
   swappable?: boolean
 }
 
+// Transak staging delivers this TRNSK test token for USDC purchases on Base Sepolia.
+export const TESTNET_TRANSAK_TOKEN_ID = '0xe0cf8bcfab4702a9404ff78f0d28cb60561ace07e918f9634d039943fd26a7c3'
+
 // Each service (swap / earn / on-ramp) uses a different token, some aren't swappable,
 // and honoroll's tokens (their own USDC deployments) are excluded.
 const TESTNET_TOKENS = {
@@ -13,6 +16,10 @@ const TESTNET_TOKENS = {
     geckoId: 'ethereum',
   },
   '0xc719650e9f4b0f27d956638c54518932ef9d15e720a1a2b2850250bcd0816514': {
+    geckoId: 'usd-coin',
+    swappable: false,
+  },
+  [TESTNET_TRANSAK_TOKEN_ID]: {
     geckoId: 'usd-coin',
     swappable: false,
   },
