@@ -217,6 +217,14 @@
 
 .tk-modal input {
   background-color: var(--background);
+  --color-button-light: #ffffff;
+  --color-button-dark: #2d3139;
+}
+
+/* Hide Chrome spellchecks for type="email" inputs (red error underline) */
+.tk-modal input[type='email']::spelling-error,
+.tk-modal input[type='email']::grammar-error {
+  text-decoration: none;
 }
 
 .tk-modal button,
