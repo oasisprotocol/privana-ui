@@ -217,6 +217,14 @@
 
 .tk-modal input {
   background-color: var(--background);
+  --color-button-light: #ffffff;
+  --color-button-dark: #2d3139;
+}
+
+/* Hide Chrome spellchecks for type="email" inputs (red error underline) */
+.tk-modal input[type='email']::spelling-error,
+.tk-modal input[type='email']::grammar-error {
+  text-decoration: none;
 }
 
 .tk-modal button,
@@ -233,6 +241,10 @@
 .tk-modal button:has(.fa-arrow-left),
 .tk-modal button[data-testid='email-continue-icon'] {
   background-color: transparent !important;
+}
+
+.tk-modal button[data-testid='email-continue-icon'].bg-primary-light {
+  color: var(--primary) !important;
 }
 
 .tk-modal svg[class*='shadow-primary-light'] {
