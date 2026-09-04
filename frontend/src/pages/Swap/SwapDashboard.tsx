@@ -15,6 +15,7 @@ import { cn } from '@/lib/utils'
 import { useResetBalanceCaches } from '@/hooks/use-reset-balance-caches'
 import { DESKTOP_CARD } from '@/lib/surface'
 import { useActivity } from '@/contexts/ActivityProvider/useActivity'
+import { QuoteCountdown } from '@/components/QuoteCountdown'
 import { AssetRow } from './AssetRow'
 import { QuoteInfo } from './QuoteInfo'
 import { ReviewStep } from './ReviewStep'
@@ -128,7 +129,13 @@ export const SwapDashboard = () => {
     }
   })()
   const canSwap =
-    !!quoteData && !!walletClient && !!address && isCorrectChain && !insufficientFunds && quoteMatchesInput
+    !!quoteData &&
+    !quoteLoading &&
+    !!walletClient &&
+    !!address &&
+    isCorrectChain &&
+    !insufficientFunds &&
+    quoteMatchesInput
 
   const swapActivity = useMemo(() => {
     if (!swapActivityId) return undefined
@@ -273,6 +280,12 @@ export const SwapDashboard = () => {
 
       {step === 0 && data && (
         <div className="mt-6 flex flex-col gap-4">
+          {quoteData && (
+            <div className="flex justify-end">
+              <QuoteCountdown quoteLoading={quoteLoading} expiresAt={quoteData.expires_at} />
+            </div>
+          )}
+
           <div className="flex flex-col gap-2">
             <p className="text-sm font-semibold text-foreground">You pay</p>
             <AssetRow
