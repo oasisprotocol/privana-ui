@@ -281,7 +281,7 @@ export const SwapDashboard = () => {
       {step === 0 && data && (
         <div className="mt-6 flex flex-col gap-4">
           {quoteData && (
-            <div className="flex justify-end">
+            <div className="animate-fade-in flex justify-end">
               <QuoteCountdown quoteLoading={quoteLoading} expiresAt={quoteData.expires_at} />
             </div>
           )}
