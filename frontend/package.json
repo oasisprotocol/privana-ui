@@ -41,7 +41,7 @@
     "tailwindcss": "^4.3.3",
     "viem": "^2.55.19",
     "wagmi": "^3.7.6",
-    "zod": "^4.4.3"
+    "zod": "^4.5.4"
   },
   "devDependencies": {
     "@axe-core/playwright": "^4.13.0",
