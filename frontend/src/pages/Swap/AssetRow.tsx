@@ -82,7 +82,8 @@ export const AssetRow = ({
           <Input
             className={cn(
               'h-[58px] w-full rounded-r-full border-0 bg-transparent dark:bg-transparent px-3 text-right text-xl font-semibold text-foreground shadow-none focus-visible:ring-0 md:text-xl',
-              loading && 'pr-10 opacity-50',
+              loading && 'opacity-50',
+              loading && !amount && 'pr-10',
             )}
             type="text"
             inputMode="decimal"
@@ -98,7 +99,7 @@ export const AssetRow = ({
               if (pattern.test(next)) onAmountChange?.(next)
             }}
           />
-          {loading && (
+          {loading && !amount && (
             <div className="absolute right-2.5 top-1/2 -translate-y-1/2">
               <div className="size-3.5 animate-spin rounded-full border-2 border-muted-foreground border-t-transparent" />
             </div>
@@ -106,7 +107,11 @@ export const AssetRow = ({
         </div>
       </div>
       <div className="min-h-6 text-xs font-medium text-muted-foreground flex gap-2 items-center justify-between px-0.5">
-        <span>{fiatValue != null ? `≈ ${formatFiat(fiatValue)}` : ''}</span>
+        <span>
+          {fiatValue != null && (
+            <span className="inline-block animate-fade-in">{`≈ ${formatFiat(fiatValue)}`}</span>
+          )}
+        </span>
         <div className="flex items-center gap-2">
           {balanceLabel ? <span>{balanceLabel}</span> : renderBalance()}
           {onMax && token && balance && !balance.loading && balance.wei != null && (

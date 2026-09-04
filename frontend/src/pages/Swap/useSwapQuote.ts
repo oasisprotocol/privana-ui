@@ -79,9 +79,11 @@ export const useSwapQuote = ({
     return () => abort.abort()
   }, [enabled, inputKey, inputId, fromTokenId, toTokenId, debouncedFromAmount, address, fromDecimals])
 
-  const data = enabled && result?.key === inputKey ? result.quote : null
+  const fresh = enabled && result?.key === inputKey ? result.quote : null
   const error = errorState?.key === inputKey ? errorState.message : null
-  const loading = enabled && (!result || result.key !== inputKey) && !error
+  const stale = enabled && !error && result?.inputId === inputId ? result.quote : null
+  const data = fresh ?? stale
+  const loading = enabled && !fresh && !error
   const toAmount =
     data && toDecimals != null ? formatAmountTrimmed(BigInt(data.to_amount_estimate), toDecimals) : ''
   const toAmountExact =
