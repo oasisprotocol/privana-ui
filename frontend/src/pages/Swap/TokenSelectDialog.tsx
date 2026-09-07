@@ -86,7 +86,7 @@ export const TokenSelectDialog = ({
       <DialogTrigger asChild disabled={disabled} className="dark:bg-transparent">
         {trigger}
       </DialogTrigger>
-      <DialogContent className="sm:max-w-md gap-4 rounded-[14px] p-6">
+      <DialogContent className="sm:max-w-md flex max-h-[calc(100dvh-2rem)] flex-col gap-4 rounded-[14px] p-6">
         <DialogHeader className="gap-1.5">
           <DialogTitle className="text-2xl font-medium leading-8">Select a token</DialogTitle>
           <DialogDescription className="text-sm">Choose the asset you want to use</DialogDescription>
@@ -125,9 +125,9 @@ export const TokenSelectDialog = ({
           </div>
         )}
 
-        <div className="flex flex-col gap-2">
+        <div className="flex min-h-0 flex-col gap-2">
           <p className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">Assets</p>
-          <ul className="flex max-h-80 flex-col gap-2 overflow-y-auto pb-1">
+          <ul className="flex min-h-0 flex-col overflow-y-auto pb-1 [--token-gap:0.5rem] [--token-row:4rem] gap-(--token-gap) max-h-[calc(6*var(--token-row)+5*var(--token-gap)+0.25rem)]">
             {filtered.map(token => {
               const isDisabled = token.token_id === disabledId
               const isSelected = value === token.token_id
@@ -138,9 +138,11 @@ export const TokenSelectDialog = ({
                     disabled={isDisabled}
                     onClick={() => handleSelect(token.token_id)}
                     className={cn(
-                      'flex w-full items-center gap-3 rounded-2xl p-3 text-left transition-transform',
+                      'flex h-(--token-row) w-full items-center gap-3 rounded-2xl p-3 text-left transition-[transform,background-color]',
                       CARD_ROW,
-                      isDisabled ? 'cursor-not-allowed opacity-50' : 'active:scale-[0.99]',
+                      isDisabled
+                        ? 'cursor-not-allowed opacity-50'
+                        : 'hover:bg-muted active:scale-[0.99] dark:hover:bg-muted',
                     )}
                   >
                     {token.token_symbol && (
