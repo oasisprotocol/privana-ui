@@ -164,8 +164,8 @@ export async function installApi(page: Page, state: StubState) {
   }
   await page.route(`${ACCOUNTING_API_URL}/v1/accounting/tokens`, route => json(route, accountingTokens))
 
-  await page.route(`${ACCOUNTING_API_URL}/v1/accounting/auth/domain`, route =>
-    json(route, { domain: 'localhost' } satisfies SiweDomainResponse),
+  await page.route(`${ACCOUNTING_API_URL}/v1/accounting/auth/domains`, route =>
+    json(route, { domains: ['localhost'] } satisfies SiweDomainResponse),
   )
   await page.route(`${ACCOUNTING_API_URL}/v1/accounting/auth/nonce**`, route =>
     json(route, {
