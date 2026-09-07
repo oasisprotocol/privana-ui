@@ -138,9 +138,11 @@ export const TokenSelectDialog = ({
                     disabled={isDisabled}
                     onClick={() => handleSelect(token.token_id)}
                     className={cn(
-                      'flex h-(--token-row) w-full items-center gap-3 rounded-2xl p-3 text-left transition-transform',
+                      'flex h-(--token-row) w-full items-center gap-3 rounded-2xl p-3 text-left transition-[transform,background-color]',
                       CARD_ROW,
-                      isDisabled ? 'cursor-not-allowed opacity-50' : 'active:scale-[0.99]',
+                      isDisabled
+                        ? 'cursor-not-allowed opacity-50'
+                        : 'hover:bg-muted active:scale-[0.99] dark:hover:bg-muted',
                     )}
                   >
                     {token.token_symbol && (
