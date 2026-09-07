@@ -4,6 +4,7 @@ import path from 'path'
 import { defineConfig, type Plugin } from 'vite'
 import react from '@vitejs/plugin-react'
 import tailwindcss from '@tailwindcss/vite'
+import { securityHeaders } from './security-headers'
 
 // Inlines the reflect-metadata polyfill so it runs before the app bundle.
 // tsyringe (via @turnkey/crypto → @peculiar/x509) throws at module-load if
@@ -25,7 +26,7 @@ function reflectMetadataPolyfill(): Plugin {
 }
 
 export default defineConfig({
-  plugins: [react(), tailwindcss(), reflectMetadataPolyfill()],
+  plugins: [react(), tailwindcss(), reflectMetadataPolyfill(), securityHeaders()],
   server: {
     port: 3000,
   },
