@@ -10,6 +10,8 @@
     <script>
       // No-flash theme init (keep STORAGE_KEY in sync with src/lib/theme.ts).
       // Defaults to system when no explicit preference is stored.
+      // CSP allows inline scripts by hash, computed at build time into
+      // dist/_headers (see securityHeaders in security-headers.ts).
       ;(function () {
         try {
           var pref = localStorage.getItem('privana.theme') || 'system'
