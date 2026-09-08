@@ -30,6 +30,7 @@ export interface MergedTokenAmount {
   decimals: number
   /** Sum of the constituent ids' values; undefined when any of them lacks a price. */
   fiat: number | undefined
+  tokenIds: string[]
 }
 
 // Merges per-token-id amounts by ticker so ids sharing a symbol (e.g. several
@@ -55,8 +56,16 @@ export function mergeTokensBySymbol(
     const fiat = price != null ? Number(formatUnits(amount, decimals)) * price : undefined
     const existing = bySymbol.get(symbol)
     if (!existing) {
-      bySymbol.set(symbol, { symbol, name: token?.name ?? symbol, amount, decimals, fiat })
+      bySymbol.set(symbol, {
+        symbol,
+        name: token?.name ?? symbol,
+        amount,
+        decimals,
+        fiat,
+        tokenIds: [it.tokenId],
+      })
     } else {
+      existing.tokenIds.push(it.tokenId)
       if (existing.decimals === decimals) {
         existing.amount += amount
       } else {

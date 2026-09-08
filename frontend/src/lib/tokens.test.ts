@@ -62,8 +62,26 @@ describe('mergeTokensBySymbol', () => {
       getTokenById,
     )
     expect(merged).toEqual([
-      { symbol: 'USDC', name: 'USD Coin', amount: 3_000_000n, decimals: 6, fiat: undefined },
+      {
+        symbol: 'USDC',
+        name: 'USD Coin',
+        amount: 3_000_000n,
+        decimals: 6,
+        fiat: undefined,
+        tokenIds: ['usdc-6', 'usdc-6'],
+      },
     ])
+  })
+
+  it('collects the constituent token ids in input order', () => {
+    const merged = mergeTokensBySymbol(
+      [
+        { tokenId: 'usdc-6', amount: '1000000' },
+        { tokenId: 'usdc-18', amount: '2000000000000000000' },
+      ],
+      getTokenById,
+    )
+    expect(merged[0].tokenIds).toEqual(['usdc-6', 'usdc-18'])
   })
 
   it('aligns mismatched decimals to the larger precision before adding', () => {
