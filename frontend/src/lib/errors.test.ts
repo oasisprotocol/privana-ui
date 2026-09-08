@@ -1,6 +1,6 @@
 import { BaseError, UserRejectedRequestError } from 'viem'
 import { describe, expect, it } from 'vitest'
-import { extractErrorMessage } from '@/lib/errors'
+import { extractErrorMessage, shouldRetryQuery } from '@/lib/errors'
 
 describe('extractErrorMessage', () => {
   it('returns the short message of a viem BaseError', () => {
@@ -26,5 +26,32 @@ describe('extractErrorMessage', () => {
     expect(extractErrorMessage('a string')).toBe('Something went wrong')
     expect(extractErrorMessage(undefined)).toBe('Something went wrong')
     expect(extractErrorMessage(null, 'Custom fallback')).toBe('Custom fallback')
+  })
+})
+
+describe('shouldRetryQuery', () => {
+  const withStatus = (props: object) => Object.assign(new Error('failed'), props)
+
+  it('never retries 4xx from the SDK (statusCode)', () => {
+    expect(shouldRetryQuery(0, withStatus({ statusCode: 401 }))).toBe(false)
+    expect(shouldRetryQuery(0, withStatus({ statusCode: 404 }))).toBe(false)
+    expect(shouldRetryQuery(0, withStatus({ statusCode: 429 }))).toBe(false)
+  })
+
+  it('never retries 4xx from the services client (status)', () => {
+    expect(shouldRetryQuery(0, withStatus({ status: 422 }))).toBe(false)
+  })
+
+  it('retries 5xx at most twice', () => {
+    const err = withStatus({ statusCode: 500 })
+    expect(shouldRetryQuery(0, err)).toBe(true)
+    expect(shouldRetryQuery(1, err)).toBe(true)
+    expect(shouldRetryQuery(2, err)).toBe(false)
+  })
+
+  it('retries statusless errors (network failures) at most twice', () => {
+    expect(shouldRetryQuery(0, new Error('fetch failed'))).toBe(true)
+    expect(shouldRetryQuery(2, new Error('fetch failed'))).toBe(false)
+    expect(shouldRetryQuery(0, undefined)).toBe(true)
   })
 })
