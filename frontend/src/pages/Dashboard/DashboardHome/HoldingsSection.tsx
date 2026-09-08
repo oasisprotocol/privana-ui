@@ -9,6 +9,7 @@ import { formatApyBps } from '@/lib/apy'
 import { earnPath, tradePath } from '@/paths'
 import { ProtocolIcon } from '@/pages/Earn/ProtocolLabel'
 import { getProtocolLabel } from '@/config/protocols'
+import { SWAPPABLE_TOKEN_IDS } from '@/config/tokens'
 
 const HoldingRow = ({
   to,
@@ -57,7 +58,7 @@ export const HoldingsSection = () => {
         {tokenHoldings.map(holding => (
           <HoldingRow
             key={holding.symbol}
-            to={tradePath()}
+            to={tradePath(holding.tokenIds.find(id => (SWAPPABLE_TOKEN_IDS as string[]).includes(id)))}
             icon={
               <span className="size-9 shrink-0 overflow-hidden rounded-full">
                 {getTokenIcon(holding.symbol, 36)}
