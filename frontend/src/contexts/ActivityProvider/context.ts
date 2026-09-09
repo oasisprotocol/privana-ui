@@ -16,6 +16,7 @@ export type SwapActivity = {
   rateLabel: string
   feeFiat?: number
   swapId?: string
+  quoteId?: string
   txHash?: string
   error?: string
 }

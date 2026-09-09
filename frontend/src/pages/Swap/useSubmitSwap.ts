@@ -62,6 +62,7 @@ export const useSubmitSwap = ({ onSuccess }: Params = {}) => {
         type: 'swap',
         status: 'in-progress',
         createdAt: Date.now(),
+        quoteId: quote.quote_id,
         fromToken: {
           id: fromToken.token_id,
           symbol: fromToken.token_symbol ?? fromToken.token_type_name,
