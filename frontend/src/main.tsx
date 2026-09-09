@@ -12,10 +12,17 @@ import { TurnkeyAuthProvider, IS_TURNKEY_ENABLED } from './components/TurnkeyAut
 import { TurnkeySync } from './components/TurnkeySync'
 import { ConnectWalletProvider } from './components/WalletConnect/ConnectWalletProvider'
 import { TooltipProvider } from './components/ui/tooltip'
+import { shouldRetryQuery } from './lib/errors'
 import '@oasisprotocol/privana-sdk/styles.css'
 import './index.css'
 
-const queryClient = new QueryClient()
+const queryClient = new QueryClient({
+  defaultOptions: {
+    queries: {
+      retry: shouldRetryQuery,
+    },
+  },
+})
 
 const CHAIN_ID = parseInt(import.meta.env.VITE_CHAIN_ID, 10)
 const ON_RAMP_CONFIG: OnRampConfig | undefined =
@@ -42,6 +49,9 @@ createRoot(document.getElementById('root')!).render(
             tokens={ALLOWED_TOKEN_IDS}
             onRamp={ON_RAMP_CONFIG}
             siweAuth={{ persistJwt: true }}
+            // Balance/lock/withdrawal hooks poll on this interval; the SDK
+            // SDK defaults to 10s eats the backend's shared RPC quota.
+            pollingInterval={20_000}
           >
             <ActivityProvider>
               <TooltipProvider>
