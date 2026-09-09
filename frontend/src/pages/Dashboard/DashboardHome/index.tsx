@@ -21,6 +21,7 @@ import { HoldingsSection } from './HoldingsSection'
 import { HISTORY_FETCH_LIMIT } from './latestActivity.constants'
 import { DashboardBootState } from './DashboardBootState'
 import { useBootPhase } from './useBootPhase'
+import { useIsDesktop } from '@/hooks/use-media-query'
 
 const PrivanaVaultCard = ({
   available,
@@ -142,6 +143,8 @@ export const DashboardHome = () => {
   // Rough "earn about $X / month" estimate: available × annual APY ÷ 12 months.
   const monthlyEarnEstimate = ((availableFiatValue ?? 0) * apyBpsToFraction(bestApyBps ?? 0)) / 12
 
+  const isDesktop = useIsDesktop()
+
   return (
     <>
       <div className="flex flex-col gap-6 mb-8 md:mb-12 w-full max-w-200 md:max-w-none mx-auto">
@@ -237,7 +240,7 @@ export const DashboardHome = () => {
                 </div>
               </div>
               <div className="flex flex-col justify-center">
-                {chartLoading ? (
+                {chartLoading || !isDesktop ? (
                   <Skeleton className="h-40 w-full rounded-2xl" />
                 ) : (
                   <PortfolioChartSection
@@ -262,7 +265,7 @@ export const DashboardHome = () => {
                 )}
               </div>
 
-              {chartLoading ? (
+              {chartLoading || isDesktop ? (
                 <Skeleton className="h-40 w-full rounded-2xl" />
               ) : (
                 <PortfolioChartSection

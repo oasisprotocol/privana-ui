@@ -74,8 +74,6 @@ const permissionsPolicy: Record<string, string[]> = {
   'publickey-credentials-get': ['self'],
   'screen-wake-lock': [],
   usb: [],
-  // no web-share: Chrome doesn't recognize it as a policy feature and logs a
-  // console warning on every page load; it doesn't gate the API anyway.
   'xr-spatial-tracking': [],
 }
 
