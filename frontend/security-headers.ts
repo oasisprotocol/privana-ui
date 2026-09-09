@@ -74,7 +74,6 @@ const permissionsPolicy: Record<string, string[]> = {
   'publickey-credentials-get': ['self'],
   'screen-wake-lock': [],
   usb: [],
-  'web-share': [],
   'xr-spatial-tracking': [],
 }
 
