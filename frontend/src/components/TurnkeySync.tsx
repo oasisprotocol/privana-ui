@@ -2,6 +2,7 @@ import { useEffect, useRef } from 'react'
 import { AuthState, ClientState, useTurnkey, WalletSource } from '@turnkey/react-wallet-kit'
 import { useConnection, useConnect, useConnectors, useDisconnect } from 'wagmi'
 import { clearTurnkeyWallet, getTurnkeyActiveWallet, setTurnkeyActiveWallet } from '@/wallet/turnkeyBridge'
+import { forgetBootSession } from '@/pages/Dashboard/DashboardHome/useBootPhase'
 import { getConnectedWalletRecord } from '@/wallet/turnkeyConnectedWallet'
 import { useTurnkeyWalletIntent } from '@/wallet/turnkeyIntent'
 import { TURNKEY_CONNECTOR_ID } from '@/wallet/turnkeyConnector'
@@ -52,6 +53,7 @@ export const TurnkeySync = () => {
     if (authState === AuthState.Unauthenticated) {
       if (getConnectedWalletRecord()) return
       clearTurnkeyWallet()
+      forgetBootSession()
       if (isTurnkeyActive) void disconnectAsync()
       return
     }
