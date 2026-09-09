@@ -1,6 +1,6 @@
 import { BaseError, UserRejectedRequestError } from 'viem'
 import { describe, expect, it } from 'vitest'
-import { extractErrorMessage, shouldRetryQuery } from '@/lib/errors'
+import { extractErrorMessage, isDefinitiveRejection, shouldRetryQuery } from '@/lib/errors'
 
 describe('extractErrorMessage', () => {
   it('returns the short message of a viem BaseError', () => {
@@ -53,5 +53,22 @@ describe('shouldRetryQuery', () => {
     expect(shouldRetryQuery(0, new Error('fetch failed'))).toBe(true)
     expect(shouldRetryQuery(2, new Error('fetch failed'))).toBe(false)
     expect(shouldRetryQuery(0, undefined)).toBe(true)
+  })
+})
+
+describe('isDefinitiveRejection', () => {
+  const withStatus = (props: object) => Object.assign(new Error('failed'), props)
+
+  it('is true for 4xx from either API error shape', () => {
+    expect(isDefinitiveRejection(withStatus({ statusCode: 400 }))).toBe(true)
+    expect(isDefinitiveRejection(withStatus({ status: 422 }))).toBe(true)
+  })
+
+  it('is false when the outcome is unknown (5xx, network, timeout)', () => {
+    expect(isDefinitiveRejection(withStatus({ statusCode: 500 }))).toBe(false)
+    expect(isDefinitiveRejection(withStatus({ status: 504 }))).toBe(false)
+    expect(isDefinitiveRejection(new TypeError('Failed to fetch'))).toBe(false)
+    expect(isDefinitiveRejection(new DOMException('The operation timed out', 'TimeoutError'))).toBe(false)
+    expect(isDefinitiveRejection(undefined)).toBe(false)
   })
 })

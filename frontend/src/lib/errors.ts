@@ -20,6 +20,15 @@ export const shouldRetryQuery = (failureCount: number, error: unknown): boolean 
   return failureCount < 2
 }
 
+// A 4xx means the backend received the request and refused it — the operation
+// definitively did not happen. Timeouts, network errors, and 5xx leave the
+// outcome unknown: the backend may still be processing (or have completed)
+// the operation after the client gave up.
+export const isDefinitiveRejection = (err: unknown): boolean => {
+  const status = httpStatusOf(err)
+  return status !== undefined && status >= 400 && status < 500
+}
+
 export const extractErrorMessage = (err: unknown, fallback = 'Something went wrong'): string => {
   if (err instanceof BaseError) {
     if (err.walk(e => e instanceof UserRejectedRequestError)) return 'Transaction rejected'
