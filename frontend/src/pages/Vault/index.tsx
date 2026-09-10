@@ -12,7 +12,7 @@ import { useMergedActivity } from '@/hooks/use-merged-activity'
 import { useTokenPrices } from '@/api/coin-gecko'
 import { appForAddress } from '@/config/apps'
 import { formatFiat } from '@/lib/tokens'
-import { cn } from '@/lib/utils'
+import { cn, shortenAddress } from '@/lib/utils'
 import { earnPath, appsPath, activityPath } from '@/paths'
 import { ActivityList } from '@/components/ActivityList'
 import { HISTORY_FETCH_LIMIT, MAX_ROWS } from '@/pages/Dashboard/DashboardHome/latestActivity.constants'
@@ -102,7 +102,7 @@ export const Vault = () => {
       const key = app?.id ?? lock.service_address.toLowerCase()
       const entry = byApp.get(key) ?? {
         address: lock.service_address,
-        name: app?.name ?? `${lock.service_address.slice(0, 6)}…${lock.service_address.slice(-4)}`,
+        name: app?.name ?? shortenAddress(lock.service_address),
         color: app?.color ?? '#0F4C81',
         fiat: 0,
         expiry: Number.POSITIVE_INFINITY,
