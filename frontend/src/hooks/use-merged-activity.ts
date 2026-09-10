@@ -238,7 +238,8 @@ export function useMergedActivity(historyLimit: number = HISTORY_PAGE_SIZE): Use
   const isSupersededOptimistic = useCallback(
     (a: Activity): boolean =>
       isAdoptedByServer(a, unsettledIds, unsettledQuoteIds) ||
-      (a.status === 'completed' && chainRows.some(r => matchesLocal(r, a))),
+      ((a.status === 'completed' || (a.type === 'swap' && a.quoteId != null)) &&
+        chainRows.some(r => matchesLocal(r, a))),
     [unsettledIds, unsettledQuoteIds, chainRows],
   )
 

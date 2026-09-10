@@ -32,6 +32,11 @@ vi.mock('@/api/operations', () => ({ useUnsettledOperations: () => unsettledStat
 let activityState: { activities: Activity[]; removeActivity: (id: string) => void }
 vi.mock('@/contexts/ActivityProvider/useActivity', () => ({ useActivity: () => activityState }))
 
+const LP_ADDRESS = '0x00000000000000000000000000000000000000aa'
+vi.mock('@/config/swap', () => ({
+  isSwapLpAddress: (a: string | null | undefined) => a?.toLowerCase() === LP_ADDRESS,
+}))
+
 const POOL = { pool_id: '0xeeed', pool_address: '0xPoolAddr', strategy: 'aave' } as EarnPool
 const TOKEN_ID = '0xc719'
 
@@ -184,6 +189,23 @@ describe('useMergedActivity', () => {
     const { result } = renderHook(() => useMergedActivity())
     expect(result.current.rows).toHaveLength(2)
     expect(activityState.removeActivity).not.toHaveBeenCalled()
+  })
+
+  it('prunes an unresolved swap once chain history shows it settled', () => {
+    // The server row settled between polls and was never observed; the chain
+    // entry (newer than the submission) is the only evidence left.
+    historyState = {
+      ...historyState,
+      history: [histEntry({ kind: 'transferBalanceOut', counterparty: LP_ADDRESS, timestamp: 5_010 })],
+      total: 1,
+    }
+    activityState.activities = [
+      localSwapActivity({ quoteId: 'q-1', status: 'in-progress' } as Partial<Activity>),
+    ]
+
+    const { result } = renderHook(() => useMergedActivity())
+    expect(result.current.rows.map(r => r.source)).toEqual(['chain'])
+    expect(activityState.removeActivity).toHaveBeenCalledExactlyOnceWith('tmp-swap-1')
   })
 
   it('prunes an optimistic row once the server adopts the operation', () => {
