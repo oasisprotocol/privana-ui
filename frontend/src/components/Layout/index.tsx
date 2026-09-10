@@ -33,7 +33,7 @@ export const Layout = ({ children }: LayoutProps) => {
 
   return (
     <div className="min-h-screen [background-image:var(--app-gradient)] text-foreground">
-      <div className="w-full pb-20 md:pb-0">
+      <div className="flex min-h-dvh w-full flex-col pb-20 md:pb-0">
         <nav
           style={{ viewTransitionName: 'top-nav' }}
           className="relative md:sticky md:top-0 z-40 flex items-center justify-between px-6 py-3.5 backdrop-blur bg-[#fafafa]/85 dark:bg-background/85 border-b border-border/70 dark:border-[rgba(49,54,63,0.7)]"
@@ -56,7 +56,7 @@ export const Layout = ({ children }: LayoutProps) => {
           )}
         </nav>
 
-        <div className="px-6 py-12 md:px-8 md:py-10">
+        <div className="flex-1 px-6 py-12 md:px-8 md:py-10">
           <div className="mx-auto w-full max-w-5xl" style={{ viewTransitionName: 'page-content' }}>
             {children}
           </div>
