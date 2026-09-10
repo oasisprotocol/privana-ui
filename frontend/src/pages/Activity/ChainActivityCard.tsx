@@ -51,7 +51,7 @@ export const ChainActivityCard = ({ row, timestamp, divider }: Props) => {
           row.kind === 'withdraw' && row.counterparty ? (
             <Tooltip>
               <TooltipTrigger asChild>
-                <span className="cursor-help">
+                <span tabIndex={0} className="cursor-help">
                   {activityRowSubtitle({ kind: row.kind, incoming })}: {shortenAddress(row.counterparty)}
                 </span>
               </TooltipTrigger>
