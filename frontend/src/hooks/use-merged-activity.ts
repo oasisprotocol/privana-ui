@@ -38,16 +38,31 @@ const serverIdOf = (a: Activity): string | undefined =>
   a.type === 'swap' ? a.swapId : a.direction === 'deposit' ? a.depositId : a.withdrawId
 
 // The server now owns this operation, so its optimistic copy is a duplicate.
-const isAdoptedByServer = (a: Activity, unsettledIds: ReadonlySet<string>): boolean => {
+// Swaps match by quote id as well: when the execute response never arrived
+// (timeout), the local entry has no swapId, but the server row still carries
+// the quote it was created from.
+const isAdoptedByServer = (
+  a: Activity,
+  unsettledIds: ReadonlySet<string>,
+  unsettledQuoteIds: ReadonlySet<string>,
+): boolean => {
   const sid = serverIdOf(a)
-  return sid != null && unsettledIds.has(sid)
+  if (sid != null && unsettledIds.has(sid)) return true
+  return a.type === 'swap' && a.quoteId != null && unsettledQuoteIds.has(a.quoteId)
 }
+
+const quoteIdsOf = (ops: UnsettledOperation[]): Set<string> =>
+  new Set(ops.map(o => o.quote_id).filter((q): q is string => q != null))
 
 // The single definition of an in-flight local activity. The badge counts these
 // and the list renders these; routing both through one predicate is what keeps
 // them from drifting apart.
-const pendingLocal = (activities: Activity[], unsettledIds: ReadonlySet<string>): Activity[] =>
-  activities.filter(a => a.status === 'in-progress' && !isAdoptedByServer(a, unsettledIds))
+const pendingLocal = (
+  activities: Activity[],
+  unsettledIds: ReadonlySet<string>,
+  unsettledQuoteIds: ReadonlySet<string>,
+): Activity[] =>
+  activities.filter(a => a.status === 'in-progress' && !isAdoptedByServer(a, unsettledIds, unsettledQuoteIds))
 
 export function mapOperationToActivity(
   op: UnsettledOperation,
@@ -192,6 +207,7 @@ export function useMergedActivity(historyLimit: number = HISTORY_PAGE_SIZE): Use
   )
 
   const unsettledIds = useMemo(() => new Set(unsettledOps.map(o => o.operation_id)), [unsettledOps])
+  const unsettledQuoteIds = useMemo(() => quoteIdsOf(unsettledOps), [unsettledOps])
 
   const refetchHistory = history.refetch
   const prevUnsettledIdsRef = useRef<Set<string>>(new Set())
@@ -221,9 +237,10 @@ export function useMergedActivity(historyLimit: number = HISTORY_PAGE_SIZE): Use
 
   const isSupersededOptimistic = useCallback(
     (a: Activity): boolean =>
-      isAdoptedByServer(a, unsettledIds) ||
-      (a.status === 'completed' && chainRows.some(r => matchesLocal(r, a))),
-    [unsettledIds, chainRows],
+      isAdoptedByServer(a, unsettledIds, unsettledQuoteIds) ||
+      ((a.status === 'completed' || (a.type === 'swap' && a.quoteId != null)) &&
+        chainRows.some(r => matchesLocal(r, a))),
+    [unsettledIds, unsettledQuoteIds, chainRows],
   )
 
   const visibleOptimistic = useMemo(
@@ -273,5 +290,5 @@ export function usePendingActivityCount(): number {
   const ops = unsettled.data?.operations ?? []
   const unsettledIds = new Set(ops.map(o => o.operation_id))
   const serverPending = ops.filter(o => o.status === 'pending' || o.status === 'undeployed').length
-  return serverPending + pendingLocal(activities, unsettledIds).length
+  return serverPending + pendingLocal(activities, unsettledIds, quoteIdsOf(ops)).length
 }

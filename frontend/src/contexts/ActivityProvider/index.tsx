@@ -1,6 +1,7 @@
 import { useCallback, useMemo, useState, type ReactNode } from 'react'
 import { useConnection } from 'wagmi'
 import { ActivityContext, type Activity } from './context'
+import { SwapReconciler } from './SwapReconciler'
 
 type ActivityState = { address: string | null; activities: Activity[] }
 
@@ -32,5 +33,10 @@ export const ActivityProvider = ({ children }: { children: ReactNode }) => {
     [activities, addActivity, updateActivity, removeActivity],
   )
 
-  return <ActivityContext value={value}>{children}</ActivityContext>
+  return (
+    <ActivityContext value={value}>
+      <SwapReconciler />
+      {children}
+    </ActivityContext>
+  )
 }

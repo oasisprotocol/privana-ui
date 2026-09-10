@@ -32,6 +32,11 @@ vi.mock('@/api/operations', () => ({ useUnsettledOperations: () => unsettledStat
 let activityState: { activities: Activity[]; removeActivity: (id: string) => void }
 vi.mock('@/contexts/ActivityProvider/useActivity', () => ({ useActivity: () => activityState }))
 
+const LP_ADDRESS = '0x00000000000000000000000000000000000000aa'
+vi.mock('@/config/swap', () => ({
+  isSwapLpAddress: (a: string | null | undefined) => a?.toLowerCase() === LP_ADDRESS,
+}))
+
 const POOL = { pool_id: '0xeeed', pool_address: '0xPoolAddr', strategy: 'aave' } as EarnPool
 const TOKEN_ID = '0xc719'
 
@@ -76,6 +81,20 @@ const localEarnActivity = (overrides: Partial<Activity> = {}): Activity =>
     amount: '1000000',
     poolId: POOL.pool_id,
     protocol: 'aave',
+    ...overrides,
+  }) as Activity
+
+const localSwapActivity = (overrides: Partial<Activity> = {}): Activity =>
+  ({
+    id: 'tmp-swap-1',
+    type: 'swap',
+    status: 'in-progress',
+    createdAt: 5_000_000, // ms
+    fromToken: { id: TOKEN_ID, symbol: 'USDC', decimals: 6 },
+    toToken: { id: '0xbeef', symbol: 'ETH', decimals: 18 },
+    fromAmount: '1000000',
+    toAmount: '400000000000000',
+    rateLabel: '',
     ...overrides,
   }) as Activity
 
@@ -127,6 +146,66 @@ describe('useMergedActivity', () => {
     if (row.activity.type !== 'earn') return
     expect(row.activity.token.symbol).toBe('USDC')
     expect(row.activity.protocol).toBe('aave')
+  })
+
+  it('prunes a timed-out swap by quote id once the server row appears', () => {
+    // The execute response never arrived: the local entry has a quoteId but no swapId.
+    unsettledState.data = {
+      operations: [
+        op({
+          operation_id: 'srv-swap-1',
+          operation_type: 'swap',
+          quote_id: 'q-1',
+          from_token_id: TOKEN_ID,
+          pool_id: null,
+          token_id: null,
+        }),
+      ],
+    }
+    activityState.activities = [localSwapActivity({ quoteId: 'q-1' } as Partial<Activity>)]
+
+    const { result } = renderHook(() => useMergedActivity())
+    expect(result.current.rows.map(r => (r.source === 'local' ? r.activity.id : null))).toEqual([
+      'srv-swap-1',
+    ])
+    expect(activityState.removeActivity).toHaveBeenCalledExactlyOnceWith('tmp-swap-1')
+  })
+
+  it('keeps a local swap whose quote the server does not know', () => {
+    unsettledState.data = {
+      operations: [
+        op({
+          operation_id: 'srv-swap-1',
+          operation_type: 'swap',
+          quote_id: 'q-other',
+          from_token_id: TOKEN_ID,
+          pool_id: null,
+          token_id: null,
+        }),
+      ],
+    }
+    activityState.activities = [localSwapActivity({ quoteId: 'q-1' } as Partial<Activity>)]
+
+    const { result } = renderHook(() => useMergedActivity())
+    expect(result.current.rows).toHaveLength(2)
+    expect(activityState.removeActivity).not.toHaveBeenCalled()
+  })
+
+  it('prunes an unresolved swap once chain history shows it settled', () => {
+    // The server row settled between polls and was never observed; the chain
+    // entry (newer than the submission) is the only evidence left.
+    historyState = {
+      ...historyState,
+      history: [histEntry({ kind: 'transferBalanceOut', counterparty: LP_ADDRESS, timestamp: 5_010 })],
+      total: 1,
+    }
+    activityState.activities = [
+      localSwapActivity({ quoteId: 'q-1', status: 'in-progress' } as Partial<Activity>),
+    ]
+
+    const { result } = renderHook(() => useMergedActivity())
+    expect(result.current.rows.map(r => r.source)).toEqual(['chain'])
+    expect(activityState.removeActivity).toHaveBeenCalledExactlyOnceWith('tmp-swap-1')
   })
 
   it('prunes an optimistic row once the server adopts the operation', () => {

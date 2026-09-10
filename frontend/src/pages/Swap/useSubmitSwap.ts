@@ -7,7 +7,7 @@ import type { QuoteResponse, TokenInfo } from '@/api/swap'
 import { operationsKeys } from '@/api/operations'
 import { useActivity } from '@/contexts/ActivityProvider/useActivity'
 import type { ActivityStatus } from '@/contexts/ActivityProvider/context'
-import { extractErrorMessage } from '@/lib/errors'
+import { extractErrorMessage, isDefinitiveRejection } from '@/lib/errors'
 
 const CHAIN_ID = parseInt(import.meta.env.VITE_CHAIN_ID, 10)
 const ACCOUNTING_CONTRACT = import.meta.env.VITE_ACCOUNTING_CONTRACT_ADDRESS
@@ -62,6 +62,7 @@ export const useSubmitSwap = ({ onSuccess }: Params = {}) => {
         type: 'swap',
         status: 'in-progress',
         createdAt: Date.now(),
+        quoteId: quote.quote_id,
         fromToken: {
           id: fromToken.token_id,
           symbol: fromToken.token_symbol ?? fromToken.token_type_name,
@@ -100,10 +101,20 @@ export const useSubmitSwap = ({ onSuccess }: Params = {}) => {
           onSuccess?.()
         })
         .catch(err => {
-          updateActivity(id, {
-            status: 'failed',
-            error: extractErrorMessage(err, 'Swap failed'),
-          })
+          // Only a 4xx proves the swap was rejected. On a timeout/network
+          // error/5xx the backend may still settle it (it holds requests
+          // through a serialized settlement queue), so the entry stays
+          // in-progress and the unsettled feed reconciles it by quoteId —
+          // marking it failed here fabricates a failure for a swap that
+          // usually succeeded.
+          if (isDefinitiveRejection(err)) {
+            updateActivity(id, {
+              status: 'failed',
+              error: extractErrorMessage(err, 'Swap failed'),
+            })
+            return
+          }
+          void queryClient.invalidateQueries({ queryKey: operationsKeys.all })
         })
 
       return id
