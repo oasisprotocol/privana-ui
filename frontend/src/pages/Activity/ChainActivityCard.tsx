@@ -1,5 +1,7 @@
 import { usePrivanaContext } from '@oasisprotocol/privana-sdk'
 import { venueForStrategy } from '@/config/protocols'
+import { shortenAddress } from '@/lib/utils'
+import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip'
 import type { ClassifiedHistoryEntry } from './historyMapping'
 import { ACTIVITY_TITLES, activityRowSubtitle, activityRowTitle } from './labels'
 import { resolveActivityVisual, TONE_SIGN, TONE_TEXT } from './activityVisuals'
@@ -45,7 +47,20 @@ export const ChainActivityCard = ({ row, timestamp, divider }: Props) => {
         timestamp={timestamp}
         counterparty={row.counterparty}
         venue={venueForStrategy(row.pool?.strategy)}
-        subtitle={activityRowSubtitle({ kind: row.kind, incoming })}
+        subtitle={
+          row.kind === 'withdraw' && row.counterparty ? (
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <span tabIndex={0} className="cursor-help">
+                  {activityRowSubtitle({ kind: row.kind, incoming })}: {shortenAddress(row.counterparty)}
+                </span>
+              </TooltipTrigger>
+              <TooltipContent>{row.counterparty}</TooltipContent>
+            </Tooltip>
+          ) : (
+            activityRowSubtitle({ kind: row.kind, incoming })
+          )
+        }
         amount={
           token && row.amount ? (
             <ActivityAmount
