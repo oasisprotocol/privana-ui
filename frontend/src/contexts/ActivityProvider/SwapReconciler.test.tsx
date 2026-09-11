@@ -69,6 +69,33 @@ describe('SwapReconciler', () => {
     expect(activityState.updateActivity).toHaveBeenLastCalledWith('tmp-1', { status: 'completed' })
   })
 
+  it('treats a scheduled row as in progress and adopts its id', () => {
+    unsettledState.data = { operations: [swapOp({ status: 'scheduled' })] }
+    activityState.activities = [localSwap()]
+
+    render(<SwapReconciler />)
+    expect(activityState.updateActivity).toHaveBeenCalledExactlyOnceWith('tmp-1', {
+      status: 'in-progress',
+      swapId: 'srv-1',
+      txHash: undefined,
+      error: undefined,
+    })
+  })
+
+  it('marks the entry failed when a quote last seen refunding leaves the feed', () => {
+    activityState.activities = [localSwap()]
+    unsettledState.data = { operations: [swapOp({ status: 'refunding' })] }
+    const view = render(<SwapReconciler />)
+
+    unsettledState.data = { operations: [] }
+    view.rerender(<SwapReconciler />)
+
+    expect(activityState.updateActivity).toHaveBeenLastCalledWith('tmp-1', {
+      status: 'failed',
+      error: 'Swap refunded',
+    })
+  })
+
   it('leaves a never-observed quote alone', () => {
     activityState.activities = [localSwap()]
     unsettledState.data = { operations: [] }

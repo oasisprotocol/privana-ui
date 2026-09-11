@@ -3,6 +3,7 @@ import { useHistory, type HistoryEntry } from '@oasisprotocol/privana-sdk'
 import { useEarnPools, type EarnPool } from '@/api/earn'
 import { useTokens } from '@/api/swap'
 import { useUnsettledOperations, type UnsettledOperation } from '@/api/operations'
+import { isSettledFailure } from '@/api/operation-status'
 import { useActivity } from '@/contexts/ActivityProvider/useActivity'
 import type { Activity, ActivityStatus, ActivityTokenInfo } from '@/contexts/ActivityProvider/context'
 import {
@@ -32,7 +33,7 @@ export interface UseMergedActivityResult {
 const HISTORY_PAGE_SIZE = 100
 
 const mapStatus = (s: UnsettledOperation['status']): ActivityStatus =>
-  s === 'pending' || s === 'undeployed' ? 'in-progress' : 'failed'
+  isSettledFailure(s) ? 'failed' : 'in-progress'
 
 const serverIdOf = (a: Activity): string | undefined =>
   a.type === 'swap' ? a.swapId : a.direction === 'deposit' ? a.depositId : a.withdrawId
@@ -289,6 +290,6 @@ export function usePendingActivityCount(): number {
   const { activities } = useActivity()
   const ops = unsettled.data?.operations ?? []
   const unsettledIds = new Set(ops.map(o => o.operation_id))
-  const serverPending = ops.filter(o => o.status === 'pending' || o.status === 'undeployed').length
+  const serverPending = ops.filter(o => !isSettledFailure(o.status)).length
   return serverPending + pendingLocal(activities, unsettledIds, quoteIdsOf(ops)).length
 }
