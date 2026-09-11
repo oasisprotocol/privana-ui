@@ -2,6 +2,7 @@ import { useEffect, useRef } from 'react'
 import { useQuery, useQueryClient } from '@tanstack/react-query'
 import { useSiweAuth } from '@oasisprotocol/privana-sdk'
 import { request } from './http'
+import { isSettledFailure } from './operation-status'
 
 // Pending/failed swap + earn operations, served by service from its own
 // DB (swaps + earn_transactions). Completed history lives on-chain in Accounting
@@ -11,7 +12,8 @@ import { request } from './http'
 // the funds still await operator redeploy into the strategy, so the op stays
 // listed here at the same time.
 export type UnsettledOperationType = 'swap' | 'earn_deposit' | 'earn_withdraw'
-export type UnsettledOperationStatus = 'pending' | 'failed' | 'canceled' | 'undeployed'
+export { isSettledFailure, type UnsettledOperationStatus } from './operation-status'
+import type { UnsettledOperationStatus } from './operation-status'
 
 export interface UnsettledOperation {
   operation_id: string
@@ -67,13 +69,10 @@ export function useUnsettledOperations() {
     queryKey: operationsKeys.unsettled(address ?? ''),
     queryFn: () => getUnsettledOperations(jwt!),
     enabled: !!address && !!jwt,
-    // Poll while any non-terminal op exists: "pending" resolves on its own and
-    // "undeployed" settles when the operator redeploys — without polling a
-    // session would never observe either transition.
+    // Poll while any in-flight op exists — without polling a session would
+    // never observe a scheduled swap executing or an undeployed redeploy.
     refetchInterval: query =>
-      query.state.data?.operations.some(o => o.status === 'pending' || o.status === 'undeployed')
-        ? 10_000
-        : false,
+      query.state.data?.operations.some(o => !isSettledFailure(o.status)) ? 10_000 : false,
     staleTime: 5_000,
   })
 }
