@@ -45,10 +45,6 @@ export const ReviewStep = ({
 }: ReviewStepProps) => {
   return (
     <div className="mt-6 flex flex-col gap-4">
-      <div className="flex justify-end">
-        <QuoteCountdown quoteLoading={quoteLoading} expiresAt={expiresAt} />
-      </div>
-
       <SurfaceCard className="flex flex-col gap-4 p-5">
         <div className="flex gap-4 items-center justify-center">
           <div className="flex-1 flex flex-col gap-1 min-w-0 overflow-hidden">
@@ -140,6 +136,10 @@ export const ReviewStep = ({
           {loading ? 'Signing & submitting...' : 'Confirm swap'}
         </Button>
       )}
+
+      <div className="flex justify-center">
+        <QuoteCountdown quoteLoading={quoteLoading} expiresAt={expiresAt} />
+      </div>
 
       {error && <p className="text-sm text-center text-destructive">{error}</p>}
     </div>

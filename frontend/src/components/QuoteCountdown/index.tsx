@@ -26,7 +26,7 @@ export const QuoteCountdown = ({ quoteLoading, expiresAt }: QuoteCountdownProps)
       {quoteLoading || !expiresAt ? (
         <Loader2 className="inline size-3 animate-spin align-[-2px]" />
       ) : (
-        <span className="font-bold">{remaining}s</span>
+        <span className="font-bold text-foreground">{remaining}s</span>
       )}
     </p>
   )
