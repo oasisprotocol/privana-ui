@@ -1,10 +1,11 @@
 import { useEffect, useRef } from 'react'
 import { useUnsettledOperations, type UnsettledOperation } from '@/api/operations'
+import { isSettledFailure, type UnsettledOperationStatus } from '@/api/operation-status'
 import { useActivity } from './useActivity'
 import type { ActivityStatus } from './context'
 
 const statusOf = (op: UnsettledOperation): ActivityStatus =>
-  op.status === 'pending' || op.status === 'undeployed' ? 'in-progress' : 'failed'
+  isSettledFailure(op.status) ? 'failed' : 'in-progress'
 
 // Patches local swap entries with the server's outcome, keyed by quote id.
 // The optimistic entry is the only thing the swap result screen reads, and a
@@ -14,9 +15,10 @@ const statusOf = (op: UnsettledOperation): ActivityStatus =>
 export const SwapReconciler = () => {
   const { data } = useUnsettledOperations()
   const { activities, updateActivity } = useActivity()
-  // Quotes observed in the unsettled feed. Failed rows stay in that feed, so a
-  // quote that was present and then left can only have completed.
-  const seenQuotesRef = useRef(new Set<string>())
+  // Last observed feed status per quote. Failed rows stay in the feed, so a
+  // quote that was present and then left settled — as completed, unless it was
+  // last seen refunding, in which case leaving means refunded (not completed).
+  const seenQuotesRef = useRef(new Map<string, UnsettledOperationStatus>())
 
   useEffect(() => {
     if (!data) return
@@ -29,7 +31,7 @@ export const SwapReconciler = () => {
       if (activity.type !== 'swap' || activity.quoteId == null) continue
       const op = opByQuote.get(activity.quoteId)
       if (op) {
-        seenQuotesRef.current.add(activity.quoteId)
+        seenQuotesRef.current.set(activity.quoteId, op.status)
         const status = statusOf(op)
         if (
           activity.status !== status ||
@@ -44,7 +46,11 @@ export const SwapReconciler = () => {
           })
         }
       } else if (seenQuotesRef.current.has(activity.quoteId) && activity.status === 'in-progress') {
-        updateActivity(activity.id, { status: 'completed' })
+        const lastSeen = seenQuotesRef.current.get(activity.quoteId)
+        updateActivity(
+          activity.id,
+          lastSeen === 'refunding' ? { status: 'failed', error: 'Swap refunded' } : { status: 'completed' },
+        )
       }
     }
   }, [data, activities, updateActivity])
