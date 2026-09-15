@@ -91,10 +91,6 @@ export const ReviewStep = ({
     <div className="flex flex-col gap-4 w-full max-w-110 mx-auto">
       <ReviewHeader title="Review transaction" onBack={onBack} disabled={loading} />
 
-      <div className="flex justify-end">
-        <QuoteCountdown quoteLoading={quoteLoading} expiresAt={expiresAt} />
-      </div>
-
       <ReviewAmountCard
         eyebrow="You're moving"
         amount={amount}
@@ -127,6 +123,10 @@ export const ReviewStep = ({
         label="Confirm"
         loadingLabel="Signing & submitting..."
       />
+
+      <div className="flex justify-center">
+        <QuoteCountdown quoteLoading={quoteLoading} expiresAt={expiresAt} />
+      </div>
 
       {error && <p className="text-center text-sm text-destructive">{error}</p>}
     </div>

@@ -280,12 +280,6 @@ export const SwapDashboard = () => {
 
       {step === 0 && data && (
         <div className="mt-6 flex flex-col gap-4">
-          {quoteData && (
-            <div className="animate-fade-in flex justify-end">
-              <QuoteCountdown quoteLoading={quoteLoading} expiresAt={quoteData.expires_at} />
-            </div>
-          )}
-
           <div className="flex flex-col gap-2">
             <p className="text-sm font-semibold text-foreground">You pay</p>
             <AssetRow
@@ -366,6 +360,12 @@ export const SwapDashboard = () => {
               </Button>
             )}
           </div>
+
+          {quoteData && (
+            <div className="animate-fade-in flex justify-center">
+              <QuoteCountdown quoteLoading={quoteLoading} expiresAt={quoteData.expires_at} />
+            </div>
+          )}
 
           <div className="flex items-center justify-center gap-2 px-0.5 text-xs font-medium text-muted-foreground">
             <EyeOff className="size-4 shrink-0" />
