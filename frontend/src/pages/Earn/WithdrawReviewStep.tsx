@@ -16,9 +16,7 @@ type WithdrawReviewStepProps = {
   token: TokenInfo | undefined
   amount: string
   isLoading: boolean
-  isCorrectChain: boolean
   canConfirm?: boolean
-  onSwitchChain: () => void
   onBack: () => void
   onConfirm: () => void
   loading?: boolean
@@ -31,9 +29,7 @@ export const WithdrawReviewStep = ({
   token,
   amount,
   isLoading,
-  isCorrectChain,
   canConfirm = true,
-  onSwitchChain,
   onBack,
   onConfirm,
   loading,
@@ -83,8 +79,6 @@ export const WithdrawReviewStep = ({
       </ReviewDisclaimer>
 
       <ReviewConfirmButton
-        isCorrectChain={isCorrectChain}
-        onSwitchChain={onSwitchChain}
         onConfirm={onConfirm}
         disabled={loading || !canConfirm}
         loading={loading}

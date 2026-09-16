@@ -20,8 +20,6 @@ type ReviewStepProps = {
   quoteLoading?: boolean
   canConfirm?: boolean
   expiresAt?: number
-  isCorrectChain: boolean
-  onSwitchChain: () => void
   onConfirm: () => void
   loading?: boolean
   error?: string | null
@@ -37,8 +35,6 @@ export const ReviewStep = ({
   quoteLoading,
   canConfirm = true,
   expiresAt,
-  isCorrectChain,
-  onSwitchChain,
   onConfirm,
   loading,
   error,
@@ -122,20 +118,14 @@ export const ReviewStep = ({
         ))}
       </SurfaceCard>
 
-      {!isCorrectChain ? (
-        <Button size="lg" className="h-14 w-full text-base" onClick={onSwitchChain} disabled={loading}>
-          Switch Network
-        </Button>
-      ) : (
-        <Button
-          size="lg"
-          className="h-14 w-full text-base"
-          onClick={onConfirm}
-          disabled={loading || quoteLoading || !canConfirm}
-        >
-          {loading ? 'Signing & submitting...' : 'Confirm swap'}
-        </Button>
-      )}
+      <Button
+        size="lg"
+        className="h-14 w-full text-base"
+        onClick={onConfirm}
+        disabled={loading || quoteLoading || !canConfirm}
+      >
+        {loading ? 'Signing & submitting...' : 'Confirm swap'}
+      </Button>
 
       <div className="flex justify-center">
         <QuoteCountdown quoteLoading={quoteLoading} expiresAt={expiresAt} />
