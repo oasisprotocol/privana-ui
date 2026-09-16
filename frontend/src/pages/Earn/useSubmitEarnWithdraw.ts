@@ -57,7 +57,6 @@ export const useSubmitEarnWithdraw = ({ onSuccess }: Params = {}) => {
           chainId: CHAIN_ID,
           earnManagerAddress: EARN_MANAGER_CONTRACT,
           message: {
-            user: address,
             poolId: poolId as `0x${string}`,
             amount: BigInt(amount),
             nonce: BigInt(nonce),

@@ -2,7 +2,6 @@ import type { WalletClient } from 'viem'
 
 const WITHDRAW_TYPES = {
   Withdraw: [
-    { name: 'user', type: 'address' },
     { name: 'poolId', type: 'bytes32' },
     { name: 'amount', type: 'uint256' },
     { name: 'nonce', type: 'uint256' },
@@ -14,7 +13,6 @@ export interface SignWithdrawConsentParams {
   chainId: number
   earnManagerAddress: `0x${string}`
   message: {
-    user: `0x${string}`
     poolId: `0x${string}`
     amount: bigint
     nonce: bigint
