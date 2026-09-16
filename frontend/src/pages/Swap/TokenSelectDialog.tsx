@@ -41,7 +41,11 @@ export const TokenSelectDialog = ({
   const [chainFilter, setChainFilter] = useState('All')
 
   const tokenIds = useMemo(() => tokens.map(t => t.token_id as `0x${string}`), [tokens])
-  const { balances, isLoading: balancesLoading } = useBatchBalances({ tokenIds, enabled: open })
+  const {
+    balances,
+    isLoading: balancesLoading,
+    isError: balancesError,
+  } = useBatchBalances({ tokenIds, enabled: open })
   const balanceMap = useMemo(() => {
     const map = new Map<string, string>()
     for (const b of balances) map.set(b.token_id, b.balance)
@@ -59,15 +63,23 @@ export const TokenSelectDialog = ({
   })
   if (frozen.open !== open) {
     setFrozen({ open, order: null })
-  } else if (open && frozen.order === null && !balancesLoading) {
-    const sorted = sortTokensByBalance(
-      tokens.map(t => ({ id: t.token_id, name: tokenLabel(t), decimals: t.token_decimals ?? 0 })),
-      t => {
-        const balance = balanceMap.get(t.id)
-        return balance === undefined ? undefined : BigInt(balance)
-      },
-    )
-    setFrozen({ open, order: sorted.map(t => t.id) })
+  } else if (open && frozen.order === null) {
+    // Freeze only on explicit success: the endpoint returns one row per
+    // requested token, so a non-empty result is the loaded state — a
+    // disabled or still-pending query keeps the skeletons instead of
+    // freezing an order computed from nothing.
+    if (balances.length > 0) {
+      const sorted = sortTokensByBalance(
+        tokens.map(t => ({ id: t.token_id, name: tokenLabel(t), decimals: t.token_decimals ?? 0 })),
+        t => {
+          const balance = balanceMap.get(t.id)
+          return balance === undefined ? undefined : BigInt(balance)
+        },
+      )
+      setFrozen({ open, order: sorted.map(t => t.id) })
+    } else if (balancesError) {
+      setFrozen({ open, order: tokens.map(t => t.token_id) })
+    }
   }
   const frozenOrder = frozen.order
 
