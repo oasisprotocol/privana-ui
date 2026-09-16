@@ -6,7 +6,7 @@ import { useTokenPrices } from '@/api/coin-gecko'
 import { Skeleton } from '@/components/ui/skeleton'
 import { useBalance } from '@oasisprotocol/privana-sdk'
 import { formatUnits, parseUnits } from 'viem'
-import { useConnection, useWalletClient } from 'wagmi'
+import { useConnection } from 'wagmi'
 import { ArrowLeft, ArrowUpDown, EyeOff } from 'lucide-react'
 import { activityPath } from '@/paths'
 import { SWAPPABLE_TOKEN_IDS } from '@/config/tokens'
@@ -22,12 +22,13 @@ import { SwapResult } from './SwapResult'
 import { useSwapQuote } from './useSwapQuote'
 import { useSubmitSwap } from './useSubmitSwap'
 import { useQuoteSummary } from './useQuoteSummary'
+import { useSigningClient } from '@/hooks/use-signing-client'
 
 export const SwapDashboard = () => {
   const [step, setStep] = useState(0)
   const { data, isLoading, error } = useTokens()
   const { address } = useConnection()
-  const { data: walletClient } = useWalletClient()
+  const walletClient = useSigningClient()
   const resetBalanceCaches = useResetBalanceCaches()
   const navigate = useNavigate()
   const { activities } = useActivity()

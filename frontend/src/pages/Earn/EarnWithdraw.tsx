@@ -1,6 +1,6 @@
 import { useMemo, useState } from 'react'
 import { useNavigate, useParams } from 'react-router'
-import { useConnection, useWalletClient } from 'wagmi'
+import { useConnection } from 'wagmi'
 import { parseUnits } from 'viem'
 import { useEarnBalance, useEarnPools } from '@/api/earn'
 import { useTokens } from '@/api/swap'
@@ -15,13 +15,14 @@ import { WithdrawConfigureStep } from './WithdrawConfigureStep'
 import { WithdrawReviewStep } from './WithdrawReviewStep'
 import { EarnWithdrawResult } from './EarnWithdrawResult'
 import { useSubmitEarnWithdraw } from './useSubmitEarnWithdraw'
+import { useSigningClient } from '@/hooks/use-signing-client'
 
 export const EarnWithdraw = () => {
   const { poolId } = useParams<{ poolId: string }>()
   const navigate = useNavigate()
   const resetBalanceCaches = useResetBalanceCaches()
   const { address } = useConnection()
-  const { data: walletClient } = useWalletClient()
+  const walletClient = useSigningClient()
   const [amount, setAmount] = useState('')
   const [step, setStep] = useState(0)
   const [withdrawActivityId, setWithdrawActivityId] = useState<string | null>(null)

@@ -1,6 +1,6 @@
 import { useMemo, useState } from 'react'
 import { useNavigate, useParams } from 'react-router'
-import { useConnection, useWalletClient } from 'wagmi'
+import { useConnection } from 'wagmi'
 import { parseUnits } from 'viem'
 import { useEarnPools } from '@/api/earn'
 import { useTokens } from '@/api/swap'
@@ -16,13 +16,14 @@ import { ReviewStep } from './ReviewStep'
 import { EarnDepositResult } from './EarnDepositResult'
 import { useEarnDepositQuote } from './useEarnDepositQuote'
 import { useSubmitEarnDeposit } from './useSubmitEarnDeposit'
+import { useSigningClient } from '@/hooks/use-signing-client'
 
 export const EarnCreate = () => {
   const { poolId } = useParams<{ poolId?: string }>()
   const navigate = useNavigate()
   const resetBalanceCaches = useResetBalanceCaches()
   const { address } = useConnection()
-  const { data: walletClient } = useWalletClient()
+  const walletClient = useSigningClient()
   const [amount, setAmount] = useState('')
   const [step, setStep] = useState(0)
   const [depositActivityId, setDepositActivityId] = useState<string | null>(null)
