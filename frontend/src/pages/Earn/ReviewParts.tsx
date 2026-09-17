@@ -74,30 +74,20 @@ export const ReviewDisclaimer = ({ children }: { children: ReactNode }) => (
   </div>
 )
 
-// Switches to "Switch Network" on the wrong chain, otherwise the confirm action.
 export const ReviewConfirmButton = ({
-  isCorrectChain,
-  onSwitchChain,
   onConfirm,
   disabled,
   loading,
   label,
   loadingLabel = 'Submitting...',
 }: {
-  isCorrectChain: boolean
-  onSwitchChain: () => void
   onConfirm: () => void
   disabled?: boolean
   loading?: boolean
   label: string
   loadingLabel?: string
-}) =>
-  !isCorrectChain ? (
-    <Button size="lg" className="h-12 w-full text-base" onClick={onSwitchChain} disabled={loading}>
-      Switch Network
-    </Button>
-  ) : (
-    <Button size="lg" className="h-12 w-full text-base" onClick={onConfirm} disabled={disabled}>
-      {loading ? loadingLabel : label}
-    </Button>
-  )
+}) => (
+  <Button size="lg" className="h-12 w-full text-base" onClick={onConfirm} disabled={disabled}>
+    {loading ? loadingLabel : label}
+  </Button>
+)

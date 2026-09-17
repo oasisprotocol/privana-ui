@@ -6,9 +6,8 @@ import { useTokenPrices } from '@/api/coin-gecko'
 import { Skeleton } from '@/components/ui/skeleton'
 import { useBalance } from '@oasisprotocol/privana-sdk'
 import { formatUnits, parseUnits } from 'viem'
-import { useConnection, useWalletClient, useSwitchChain } from 'wagmi'
+import { useConnection } from 'wagmi'
 import { ArrowLeft, ArrowUpDown, EyeOff } from 'lucide-react'
-import { extractErrorMessage } from '@/lib/errors'
 import { activityPath } from '@/paths'
 import { SWAPPABLE_TOKEN_IDS } from '@/config/tokens'
 import { cn } from '@/lib/utils'
@@ -23,16 +22,13 @@ import { SwapResult } from './SwapResult'
 import { useSwapQuote } from './useSwapQuote'
 import { useSubmitSwap } from './useSubmitSwap'
 import { useQuoteSummary } from './useQuoteSummary'
-import type { AppChainId } from '@/wagmi-config'
-
-const CHAIN_ID = parseInt(import.meta.env.VITE_CHAIN_ID, 10) as AppChainId
+import { useSigningClient } from '@/hooks/use-signing-client'
 
 export const SwapDashboard = () => {
   const [step, setStep] = useState(0)
   const { data, isLoading, error } = useTokens()
-  const { address, chainId } = useConnection()
-  const { data: walletClient } = useWalletClient()
-  const { mutate: switchChain, error: switchChainError } = useSwitchChain()
+  const { address } = useConnection()
+  const walletClient = useSigningClient()
   const resetBalanceCaches = useResetBalanceCaches()
   const navigate = useNavigate()
   const { activities } = useActivity()
@@ -117,7 +113,6 @@ export const SwapDashboard = () => {
     return Number.isFinite(asNum) ? asNum * price : undefined
   }, [prices, toTokenId, toAmountExact, toToken])
 
-  const isCorrectChain = chainId === CHAIN_ID
   // Guard against submitting a stale quote while the user is still typing
   // (debounce window) by requiring the quote's amount to match the current input.
   const quoteMatchesInput = (() => {
@@ -129,13 +124,7 @@ export const SwapDashboard = () => {
     }
   })()
   const canSwap =
-    !!quoteData &&
-    !quoteLoading &&
-    !!walletClient &&
-    !!address &&
-    isCorrectChain &&
-    !insufficientFunds &&
-    quoteMatchesInput
+    !!quoteData && !quoteLoading && !!walletClient && !!address && !insufficientFunds && quoteMatchesInput
 
   const swapActivity = useMemo(() => {
     if (!swapActivityId) return undefined
@@ -229,10 +218,6 @@ export const SwapDashboard = () => {
         </div>
       )}
 
-      {step !== 2 && switchChainError && (
-        <p className="mt-4 text-sm text-center text-destructive">{extractErrorMessage(switchChainError)}</p>
-      )}
-
       {step === 2 && swapActivity && (
         <SwapResult
           activity={swapActivity}
@@ -252,8 +237,6 @@ export const SwapDashboard = () => {
           canConfirm={canSwap}
           expiresAt={quoteData?.expires_at}
           toAmountExact={toAmountExact}
-          isCorrectChain={isCorrectChain}
-          onSwitchChain={() => switchChain({ chainId: CHAIN_ID })}
           onConfirm={handleSwap}
           loading={swapLoading}
           error={swapError}
@@ -341,24 +324,14 @@ export const SwapDashboard = () => {
           {quoteData && <QuoteInfo summary={summary} />}
 
           <div className="flex gap-5 w-full">
-            {!isCorrectChain ? (
-              <Button
-                size="lg"
-                className="flex-1 h-14 text-base"
-                onClick={() => switchChain({ chainId: CHAIN_ID })}
-              >
-                Switch Network
-              </Button>
-            ) : (
-              <Button
-                size="lg"
-                className="flex-1 h-14 text-base"
-                disabled={!canSwap || quoteLoading}
-                onClick={() => setStep(1)}
-              >
-                Review swap
-              </Button>
-            )}
+            <Button
+              size="lg"
+              className="flex-1 h-14 text-base"
+              disabled={!canSwap || quoteLoading}
+              onClick={() => setStep(1)}
+            >
+              Review swap
+            </Button>
           </div>
 
           {quoteData && (

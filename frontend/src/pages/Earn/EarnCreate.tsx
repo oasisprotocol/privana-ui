@@ -1,11 +1,10 @@
 import { useMemo, useState } from 'react'
 import { useNavigate, useParams } from 'react-router'
-import { useConnection, useSwitchChain, useWalletClient } from 'wagmi'
+import { useConnection } from 'wagmi'
 import { parseUnits } from 'viem'
 import { useEarnPools } from '@/api/earn'
 import { useTokens } from '@/api/swap'
 import { useResetBalanceCaches } from '@/hooks/use-reset-balance-caches'
-import { extractErrorMessage } from '@/lib/errors'
 import { activityPath, earnCreatePath, earnPath } from '@/paths'
 import { cn } from '@/lib/utils'
 import { DESKTOP_CARD } from '@/lib/surface'
@@ -17,17 +16,14 @@ import { ReviewStep } from './ReviewStep'
 import { EarnDepositResult } from './EarnDepositResult'
 import { useEarnDepositQuote } from './useEarnDepositQuote'
 import { useSubmitEarnDeposit } from './useSubmitEarnDeposit'
-import type { AppChainId } from '@/wagmi-config'
-
-const CHAIN_ID = parseInt(import.meta.env.VITE_CHAIN_ID, 10) as AppChainId
+import { useSigningClient } from '@/hooks/use-signing-client'
 
 export const EarnCreate = () => {
   const { poolId } = useParams<{ poolId?: string }>()
   const navigate = useNavigate()
   const resetBalanceCaches = useResetBalanceCaches()
-  const { address, chainId } = useConnection()
-  const { data: walletClient } = useWalletClient()
-  const { mutate: switchChain, error: switchChainError } = useSwitchChain()
+  const { address } = useConnection()
+  const walletClient = useSigningClient()
   const [amount, setAmount] = useState('')
   const [step, setStep] = useState(0)
   const [depositActivityId, setDepositActivityId] = useState<string | null>(null)
@@ -111,7 +107,7 @@ export const EarnCreate = () => {
     navigate(earnPath())
   }
 
-  const reviewError = depositError ?? (switchChainError ? extractErrorMessage(switchChainError) : null)
+  const reviewError = depositError ?? null
 
   return (
     <div className={cn('mx-auto flex w-full max-w-lg flex-col', DESKTOP_CARD)}>
@@ -136,8 +132,6 @@ export const EarnCreate = () => {
           quoteLoading={quoteLoading}
           quoteError={quoteError}
           expiresAt={quote?.expires_at}
-          isCorrectChain={chainId === CHAIN_ID}
-          onSwitchChain={() => switchChain({ chainId: CHAIN_ID })}
           onBack={handleBack}
           onConfirm={handleConfirm}
           loading={depositLoading}

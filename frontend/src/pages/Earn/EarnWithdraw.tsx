@@ -1,11 +1,10 @@
 import { useMemo, useState } from 'react'
 import { useNavigate, useParams } from 'react-router'
-import { useConnection, useSwitchChain, useWalletClient } from 'wagmi'
+import { useConnection } from 'wagmi'
 import { parseUnits } from 'viem'
 import { useEarnBalance, useEarnPools } from '@/api/earn'
 import { useTokens } from '@/api/swap'
 import { useResetBalanceCaches } from '@/hooks/use-reset-balance-caches'
-import { extractErrorMessage } from '@/lib/errors'
 import { activityPath, earnPath } from '@/paths'
 import { cn } from '@/lib/utils'
 import { DESKTOP_CARD } from '@/lib/surface'
@@ -16,17 +15,14 @@ import { WithdrawConfigureStep } from './WithdrawConfigureStep'
 import { WithdrawReviewStep } from './WithdrawReviewStep'
 import { EarnWithdrawResult } from './EarnWithdrawResult'
 import { useSubmitEarnWithdraw } from './useSubmitEarnWithdraw'
-import type { AppChainId } from '@/wagmi-config'
-
-const CHAIN_ID = parseInt(import.meta.env.VITE_CHAIN_ID, 10) as AppChainId
+import { useSigningClient } from '@/hooks/use-signing-client'
 
 export const EarnWithdraw = () => {
   const { poolId } = useParams<{ poolId: string }>()
   const navigate = useNavigate()
   const resetBalanceCaches = useResetBalanceCaches()
-  const { address, chainId } = useConnection()
-  const { data: walletClient } = useWalletClient()
-  const { mutate: switchChain, error: switchChainError } = useSwitchChain()
+  const { address } = useConnection()
+  const walletClient = useSigningClient()
   const [amount, setAmount] = useState('')
   const [step, setStep] = useState(0)
   const [withdrawActivityId, setWithdrawActivityId] = useState<string | null>(null)
@@ -101,7 +97,7 @@ export const EarnWithdraw = () => {
     navigate(earnPath())
   }
 
-  const reviewError = withdrawError ?? (switchChainError ? extractErrorMessage(switchChainError) : null)
+  const reviewError = withdrawError ?? null
 
   if (!poolId) return null
 
@@ -126,9 +122,7 @@ export const EarnWithdraw = () => {
           token={token}
           amount={amount}
           isLoading={isLoading}
-          isCorrectChain={chainId === CHAIN_ID}
           canConfirm={canConfirm}
-          onSwitchChain={() => switchChain({ chainId: CHAIN_ID })}
           onBack={handleBack}
           onConfirm={handleConfirm}
           loading={withdrawLoading}

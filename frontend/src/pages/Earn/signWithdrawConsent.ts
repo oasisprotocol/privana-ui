@@ -1,3 +1,4 @@
+import { pad, toHex } from 'viem'
 import type { WalletClient } from 'viem'
 
 const WITHDRAW_TYPES = {
@@ -33,8 +34,8 @@ export async function signWithdrawConsent({
     domain: {
       name: 'EarnManager',
       version: '1',
-      chainId,
       verifyingContract: earnManagerAddress,
+      salt: pad(toHex(chainId), { size: 32 }),
     },
     types: WITHDRAW_TYPES,
     primaryType: 'Withdraw',

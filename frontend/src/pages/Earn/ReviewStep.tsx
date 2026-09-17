@@ -26,8 +26,6 @@ type ReviewStepProps = {
   quoteLoading: boolean
   quoteError?: string | null
   expiresAt?: number
-  isCorrectChain: boolean
-  onSwitchChain: () => void
   onBack: () => void
   onConfirm: () => void
   loading?: boolean
@@ -43,8 +41,6 @@ export const ReviewStep = ({
   quoteLoading,
   quoteError,
   expiresAt,
-  isCorrectChain,
-  onSwitchChain,
   onBack,
   onConfirm,
   loading,
@@ -115,8 +111,6 @@ export const ReviewStep = ({
       )}
 
       <ReviewConfirmButton
-        isCorrectChain={isCorrectChain}
-        onSwitchChain={onSwitchChain}
         onConfirm={onConfirm}
         disabled={loading || quoteLoading || !quote}
         loading={loading}
