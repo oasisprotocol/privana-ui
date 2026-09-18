@@ -22,7 +22,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout code
-        uses: actions/checkout@v6
+        uses: actions/checkout@v7
         with:
           submodules: true
       - name: Enable Corepack
@@ -32,7 +32,7 @@ jobs:
           npm install -g corepack@latest
           corepack enable
       - name: Set up Node.js 22
-        uses: actions/setup-node@v6
+        uses: actions/setup-node@v7
         with:
           # Reuse the version pinned by .nvmrc instead of a floating 22.x.
           node-version-file: frontend/.nvmrc
