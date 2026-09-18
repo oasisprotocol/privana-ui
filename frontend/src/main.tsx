@@ -6,7 +6,7 @@ import { WagmiProvider } from 'wagmi'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { wagmiConfig } from './wagmi-config.ts'
 import { PrivanaProvider, type OnRampConfig } from '@oasisprotocol/privana-sdk'
-import { ALLOWED_TOKEN_IDS, TESTNET_TRANSAK_TOKEN_ID } from './config/tokens'
+import { ALLOWED_TOKEN_IDS, MAINNET_TRANSAK_TOKEN_ID, TESTNET_TRANSAK_TOKEN_ID } from './config/tokens'
 import { ActivityProvider } from './contexts/ActivityProvider'
 import { TurnkeyAuthProvider, IS_TURNKEY_ENABLED } from './components/TurnkeyAuthProvider'
 import { TurnkeySync } from './components/TurnkeySync'
@@ -32,7 +32,13 @@ const ON_RAMP_CONFIG: OnRampConfig | undefined =
         tokenId: TESTNET_TRANSAK_TOKEN_ID,
         providerAssetCode: 'usdc',
       }
-    : undefined
+    : import.meta.env.MODE === 'mainnet'
+      ? {
+          provider: 'transak',
+          tokenId: MAINNET_TRANSAK_TOKEN_ID,
+          providerAssetCode: 'usdc',
+        }
+      : undefined
 
 createRoot(document.getElementById('root')!).render(
   <StrictMode>
