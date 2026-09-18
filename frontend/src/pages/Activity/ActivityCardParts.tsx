@@ -5,6 +5,7 @@ import { formatAmount } from '@/lib/tokens'
 import type { ActivityTokenInfo } from '@/contexts/ActivityProvider/context'
 import type { Venue } from '@/config/protocols'
 import { formatActivityTime } from './formatTime'
+import { TONE_TEXT } from './activityVisuals'
 import { CounterpartyBadge } from './CounterpartyBadge'
 
 export const ActivityIcon = ({ Icon, iconClass }: { Icon: LucideIcon; iconClass: string }) => (
@@ -34,6 +35,7 @@ export const ActivityRowBody = ({
   counterparty,
   venue,
   subtitle,
+  failure,
   amount,
 }: {
   title: string
@@ -41,6 +43,7 @@ export const ActivityRowBody = ({
   counterparty?: string | null
   venue?: Venue | null
   subtitle?: ReactNode
+  failure?: string
   amount?: ReactNode
 }) => (
   <div className="flex items-start justify-between gap-3">
@@ -50,7 +53,15 @@ export const ActivityRowBody = ({
         {timestamp != null && <span>{formatActivityTime(timestamp)}</span>}
         <CounterpartyBadge counterparty={counterparty} venue={venue} />
       </div>
-      {subtitle != null && <p className="mt-1 truncate text-xs text-muted-foreground">{subtitle}</p>}
+      {subtitle != null && (
+        <p
+          title={failure}
+          className={cn('mt-1 truncate text-xs', failure ? TONE_TEXT.red : 'text-muted-foreground')}
+        >
+          {subtitle}
+          {failure && ` · ${failure}`}
+        </p>
+      )}
     </div>
     {amount != null && <div className="shrink-0 pl-2 text-right">{amount}</div>}
   </div>
