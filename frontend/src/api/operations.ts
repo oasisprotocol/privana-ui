@@ -51,7 +51,11 @@ export const operationsKeys = {
   unsettled: (userAddress: string) => [...operationsKeys.all, 'unsettled', userAddress] as const,
 }
 
-export function useUnsettledOperations() {
+// `hasLocalPending` keeps the poll alive for an operation the server has not
+// listed yet. A withdraw is only recorded once its strategy reclaim finishes,
+// which on Midas is several minutes of Ethereum finality, so until then the
+// optimistic local activity is the only evidence anything is happening.
+export function useUnsettledOperations(hasLocalPending = false) {
   const { session, accessToken } = useSiweAuth()
   const address = session?.address
   const jwt = accessToken
@@ -72,7 +76,9 @@ export function useUnsettledOperations() {
     // Poll while any in-flight op exists — without polling a session would
     // never observe a scheduled swap executing or an undeployed redeploy.
     refetchInterval: query =>
-      query.state.data?.operations.some(o => !isSettledFailure(o.status)) ? 10_000 : false,
+      hasLocalPending || query.state.data?.operations.some(o => !isSettledFailure(o.status))
+        ? 10_000
+        : false,
     staleTime: 5_000,
   })
 }
