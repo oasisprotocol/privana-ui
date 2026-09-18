@@ -6,12 +6,13 @@ const COINGECKO_API = 'https://api.coingecko.com/api/v3'
 export { getGeckoId }
 
 type GeckoResponse = Record<string, Record<string, number>>
+type GeckoPriceMap = Record<string, number | undefined>
 type PriceMap = Record<string, number | undefined>
 
 export function useTokenPrices(tokenIds: string[], fiatCurrency = 'usd') {
-  const geckoIds = [...new Set(tokenIds.map(getGeckoId).filter((id): id is string => !!id))]
+  const geckoIds = [...new Set(tokenIds.map(getGeckoId).filter((id): id is string => !!id))].sort()
 
-  return useQuery<PriceMap>({
+  return useQuery<GeckoPriceMap, Error, PriceMap>({
     queryKey: ['coingecko-prices', geckoIds, fiatCurrency],
     queryFn: async ({ signal }) => {
       const params = new URLSearchParams({
@@ -21,13 +22,13 @@ export function useTokenPrices(tokenIds: string[], fiatCurrency = 'usd') {
       const res = await fetch(`${COINGECKO_API}/simple/price?${params}`, { signal })
       if (!res.ok) throw new Error(`CoinGecko API error: ${res.status}`)
       const data: GeckoResponse = await res.json()
-
+      return Object.fromEntries(geckoIds.map(id => [id, data[id]?.[fiatCurrency]]))
+    },
+    select: byGeckoId => {
       const result: PriceMap = {}
       for (const tokenId of tokenIds) {
         const geckoId = getGeckoId(tokenId)
-        if (geckoId) {
-          result[tokenId] = data[geckoId]?.[fiatCurrency]
-        }
+        if (geckoId) result[tokenId] = byGeckoId[geckoId]
       }
       return result
     },
