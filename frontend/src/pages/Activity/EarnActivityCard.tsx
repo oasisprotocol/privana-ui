@@ -13,7 +13,7 @@ type EarnActivityCardProps = {
 }
 
 export const EarnActivityCard = ({ activity, timestamp, divider }: EarnActivityCardProps) => {
-  const { status, direction, token, amount } = activity
+  const { status, direction, token, amount, error } = activity
   const kind: DisplayKind = direction === 'deposit' ? 'earnDeposit' : 'earnWithdraw'
   const { Icon, tone, iconClass } = resolveActivityVisual({ kind, status })
 
@@ -24,6 +24,7 @@ export const EarnActivityCard = ({ activity, timestamp, divider }: EarnActivityC
         timestamp={timestamp}
         venue={venueForStrategy(activity.protocol)}
         subtitle={activityRowSubtitle({ kind, status })}
+        failure={status === 'failed' ? error : undefined}
         amount={
           <ActivityAmount sign={TONE_SIGN[tone]} className={TONE_TEXT[tone]} token={token} amount={amount} />
         }
