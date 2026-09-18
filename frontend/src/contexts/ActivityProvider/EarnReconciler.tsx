@@ -8,7 +8,7 @@ const statusOf = (op: UnsettledOperation): ActivityStatus =>
   isSettledFailure(op.status) ? 'failed' : 'in-progress'
 
 // Earn ops carry no quote id, so an entry created before the response arrived
-// is matched the same way history is: same pool, token and amount, recorded no
+// is matched the way history is: same pool, token and amount, recorded no
 // earlier than the local entry. Seconds of skew cover the clock difference
 // between the browser and the backend.
 const SKEW_SECONDS = 60
@@ -38,26 +38,41 @@ const isEarn = (a: Activity): a is EarnActivity => a.type === 'earn'
 export const EarnReconciler = () => {
   const { data } = useUnsettledOperations()
   const { activities, updateActivity } = useActivity()
-  // An op that was in the feed and then left has settled. Failed ops stay
-  // listed, so leaving can only mean completion.
+  // Ids of entries this reconciler has seen listed by the server. An op that
+  // was in the feed and then left has settled — failed ops stay listed, so
+  // leaving can only mean completion. Keyed by activity, not by pool/amount,
+  // so two identical deposits never resolve each other.
   const seenRef = useRef(new Set<string>())
 
   useEffect(() => {
     if (!data) return
-    const opByKey = new Map<string, UnsettledOperation>()
+
+    // Same pool, token and amount is not unique, so pair one op to one entry
+    // rather than letting every matching entry bind to the same operation.
+    const opsByKey = new Map<string, UnsettledOperation[]>()
     for (const op of data.operations) {
       const k = opKey(op)
-      if (k != null) opByKey.set(k, op)
+      if (k == null) continue
+      const bucket = opsByKey.get(k)
+      if (bucket) bucket.push(op)
+      else opsByKey.set(k, [op])
     }
 
-    for (const activity of activities) {
-      if (!isEarn(activity)) continue
-      const k = keyOf(activity.direction, activity.poolId, activity.token.id, activity.amount)
-      const op = opByKey.get(k)
+    // Terminal entries are left alone; only something still settling can move.
+    const pending = activities
+      .filter(isEarn)
+      .filter(a => a.status === 'in-progress')
+      .sort((a, b) => a.createdAt - b.createdAt)
 
-      if (op) {
-        if (op.created_at + SKEW_SECONDS < Math.floor(activity.createdAt / 1000)) continue
-        seenRef.current.add(k)
+    for (const activity of pending) {
+      const k = keyOf(activity.direction, activity.poolId, activity.token.id, activity.amount)
+      const bucket = opsByKey.get(k)
+      const createdAtSec = Math.floor(activity.createdAt / 1000)
+      const index = bucket?.findIndex(op => op.created_at + SKEW_SECONDS >= createdAtSec) ?? -1
+
+      if (bucket && index >= 0) {
+        const [op] = bucket.splice(index, 1)
+        seenRef.current.add(activity.id)
         const status = statusOf(op)
         const serverId = activity.direction === 'deposit' ? activity.depositId : activity.withdrawId
         if (
@@ -74,7 +89,7 @@ export const EarnReconciler = () => {
             error: op.error ?? undefined,
           })
         }
-      } else if (seenRef.current.has(k) && activity.status === 'in-progress') {
+      } else if (seenRef.current.has(activity.id)) {
         updateActivity(activity.id, { status: 'completed' })
       }
     }
