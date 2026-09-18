@@ -6,9 +6,6 @@ import { forgetBootSession } from '@/pages/Dashboard/DashboardHome/useBootPhase'
 import { getConnectedWalletRecord } from '@/wallet/turnkeyConnectedWallet'
 import { useTurnkeyWalletIntent } from '@/wallet/turnkeyIntent'
 import { TURNKEY_CONNECTOR_ID } from '@/wallet/turnkeyConnector'
-import type { AppChainId } from '@/wagmi-config'
-
-const APP_CHAIN_ID = parseInt(import.meta.env.VITE_CHAIN_ID, 10) as AppChainId
 
 export const TurnkeySync = () => {
   const { authState, clientState, httpClient, session, wallets, createWallet, refreshWallets } = useTurnkey()
@@ -30,7 +27,7 @@ export const TurnkeySync = () => {
       const connector = connectors.find(c => c.id === TURNKEY_CONNECTOR_ID)
       if (!connector) return
       connectingRef.current = true
-      void connectAsync({ connector, chainId: APP_CHAIN_ID })
+      void connectAsync({ connector })
         .catch(err => console.error('[TurnkeySync] connect failed', err))
         .finally(() => {
           connectingRef.current = false

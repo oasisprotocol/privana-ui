@@ -28,12 +28,12 @@ import { useSignOut } from '@/hooks/useSignOut'
 import { activityPath } from '@/paths'
 import { cn } from '@/lib/utils'
 import { setThemePreference, useResolvedTheme } from '@/lib/theme'
+import { extractErrorMessage } from '@/lib/errors'
 import { ExportEmbeddedWallet } from './ExportEmbeddedWallet'
 import { TurnkeyLogoutItem } from './TurnkeyLogoutItem'
 import { EmbeddedWalletEmail } from './EmbeddedWalletEmail'
 import { WALLET_CARD_ROW, WALLET_MENU_ROW } from './walletMenuRow'
 
-const APP_CHAIN_ID = parseInt(import.meta.env.VITE_CHAIN_ID, 10) as AppChainId
 const SUPPORTED_CHAIN_IDS = wagmiConfig.chains.map(c => c.id)
 
 const CHAIN_BADGES: Record<AppChainId, { label: string; color: string }> = {
@@ -50,7 +50,7 @@ const CHAIN_BADGES: Record<AppChainId, { label: string; color: string }> = {
 // (useSiweAuth), which watches the wagmi connection and runs SIWE login/logout.
 export const ConnectButton: FC = () => {
   const { address, isConnected, connector } = useConnection()
-  const { mutate: switchChain } = useSwitchChain()
+  const { mutate: switchChain, error: switchError } = useSwitchChain()
   const chainId = useChainId()
 
   const chainBadge: { label: string; color: string } | undefined = CHAIN_BADGES[chainId as AppChainId]
@@ -78,9 +78,16 @@ export const ConnectButton: FC = () => {
 
   if (!SUPPORTED_CHAIN_IDS.includes(chainId)) {
     return (
-      <Button type="button" onClick={() => switchChain({ chainId: APP_CHAIN_ID })}>
-        Wrong network
-      </Button>
+      <div className="flex flex-col items-end gap-1">
+        <Button type="button" onClick={() => switchChain({ chainId: mainnet.id })}>
+          Wrong network
+        </Button>
+        {switchError && (
+          <span className="text-xs text-destructive">
+            {extractErrorMessage(switchError, 'Could not switch network')}
+          </span>
+        )}
+      </div>
     )
   }
 
