@@ -24,9 +24,7 @@ test('a dropped connection leaves the deposit in progress, it does not report a 
   await expect(page.getByRole('heading', { name: 'Deposit failed' })).toBeHidden()
 })
 
-test('a deposit whose response was lost still resolves once the server settles it', async ({
-  page,
-}) => {
+test('a deposit whose response was lost still resolves once the server settles it', async ({ page }) => {
   await installWallet(page)
   await installApi(page, funded())
   await page.route(`${SERVICES_API_URL}/v1/earn/deposit`, route => route.abort('connectionreset'))

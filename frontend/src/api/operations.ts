@@ -76,9 +76,7 @@ export function useUnsettledOperations(hasLocalPending = false) {
     // Poll while any in-flight op exists — without polling a session would
     // never observe a scheduled swap executing or an undeployed redeploy.
     refetchInterval: query =>
-      hasLocalPending || query.state.data?.operations.some(o => !isSettledFailure(o.status))
-        ? 10_000
-        : false,
+      hasLocalPending || query.state.data?.operations.some(o => !isSettledFailure(o.status)) ? 10_000 : false,
     staleTime: 5_000,
   })
 }

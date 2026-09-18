@@ -19,7 +19,12 @@ const keyOf = (direction: 'deposit' | 'withdraw', poolId: string, tokenId: strin
 const opKey = (op: UnsettledOperation): string | null => {
   if (op.operation_type !== 'earn_deposit' && op.operation_type !== 'earn_withdraw') return null
   if (op.pool_id == null || op.token_id == null || op.amount == null) return null
-  return keyOf(op.operation_type === 'earn_deposit' ? 'deposit' : 'withdraw', op.pool_id, op.token_id, op.amount)
+  return keyOf(
+    op.operation_type === 'earn_deposit' ? 'deposit' : 'withdraw',
+    op.pool_id,
+    op.token_id,
+    op.amount,
+  )
 }
 
 const isEarn = (a: Activity): a is EarnActivity => a.type === 'earn'
