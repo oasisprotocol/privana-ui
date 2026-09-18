@@ -11,7 +11,7 @@ type SwapActivityCardProps = {
 }
 
 export const SwapActivityCard = ({ activity, timestamp, divider }: SwapActivityCardProps) => {
-  const { status, fromToken, toToken, fromAmount, toAmount } = activity
+  const { status, fromToken, toToken, fromAmount, toAmount, error } = activity
   const { Icon, iconClass } = resolveActivityVisual({ kind: 'swap', status })
 
   return (
@@ -20,6 +20,7 @@ export const SwapActivityCard = ({ activity, timestamp, divider }: SwapActivityC
         title="Swap"
         timestamp={timestamp}
         subtitle={activityRowSubtitle({ kind: 'swap', status })}
+        failure={status === 'failed' ? error : undefined}
         amount={
           <div className="flex flex-col items-end">
             <ActivityAmount sign="−" className={TONE_TEXT.amber} token={fromToken} amount={fromAmount} />
