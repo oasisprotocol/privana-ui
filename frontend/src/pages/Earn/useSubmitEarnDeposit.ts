@@ -5,9 +5,10 @@ import { signTransferMessage } from '@oasisprotocol/privana-sdk'
 import { depositEarn, type DepositQuoteResponse } from '@/api/earn'
 import type { TokenInfo } from '@/api/swap'
 import { operationsKeys } from '@/api/operations'
+import { earnKeys } from '@/api/earn'
 import type { ActivityStatus } from '@/contexts/ActivityProvider/context'
 import { useActivity } from '@/contexts/ActivityProvider/useActivity'
-import { extractErrorMessage } from '@/lib/errors'
+import { extractErrorMessage, isDefinitiveRejection } from '@/lib/errors'
 
 const CHAIN_ID = parseInt(import.meta.env.VITE_CHAIN_ID, 10)
 const ACCOUNTING_CONTRACT = import.meta.env.VITE_ACCOUNTING_CONTRACT_ADDRESS
@@ -98,15 +99,29 @@ export const useSubmitEarnDeposit = ({ onSuccess }: Params = {}) => {
             error: deposit.error ?? undefined,
           })
           void queryClient.invalidateQueries({ queryKey: operationsKeys.all })
+          // The position and the pool totals both moved, and both are cached
+          // with a 30s staleTime. Without this the screen keeps showing the
+          // pre-deposit figures long after the deposit settled.
+          void queryClient.invalidateQueries({ queryKey: earnKeys.all })
           onSuccess?.()
         })
         .catch(err => {
-          // Only a request that produced no response at all reaches here, so there
-          // is no server-side operation for this entry to be matched against.
-          updateActivity(id, {
-            status: 'failed',
-            error: extractErrorMessage(err, 'Deposit failed'),
-          })
+          // Only a 4xx proves the backend refused it. Earn runs the strategy
+          // leg inline behind a serialized queue, so a slow pool can hold the
+          // request past the gateway's timeout while the operation is still
+          // settling — a Midas exit waits on Ethereum finality alone. Calling
+          // that failed fabricates a failure for an operation that usually
+          // completes, and sends people back to retry with a nonce that has
+          // already been consumed. Leave it in-progress and let the unsettled
+          // feed reconcile it.
+          if (isDefinitiveRejection(err)) {
+            updateActivity(id, {
+              status: 'failed',
+              error: extractErrorMessage(err, 'Deposit failed'),
+            })
+            return
+          }
+          void queryClient.invalidateQueries({ queryKey: operationsKeys.all })
         })
         .finally(() => setLoading(false))
 
