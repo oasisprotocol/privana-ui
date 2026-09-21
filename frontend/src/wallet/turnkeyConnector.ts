@@ -1,5 +1,5 @@
 import { createConnector } from 'wagmi'
-import { getAddress, type EIP1193Provider } from 'viem'
+import { getAddress, type Chain, type EIP1193Provider } from 'viem'
 import { getTurnkeyActiveWallet } from './turnkeyBridge'
 import { createEmbeddedEip1193Provider } from './embeddedEip1193Provider'
 
@@ -45,6 +45,38 @@ export function turnkeyConnector() {
       connectedChainId = chainId
     }
 
+    // EIP-3085 error for a chain the wallet has never seen; MetaMask mobile
+    // reports it under a generic code, so match the message too.
+    const isUnrecognizedChain = (err: unknown): boolean =>
+      typeof err === 'object' &&
+      err !== null &&
+      ((err as { code?: unknown }).code === 4902 ||
+        /unrecognized chain/i.test(String((err as { message?: unknown }).message ?? '')))
+
+    async function switchOrAddProviderChain(chain: Chain): Promise<void> {
+      try {
+        await switchProviderChain(chain.id)
+      } catch (err) {
+        if (!isUnrecognizedChain(err)) throw err
+        const p = await ensureProvider()
+        await p.request({
+          method: 'wallet_addEthereumChain',
+          params: [
+            {
+              chainId: `0x${chain.id.toString(16)}`,
+              chainName: chain.name,
+              nativeCurrency: chain.nativeCurrency,
+              rpcUrls: chain.rpcUrls.default.http,
+              blockExplorerUrls: chain.blockExplorers ? [chain.blockExplorers.default.url] : undefined,
+            },
+          ],
+        })
+        const actual = Number(await p.request({ method: 'eth_chainId' }))
+        if (actual === chain.id) connectedChainId = chain.id
+        else await switchProviderChain(chain.id)
+      }
+    }
+
     let subscribedProvider: EIP1193Provider | undefined
     const handleAccountsChanged = (accounts: string[]) => {
       if (accounts.length === 0) config.emitter.emit('disconnect')
@@ -81,17 +113,18 @@ export function turnkeyConnector() {
         const active = getTurnkeyActiveWallet()
         if (!active) throw new Error('Turnkey wallet not available')
         const provider = await ensureProvider()
-        // Best-effort chain switch on connect - a failure (user rejection,
-        // chain not added to the external wallet) is non-fatal, but we have
-        // to report the chain the wallet is actually on, otherwise wagmi
-        // caches the requested id while the wallet stays on the old chain.
-        try {
-          await switchProviderChain(chainId ?? connectedChainId)
-        } catch {
+        if (chainId != null) {
+          try {
+            await switchProviderChain(chainId)
+          } catch {
+            // stay on the wallet's current chain
+          }
+        }
+        if (active.kind === 'connected') {
           const actual = (await provider.request({ method: 'eth_chainId' })) as `0x${string}`
           connectedChainId = Number(actual)
+          subscribe(provider)
         }
-        if (active.kind === 'connected') subscribe(provider)
         return { accounts: [getAddress(active.address)] as never, chainId: connectedChainId }
       },
 
@@ -121,7 +154,7 @@ export function turnkeyConnector() {
       async switchChain({ chainId }) {
         const chain = config.chains.find(c => c.id === chainId)
         if (!chain) throw new Error(`Chain ${chainId} is not configured`)
-        await switchProviderChain(chainId)
+        await switchOrAddProviderChain(chain)
         config.emitter.emit('change', { chainId })
         return chain
       },
