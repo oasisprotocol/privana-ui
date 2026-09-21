@@ -165,8 +165,8 @@ export function useMergedActivity(historyLimit: number = HISTORY_PAGE_SIZE): Use
   const history = useLatestHistory(historyLimit)
   const { data: poolsData, isLoading: poolsLoading, isError: poolsError } = useEarnPools()
   const { data: tokensData, isLoading: tokensLoading } = useTokens()
-  const unsettled = useUnsettledOperations()
   const { activities, removeActivity } = useActivity()
+  const unsettled = useUnsettledOperations(activities.some(a => a.status === 'in-progress'))
 
   const poolsByAddress = useMemo(() => {
     const map = new Map<string, EarnPool>()
@@ -286,8 +286,8 @@ export function useMergedActivity(historyLimit: number = HISTORY_PAGE_SIZE): Use
 // Counts exactly the rows useMergedActivity would render as in-progress: the
 // server's pending operations, plus the local activities it hasn't adopted yet.
 export function usePendingActivityCount(): number {
-  const unsettled = useUnsettledOperations()
   const { activities } = useActivity()
+  const unsettled = useUnsettledOperations(activities.some(a => a.status === 'in-progress'))
   const ops = unsettled.data?.operations ?? []
   const unsettledIds = new Set(ops.map(o => o.operation_id))
   const serverPending = ops.filter(o => !isSettledFailure(o.status)).length
