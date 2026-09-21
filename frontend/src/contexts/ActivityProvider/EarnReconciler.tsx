@@ -1,8 +1,14 @@
-import { useEffect, useRef } from 'react'
+import { useEffect, useMemo, useRef } from 'react'
+import { useHistory } from '@oasisprotocol/privana-sdk'
+import { useEarnPools, type EarnPool } from '@/api/earn'
 import { useUnsettledOperations, type UnsettledOperation } from '@/api/operations'
 import { isSettledFailure } from '@/api/operation-status'
+import { classifyHistory, matchesLocal } from '@/pages/Activity/historyMapping'
 import { useActivity } from './useActivity'
 import type { Activity, ActivityStatus, EarnActivity } from './context'
+
+// Enough to cover anything that could still be open locally.
+const HISTORY_LOOKBACK = 50
 
 const statusOf = (op: UnsettledOperation): ActivityStatus =>
   isSettledFailure(op.status) ? 'failed' : 'in-progress'
@@ -34,6 +40,18 @@ const isEarn = (a: Activity): a is EarnActivity => a.type === 'earn'
 export const EarnReconciler = () => {
   const { data } = useUnsettledOperations()
   const { activities, updateActivity } = useActivity()
+  // The feed alone is not enough to close an entry. Services reclaims before
+  // it records the row, so a withdraw can be listed and settled inside one
+  // poll gap; the entry would then never be seen in the feed and would sit
+  // in-progress for the rest of the session. A matching history entry is
+  // proof it settled either way.
+  const { history } = useHistory({ offset: -1, limit: HISTORY_LOOKBACK })
+  const { data: poolsData } = useEarnPools()
+  const settledRows = useMemo(() => {
+    const byAddress = new Map<string, EarnPool>()
+    for (const p of poolsData?.pools ?? []) byAddress.set(p.pool_address.toLowerCase(), p)
+    return classifyHistory(history ?? [], byAddress)
+  }, [history, poolsData])
   // Ids of entries this reconciler has seen listed by the server. An op that
   // was in the feed and then left has settled — failed ops stay listed, so
   // leaving can only mean completion. Keyed by activity, not by pool/amount,
@@ -85,11 +103,11 @@ export const EarnReconciler = () => {
             error: op.error ?? undefined,
           })
         }
-      } else if (seenRef.current.has(activity.id)) {
+      } else if (seenRef.current.has(activity.id) || settledRows.some(row => matchesLocal(row, activity))) {
         updateActivity(activity.id, { status: 'completed' })
       }
     }
-  }, [data, activities, updateActivity])
+  }, [data, activities, settledRows, updateActivity])
 
   return null
 }

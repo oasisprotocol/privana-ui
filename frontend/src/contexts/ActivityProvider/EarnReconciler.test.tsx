@@ -10,6 +10,21 @@ vi.mock('@/api/operations', () => ({ useUnsettledOperations: () => unsettledStat
 let activityState: { activities: Activity[]; updateActivity: ReturnType<typeof vi.fn> }
 vi.mock('./useActivity', () => ({ useActivity: () => activityState }))
 
+let historyState: { history: unknown[] }
+vi.mock('@oasisprotocol/privana-sdk', () => ({ useHistory: () => historyState }))
+
+vi.mock('@/api/earn', () => ({
+  useEarnPools: () => ({
+    data: { pools: [{ pool_id: 'pool-1', pool_address: '0xpool', token_id: '0xa' }] },
+  }),
+}))
+
+let classified: unknown[] = []
+vi.mock('@/pages/Activity/historyMapping', () => ({
+  classifyHistory: () => classified,
+  matchesLocal: (row: { id: string }, local: { id: string }) => row.id === local.id,
+}))
+
 const earnOp = (overrides: Partial<UnsettledOperation> = {}): UnsettledOperation =>
   ({
     operation_id: 'srv-1',
@@ -43,6 +58,8 @@ const localEarn = (overrides: Partial<Activity> = {}): Activity =>
 beforeEach(() => {
   unsettledState = { data: { operations: [] } }
   activityState = { activities: [], updateActivity: vi.fn() }
+  historyState = { history: [] }
+  classified = []
 })
 
 describe('EarnReconciler', () => {
@@ -124,6 +141,28 @@ describe('EarnReconciler', () => {
       txHash: undefined,
       error: undefined,
     })
+  })
+
+  it('closes an entry the feed never listed once history shows it settled', () => {
+    // Services reclaims before it records the row, so a withdraw can be listed
+    // and settled inside one poll gap. Waiting to have seen it in the feed
+    // would leave the entry in-progress for the rest of the session.
+    classified = [{ id: 'tmp-1' }]
+    activityState.activities = [localEarn()]
+
+    render(<EarnReconciler />)
+
+    expect(activityState.updateActivity).toHaveBeenCalledExactlyOnceWith('tmp-1', {
+      status: 'completed',
+    })
+  })
+
+  it('leaves an entry open when neither the feed nor history knows about it', () => {
+    activityState.activities = [localEarn()]
+
+    render(<EarnReconciler />)
+
+    expect(activityState.updateActivity).not.toHaveBeenCalled()
   })
 
   it('ignores a withdraw row when the local entry is a deposit', () => {
