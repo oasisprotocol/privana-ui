@@ -12,5 +12,12 @@ const KNOWN_FAILURES: ReadonlyArray<[RegExp, string]> = [
   [/Too Many Requests|\b429\b/i, 'The network was busy — try again'],
 ]
 
-export const describeFailure = (error: string): string =>
-  KNOWN_FAILURES.find(([pattern]) => pattern.test(error))?.[1] ?? error
+// Services appends the underlying error to its recovery warnings ("…; refund
+// failed, manual recovery required: <error>"). Those must reach the user as
+// written — a matched substring must never turn them into retry advice.
+const MUST_PRESERVE = /manual recovery|outcome unknown/i
+
+export const describeFailure = (error: string): string => {
+  if (MUST_PRESERVE.test(error)) return error
+  return KNOWN_FAILURES.find(([pattern]) => pattern.test(error))?.[1] ?? error
+}

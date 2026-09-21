@@ -18,6 +18,14 @@ describe('describeFailure', () => {
     )
   })
 
+  it('never rewrites a recovery warning, even when it embeds a mapped error', () => {
+    const refund =
+      'Insufficient liquidity; refund failed, manual recovery required: 429 Client Error: Too Many Requests'
+    expect(describeFailure(refund)).toBe(refund)
+    const unknown = 'Submission outcome unknown; retrying: Transaction reverted: InvalidNonce'
+    expect(describeFailure(unknown)).toBe(unknown)
+  })
+
   it('passes readable backend sentences through untouched', () => {
     expect(describeFailure('Quote has expired')).toBe('Quote has expired')
     expect(describeFailure('Submission outcome unknown; manual recovery required')).toBe(
