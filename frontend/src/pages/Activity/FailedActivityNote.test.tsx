@@ -7,7 +7,7 @@ import { EarnActivityCard } from './EarnActivityCard'
 
 const USDC = { id: '0x1', symbol: 'USDC', decimals: 6 }
 const ETH = { id: '0x2', symbol: 'ETH', decimals: 18 }
-const ERROR = '429 Client Error: Too Many Requests'
+const ERROR = 'Quote has expired'
 
 const swap = (status: SwapActivity['status'], error?: string): SwapActivity => ({
   id: 's1',
@@ -46,6 +46,13 @@ describe('failed activity note', () => {
   it('shows the failure reason under a failed earn operation', () => {
     renderCard(<EarnActivityCard activity={earn('failed', ERROR)} />)
     expect(screen.getByText(`Failed · ${ERROR}`)).toBeInTheDocument()
+  })
+
+  it('translates a known failure and keeps the raw reason on hover', () => {
+    const raw = '429 Client Error: Too Many Requests for url: https://sapphire.oasis.io/'
+    renderCard(<SwapActivityCard activity={swap('failed', raw)} />)
+    const line = screen.getByText('Failed · The network was busy — try again')
+    expect(line).toHaveAttribute('title', raw)
   })
 
   it('never shows a stale error on a row that is not failed', () => {

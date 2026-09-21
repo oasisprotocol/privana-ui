@@ -7,6 +7,7 @@ import type { Venue } from '@/config/protocols'
 import { formatActivityTime } from './formatTime'
 import { TONE_TEXT } from './activityVisuals'
 import { CounterpartyBadge } from './CounterpartyBadge'
+import { describeFailure } from './failureCopy'
 
 export const ActivityIcon = ({ Icon, iconClass }: { Icon: LucideIcon; iconClass: string }) => (
   <span className={cn('flex h-10 w-10 shrink-0 items-center justify-center rounded-xl', iconClass)}>
@@ -59,7 +60,7 @@ export const ActivityRowBody = ({
           className={cn('mt-1 truncate text-xs', failure ? TONE_TEXT.red : 'text-muted-foreground')}
         >
           {subtitle}
-          {failure && ` · ${failure}`}
+          {failure && ` · ${describeFailure(failure)}`}
         </p>
       )}
     </div>
