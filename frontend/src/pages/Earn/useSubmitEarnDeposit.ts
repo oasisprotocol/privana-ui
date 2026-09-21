@@ -8,13 +8,21 @@ import { operationsKeys } from '@/api/operations'
 import { earnKeys } from '@/api/earn'
 import type { ActivityStatus } from '@/contexts/ActivityProvider/context'
 import { useActivity } from '@/contexts/ActivityProvider/useActivity'
-import { extractErrorMessage, isDefinitiveRejection } from '@/lib/errors'
+import {
+  OPERATION_PENDING_MESSAGE,
+  extractErrorMessage,
+  isDefinitiveRejection,
+  isOperationPending,
+} from '@/lib/errors'
 
 const CHAIN_ID = parseInt(import.meta.env.VITE_CHAIN_ID, 10)
 const ACCOUNTING_CONTRACT = import.meta.env.VITE_ACCOUNTING_CONTRACT_ADDRESS
 
 type Params = {
   onSuccess?: () => void
+  // The backend refused to queue it (409): the optimistic entry is dropped
+  // and the caller can return to the confirm step.
+  onRefused?: () => void
 }
 
 export type SubmitEarnDepositParams = {
@@ -27,8 +35,8 @@ export type SubmitEarnDepositParams = {
   apyLabel?: string
 }
 
-export const useSubmitEarnDeposit = ({ onSuccess }: Params = {}) => {
-  const { addActivity, updateActivity } = useActivity()
+export const useSubmitEarnDeposit = ({ onSuccess, onRefused }: Params = {}) => {
+  const { addActivity, updateActivity, removeActivity } = useActivity()
   const queryClient = useQueryClient()
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
@@ -114,6 +122,12 @@ export const useSubmitEarnDeposit = ({ onSuccess }: Params = {}) => {
           // completes, and sends people back to retry with a nonce that has
           // already been consumed. Leave it in-progress and let the unsettled
           // feed reconcile it.
+          if (isOperationPending(err)) {
+            removeActivity(id)
+            setError(OPERATION_PENDING_MESSAGE)
+            onRefused?.()
+            return
+          }
           if (isDefinitiveRejection(err)) {
             updateActivity(id, {
               status: 'failed',

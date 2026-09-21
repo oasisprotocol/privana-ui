@@ -89,6 +89,12 @@ export const SwapDashboard = () => {
     reset: resetSubmit,
   } = useSubmitSwap({
     onSuccess: resetBalanceCaches,
+    // The quote on screen carries the nonce the pending operation holds;
+    // re-quote so a retry signs against the current one.
+    onRefused: () => {
+      resetQuote()
+      setStep(1)
+    },
   })
 
   const summary = useQuoteSummary(quoteData, fromToken, toToken, prices)
