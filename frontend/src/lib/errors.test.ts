@@ -1,6 +1,11 @@
 import { BaseError, UserRejectedRequestError } from 'viem'
 import { describe, expect, it } from 'vitest'
-import { extractErrorMessage, isDefinitiveRejection, shouldRetryQuery } from '@/lib/errors'
+import {
+  extractErrorMessage,
+  isDefinitiveRejection,
+  isOperationPending,
+  shouldRetryQuery,
+} from '@/lib/errors'
 
 describe('extractErrorMessage', () => {
   it('returns the short message of a viem BaseError', () => {
@@ -70,5 +75,14 @@ describe('isDefinitiveRejection', () => {
     expect(isDefinitiveRejection(new TypeError('Failed to fetch'))).toBe(false)
     expect(isDefinitiveRejection(new DOMException('The operation timed out', 'TimeoutError'))).toBe(false)
     expect(isDefinitiveRejection(undefined)).toBe(false)
+  })
+})
+
+describe('isOperationPending', () => {
+  it('is exactly a 409 from either API client shape', () => {
+    expect(isOperationPending({ status: 409 })).toBe(true)
+    expect(isOperationPending({ statusCode: 409 })).toBe(true)
+    expect(isOperationPending({ status: 400 })).toBe(false)
+    expect(isOperationPending(new Error('timeout'))).toBe(false)
   })
 })

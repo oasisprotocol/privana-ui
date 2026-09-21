@@ -74,6 +74,7 @@ export const EarnCreate = () => {
     reset: resetDeposit,
   } = useSubmitEarnDeposit({
     onSuccess: resetBalanceCaches,
+    onRefused: () => setStep(1),
   })
 
   const protocol = pool ? getProtocolLabel(pool.strategy) : ''

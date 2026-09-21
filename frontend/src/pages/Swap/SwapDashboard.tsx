@@ -89,6 +89,7 @@ export const SwapDashboard = () => {
     reset: resetSubmit,
   } = useSubmitSwap({
     onSuccess: resetBalanceCaches,
+    onRefused: () => setStep(1),
   })
 
   const summary = useQuoteSummary(quoteData, fromToken, toToken, prices)

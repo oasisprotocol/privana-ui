@@ -29,6 +29,13 @@ export const isDefinitiveRejection = (err: unknown): boolean => {
   return status !== undefined && status >= 400 && status < 500
 }
 
+// 409: the backend refused to queue the request because an earlier operation
+// still holds the user's nonce. Nothing was recorded server-side.
+export const isOperationPending = (err: unknown): boolean => httpStatusOf(err) === 409
+
+export const OPERATION_PENDING_MESSAGE =
+  'Your previous operation is still being processed — try again in a moment'
+
 export const extractErrorMessage = (err: unknown, fallback = 'Something went wrong'): string => {
   if (err instanceof BaseError) {
     if (err.walk(e => e instanceof UserRejectedRequestError)) return 'Transaction rejected'
