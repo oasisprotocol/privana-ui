@@ -110,6 +110,22 @@ describe('EarnReconciler', () => {
     })
   })
 
+  it('adopts a queued row that has not resolved its token yet', () => {
+    // A scheduled operation is recorded before anything reads the pool, so the
+    // feed carries no token for it. Matching must not depend on one.
+    unsettledState.data = { operations: [earnOp({ status: 'scheduled', token_id: '' })] }
+    activityState.activities = [localEarn()]
+
+    render(<EarnReconciler />)
+
+    expect(activityState.updateActivity).toHaveBeenCalledExactlyOnceWith('tmp-1', {
+      status: 'in-progress',
+      depositId: 'srv-1',
+      txHash: undefined,
+      error: undefined,
+    })
+  })
+
   it('ignores a withdraw row when the local entry is a deposit', () => {
     unsettledState.data = { operations: [earnOp({ operation_type: 'earn_withdraw' })] }
     activityState.activities = [localEarn()]

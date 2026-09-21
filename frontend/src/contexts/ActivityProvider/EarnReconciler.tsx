@@ -8,23 +8,19 @@ const statusOf = (op: UnsettledOperation): ActivityStatus =>
   isSettledFailure(op.status) ? 'failed' : 'in-progress'
 
 // Earn ops carry no quote id, so an entry created before the response arrived
-// is matched the way history is: same pool, token and amount, recorded no
-// earlier than the local entry. Seconds of skew cover the clock difference
-// between the browser and the backend.
+// is matched on pool, direction and amount, recorded no earlier than the local
+// entry. Seconds of skew cover the clock difference between the browser and the
+// backend. Deliberately not on token: a pool fixes its token, so it adds no
+// discriminating power, and a queued row has not resolved one yet.
 const SKEW_SECONDS = 60
 
-const keyOf = (direction: 'deposit' | 'withdraw', poolId: string, tokenId: string, amount: string) =>
-  `${direction}|${poolId}|${tokenId}|${amount}`
+const keyOf = (direction: 'deposit' | 'withdraw', poolId: string, amount: string) =>
+  `${direction}|${poolId}|${amount}`
 
 const opKey = (op: UnsettledOperation): string | null => {
   if (op.operation_type !== 'earn_deposit' && op.operation_type !== 'earn_withdraw') return null
-  if (op.pool_id == null || op.token_id == null || op.amount == null) return null
-  return keyOf(
-    op.operation_type === 'earn_deposit' ? 'deposit' : 'withdraw',
-    op.pool_id,
-    op.token_id,
-    op.amount,
-  )
+  if (op.pool_id == null || op.amount == null) return null
+  return keyOf(op.operation_type === 'earn_deposit' ? 'deposit' : 'withdraw', op.pool_id, op.amount)
 }
 
 const isEarn = (a: Activity): a is EarnActivity => a.type === 'earn'
@@ -65,7 +61,7 @@ export const EarnReconciler = () => {
       .sort((a, b) => a.createdAt - b.createdAt)
 
     for (const activity of pending) {
-      const k = keyOf(activity.direction, activity.poolId, activity.token.id, activity.amount)
+      const k = keyOf(activity.direction, activity.poolId, activity.amount)
       const bucket = opsByKey.get(k)
       const createdAtSec = Math.floor(activity.createdAt / 1000)
       const index = bucket?.findIndex(op => op.created_at + SKEW_SECONDS >= createdAtSec) ?? -1
