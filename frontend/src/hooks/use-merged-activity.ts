@@ -13,6 +13,7 @@ import {
   suppressUndeployedHistory,
   type ClassifiedHistoryEntry,
   type HistoryWindow,
+  indexPools,
 } from '@/pages/Activity/historyMapping'
 
 export type MergedRow =
@@ -168,11 +169,7 @@ export function useMergedActivity(historyLimit: number = HISTORY_PAGE_SIZE): Use
   const { activities, removeActivity } = useActivity()
   const unsettled = useUnsettledOperations(activities.some(a => a.status === 'in-progress'))
 
-  const poolsByAddress = useMemo(() => {
-    const map = new Map<string, EarnPool>()
-    for (const p of poolsData?.pools ?? []) map.set(p.pool_address.toLowerCase(), p)
-    return map
-  }, [poolsData])
+  const poolsByAddressToken = useMemo(() => indexPools(poolsData?.pools ?? []), [poolsData])
 
   const poolsById = useMemo(() => {
     const map = new Map<string, EarnPool>()
@@ -199,12 +196,12 @@ export function useMergedActivity(historyLimit: number = HISTORY_PAGE_SIZE): Use
   const chainRows = useMemo(
     () =>
       suppressUndeployedHistory(
-        classifyHistory(history.entries, poolsByAddress, historyWindow).filter(
+        classifyHistory(history.entries, poolsByAddressToken, historyWindow).filter(
           r => !HIDDEN_KINDS.has(r.kind),
         ),
         unsettledOps,
       ),
-    [history.entries, poolsByAddress, historyWindow, unsettledOps],
+    [history.entries, poolsByAddressToken, historyWindow, unsettledOps],
   )
 
   const unsettledIds = useMemo(() => new Set(unsettledOps.map(o => o.operation_id)), [unsettledOps])

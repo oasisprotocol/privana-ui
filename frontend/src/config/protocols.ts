@@ -3,8 +3,8 @@ export type Venue = { name: string; color: string }
 const DEFAULT_COLOR = '#0F4C81'
 
 const PROTOCOLS = [
-  { prefix: 'aave', label: 'Aave', color: DEFAULT_COLOR },
-  { prefix: 'midas', label: 'Midas', color: DEFAULT_COLOR },
+  { prefix: 'aave', label: 'Aave', color: '#8777ff' },
+  { prefix: 'midas', label: 'Midas', color: '#2a3e6e' },
 ] as const
 
 const protocolFor = (strategy: string) => {

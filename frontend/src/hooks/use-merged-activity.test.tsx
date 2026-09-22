@@ -37,8 +37,13 @@ vi.mock('@/config/swap', () => ({
   isSwapLpAddress: (a: string | null | undefined) => a?.toLowerCase() === LP_ADDRESS,
 }))
 
-const POOL = { pool_id: '0xeeed', pool_address: '0xPoolAddr', strategy: 'aave' } as EarnPool
 const TOKEN_ID = '0xc719'
+const POOL = {
+  pool_id: '0xeeed',
+  pool_address: '0xPoolAddr',
+  strategy: 'aave',
+  token_id: TOKEN_ID,
+} as EarnPool
 
 const histEntry = (overrides: Partial<HistoryEntry> = {}): HistoryEntry =>
   ({
