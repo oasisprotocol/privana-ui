@@ -56,6 +56,15 @@ export type HistoryWindow = {
   leadIn?: HistoryEntry
 }
 
+// Every earn pool is served by one earn account, so a pool transfer's
+// counterparty alone cannot say which pool it was; the token narrows it down
+// until each pool has its own identity in history.
+export const poolKey = (address: string, tokenId: string): string =>
+  `${address.toLowerCase()}|${tokenId.toLowerCase()}`
+
+export const indexPools = (pools: readonly EarnPool[]): Map<string, EarnPool> =>
+  new Map(pools.map(p => [poolKey(p.pool_address, p.token_id), p]))
+
 const isSwapOutLeg = (entry: HistoryEntry): boolean =>
   entry.kind === 'transferBalanceOut' && isSwapLpAddress(entry.counterparty)
 
@@ -78,7 +87,7 @@ const isSwapPair = (out: HistoryEntry, inLeg: HistoryEntry | undefined): boolean
 
 export function classifyHistory(
   entries: HistoryEntry[],
-  poolsByAddress: Map<string, EarnPool>,
+  poolsByAddressToken: Map<string, EarnPool>,
   window: HistoryWindow = { startIndex: 0 },
 ): ClassifiedHistoryEntry[] {
   const rows: ClassifiedHistoryEntry[] = []
@@ -110,7 +119,7 @@ export function classifyHistory(
     // render as a bare transfer, so drop it rather than mislabel it.
     if (i === 0 && window.leadIn && isSwapPair(window.leadIn, entry)) continue
 
-    rows.push(classify(entry, index, poolsByAddress))
+    rows.push(classify(entry, index, poolsByAddressToken))
   }
 
   return rows
@@ -119,10 +128,10 @@ export function classifyHistory(
 function classify(
   entry: HistoryEntry,
   index: number,
-  poolsByAddress: Map<string, EarnPool>,
+  poolsByAddressToken: Map<string, EarnPool>,
 ): ClassifiedHistoryEntry {
   const counterpartyLower = entry.counterparty?.toLowerCase() ?? null
-  const { kind, pool } = resolveKind(entry, counterpartyLower, poolsByAddress)
+  const { kind, pool } = resolveKind(entry, counterpartyLower, poolsByAddressToken)
 
   return {
     source: 'chain',
@@ -140,7 +149,7 @@ function classify(
 function resolveKind(
   entry: HistoryEntry,
   counterpartyLower: string | null,
-  poolsByAddress: Map<string, EarnPool>,
+  poolsByAddressToken: Map<string, EarnPool>,
 ): { kind: DisplayKind; pool?: EarnPool } {
   switch (entry.kind) {
     case 'deposit':
@@ -158,14 +167,20 @@ function resolveKind(
     case 'transferFromLockIn':
       return { kind: 'reclaimIn' }
     case 'transferBalanceOut': {
-      const matched = counterpartyLower ? poolsByAddress.get(counterpartyLower) : undefined
+      const matched =
+        counterpartyLower && entry.token_id
+          ? poolsByAddressToken.get(poolKey(counterpartyLower, entry.token_id))
+          : undefined
       if (matched) return { kind: 'earnDeposit', pool: matched }
       if (isSwapLpAddress(counterpartyLower)) return { kind: 'swap' }
       return { kind: 'transfer' }
     }
     case 'transferBalanceIn': {
       // Counterparty here is the sender. A pool address means an earn payout.
-      const matched = counterpartyLower ? poolsByAddress.get(counterpartyLower) : undefined
+      const matched =
+        counterpartyLower && entry.token_id
+          ? poolsByAddressToken.get(poolKey(counterpartyLower, entry.token_id))
+          : undefined
       if (matched) return { kind: 'earnWithdraw', pool: matched }
       return { kind: 'transfer' }
     }
