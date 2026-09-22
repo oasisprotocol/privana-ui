@@ -57,7 +57,10 @@ export const ActivityRowBody = ({
       {subtitle != null && (
         <p
           title={failure}
-          className={cn('mt-1 truncate text-xs', failure ? TONE_TEXT.red : 'text-muted-foreground')}
+          className={cn(
+            'mt-1 text-xs',
+            failure ? cn('break-all', TONE_TEXT.red) : 'truncate text-muted-foreground',
+          )}
         >
           {subtitle}
           {failure && ` · ${describeFailure(failure)}`}
