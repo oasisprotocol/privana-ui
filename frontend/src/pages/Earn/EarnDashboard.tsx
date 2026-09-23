@@ -9,6 +9,7 @@ import { useResetBalanceCaches } from '@/hooks/use-reset-balance-caches'
 import { useActiveStrategies } from './useActiveStrategies'
 import { EarnBalance } from './EarnBalance'
 import { VenueCard, type Venue } from './VenueCard'
+import { GetTokenDialog } from './GetTokenDialog'
 
 const VenueCardSkeleton = () => <Skeleton className="h-44 w-full rounded-2xl md:h-24" />
 
@@ -21,6 +22,7 @@ export const EarnDashboard = () => {
     bestApyBps,
     pricesError,
     availableTokenIds,
+    hasAvailableBalance,
     isLoading: fundsLoading,
   } = useFunds()
   const {
@@ -31,6 +33,7 @@ export const EarnDashboard = () => {
   } = useActiveStrategies()
   const isLoading = poolsLoading || tokensLoading || positionsLoading
   const [depositOpen, setDepositOpen] = useState(false)
+  const [getTokenFor, setGetTokenFor] = useState<Venue | null>(null)
   const resetBalanceCaches = useResetBalanceCaches()
 
   const venues = useMemo<Venue[]>(() => {
@@ -95,7 +98,8 @@ export const EarnDashboard = () => {
                   key={v.poolId}
                   {...v}
                   hasAvailableBalance={availableTokenIds.has(v.tokenId)}
-                  onRequestDeposit={() => setDepositOpen(true)}
+                  // TODO: match the venue's minimum deposit once the backend defines it.
+                  onRequestDeposit={() => (hasAvailableBalance ? setGetTokenFor(v) : setDepositOpen(true))}
                 />
               ))
             )}
@@ -103,6 +107,12 @@ export const EarnDashboard = () => {
         )}
       </div>
 
+      <GetTokenDialog
+        open={getTokenFor != null}
+        onClose={() => setGetTokenFor(null)}
+        asset={getTokenFor?.asset ?? ''}
+        chain={getTokenFor?.chain ?? ''}
+      />
       <DepositModal
         open={depositOpen}
         onClose={() => setDepositOpen(false)}
