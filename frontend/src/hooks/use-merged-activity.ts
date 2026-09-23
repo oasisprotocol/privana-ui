@@ -99,7 +99,7 @@ export function mapOperationToActivity(
     direction,
     status,
     createdAt,
-    token: resolveToken(op.token_id),
+    token: resolveToken(op.token_id || pool?.token_id || null),
     amount: op.amount ?? '0',
     poolId: op.pool_id ?? '',
     protocol: pool?.strategy ?? '',
@@ -165,7 +165,7 @@ function useLatestHistory(limit: number): LatestHistoryResult {
 export function useMergedActivity(historyLimit: number = HISTORY_PAGE_SIZE): UseMergedActivityResult {
   const history = useLatestHistory(historyLimit)
   const { data: poolsData, isLoading: poolsLoading, isError: poolsError } = useEarnPools()
-  const { data: tokensData, isLoading: tokensLoading } = useTokens()
+  const { data: tokensData, isLoading: tokensLoading, isError: tokensError } = useTokens()
   const { activities, removeActivity } = useActivity()
   const unsettled = useUnsettledOperations(activities.some(a => a.status === 'in-progress'))
 
@@ -276,7 +276,7 @@ export function useMergedActivity(historyLimit: number = HISTORY_PAGE_SIZE): Use
   return {
     rows,
     isLoading,
-    isError: history.isError || !!poolsError,
+    isError: history.isError || !!poolsError || !!tokensError || unsettled.isError,
   }
 }
 

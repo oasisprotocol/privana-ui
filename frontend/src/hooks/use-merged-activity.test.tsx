@@ -136,6 +136,15 @@ describe('useMergedActivity', () => {
     ])
   })
 
+  it('takes a scheduled operation\'s token from its pool while the row has none', () => {
+    unsettledState.data = { operations: [op({ status: 'scheduled', token_id: '' })] }
+
+    const { result } = renderHook(() => useMergedActivity())
+    const row = result.current.rows[0]
+    expect(row.source).toBe('local')
+    expect(row.source === 'local' && row.activity.type === 'earn' && row.activity.token.symbol).toBe('USDC')
+  })
+
   it('shows an undeployed deposit as one in-progress row, not its history copy', () => {
     historyState = { ...historyState, history: [histEntry({ timestamp: 5_000 })], total: 1 }
     unsettledState.data = { operations: [op({ status: 'undeployed', created_at: 5_000 })] }

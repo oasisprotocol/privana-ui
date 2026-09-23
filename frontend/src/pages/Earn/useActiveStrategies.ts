@@ -22,8 +22,9 @@ export const useActiveStrategies = (): {
    */
   earned: TokenAmount[] | null
   isLoading: boolean
+  isError: boolean
 } => {
-  const { data: balanceData, isLoading: balanceLoading } = useEarnBalance()
+  const { data: balanceData, isLoading: balanceLoading, isError: balanceError } = useEarnBalance()
   const { data: poolsData, isLoading: poolsLoading } = useEarnPools()
   const { data: tokensData, isLoading: tokensLoading } = useTokens()
 
@@ -98,7 +99,12 @@ export const useActiveStrategies = (): {
   for (const pos of activePositions) {
     const pool = poolsById.get(pos.pool_id)
     const token = pool ? tokensById.get(pool.token_id) : tokensById.get(pos.token_id)
-    if (pos.earned_active == null || token?.token_decimals == null || !token.token_symbol) {
+    if (
+      pos.earned_active == null ||
+      pos.earned_active_status !== 'ok' ||
+      token?.token_decimals == null ||
+      !token.token_symbol
+    ) {
       earnedKnown = false
       break
     }
@@ -106,5 +112,5 @@ export const useActiveStrategies = (): {
   }
   const earned = earnedKnown ? [...earnedBySymbol.values()] : null
 
-  return { strategies, projectedMonthly, earned, isLoading }
+  return { strategies, projectedMonthly, earned, isLoading, isError: balanceError }
 }

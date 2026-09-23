@@ -55,7 +55,7 @@ export function useFunds(): Funds {
   const tokenIds = useMemo(() => enabledTokens.map(t => t.id), [enabledTokens])
   const { balances, isLoading: balancesLoading } = useBatchBalances({ tokenIds })
   const { locks, totalLocked, isLoading: locksLoading } = useLockedFunds()
-  const { data: earnBalance, isLoading: earnLoading } = useEarnBalance()
+  const { data: earnBalance, isLoading: earnLoading, isError: earnError } = useEarnBalance()
   const { hasPendingWithdrawals, isLoading: pendingWithdrawalsLoading } = usePendingWithdrawals()
   const { data: prices, isError: pricesError } = useTokenPrices(tokenIds)
   const { data: poolsData } = useEarnPools()
@@ -64,7 +64,12 @@ export function useFunds(): Funds {
   // resolved, so we never flash the onboarding step at a user whose funds are
   // only in earn / locks / a pending withdrawal.
   const isLoading =
-    tokensStatus !== 'ready' || balancesLoading || locksLoading || earnLoading || pendingWithdrawalsLoading
+    tokensStatus !== 'ready' ||
+    balancesLoading ||
+    locksLoading ||
+    earnLoading ||
+    earnError ||
+    pendingWithdrawalsLoading
 
   const bestApyBps = useMemo(() => {
     const activePools = (poolsData?.pools ?? []).filter(p => p.status === 'active')

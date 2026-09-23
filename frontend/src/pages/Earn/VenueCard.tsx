@@ -19,6 +19,8 @@ export type Venue = {
   earning: string | null
   /** Formatted estimated daily accrual, e.g. "0.03 USDC", or null. */
   earningToday: string | null
+  /** A pool that no longer takes deposits; shown only while the user still holds a position. */
+  paused?: boolean
 }
 
 type VenueCardProps = Venue & {
@@ -42,6 +44,7 @@ export const VenueCard = ({
   apyBps,
   earning,
   earningToday,
+  paused = false,
   hasAvailableBalance,
   onRequestDeposit,
 }: VenueCardProps) => {
@@ -50,7 +53,7 @@ export const VenueCard = ({
   const showSparkline = useMediaQuery('(min-width: 80rem)')
 
   const depositButton = (label: string, size: 'sm' | 'lg', className: string) =>
-    hasAvailableBalance ? (
+    paused ? null : hasAvailableBalance ? (
       <Button asChild size={size} className={className}>
         <Link to={earnCreatePath(poolId)} viewTransition>
           {label}
