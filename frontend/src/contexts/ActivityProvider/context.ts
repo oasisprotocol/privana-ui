@@ -32,6 +32,8 @@ export type EarnActivity = {
   poolId: string
   protocol: string
   apyLabel?: string
+  // Signed nonce; matches the server row before its id is known.
+  nonce?: string
   depositId?: string
   withdrawId?: string
   txHash?: string

@@ -13,7 +13,7 @@ import { SWAPPABLE_TOKEN_IDS } from '@/config/tokens'
 import { cn } from '@/lib/utils'
 import { useResetBalanceCaches } from '@/hooks/use-reset-balance-caches'
 import { DESKTOP_CARD } from '@/lib/surface'
-import { useActivity } from '@/contexts/ActivityProvider/useActivity'
+import { useResolvedActivity } from '@/hooks/use-merged-activity'
 import { QuoteCountdown } from '@/components/QuoteCountdown'
 import { AssetRow } from './AssetRow'
 import { QuoteInfo } from './QuoteInfo'
@@ -31,7 +31,6 @@ export const SwapDashboard = () => {
   const walletClient = useSigningClient()
   const resetBalanceCaches = useResetBalanceCaches()
   const navigate = useNavigate()
-  const { activities } = useActivity()
   const [searchParams] = useSearchParams()
   const [fromTokenId, setFromTokenId] = useState('')
   const [toTokenId, setToTokenId] = useState(() => {
@@ -136,11 +135,8 @@ export const SwapDashboard = () => {
   const canSwap =
     !!quoteData && !quoteLoading && !!walletClient && !!address && !insufficientFunds && quoteMatchesInput
 
-  const swapActivity = useMemo(() => {
-    if (!swapActivityId) return undefined
-    const found = activities.find(a => a.id === swapActivityId)
-    return found?.type === 'swap' ? found : undefined
-  }, [activities, swapActivityId])
+  const resolvedActivity = useResolvedActivity(swapActivityId)
+  const swapActivity = resolvedActivity?.type === 'swap' ? resolvedActivity : undefined
 
   // Reset the flow when the connected account changes. ActivityProvider drops its
   // list per-address, so a swap tracked for the previous account would no longer

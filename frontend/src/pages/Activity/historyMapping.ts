@@ -1,7 +1,5 @@
 import type { HistoryEntry } from '@oasisprotocol/privana-sdk'
 import type { EarnPool } from '@/api/earn'
-import type { UnsettledOperation } from '@/api/operations'
-import type { Activity } from '@/contexts/ActivityProvider/context'
 import { isSwapLpAddress } from '@/config/swap'
 
 export type DisplayKind =
@@ -18,16 +16,17 @@ export type DisplayKind =
   | 'transfer'
   | 'unknown'
 
-// Kinds where the chain entry alone is enough to drop the local copy.
-export const PRUNE_ELIGIBLE: ReadonlySet<DisplayKind> = new Set([
-  'deposit',
-  'withdraw',
+// Swaps and earn moves are rendered from services' own records, which carry
+// the operation id and outcome; their accounting legs are hidden so nothing is
+// listed twice. Classification still runs so the legs can be recognised.
+export const HIDDEN_KINDS: ReadonlySet<DisplayKind> = new Set([
+  'reclaimOut',
+  'reclaimIn',
+  'unknown',
+  'swap',
   'earnDeposit',
   'earnWithdraw',
-  'swap',
 ])
-
-export const HIDDEN_KINDS: ReadonlySet<DisplayKind> = new Set(['reclaimOut', 'reclaimIn', 'unknown'])
 
 export type ClassifiedHistoryEntry = {
   source: 'chain'
@@ -182,72 +181,10 @@ function resolveKind(
           ? poolsByAddressToken.get(poolKey(counterpartyLower, entry.token_id))
           : undefined
       if (matched) return { kind: 'earnWithdraw', pool: matched }
+      if (isSwapLpAddress(counterpartyLower)) return { kind: 'swap' }
       return { kind: 'transfer' }
     }
     default:
       return { kind: 'unknown' }
   }
-}
-
-// An "undeployed" earn deposit settled on the accounting ledger (its history
-// entry exists) while the operation still awaits strategy redeploy in the
-// services store — the one case where the two sources overlap. Rendering both
-// would show the same deposit twice with contradictory statuses, so the
-// history copy is suppressed and the unsettled row (rendered as in-progress)
-// represents the operation. Once the redeploy completes, the op leaves
-// the unsettled list and the history row takes over.
-const UNDEPLOYED_MATCH_WINDOW_SECONDS = 600
-
-export function suppressUndeployedHistory(
-  rows: ClassifiedHistoryEntry[],
-  operations: UnsettledOperation[],
-): ClassifiedHistoryEntry[] {
-  const candidates = operations.filter(
-    op => op.operation_type === 'earn_deposit' && op.status === 'undeployed',
-  )
-  if (candidates.length === 0) return rows
-
-  // Each op suppresses at most one row, and picks the row *closest in time* —
-  // first-match-in-array-order would let an op claim an earlier identical
-  // deposit's row and hide the wrong one of the two.
-  const suppressed = new Set<ClassifiedHistoryEntry>()
-  for (const op of candidates) {
-    let best: ClassifiedHistoryEntry | undefined
-    for (const row of rows) {
-      if (suppressed.has(row) || row.kind !== 'earnDeposit') continue
-      if (row.pool?.pool_id !== op.pool_id || row.tokenId !== op.token_id || row.amount !== op.amount) {
-        continue
-      }
-      const distance = Math.abs(row.timestamp - op.created_at)
-      if (distance > UNDEPLOYED_MATCH_WINDOW_SECONDS) continue
-      if (!best || distance < Math.abs(best.timestamp - op.created_at)) best = row
-    }
-    if (best) suppressed.add(best)
-  }
-  return rows.filter(row => !suppressed.has(row))
-}
-
-// Match between a chain row and a local activity for prune effect.
-// Only called for kinds in PRUNE_ELIGIBLE - for everything else the
-// local copy is the only record we have and must stay.
-export function matchesLocal(row: ClassifiedHistoryEntry, local: Activity, skewSeconds = 60): boolean {
-  if (!PRUNE_ELIGIBLE.has(row.kind)) return false
-
-  // HistoryEntry timestamp is seconds; local createdAt is ms.
-  const createdAtSec = Math.floor(local.createdAt / 1000)
-  if (row.timestamp + skewSeconds < createdAtSec) return false
-
-  if (row.kind === 'earnDeposit' && local.type === 'earn' && local.direction === 'deposit') {
-    return row.pool?.pool_id === local.poolId && row.tokenId === local.token.id && row.amount === local.amount
-  }
-
-  if (row.kind === 'earnWithdraw' && local.type === 'earn' && local.direction === 'withdraw') {
-    return row.pool?.pool_id === local.poolId && row.tokenId === local.token.id && row.amount === local.amount
-  }
-
-  if (row.kind === 'swap' && local.type === 'swap') {
-    return row.tokenId === local.fromToken.id && row.amount === local.fromAmount
-  }
-
-  return false
 }

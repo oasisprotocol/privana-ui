@@ -2,23 +2,19 @@ import { useEffect, useRef } from 'react'
 import { useQuery, useQueryClient } from '@tanstack/react-query'
 import { useSiweAuth } from '@oasisprotocol/privana-sdk'
 import { request } from './http'
-import { isSettledFailure } from './operation-status'
+import { isInFlight } from './operation-status'
 
-// Pending/failed swap + earn operations, served by service from its own
-// DB (swaps + earn_transactions). Completed history lives on-chain in Accounting
-// (SDK `useHistory`); these two sets are disjoint by status - an op leaves this
-// list once it settles and shows up in history instead. The exception is
-// "undeployed": the accounting transfer settled (a history entry exists) but
-// the funds still await operator redeploy into the strategy, so the op stays
-// listed here at the same time.
-export type UnsettledOperationType = 'swap' | 'earn_deposit' | 'earn_withdraw'
-export { isSettledFailure, type UnsettledOperationStatus } from './operation-status'
-import type { UnsettledOperationStatus } from './operation-status'
+// Every swap and earn operation services has recorded for the user, in any
+// status, newest first. Services submits these transactions itself, so this is
+// the source of truth for them; accounting history only shows their legs.
+export type OperationType = 'swap' | 'earn_deposit' | 'earn_withdraw'
+export { isInFlight, isSettledFailure, type OperationStatus } from './operation-status'
+import type { OperationStatus } from './operation-status'
 
-export interface UnsettledOperation {
+export interface Operation {
   operation_id: string
-  operation_type: UnsettledOperationType
-  status: UnsettledOperationStatus
+  operation_type: OperationType
+  status: OperationStatus
   created_at: number
   updated_at: number
   tx_hash: string | null
@@ -34,28 +30,32 @@ export interface UnsettledOperation {
   pool_id: string | null
   token_id: string | null
   amount: string | null
+  // The nonce the user signed with: the one key the client holds before it
+  // has learned the operation id (e.g. the submit response was lost).
+  nonce: string | null
 }
 
-export interface UnsettledOperationsResponse {
-  operations: UnsettledOperation[]
+export interface OperationsResponse {
+  operations: Operation[]
+  next_cursor: string | null
 }
 
-const UNSETTLED_LIMIT = 100
+const OPERATIONS_PAGE_SIZE = 100
 
-export function getUnsettledOperations(jwt: string, limit = UNSETTLED_LIMIT) {
-  return request<UnsettledOperationsResponse>(`/v1/operations/unsettled?limit=${limit}`, undefined, jwt)
+export function getOperations(jwt: string, limit = OPERATIONS_PAGE_SIZE, before?: string) {
+  const search = new URLSearchParams({ limit: String(limit) })
+  if (before) search.set('before', before)
+  return request<OperationsResponse>(`/v1/operations?${search}`, undefined, jwt)
 }
 
 export const operationsKeys = {
   all: ['operations'] as const,
-  unsettled: (userAddress: string) => [...operationsKeys.all, 'unsettled', userAddress] as const,
+  list: (userAddress: string) => [...operationsKeys.all, 'list', userAddress] as const,
 }
 
 // `hasLocalPending` keeps the poll alive for an operation the server has not
-// listed yet. A withdraw is only recorded once its strategy reclaim finishes,
-// which on Midas is several minutes of Ethereum finality, so until then the
-// optimistic local activity is the only evidence anything is happening.
-export function useUnsettledOperations(hasLocalPending = false) {
+// listed yet, so the optimistic entry is adopted as soon as the row exists.
+export function useOperations(hasLocalPending = false) {
   const { session, accessToken } = useSiweAuth()
   const address = session?.address
   const jwt = accessToken
@@ -70,13 +70,11 @@ export function useUnsettledOperations(hasLocalPending = false) {
   }, [jwt, queryClient])
 
   return useQuery({
-    queryKey: operationsKeys.unsettled(address ?? ''),
-    queryFn: () => getUnsettledOperations(jwt!),
+    queryKey: operationsKeys.list(address ?? ''),
+    queryFn: () => getOperations(jwt!),
     enabled: !!address && !!jwt,
-    // Poll while any in-flight op exists — without polling a session would
-    // never observe a scheduled swap executing or an undeployed redeploy.
     refetchInterval: query =>
-      hasLocalPending || query.state.data?.operations.some(o => !isSettledFailure(o.status)) ? 10_000 : false,
+      hasLocalPending || query.state.data?.operations.some(o => isInFlight(o.status)) ? 10_000 : false,
     staleTime: 5_000,
   })
 }

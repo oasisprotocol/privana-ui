@@ -83,6 +83,7 @@ export const useSubmitEarnWithdraw = ({ onSuccess }: Params = {}) => {
         poolId,
         protocol,
         apyLabel,
+        nonce: String(nonce),
       })
 
       // Submit, retrying once if the on-chain nonce advanced between fetch and
@@ -142,7 +143,7 @@ export const useSubmitEarnWithdraw = ({ onSuccess }: Params = {}) => {
           // settling — a Midas exit waits on Ethereum finality alone. Calling
           // that failed fabricates a failure for an operation that usually
           // completes, and sends people back to retry with a nonce that has
-          // already been consumed. Leave it in-progress and let the unsettled
+          // already been consumed. Leave it in-progress and let the operations
           // feed reconcile it.
           if (isDefinitiveRejection(err)) {
             updateActivity(id, {

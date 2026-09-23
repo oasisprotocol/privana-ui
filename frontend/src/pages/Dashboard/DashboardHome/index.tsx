@@ -122,7 +122,7 @@ export const DashboardHome = () => {
   } = useFunds()
   const resetBalanceCaches = useResetBalanceCaches()
 
-  // Hoisted out of LatestActivity so the history/unsettled fetch starts on mount in parallel with very slow balance reads.
+  // Hoisted out of LatestActivity so the history/operations fetch starts on mount in parallel with very slow balance reads.
   const { rows: activityRows, isLoading: activityLoading } = useMergedActivity(HISTORY_FETCH_LIMIT)
 
   const [chartRange, setChartRange] = useState<ChartRange>('all')
