@@ -2,7 +2,7 @@ export const homePath = () => '/'
 
 export const dashboardPath = () => '/dashboard'
 
-export const tradePath = () => '/trade'
+export const tradePath = (toTokenId?: string) => (toTokenId ? `/trade?to=${toTokenId}` : '/trade')
 
 export const earnPath = () => '/earn'
 export const earnCreatePath = (poolId?: string) => (poolId ? `/earn/create/${poolId}` : '/earn/create')

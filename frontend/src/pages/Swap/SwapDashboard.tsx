@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
-import { useNavigate } from 'react-router'
+import { useNavigate, useSearchParams } from 'react-router'
 import { Button } from '@/components/ui/button'
 import { useTokens } from '@/api/swap'
 import { useTokenPrices } from '@/api/coin-gecko'
@@ -32,8 +32,12 @@ export const SwapDashboard = () => {
   const resetBalanceCaches = useResetBalanceCaches()
   const navigate = useNavigate()
   const { activities } = useActivity()
+  const [searchParams] = useSearchParams()
   const [fromTokenId, setFromTokenId] = useState('')
-  const [toTokenId, setToTokenId] = useState('')
+  const [toTokenId, setToTokenId] = useState(() => {
+    const requested = searchParams.get('to') ?? ''
+    return (SWAPPABLE_TOKEN_IDS as string[]).includes(requested) ? requested : ''
+  })
   const [fromAmount, setFromAmount] = useState('')
   const [swapActivityId, setSwapActivityId] = useState<string | null>(null)
   const tokens = useMemo(

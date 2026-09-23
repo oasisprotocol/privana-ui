@@ -5,10 +5,12 @@ import { useEarnPools } from '@/api/earn'
 import { useTokens } from '@/api/swap'
 import { PageHeading } from '@/components/PageHeading'
 import { useFunds } from '@/hooks/useFunds'
+import { SWAPPABLE_TOKEN_IDS } from '@/config/tokens'
 import { useResetBalanceCaches } from '@/hooks/use-reset-balance-caches'
 import { useActiveStrategies } from './useActiveStrategies'
 import { EarnBalance } from './EarnBalance'
 import { VenueCard, type Venue } from './VenueCard'
+import { GetTokenDialog } from './GetTokenDialog'
 
 const VenueCardSkeleton = () => <Skeleton className="h-44 w-full rounded-2xl md:h-24" />
 
@@ -21,6 +23,7 @@ export const EarnDashboard = () => {
     bestApyBps,
     pricesError,
     availableTokenIds,
+    hasAvailableBalance,
     isLoading: fundsLoading,
   } = useFunds()
   const {
@@ -31,6 +34,7 @@ export const EarnDashboard = () => {
   } = useActiveStrategies()
   const isLoading = poolsLoading || tokensLoading || positionsLoading
   const [depositOpen, setDepositOpen] = useState(false)
+  const [getTokenFor, setGetTokenFor] = useState<Venue | null>(null)
   const resetBalanceCaches = useResetBalanceCaches()
 
   const venues = useMemo<Venue[]>(() => {
@@ -95,7 +99,14 @@ export const EarnDashboard = () => {
                   key={v.poolId}
                   {...v}
                   hasAvailableBalance={availableTokenIds.has(v.tokenId)}
-                  onRequestDeposit={() => setDepositOpen(true)}
+                  // Swap hand-off only when the venue token can be swapped for; otherwise deposit.
+                  // The swappable flag is a testnet artifact and goes away with #174.
+                  // TODO: match the venue's minimum deposit once the backend defines it.
+                  onRequestDeposit={() =>
+                    hasAvailableBalance && (SWAPPABLE_TOKEN_IDS as string[]).includes(v.tokenId)
+                      ? setGetTokenFor(v)
+                      : setDepositOpen(true)
+                  }
                 />
               ))
             )}
@@ -103,6 +114,13 @@ export const EarnDashboard = () => {
         )}
       </div>
 
+      <GetTokenDialog
+        open={getTokenFor != null}
+        onClose={() => setGetTokenFor(null)}
+        tokenId={getTokenFor?.tokenId ?? ''}
+        asset={getTokenFor?.asset ?? ''}
+        chain={getTokenFor?.chain ?? ''}
+      />
       <DepositModal
         open={depositOpen}
         onClose={() => setDepositOpen(false)}
