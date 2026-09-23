@@ -112,6 +112,12 @@ describe('classifyHistory with pools sharing one earn account', () => {
     ])
   })
 
+  it('attributes the withdraw leg by token as well', () => {
+    const transferIn = { ...transferOut(USDC_ETH), kind: 'transferBalanceIn' } as HistoryEntry
+    const rows = classifyHistory([transferIn], indexPools([aave, midas]))
+    expect([rows[0].kind, rows[0].pool?.pool_id]).toEqual(['earnWithdraw', '0xm'])
+  })
+
   it('does not guess a pool when the token matches none on that address', () => {
     const rows = classifyHistory([transferOut('0xother')], indexPools([aave, midas]))
     expect(rows[0].kind).toBe('transfer')

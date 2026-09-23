@@ -30,6 +30,7 @@ vi.mock('@/api/earn', () => ({
 let classified: unknown[] = []
 vi.mock('@/pages/Activity/historyMapping', () => ({
   classifyHistory: () => classified,
+  indexPools: () => new Map(),
   matchesLocal: (row: { id: string }, local: { id: string }) => row.id === local.id,
 }))
 
