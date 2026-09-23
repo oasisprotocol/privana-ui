@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useRef } from 'react'
-import { useHistory } from '@oasisprotocol/privana-sdk'
+import { useHistory, useSiweAuth } from '@oasisprotocol/privana-sdk'
 import { useEarnPools, type EarnPool } from '@/api/earn'
 import { useUnsettledOperations, type UnsettledOperation } from '@/api/operations'
 import { isSettledFailure } from '@/api/operation-status'
@@ -45,7 +45,8 @@ export const EarnReconciler = () => {
   // poll gap; the entry would then never be seen in the feed and would sit
   // in-progress for the rest of the session. A matching history entry is
   // proof it settled either way.
-  const { history } = useHistory({ offset: -1, limit: HISTORY_LOOKBACK })
+  const { isAuthenticated } = useSiweAuth()
+  const { history } = useHistory({ offset: -1, limit: HISTORY_LOOKBACK, enabled: isAuthenticated })
   const { data: poolsData } = useEarnPools()
   const settledRows = useMemo(() => {
     const byAddress = new Map<string, EarnPool>()

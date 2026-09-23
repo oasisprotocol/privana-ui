@@ -11,7 +11,15 @@ let activityState: { activities: Activity[]; updateActivity: ReturnType<typeof v
 vi.mock('./useActivity', () => ({ useActivity: () => activityState }))
 
 let historyState: { history: unknown[] }
-vi.mock('@oasisprotocol/privana-sdk', () => ({ useHistory: () => historyState }))
+let historyOptions: { enabled?: boolean } | undefined
+let authState: { isAuthenticated: boolean }
+vi.mock('@oasisprotocol/privana-sdk', () => ({
+  useHistory: (options: { enabled?: boolean }) => {
+    historyOptions = options
+    return historyState
+  },
+  useSiweAuth: () => authState,
+}))
 
 vi.mock('@/api/earn', () => ({
   useEarnPools: () => ({
@@ -59,10 +67,18 @@ beforeEach(() => {
   unsettledState = { data: { operations: [] } }
   activityState = { activities: [], updateActivity: vi.fn() }
   historyState = { history: [] }
+  historyOptions = undefined
+  authState = { isAuthenticated: true }
   classified = []
 })
 
 describe('EarnReconciler', () => {
+  it('does not read history before sign-in', () => {
+    authState = { isAuthenticated: false }
+    render(<EarnReconciler />)
+    expect(historyOptions?.enabled).toBe(false)
+  })
+
   it('adopts the server row into the local entry', () => {
     unsettledState.data = { operations: [earnOp({ status: 'failed', error: 'boom' })] }
     activityState.activities = [localEarn()]
