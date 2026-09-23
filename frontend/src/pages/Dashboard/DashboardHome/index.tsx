@@ -11,7 +11,7 @@ import { earnPath, tradePath, vaultPath } from '@/paths'
 import { Link } from 'react-router'
 import { useFunds } from '@/hooks/useFunds'
 import { useResetBalanceCaches } from '@/hooks/use-reset-balance-caches'
-import { CHART_RANGE_DAYS, usePortfolioHistory, type ChartRange } from '@/api/portfolio'
+import { endSeriesAt, usePortfolioChart, type ChartRange } from '@/api/portfolio'
 import { useMergedActivity } from '@/hooks/use-merged-activity'
 import { BalanceAmount } from '@/components/BalanceAmount'
 import { BalanceBreakdown } from '@/components/BalanceBreakdown'
@@ -125,13 +125,14 @@ export const DashboardHome = () => {
   const { rows: activityRows, isLoading: activityLoading } = useMergedActivity(HISTORY_FETCH_LIMIT)
 
   const [chartRange, setChartRange] = useState<ChartRange>('all')
-  const { data: portfolioHistory, isLoading: chartLoading } = usePortfolioHistory(
-    CHART_RANGE_DAYS[chartRange],
-  )
+  const { points: portfolioPoints, isLoading: chartLoading } = usePortfolioChart(chartRange)
   const chartData = useMemo(
     () =>
-      (portfolioHistory?.points ?? []).map(p => ({ date: String(p.timestamp), value: Number(p.total_usd) })),
-    [portfolioHistory],
+      endSeriesAt(
+        portfolioPoints.map(p => ({ date: String(p.timestamp), value: Number(p.total_usd) })),
+        totalFiatValue,
+      ),
+    [portfolioPoints, totalFiatValue],
   )
 
   // Balance reads are slow today; play a short branded boot sequence in place of a bare skeleton.

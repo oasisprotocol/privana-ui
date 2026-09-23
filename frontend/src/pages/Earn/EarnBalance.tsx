@@ -1,6 +1,6 @@
 import { useMemo, useState } from 'react'
 import { getTokenIcon } from '@oasisprotocol/privana-sdk'
-import { CHART_RANGE_DAYS, useEarnHistory, type ChartRange } from '@/api/portfolio'
+import { endSeriesAt, useEarnChart, type ChartRange } from '@/api/portfolio'
 import { Skeleton } from '@/components/ui/skeleton'
 import { SurfaceCard } from '@/components/SurfaceCard'
 import { BalanceAmount } from '@/components/BalanceAmount'
@@ -50,10 +50,14 @@ export const EarnBalance = ({
 }: EarnBalanceProps) => {
   const isEarning = (earningFiatValue ?? 0) > 0
   const [chartRange, setChartRange] = useState<ChartRange>('all')
-  const { data: earnHistory, isLoading: chartLoading } = useEarnHistory(CHART_RANGE_DAYS[chartRange])
+  const { points: earnPoints, isLoading: chartLoading } = useEarnChart(chartRange)
   const chartData = useMemo(
-    () => (earnHistory?.points ?? []).map(p => ({ date: String(p.timestamp), value: Number(p.value_usd) })),
-    [earnHistory],
+    () =>
+      endSeriesAt(
+        earnPoints.map(p => ({ date: String(p.timestamp), value: Number(p.value_usd) })),
+        earningFiatValue,
+      ),
+    [earnPoints, earningFiatValue],
   )
   return (
     <SurfaceCard className="grid gap-6 rounded-3xl p-6 md:gap-8 md:p-8 lg:grid-cols-2">

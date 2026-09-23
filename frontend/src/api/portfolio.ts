@@ -1,4 +1,4 @@
-import { useEffect, useRef } from 'react'
+import { useEffect, useMemo, useRef } from 'react'
 import { useQuery, useQueryClient } from '@tanstack/react-query'
 import { useSiweAuth } from '@oasisprotocol/privana-sdk'
 import { ApiError, request } from './http'
@@ -33,6 +33,33 @@ export const CHART_RANGE_DAYS: Record<ChartRange, number | undefined> = {
   month: 30,
   year: 365,
   all: undefined,
+}
+
+const DAY_SEC = 86_400
+
+// Longest range the backend serves at 6 h resolution; day/week/month are sliced from it.
+export const FINE_SERIES_DAYS = 90
+
+const RANGE_SOURCE_DAYS: Record<ChartRange, number | undefined> = {
+  day: FINE_SERIES_DAYS,
+  week: FINE_SERIES_DAYS,
+  month: FINE_SERIES_DAYS,
+  year: undefined,
+  all: undefined,
+}
+
+export function sliceRange<T extends { timestamp: number }>(points: readonly T[], range: ChartRange): T[] {
+  const days = CHART_RANGE_DAYS[range]
+  if (days == null || points.length === 0) return [...points]
+  const cutoff = points[points.length - 1].timestamp - days * DAY_SEC
+  const first = points.findIndex(p => p.timestamp >= cutoff)
+  if (first === -1) return []
+  return points.slice(Math.max(first - 1, 0))
+}
+
+export function endSeriesAt<T extends { value: number }>(points: T[], liveValue: number | undefined): T[] {
+  if (liveValue == null || points.length === 0) return points
+  return [...points.slice(0, -1), { ...points[points.length - 1], value: liveValue }]
 }
 
 export const historyKeys = {
@@ -93,4 +120,25 @@ export function usePortfolioHistory(days?: number) {
 export function useEarnHistory(days?: number) {
   const { session } = useSiweAuth()
   return useHistoryQuery(historyKeys.earn(session?.address ?? '', days), jwt => getEarnHistory(jwt, days))
+}
+
+type ChartSeries<T> = { points: T[]; isLoading: boolean }
+
+function useChartSeries<T extends { timestamp: number }>(
+  range: ChartRange,
+  fine: { data?: { points: T[] }; isLoading: boolean },
+  all: { data?: { points: T[] }; isLoading: boolean },
+): ChartSeries<T> {
+  const source = RANGE_SOURCE_DAYS[range] === FINE_SERIES_DAYS ? fine : all
+  const sourcePoints = source.data?.points
+  const points = useMemo(() => sliceRange(sourcePoints ?? [], range), [sourcePoints, range])
+  return { points, isLoading: source.isLoading }
+}
+
+export function usePortfolioChart(range: ChartRange): ChartSeries<PortfolioHistoryPoint> {
+  return useChartSeries(range, usePortfolioHistory(FINE_SERIES_DAYS), usePortfolioHistory())
+}
+
+export function useEarnChart(range: ChartRange): ChartSeries<EarnHistoryPoint> {
+  return useChartSeries(range, useEarnHistory(FINE_SERIES_DAYS), useEarnHistory())
 }
