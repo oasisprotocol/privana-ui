@@ -1,9 +1,9 @@
 import { useEffect, useMemo, useRef } from 'react'
 import { useHistory, useSiweAuth } from '@oasisprotocol/privana-sdk'
-import { useEarnPools, type EarnPool } from '@/api/earn'
+import { useEarnPools } from '@/api/earn'
 import { useUnsettledOperations, type UnsettledOperation } from '@/api/operations'
 import { isSettledFailure } from '@/api/operation-status'
-import { classifyHistory, matchesLocal } from '@/pages/Activity/historyMapping'
+import { classifyHistory, indexPools, matchesLocal } from '@/pages/Activity/historyMapping'
 import { useActivity } from './useActivity'
 import type { Activity, ActivityStatus, EarnActivity } from './context'
 
@@ -49,9 +49,7 @@ export const EarnReconciler = () => {
   const { history } = useHistory({ offset: -1, limit: HISTORY_LOOKBACK, enabled: isAuthenticated })
   const { data: poolsData } = useEarnPools()
   const settledRows = useMemo(() => {
-    const byAddress = new Map<string, EarnPool>()
-    for (const p of poolsData?.pools ?? []) byAddress.set(p.pool_address.toLowerCase(), p)
-    return classifyHistory(history ?? [], byAddress)
+    return classifyHistory(history ?? [], indexPools(poolsData?.pools ?? []))
   }, [history, poolsData])
   // Ids of entries this reconciler has seen listed by the server. An op that
   // was in the feed and then left has settled — failed ops stay listed, so
