@@ -6,6 +6,7 @@ import { SurfaceCard } from '@/components/SurfaceCard'
 import { formatAmount } from '@/lib/tokens'
 import { cn } from '@/lib/utils'
 import { useSlowSettlement } from '@/hooks/useSlowSettlement'
+import { slowSettlementMsFor } from '@/config/protocols'
 import type { EarnActivity } from '@/contexts/ActivityProvider/context'
 
 type EarnDepositResultProps = {
@@ -18,7 +19,7 @@ export const EarnDepositResult = ({ activity, onDone, onViewActivity }: EarnDepo
   const { token, amount, protocol, status, error } = activity
   const amountFormatted = formatAmount(BigInt(amount || '0'), token.decimals)
 
-  const slow = useSlowSettlement(status)
+  const slow = useSlowSettlement(status, slowSettlementMsFor(protocol))
 
   if (status === 'in-progress') {
     return (
