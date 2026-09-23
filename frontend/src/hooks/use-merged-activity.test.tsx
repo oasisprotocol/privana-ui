@@ -136,7 +136,7 @@ describe('useMergedActivity', () => {
     ])
   })
 
-  it('takes a scheduled operation\'s token from its pool while the row has none', () => {
+  it("takes a scheduled operation's token from its pool while the row has none", () => {
     unsettledState.data = { operations: [op({ status: 'scheduled', token_id: '' })] }
 
     const { result } = renderHook(() => useMergedActivity())
