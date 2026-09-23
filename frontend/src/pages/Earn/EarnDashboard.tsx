@@ -110,6 +110,7 @@ export const EarnDashboard = () => {
       <GetTokenDialog
         open={getTokenFor != null}
         onClose={() => setGetTokenFor(null)}
+        tokenId={getTokenFor?.tokenId ?? ''}
         asset={getTokenFor?.asset ?? ''}
         chain={getTokenFor?.chain ?? ''}
       />

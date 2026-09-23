@@ -14,11 +14,12 @@ import { tradePath } from '@/paths'
 type GetTokenDialogProps = {
   open: boolean
   onClose: () => void
+  tokenId: string
   asset: string
   chain: string
 }
 
-export const GetTokenDialog = ({ open, onClose, asset, chain }: GetTokenDialogProps) => {
+export const GetTokenDialog = ({ open, onClose, tokenId, asset, chain }: GetTokenDialogProps) => {
   const swapLinkRef = useRef<HTMLAnchorElement>(null)
   return (
     <Dialog open={open} onOpenChange={isOpen => !isOpen && onClose()}>
@@ -43,7 +44,7 @@ export const GetTokenDialog = ({ open, onClose, asset, chain }: GetTokenDialogPr
         </DialogHeader>
         <DialogFooter className="sm:justify-start">
           <Button asChild size="lg" className="w-full">
-            <Link ref={swapLinkRef} to={tradePath()} viewTransition>
+            <Link ref={swapLinkRef} to={tradePath(tokenId)} viewTransition>
               Go to swap
             </Link>
           </Button>
