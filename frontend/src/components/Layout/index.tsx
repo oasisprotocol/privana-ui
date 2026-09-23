@@ -1,4 +1,5 @@
 import { useState, type ReactNode } from 'react'
+import { ArrowUpRight } from 'lucide-react'
 import { Link } from 'react-router'
 import { useConnection } from 'wagmi'
 import { useIsSignedIn } from '@/hooks/useIsSignedIn'
@@ -9,15 +10,55 @@ import { MobileBottomNav } from './MobileBottomNav'
 import { Separator } from '../ui/separator'
 import { earnPath, homePath, dashboardPath, tradePath } from '@/paths'
 
-const FOOTER_SECTIONS = [
-  { title: 'Company', links: ['About Us', 'Partners'] },
-  { title: 'Resources', links: ['Guides', 'Tutorials', 'FAQ'] },
-  { title: 'Account', links: ['Settings', 'Terms'] },
+type FooterLink = { label: string; href: string }
+
+const FOOTER_SECTIONS: { title: string; links: FooterLink[] }[] = [
   {
-    title: 'Help & Feedback',
-    links: ['Get In Touch', 'Help Articles', 'Feedback Form'],
+    title: 'Company',
+    links: [
+      { label: 'About Us', href: 'https://docs.privana.finance/architecture/about-us' },
+      {
+        label: 'Integration Partners',
+        href: 'https://docs.privana.finance/architecture/integration-partners',
+      },
+    ],
+  },
+  {
+    title: 'Learn',
+    links: [
+      { label: 'Getting Started', href: 'https://docs.privana.finance/getting-started' },
+      { label: 'How It Works', href: 'https://docs.privana.finance/core-concepts' },
+      { label: 'FAQ', href: 'https://docs.privana.finance/faq' },
+    ],
+  },
+  {
+    title: 'Help',
+    links: [
+      { label: 'Community', href: 'https://oasis.io/discord' },
+      { label: 'Report an Issue', href: 'https://github.com/oasisprotocol/privana/issues' },
+    ],
   },
 ]
+
+const LEGAL_LINKS: FooterLink[] = [
+  { label: 'Privacy Policy', href: 'https://oasis.net/privacy-policy' },
+  { label: 'Terms of Use', href: 'https://oasis.net/terms-of-use' },
+]
+
+const FooterAnchor = ({
+  link,
+  className,
+  arrow = false,
+}: {
+  link: FooterLink
+  className: string
+  arrow?: boolean
+}) => (
+  <a href={link.href} target="_blank" rel="noopener noreferrer" className={className}>
+    {link.label}
+    {arrow && <ArrowUpRight className="size-3 opacity-60" aria-hidden />}
+  </a>
+)
 
 interface LayoutProps {
   children: ReactNode
@@ -63,23 +104,21 @@ export const Layout = ({ children }: LayoutProps) => {
         </div>
         <footer className="w-full max-w-7xl py-12 mx-auto flex flex-col justify-start items-center gap-12 md:gap-16 text-xs text-muted-foreground px-6 border-t border-border/70">
           <div className="flex flex-col md:flex-row gap-8 md:gap-6 items-start w-full">
-            <div className="flex-1">
-              <img src={Logo} alt="Privana" className="h-6 dark:brightness-0 dark:invert" />
+            <div className="flex-1 flex flex-col gap-3">
+              <img src={Logo} alt="Privana" className="h-6 self-start dark:brightness-0 dark:invert" />
+              <p className="text-sm max-w-[26ch] ml-3">Your private corner of DeFi.</p>
             </div>
             {FOOTER_SECTIONS.map(section => (
               <div key={section.title} className="flex-1 flex flex-col gap-4 min-w-0">
                 <p className="text-base font-medium text-foreground">{section.title}</p>
                 <ul className="flex flex-col gap-3 text-sm text-muted-foreground">
-                  {section.links.map(label => (
-                    <li key={label}>
-                      <a
-                        href="#"
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="hover:text-foreground transition-colors"
-                      >
-                        {label}
-                      </a>
+                  {section.links.map(link => (
+                    <li key={link.label}>
+                      <FooterAnchor
+                        link={link}
+                        arrow
+                        className="inline-flex items-center gap-1 hover:text-foreground transition-colors"
+                      />
                     </li>
                   ))}
                 </ul>
@@ -107,9 +146,13 @@ export const Layout = ({ children }: LayoutProps) => {
               </span>
             </div>
             <div className="flex flex-col gap-3 md:flex-row md:items-center md:gap-8">
-              <span>Privacy Policy</span>
-              <span>Terms of Service</span>
-              <span>Cookies Settings</span>
+              {LEGAL_LINKS.map(link => (
+                <FooterAnchor
+                  key={link.label}
+                  link={link}
+                  className="hover:text-foreground transition-colors"
+                />
+              ))}
             </div>
           </div>
         </footer>
