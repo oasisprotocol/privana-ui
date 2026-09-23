@@ -5,6 +5,7 @@ import { useEarnPools } from '@/api/earn'
 import { useTokens } from '@/api/swap'
 import { PageHeading } from '@/components/PageHeading'
 import { useFunds } from '@/hooks/useFunds'
+import { SWAPPABLE_TOKEN_IDS } from '@/config/tokens'
 import { useResetBalanceCaches } from '@/hooks/use-reset-balance-caches'
 import { useActiveStrategies } from './useActiveStrategies'
 import { EarnBalance } from './EarnBalance'
@@ -98,8 +99,14 @@ export const EarnDashboard = () => {
                   key={v.poolId}
                   {...v}
                   hasAvailableBalance={availableTokenIds.has(v.tokenId)}
+                  // Swap hand-off only when the venue token can be swapped for; otherwise deposit.
+                  // The swappable flag is a testnet artifact and goes away with #174.
                   // TODO: match the venue's minimum deposit once the backend defines it.
-                  onRequestDeposit={() => (hasAvailableBalance ? setGetTokenFor(v) : setDepositOpen(true))}
+                  onRequestDeposit={() =>
+                    hasAvailableBalance && (SWAPPABLE_TOKEN_IDS as string[]).includes(v.tokenId)
+                      ? setGetTokenFor(v)
+                      : setDepositOpen(true)
+                  }
                 />
               ))
             )}
