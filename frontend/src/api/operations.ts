@@ -12,6 +12,15 @@ export type OperationType = 'swap' | 'earn_deposit' | 'earn_withdraw'
 export { isInFlight, isSettledFailure, type OperationStatus } from './operation-status'
 import type { OperationStatus } from './operation-status'
 
+export interface OperationStage {
+  /** recording, bridging, deploying, reclaiming, returning, finality or paying_out */
+  stage: string
+  /** Unix seconds the stage was reached. */
+  at: number
+  /** finality carries confirmations and required. */
+  detail?: { confirmations?: number; required?: number } | null
+}
+
 export interface Operation {
   operation_id: string
   operation_type: OperationType
@@ -34,6 +43,8 @@ export interface Operation {
   // The nonce the user signed with: the one key the client holds before it
   // has learned the operation id (e.g. the submit response was lost).
   nonce: string | null
+  /** Steps an earn operation has reached so far, oldest first. Absent on older services. */
+  stages?: OperationStage[]
 }
 
 export interface OperationsResponse {
