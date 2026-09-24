@@ -72,7 +72,14 @@ const VaultRow = ({
 )
 
 export const Vault = () => {
-  const { availableFiatValue, earningFiatValue, lockedFiatValue, totalFiatValue, pricesError } = useFunds()
+  const {
+    availableFiatValue,
+    earningFiatValue,
+    lockedFiatValue,
+    totalFiatValue,
+    pricesError,
+    isError: fundsError,
+  } = useFunds()
   const { locks } = useLockedFunds()
   const { enabledTokens, getTokenById } = usePrivanaContext()
   const tokenIds = useMemo(() => enabledTokens.map(t => t.id), [enabledTokens])
@@ -142,7 +149,7 @@ export const Vault = () => {
 
       <SurfaceCard className="p-6 md:rounded-3xl md:p-8">
         <p className="text-sm font-medium text-muted-foreground">Account value</p>
-        {pricesError ? (
+        {pricesError || fundsError ? (
           <span className="mt-1 block text-4xl font-semibold tracking-tight text-foreground">-</span>
         ) : totalFiatValue === undefined ? (
           <Skeleton className="mt-2 h-10 w-40 rounded-md" />
@@ -154,7 +161,7 @@ export const Vault = () => {
           available={availableFiatValue}
           earning={earningFiatValue}
           locked={lockedFiatValue}
-          error={pricesError}
+          error={pricesError || fundsError}
           size="md"
           className="mt-4"
         />

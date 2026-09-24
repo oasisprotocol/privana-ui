@@ -22,6 +22,7 @@ export const EarnDashboard = () => {
     earnChange24h,
     bestApyBps,
     pricesError,
+    isError: fundsError,
     availableTokenIds,
     hasAvailableBalance,
     isLoading: fundsLoading,
@@ -73,7 +74,7 @@ export const EarnDashboard = () => {
         <EarnBalance
           earningFiatValue={earningFiatValue}
           bestApyBps={bestApyBps}
-          pricesError={pricesError}
+          pricesError={pricesError || fundsError}
           projected={projectedMonthly}
           earned={earned}
           change={earnChange24h}
