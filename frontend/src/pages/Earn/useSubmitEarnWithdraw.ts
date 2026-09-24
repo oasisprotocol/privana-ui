@@ -97,7 +97,12 @@ export const useSubmitEarnWithdraw = ({ onSuccess }: Params = {}) => {
           if (!(err instanceof ApiError) || err.status !== 400) throw err
           const { nonce: freshNonce } = await getWithdrawNonce(jwt)
           if (freshNonce === nonce) throw err
-          const freshSignature = await signAt(freshNonce)
+          // The first request was refused for good; a rejected re-sign must
+          // not leave the entry in progress waiting for a submit that never
+          // happened, and the user rejecting is what the failure should say.
+          const freshSignature = await signAt(freshNonce).catch(() => {
+            throw new ApiError(err.status, 'Signature request rejected')
+          })
           return withdrawEarn({
             pool_id: poolId,
             user_address: address,

@@ -20,6 +20,8 @@ export interface TokenBreakdown {
 export interface Funds {
   /** True until every place funds can live has resolved. */
   isLoading: boolean
+  /** A balances, locks, or earn read failed: the buckets cannot be trusted, show dashes. */
+  isError: boolean
   /** Whether the user has funds in any bucket (available, locked, earn, pending withdrawal). */
   hasFunds: boolean
   /** Whether the user has idle (available, not-yet-invested) balance to put to work. */
@@ -53,9 +55,9 @@ export interface Funds {
 export function useFunds(): Funds {
   const { enabledTokens, tokensStatus, getTokenById } = usePrivanaContext()
   const tokenIds = useMemo(() => enabledTokens.map(t => t.id), [enabledTokens])
-  const { balances, isLoading: balancesLoading } = useBatchBalances({ tokenIds })
-  const { locks, totalLocked, isLoading: locksLoading } = useLockedFunds()
-  const { data: earnBalance, isLoading: earnLoading } = useEarnBalance()
+  const { balances, isLoading: balancesLoading, isError: balancesError } = useBatchBalances({ tokenIds })
+  const { locks, totalLocked, isLoading: locksLoading, isError: locksError } = useLockedFunds()
+  const { data: earnBalance, isLoading: earnLoading, isError: earnError } = useEarnBalance()
   const { hasPendingWithdrawals, isLoading: pendingWithdrawalsLoading } = usePendingWithdrawals()
   const { data: prices, isError: pricesError } = useTokenPrices(tokenIds)
   const { data: poolsData } = useEarnPools()
@@ -65,6 +67,7 @@ export function useFunds(): Funds {
   // only in earn / locks / a pending withdrawal.
   const isLoading =
     tokensStatus !== 'ready' || balancesLoading || locksLoading || earnLoading || pendingWithdrawalsLoading
+  const isError = balancesError || locksError || earnError
 
   const bestApyBps = useMemo(() => {
     const activePools = (poolsData?.pools ?? []).filter(p => p.status === 'active')
@@ -73,7 +76,7 @@ export function useFunds(): Funds {
 
   const { availableFiatValue, lockedFiatValue, earningFiatValue, totalFiatValue, earnChange24h } =
     useMemo(() => {
-      if (!prices || isLoading) {
+      if (!prices || isLoading || isError) {
         return {
           availableFiatValue: undefined,
           lockedFiatValue: undefined,
@@ -113,7 +116,7 @@ export function useFunds(): Funds {
         totalFiatValue: available + locked + earning,
         earnChange24h: computeEarnChange24h(earnBalance?.positions ?? [], fiatOf),
       }
-    }, [balances, locks, earnBalance, prices, getTokenById, isLoading])
+    }, [balances, locks, earnBalance, prices, getTokenById, isLoading, isError])
 
   // Per-token amounts for token-denominated display (Earning / Available rows).
   // Merged by symbol so token ids that share a ticker (e.g. several USDC ids)
@@ -148,6 +151,7 @@ export function useFunds(): Funds {
 
   return {
     isLoading,
+    isError,
     hasFunds,
     hasAvailableBalance,
     availableTokenIds,

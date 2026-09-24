@@ -69,7 +69,7 @@ export const Activity = () => {
   const [filters, setFilters] = useActivityFilters()
   const [filterOpen, setFilterOpen] = useState(false)
 
-  const { rows, isLoading } = useMergedActivity()
+  const { rows, isLoading, isError } = useMergedActivity()
   const { getTokenById } = usePrivanaContext()
 
   const visible = useMemo(
@@ -95,6 +95,12 @@ export const Activity = () => {
         }
         className="max-w-200"
       />
+
+      {isError && (
+        <p className="w-full max-w-200 mx-auto mt-8 text-destructive">
+          Some activity could not be loaded, so this list may be incomplete.
+        </p>
+      )}
 
       {!isEmpty && (
         <div className="flex flex-col gap-4 w-full max-w-200 mx-auto mt-8">

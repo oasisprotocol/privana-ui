@@ -118,6 +118,7 @@ export const DashboardHome = () => {
     totalFiatValue,
     bestApyBps,
     pricesError,
+    isError: fundsError,
   } = useFunds()
   const resetBalanceCaches = useResetBalanceCaches()
 
@@ -153,7 +154,7 @@ export const DashboardHome = () => {
         {/* bootPhase latches at 'done', so isLoading can flip back on later (balance
             caches dropped after a withdraw). Route that window to the funded layout,
             which degrades to skeletons/dashes — never to the onboarding card. */}
-        {bootPhase === 'done' && !isLoading && !hasFunds && (
+        {bootPhase === 'done' && !isLoading && !fundsError && !hasFunds && (
           <div className="flex flex-col gap-8 w-full">
             <div className="flex flex-col md:hidden">
               <span className="text-sm font-medium text-muted-foreground leading-5">Account value</span>
@@ -205,13 +206,13 @@ export const DashboardHome = () => {
             </SurfaceCard>
           </div>
         )}
-        {bootPhase === 'done' && (hasFunds || isLoading) && (
+        {bootPhase === 'done' && (hasFunds || isLoading || fundsError) && (
           <div className="flex flex-col gap-8 w-full">
             {/* Desktop: two-column balance card (balance + breakdown + CTAs | chart) */}
             <SurfaceCard className="hidden md:grid md:grid-cols-2 md:gap-8 rounded-3xl p-8">
               <div className="flex flex-col lg:pr-12">
                 <span className="text-sm font-medium text-muted-foreground">Account value</span>
-                {pricesError ? (
+                {pricesError || fundsError ? (
                   <span className="mt-3 text-6xl font-semibold tracking-tight text-foreground">-</span>
                 ) : totalFiatValue === undefined ? (
                   <Skeleton className="mt-3 h-14 w-56 rounded-md" />
@@ -223,7 +224,7 @@ export const DashboardHome = () => {
                     available={availableFiatValue}
                     earning={earningFiatValue}
                     locked={lockedFiatValue}
-                    error={pricesError}
+                    error={pricesError || fundsError}
                   />
                 </div>
                 <div className="mt-8 flex gap-3 sm:max-w-md">
@@ -257,7 +258,7 @@ export const DashboardHome = () => {
             <div className="flex flex-col gap-6 md:hidden">
               <div className="flex flex-col">
                 <span className="text-sm font-medium text-muted-foreground leading-5">Account value</span>
-                {pricesError ? (
+                {pricesError || fundsError ? (
                   <span className="mt-3 text-5xl font-semibold tracking-tight text-foreground">-</span>
                 ) : totalFiatValue === undefined ? (
                   <Skeleton className="mt-3 h-12 w-44 rounded-md" />
@@ -281,7 +282,7 @@ export const DashboardHome = () => {
                 available={availableFiatValue}
                 earning={earningFiatValue}
                 locked={lockedFiatValue}
-                error={pricesError}
+                error={pricesError || fundsError}
               />
 
               <div className="flex gap-3">

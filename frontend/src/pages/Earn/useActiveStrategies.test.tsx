@@ -72,6 +72,14 @@ describe('useActiveStrategies earned', () => {
     expect(result.current.earned).toBeNull()
   })
 
+  it('is null when a figure comes with a status the backend does not stand behind', () => {
+    balanceState.data = {
+      positions: [position({ earned_active: '8000', earned_active_status: 'ledger_incomplete' })],
+    }
+    const { result } = renderHook(() => useActiveStrategies())
+    expect(result.current.earned).toBeNull()
+  })
+
   it('ignores exited (zero-share) positions when deciding whether earned is known', () => {
     balanceState.data = {
       positions: [

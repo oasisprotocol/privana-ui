@@ -22,6 +22,7 @@ export const EarnDashboard = () => {
     earnChange24h,
     bestApyBps,
     pricesError,
+    isError: fundsError,
     availableTokenIds,
     hasAvailableBalance,
     isLoading: fundsLoading,
@@ -31,8 +32,9 @@ export const EarnDashboard = () => {
     projectedMonthly,
     earned,
     isLoading: positionsLoading,
+    isError: positionsError,
   } = useActiveStrategies()
-  const isLoading = poolsLoading || tokensLoading || positionsLoading
+  const isLoading = poolsLoading || tokensLoading || positionsLoading || positionsError
   const [depositOpen, setDepositOpen] = useState(false)
   const [getTokenFor, setGetTokenFor] = useState<Venue | null>(null)
   const resetBalanceCaches = useResetBalanceCaches()
@@ -42,7 +44,7 @@ export const EarnDashboard = () => {
     const tokensById = new Map(tokensData.tokens.map(t => [t.token_id, t]))
     const positionByPool = new Map(activePositions.map(p => [p.poolId, p]))
     return poolsData.pools
-      .filter(p => p.status === 'active')
+      .filter(p => p.status === 'active' || positionByPool.has(p.pool_id))
       .map(p => {
         const token = tokensById.get(p.token_id)
         const position = positionByPool.get(p.pool_id)
@@ -55,6 +57,7 @@ export const EarnDashboard = () => {
           apyBps: p.apy_bps,
           earning: position?.earning ?? null,
           earningToday: position?.earningToday ?? null,
+          paused: p.status !== 'active',
         }
       })
   }, [poolsData, tokensData, activePositions])
@@ -71,7 +74,7 @@ export const EarnDashboard = () => {
         <EarnBalance
           earningFiatValue={earningFiatValue}
           bestApyBps={bestApyBps}
-          pricesError={pricesError}
+          pricesError={pricesError || fundsError}
           projected={projectedMonthly}
           earned={earned}
           change={earnChange24h}
@@ -79,6 +82,7 @@ export const EarnDashboard = () => {
         />
 
         {(poolsError || tokensError) && <p className="text-destructive">Unable to load earn pools</p>}
+        {positionsError && <p className="text-destructive">Unable to load your positions</p>}
 
         {(isLoading || venues.length > 0) && (
           <div className="flex flex-col gap-3">
