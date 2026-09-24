@@ -1,5 +1,6 @@
 import { useCallback, useMemo, useState, type ReactNode } from 'react'
 import { useConnection } from 'wagmi'
+import { useResetOnSettle } from '@/hooks/use-reset-on-settle'
 import { ActivityContext, type Activity } from './context'
 
 type ActivityState = { address: string | null; activities: Activity[] }
@@ -26,6 +27,7 @@ export const ActivityProvider = ({ children }: { children: ReactNode }) => {
   }, [])
 
   const activities = state.activities
+  useResetOnSettle(activities)
 
   const value = useMemo(
     () => ({ activities, addActivity, updateActivity, removeActivity }),
