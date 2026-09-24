@@ -57,6 +57,26 @@ const MAINNET_TOKENS = {
   '0xbb600e800a38b161b32e0f797b798f09cb12498ab1457f2b2a92d768a6dd0105': {
     geckoId: 'usd-coin',
   },
+  // Base (8453) — LINK (0x88Fb150BDc53A65fe94Dea0c9BA0a6dAf8C6e196)
+  '0x73ea35bc4304a8cc1b4f6d68788d0b35656bbcaf25cd2d387195ac74742dcdb9': {
+    geckoId: 'chainlink',
+  },
+  // Ethereum (1) — LINK (0x514910771AF9Ca656af840dff83E8264EcF986CA)
+  '0x0c6719ba2b58a0202e67ccc6a498b50caf6015c631b3cb5550e43094ac65f2db': {
+    geckoId: 'chainlink',
+  },
+  // Ethereum (1) — UNI (0x1f9840a85d5aF5bf1D1762F925BDADdC4201F984)
+  '0x63955ea62ffbdf7b094497e960741ce09f9493da15191157405d00178613a196': {
+    geckoId: 'uniswap',
+  },
+  // HyperEVM (999) — Unit BTC (0x9FDBdA0A5e284c32744D2f17Ee5c74B284993463)
+  '0xa71ce404078cb7a57d8534dfa8e9564298e4bac14ecbea8b7b8aaea038e6080f': {
+    geckoId: 'unit-bitcoin',
+  },
+  // HyperEVM (999) — Unit SOL (0x068f321Fa8Fb9f0D135f290Ef6a3e2813e1c8A29)
+  '0xf096e4eaba925782f870c1007312ba3bc69dd80d8f18e25d6b1dc599043b0d9f': {
+    geckoId: 'unit-solana',
+  },
 } as const satisfies Record<string, TokenConfig>
 
 export type TokenId = keyof typeof TESTNET_TOKENS | keyof typeof MAINNET_TOKENS
