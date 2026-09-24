@@ -1,93 +1,12 @@
-import { describe, expect, it } from 'vitest'
+import { describe, expect, it, vi } from 'vitest'
 import type { HistoryEntry } from '@oasisprotocol/privana-sdk'
 import type { EarnPool } from '@/api/earn'
-import type { UnsettledOperation } from '@/api/operations'
-import {
-  classifyHistory,
-  indexPools,
-  suppressUndeployedHistory,
-  type ClassifiedHistoryEntry,
-} from './historyMapping'
+import { classifyHistory, HIDDEN_KINDS, indexPools } from './historyMapping'
 
-const POOL_ID = '0xeeed'
-const TOKEN_ID = '0xc719'
-
-const earnDepositRow = (overrides: Partial<ClassifiedHistoryEntry> = {}): ClassifiedHistoryEntry => ({
-  source: 'chain',
-  kind: 'earnDeposit',
-  index: 0,
-  timestamp: 1_000_000,
-  tokenId: TOKEN_ID,
-  amount: '1000000',
-  counterparty: null,
-  pool: { pool_id: POOL_ID } as EarnPool,
-  entry: {} as HistoryEntry,
-  ...overrides,
-})
-
-const undeployedOp = (overrides: Partial<UnsettledOperation> = {}): UnsettledOperation => ({
-  operation_id: 'op-1',
-  operation_type: 'earn_deposit',
-  status: 'undeployed',
-  created_at: 1_000_000,
-  updated_at: 1_000_010,
-  tx_hash: null,
-  error: null,
-  quote_id: null,
-  from_token_id: null,
-  to_token_id: null,
-  from_amount: null,
-  to_amount_estimate: null,
-  to_amount_actual: null,
-  pool_id: POOL_ID,
-  token_id: TOKEN_ID,
-  amount: '1000000',
-  ...overrides,
-})
-
-describe('suppressUndeployedHistory', () => {
-  it('suppresses the history copy of an undeployed deposit', () => {
-    expect(suppressUndeployedHistory([earnDepositRow()], [undeployedOp()])).toHaveLength(0)
-  })
-
-  it('keeps rows without an undeployed counterpart', () => {
-    const rows = [earnDepositRow(), earnDepositRow({ index: 1, kind: 'earnWithdraw' })]
-    expect(suppressUndeployedHistory(rows, [])).toEqual(rows)
-  })
-
-  it('only suppresses on a full shape match', () => {
-    const rows = [earnDepositRow()]
-    expect(suppressUndeployedHistory(rows, [undeployedOp({ amount: '2000000' })])).toEqual(rows)
-    expect(suppressUndeployedHistory(rows, [undeployedOp({ pool_id: '0xother' })])).toEqual(rows)
-    expect(suppressUndeployedHistory(rows, [undeployedOp({ token_id: '0xother' })])).toEqual(rows)
-  })
-
-  it('ignores rows outside the timestamp window', () => {
-    const rows = [earnDepositRow({ timestamp: 1_000_000 + 7200 })]
-    expect(suppressUndeployedHistory(rows, [undeployedOp()])).toEqual(rows)
-  })
-
-  it('does not suppress for pending or failed operations', () => {
-    const rows = [earnDepositRow()]
-    expect(suppressUndeployedHistory(rows, [undeployedOp({ status: 'pending' })])).toEqual(rows)
-    expect(suppressUndeployedHistory(rows, [undeployedOp({ status: 'failed' })])).toEqual(rows)
-  })
-
-  it('pairs identical deposits one-to-one', () => {
-    const rows = [earnDepositRow({ index: 0 }), earnDepositRow({ index: 1 })]
-    const result = suppressUndeployedHistory(rows, [undeployedOp()])
-    expect(result).toHaveLength(1)
-  })
-
-  it('suppresses the row closest in time, not the first match', () => {
-    // An identical successful deposit 5 minutes earlier also falls inside the
-    // match window; the op must claim its own row, not the earlier one.
-    const earlier = earnDepositRow({ index: 0, timestamp: 1_000_000 - 300 })
-    const own = earnDepositRow({ index: 1 })
-    const result = suppressUndeployedHistory([earlier, own], [undeployedOp()])
-    expect(result).toEqual([earlier])
-  })
-})
+const LP_ADDRESS = '0x00000000000000000000000000000000000000aa'
+vi.mock('@/config/swap', () => ({
+  isSwapLpAddress: (a: string | null | undefined) => a?.toLowerCase() === LP_ADDRESS,
+}))
 
 describe('classifyHistory with pools sharing one earn account', () => {
   const ACCOUNT = '0xdF925131222EEA3D1e0677e03e1E0868C19af84A'
@@ -122,5 +41,28 @@ describe('classifyHistory with pools sharing one earn account', () => {
     const rows = classifyHistory([transferOut('0xother')], indexPools([aave, midas]))
     expect(rows[0].kind).toBe('transfer')
     expect(rows[0].pool).toBeUndefined()
+  })
+})
+
+describe('classifyHistory swap legs', () => {
+  const leg = (kind: HistoryEntry['kind'], token_id: string): HistoryEntry =>
+    ({ kind, timestamp: 7, token_id, amount: '1', counterparty: LP_ADDRESS }) as HistoryEntry
+
+  it('folds an adjacent out/in pair against the LP into one swap', () => {
+    const rows = classifyHistory(
+      [leg('transferBalanceOut', '0xa'), leg('transferBalanceIn', '0xb')],
+      new Map(),
+    )
+    expect(rows.map(r => r.kind)).toEqual(['swap'])
+    expect(rows[0].toTokenId).toBe('0xb')
+  })
+
+  it('still recognises a lone in-leg against the LP as a swap, never a transfer', () => {
+    const rows = classifyHistory([leg('transferBalanceIn', '0xb')], new Map())
+    expect(rows[0].kind).toBe('swap')
+  })
+
+  it('hides every kind services renders itself', () => {
+    expect([...HIDDEN_KINDS]).toEqual(expect.arrayContaining(['swap', 'earnDeposit', 'earnWithdraw']))
   })
 })

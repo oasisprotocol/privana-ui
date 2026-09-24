@@ -81,6 +81,7 @@ export const useSubmitEarnDeposit = ({ onSuccess, onRefused }: Params = {}) => {
         poolId,
         protocol,
         apyLabel,
+        nonce: String(quote.transfer_nonce),
       })
 
       // Fire-and-forget: backend deposit may take seconds. Caller navigates away
@@ -98,7 +99,7 @@ export const useSubmitEarnDeposit = ({ onSuccess, onRefused }: Params = {}) => {
           const status: ActivityStatus =
             deposit.status === 'completed' || deposit.status === 'failed' ? deposit.status : 'in-progress'
           // deposit_id is the server's operation id. Recording it is what lets the
-          // merged activity list see this entry and the server's unsettled copy as
+          // merged activity list see this entry and the server's copy as
           // one operation — without it a failed deposit renders twice.
           updateActivity(id, {
             depositId: deposit.deposit_id,
@@ -120,7 +121,7 @@ export const useSubmitEarnDeposit = ({ onSuccess, onRefused }: Params = {}) => {
           // settling — a Midas exit waits on Ethereum finality alone. Calling
           // that failed fabricates a failure for an operation that usually
           // completes, and sends people back to retry with a nonce that has
-          // already been consumed. Leave it in-progress and let the unsettled
+          // already been consumed. Leave it in-progress and let the operations
           // feed reconcile it.
           if (isOperationPending(err)) {
             removeActivity(id)

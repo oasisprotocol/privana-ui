@@ -3,6 +3,7 @@ import { Search, SlidersHorizontal } from 'lucide-react'
 import { usePrivanaContext } from '@oasisprotocol/privana-sdk'
 import { PageHeading } from '@/components/PageHeading'
 import { Button } from '@/components/ui/button'
+import { ActivityUnavailable } from '@/components/ActivityList'
 import { Input } from '@/components/ui/input'
 import { Skeleton } from '@/components/ui/skeleton'
 import { SurfaceCard } from '@/components/SurfaceCard'
@@ -69,7 +70,7 @@ export const Activity = () => {
   const [filters, setFilters] = useActivityFilters()
   const [filterOpen, setFilterOpen] = useState(false)
 
-  const { rows, isLoading, isError } = useMergedActivity()
+  const { rows, isLoading, isError, refetch } = useMergedActivity()
   const { getTokenById } = usePrivanaContext()
 
   const visible = useMemo(
@@ -82,7 +83,7 @@ export const Activity = () => {
 
   const activeTab = TAB_FOR_TYPE[filters.type]
   const filterCount = activeFilterCount(filters)
-  const isEmpty = !isLoading && rows.length === 0
+  const isEmpty = !isLoading && !isError && rows.length === 0
 
   return (
     <>
@@ -97,12 +98,12 @@ export const Activity = () => {
       />
 
       {isError && (
-        <p className="w-full max-w-200 mx-auto mt-8 text-destructive">
-          Some activity could not be loaded, so this list may be incomplete.
-        </p>
+        <div className="w-full max-w-200 mx-auto mt-8">
+          <ActivityUnavailable onRetry={refetch} />
+        </div>
       )}
 
-      {!isEmpty && (
+      {!isEmpty && !isError && (
         <div className="flex flex-col gap-4 w-full max-w-200 mx-auto mt-8">
           {SHOW_FILTER_CONTROLS && (
             <div className="flex items-center gap-2">

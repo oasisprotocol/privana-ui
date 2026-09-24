@@ -48,7 +48,7 @@ export interface DepositRequest {
 }
 
 export interface DepositResponse {
-  // The operation_id /v1/operations/unsettled reports for this deposit, so an
+  // The operation_id /v1/operations reports for this deposit, so an
   // optimistic activity can be matched against the server's copy of it.
   deposit_id: string
   pool_id: string

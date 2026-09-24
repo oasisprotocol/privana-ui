@@ -22,7 +22,7 @@ import type {
   EarnPool,
   EarnPoolListResponse,
 } from '../../src/api/earn'
-import type { UnsettledOperationsResponse } from '../../src/api/operations'
+import type { OperationsResponse } from '../../src/api/operations'
 import type { EarnHistoryResponse, PortfolioHistoryResponse } from '../../src/api/portfolio'
 import type {
   ChainListResponse,
@@ -283,8 +283,8 @@ export async function installApi(page: Page, state: StubState) {
   await page.route(`${SERVICES_API_URL}/v1/earn/balance`, route =>
     json(route, { positions: state.earnPositions } satisfies EarnBalanceListResponse),
   )
-  await page.route(`${SERVICES_API_URL}/v1/operations/unsettled**`, route =>
-    json(route, { operations: [] } satisfies UnsettledOperationsResponse),
+  await page.route(`${SERVICES_API_URL}/v1/operations?**`, route =>
+    json(route, { operations: [], next_cursor: null } satisfies OperationsResponse),
   )
   await page.route(`${SERVICES_API_URL}/v1/portfolio/history**`, route =>
     json(route, { points: [] } satisfies PortfolioHistoryResponse),

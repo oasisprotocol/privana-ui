@@ -8,7 +8,7 @@ import { useResetBalanceCaches } from '@/hooks/use-reset-balance-caches'
 import { activityPath, earnPath } from '@/paths'
 import { cn } from '@/lib/utils'
 import { DESKTOP_CARD } from '@/lib/surface'
-import { useActivity } from '@/contexts/ActivityProvider/useActivity'
+import { useResolvedActivity } from '@/hooks/use-merged-activity'
 import { getProtocolLabel } from '@/config/protocols'
 import { formatApyBps } from '@/lib/apy'
 import { WithdrawConfigureStep } from './WithdrawConfigureStep'
@@ -26,7 +26,6 @@ export const EarnWithdraw = () => {
   const [amount, setAmount] = useState('')
   const [step, setStep] = useState(0)
   const [withdrawActivityId, setWithdrawActivityId] = useState<string | null>(null)
-  const { activities } = useActivity()
 
   const { data: poolsData, isLoading: poolsLoading } = useEarnPools()
   const { data: balanceData, isLoading: balanceLoading } = useEarnBalance()
@@ -63,11 +62,8 @@ export const EarnWithdraw = () => {
 
   const canConfirm = !!address && !!walletClient && !!token && !!position && !!poolId && !!amountBaseUnits
 
-  const withdrawActivity = useMemo(() => {
-    if (!withdrawActivityId) return undefined
-    const found = activities.find(a => a.id === withdrawActivityId)
-    return found?.type === 'earn' ? found : undefined
-  }, [activities, withdrawActivityId])
+  const resolvedActivity = useResolvedActivity(withdrawActivityId)
+  const withdrawActivity = resolvedActivity?.type === 'earn' ? resolvedActivity : undefined
 
   const handleConfirm = async () => {
     if (!canConfirm || !address || !walletClient || !token || !poolId) return

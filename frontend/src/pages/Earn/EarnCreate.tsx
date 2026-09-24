@@ -8,7 +8,7 @@ import { useResetBalanceCaches } from '@/hooks/use-reset-balance-caches'
 import { activityPath, earnCreatePath, earnPath } from '@/paths'
 import { cn } from '@/lib/utils'
 import { DESKTOP_CARD } from '@/lib/surface'
-import { useActivity } from '@/contexts/ActivityProvider/useActivity'
+import { useResolvedActivity } from '@/hooks/use-merged-activity'
 import { ConfigureStep } from './ConfigureStep'
 import { getProtocolLabel } from '@/config/protocols'
 import { formatApyBps } from '@/lib/apy'
@@ -27,7 +27,6 @@ export const EarnCreate = () => {
   const [amount, setAmount] = useState('')
   const [step, setStep] = useState(0)
   const [depositActivityId, setDepositActivityId] = useState<string | null>(null)
-  const { activities } = useActivity()
   // At mount: if poolId came in via URL (e.g., "Add to active strategy"),
   // the user shouldn't be able to switch strategies. Picking a pool on /create
   // afterwards still navigates to /create/:poolId but mustn't flip this back to locked.
@@ -83,11 +82,8 @@ export const EarnCreate = () => {
   const protocol = pool ? getProtocolLabel(pool.strategy) : ''
   const apyLabel = pool ? `${formatApyBps(pool.apy_bps)} APY` : undefined
 
-  const depositActivity = useMemo(() => {
-    if (!depositActivityId) return undefined
-    const found = activities.find(a => a.id === depositActivityId)
-    return found?.type === 'earn' ? found : undefined
-  }, [activities, depositActivityId])
+  const resolvedActivity = useResolvedActivity(depositActivityId)
+  const depositActivity = resolvedActivity?.type === 'earn' ? resolvedActivity : undefined
 
   const handleConfirm = async () => {
     if (!quote || !walletClient || !address || !pool || !token || !poolId) return

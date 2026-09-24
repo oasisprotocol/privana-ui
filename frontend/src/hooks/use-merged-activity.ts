@@ -1,16 +1,14 @@
-import { useCallback, useEffect, useMemo, useRef } from 'react'
+import { useCallback, useMemo } from 'react'
 import { useHistory, type HistoryEntry } from '@oasisprotocol/privana-sdk'
 import { useEarnPools, type EarnPool } from '@/api/earn'
 import { useTokens } from '@/api/swap'
-import { useUnsettledOperations, type UnsettledOperation } from '@/api/operations'
-import { isSettledFailure } from '@/api/operation-status'
+import { serverOperationFor, useOperations, type Operation } from '@/api/operations'
+import { isInFlight, isSettledFailure } from '@/api/operation-status'
 import { useActivity } from '@/contexts/ActivityProvider/useActivity'
 import type { Activity, ActivityStatus, ActivityTokenInfo } from '@/contexts/ActivityProvider/context'
 import {
   classifyHistory,
   HIDDEN_KINDS,
-  matchesLocal,
-  suppressUndeployedHistory,
   type ClassifiedHistoryEntry,
   type HistoryWindow,
   indexPools,
@@ -26,48 +24,50 @@ export const rowKey = (r: MergedRow): string =>
 export interface UseMergedActivityResult {
   rows: MergedRow[]
   isLoading: boolean
+  // A source failed; `rows` is then empty because the list is unknown, not because it is.
   isError: boolean
+  refetch: () => void
 }
 
 // Shows the newest HISTORY_PAGE_SIZE entries; older ones aren't reachable yet.
 // TODO: paginate once users routinely exceed this window.
 const HISTORY_PAGE_SIZE = 100
 
-const mapStatus = (s: UnsettledOperation['status']): ActivityStatus =>
-  isSettledFailure(s) ? 'failed' : 'in-progress'
+const mapStatus = (s: Operation['status']): ActivityStatus =>
+  s === 'completed' ? 'completed' : isSettledFailure(s) ? 'failed' : 'in-progress'
 
-const serverIdOf = (a: Activity): string | undefined =>
-  a.type === 'swap' ? a.swapId : a.direction === 'deposit' ? a.depositId : a.withdrawId
+// A refund with no recorded reason still needs to read as a failure.
+const errorOf = (op: Operation): string | undefined =>
+  op.error ?? (op.status === 'refunded' ? 'Swap refunded' : undefined)
 
-// The server now owns this operation, so its optimistic copy is a duplicate.
-// Swaps match by quote id as well: when the execute response never arrived
-// (timeout), the local entry has no swapId, but the server row still carries
-// the quote it was created from.
-const isAdoptedByServer = (
-  a: Activity,
-  unsettledIds: ReadonlySet<string>,
-  unsettledQuoteIds: ReadonlySet<string>,
-): boolean => {
-  const sid = serverIdOf(a)
-  if (sid != null && unsettledIds.has(sid)) return true
-  return a.type === 'swap' && a.quoteId != null && unsettledQuoteIds.has(a.quoteId)
+// A local entry with the server's outcome laid over it. Keeps the labels only the
+// client knows (rate, fee, protocol) and takes status, ids and errors from the row.
+export function resolveActivity(a: Activity, operations: readonly Operation[]): Activity {
+  const op = serverOperationFor(a, operations)
+  if (!op) return a
+  const patch = {
+    status: mapStatus(op.status),
+    txHash: op.tx_hash ?? undefined,
+    error: errorOf(op),
+  }
+  if (a.type === 'swap') {
+    return { ...a, ...patch, swapId: op.operation_id, toAmount: op.to_amount_actual ?? a.toAmount }
+  }
+  return {
+    ...a,
+    ...patch,
+    ...(a.direction === 'deposit' ? { depositId: op.operation_id } : { withdrawId: op.operation_id }),
+  }
 }
-
-const quoteIdsOf = (ops: UnsettledOperation[]): Set<string> =>
-  new Set(ops.map(o => o.quote_id).filter((q): q is string => q != null))
 
 // The single definition of an in-flight local activity. The badge counts these
 // and the list renders these; routing both through one predicate is what keeps
 // them from drifting apart.
-const pendingLocal = (
-  activities: Activity[],
-  unsettledIds: ReadonlySet<string>,
-  unsettledQuoteIds: ReadonlySet<string>,
-): Activity[] =>
-  activities.filter(a => a.status === 'in-progress' && !isAdoptedByServer(a, unsettledIds, unsettledQuoteIds))
+const pendingLocal = (activities: Activity[], operations: readonly Operation[]): Activity[] =>
+  activities.filter(a => a.status === 'in-progress' && !serverOperationFor(a, operations))
 
 export function mapOperationToActivity(
-  op: UnsettledOperation,
+  op: Operation,
   resolveToken: (id: string | null) => ActivityTokenInfo,
   resolvePool: (poolId: string | null) => EarnPool | undefined,
 ): Activity {
@@ -86,8 +86,9 @@ export function mapOperationToActivity(
       toAmount: op.to_amount_actual ?? op.to_amount_estimate ?? '0',
       rateLabel: '',
       swapId: op.operation_id,
+      quoteId: op.quote_id ?? undefined,
       txHash: op.tx_hash ?? undefined,
-      error: op.error ?? undefined,
+      error: errorOf(op),
     }
   }
 
@@ -105,7 +106,7 @@ export function mapOperationToActivity(
     protocol: pool?.strategy ?? '',
     ...(direction === 'deposit' ? { depositId: op.operation_id } : { withdrawId: op.operation_id }),
     txHash: op.tx_hash ?? undefined,
-    error: op.error ?? undefined,
+    error: errorOf(op),
   }
 }
 
@@ -157,7 +158,9 @@ function useLatestHistory(limit: number): LatestHistoryResult {
     // Render the newest page only once its companion has landed, or the list
     // would flash a lone row before settling.
     isLoading: newest.isLoading || (needsPrior && prior.isLoading),
-    isError: newest.isError || (needsPrior && prior.isError),
+    // A failed background refetch keeps the cached pages, so only a failure
+    // with nothing to show is an error.
+    isError: (newest.isError || (needsPrior && prior.isError)) && entries.length === 0,
     refetch,
   }
 }
@@ -166,8 +169,8 @@ export function useMergedActivity(historyLimit: number = HISTORY_PAGE_SIZE): Use
   const history = useLatestHistory(historyLimit)
   const { data: poolsData, isLoading: poolsLoading, isError: poolsError } = useEarnPools()
   const { data: tokensData, isLoading: tokensLoading, isError: tokensError } = useTokens()
-  const { activities, removeActivity } = useActivity()
-  const unsettled = useUnsettledOperations(activities.some(a => a.status === 'in-progress'))
+  const { activities } = useActivity()
+  const operations = useOperations(activities)
 
   const poolsByAddressToken = useMemo(() => indexPools(poolsData?.pools ?? []), [poolsData])
 
@@ -190,74 +193,51 @@ export function useMergedActivity(historyLimit: number = HISTORY_PAGE_SIZE): Use
     return map
   }, [tokensData])
 
-  const unsettledOps = useMemo(() => unsettled.data?.operations ?? [], [unsettled.data])
+  const ops = useMemo(() => operations.data?.operations ?? [], [operations.data])
 
   const historyWindow = history.window
   const chainRows = useMemo(
     () =>
-      suppressUndeployedHistory(
-        classifyHistory(history.entries, poolsByAddressToken, historyWindow).filter(
-          r => !HIDDEN_KINDS.has(r.kind),
-        ),
-        unsettledOps,
+      classifyHistory(history.entries, poolsByAddressToken, historyWindow).filter(
+        r => !HIDDEN_KINDS.has(r.kind),
       ),
-    [history.entries, poolsByAddressToken, historyWindow, unsettledOps],
+    [history.entries, poolsByAddressToken, historyWindow],
   )
 
-  const unsettledIds = useMemo(() => new Set(unsettledOps.map(o => o.operation_id)), [unsettledOps])
-  const unsettledQuoteIds = useMemo(() => quoteIdsOf(unsettledOps), [unsettledOps])
-
-  const refetchHistory = history.refetch
-  const prevUnsettledIdsRef = useRef<Set<string>>(new Set())
-  useEffect(() => {
-    if (!unsettled.data) {
-      prevUnsettledIdsRef.current = new Set()
-      return
-    }
-    const prev = prevUnsettledIdsRef.current
-    let settled = false
-    for (const id of prev) {
-      if (!unsettledIds.has(id)) {
-        settled = true
-        break
-      }
-    }
-    prevUnsettledIdsRef.current = unsettledIds
-    if (settled) void refetchHistory()
-  }, [unsettled.data, unsettledIds, refetchHistory])
-
-  const unsettledRows = useMemo<Activity[]>(() => {
+  const serverRows = useMemo<Activity[]>(() => {
     const resolveToken = (id: string | null): ActivityTokenInfo =>
       (id ? tokensById.get(id) : undefined) ?? { id: id ?? '', symbol: '', decimals: 0 }
     const resolvePool = (poolId: string | null) => (poolId ? poolsById.get(poolId) : undefined)
-    return unsettledOps.map(op => mapOperationToActivity(op, resolveToken, resolvePool))
-  }, [unsettledOps, tokensById, poolsById])
+    return ops.map(op => mapOperationToActivity(op, resolveToken, resolvePool))
+  }, [ops, tokensById, poolsById])
 
-  const isSupersededOptimistic = useCallback(
-    (a: Activity): boolean =>
-      isAdoptedByServer(a, unsettledIds, unsettledQuoteIds) ||
-      ((a.status === 'completed' || (a.type === 'swap' && a.quoteId != null)) &&
-        chainRows.some(r => matchesLocal(r, a))),
-    [unsettledIds, unsettledQuoteIds, chainRows],
-  )
-
+  // A local entry is only shown until the server lists its operation.
   const visibleOptimistic = useMemo(
-    () => activities.filter(a => !isSupersededOptimistic(a)),
-    [activities, isSupersededOptimistic],
+    () => activities.filter(a => !serverOperationFor(a, ops)),
+    [activities, ops],
   )
 
-  useEffect(() => {
-    for (const a of activities) {
-      if (isSupersededOptimistic(a)) removeActivity(a.id)
-    }
-  }, [activities, isSupersededOptimistic, removeActivity])
+  const isLoading = history.isLoading || poolsLoading || tokensLoading || operations.isLoading
+  // React Query flags a failed background refetch as an error while keeping the
+  // cached data; with 10–20 s polling that must not blank a list we can still show.
+  const isError =
+    history.isError ||
+    (!!poolsError && !poolsData) ||
+    (!!tokensError && !tokensData) ||
+    (operations.isError && !operations.data)
 
-  const isLoading = history.isLoading || poolsLoading || tokensLoading || unsettled.isLoading
+  const refetchHistory = history.refetch
+  const refetchOperations = operations.refetch
+  const refetch = useCallback(() => {
+    refetchHistory()
+    void refetchOperations()
+  }, [refetchHistory, refetchOperations])
 
   const rows = useMemo<MergedRow[]>(() => {
-    // The unsettled operations land well before the chain history, so a partial
-    // merge would show failed ops on top and then reshuffle once history arrives.
-    if (isLoading) return []
+    // The server rows land well before the chain history, so a partial merge
+    // would show them on top and then reshuffle once history arrives. With a
+    // source down the list is unknown; an empty list would read as "no history".
+    if (isLoading || isError) return []
 
     const merged: MergedRow[] = chainRows.map(row => ({
       source: 'chain' as const,
@@ -265,28 +245,37 @@ export function useMergedActivity(historyLimit: number = HISTORY_PAGE_SIZE): Use
       row,
     }))
 
-    for (const a of [...unsettledRows, ...visibleOptimistic]) {
+    for (const a of [...serverRows, ...visibleOptimistic]) {
       // Activity.createdAt is ms; HistoryEntry.timestamp is seconds.
       merged.push({ source: 'local', timestamp: Math.floor(a.createdAt / 1000), activity: a })
     }
     merged.sort((a, b) => b.timestamp - a.timestamp)
     return merged
-  }, [isLoading, chainRows, unsettledRows, visibleOptimistic])
+  }, [isLoading, isError, chainRows, serverRows, visibleOptimistic])
 
-  return {
-    rows,
-    isLoading,
-    isError: history.isError || !!poolsError || !!tokensError || unsettled.isError,
-  }
+  return { rows, isLoading, isError, refetch }
+}
+
+// The local entry the result screens follow, with the server's outcome applied
+// once the operation is listed.
+export function useResolvedActivity(id: string | null): Activity | undefined {
+  const { activities } = useActivity()
+  const operations = useOperations(activities)
+  const ops = operations.data?.operations
+  const resolve = useCallback((a: Activity) => (ops ? resolveActivity(a, ops) : a), [ops])
+  return useMemo(() => {
+    if (!id) return undefined
+    const local = activities.find(a => a.id === id)
+    return local ? resolve(local) : undefined
+  }, [id, activities, resolve])
 }
 
 // Counts exactly the rows useMergedActivity would render as in-progress: the
-// server's pending operations, plus the local activities it hasn't adopted yet.
+// server's in-flight operations, plus the local activities it hasn't listed yet.
 export function usePendingActivityCount(): number {
   const { activities } = useActivity()
-  const unsettled = useUnsettledOperations(activities.some(a => a.status === 'in-progress'))
-  const ops = unsettled.data?.operations ?? []
-  const unsettledIds = new Set(ops.map(o => o.operation_id))
-  const serverPending = ops.filter(o => !isSettledFailure(o.status)).length
-  return serverPending + pendingLocal(activities, unsettledIds, quoteIdsOf(ops)).length
+  const operations = useOperations(activities)
+  const ops = operations.data?.operations ?? []
+  const serverPending = ops.filter(o => isInFlight(o.status)).length
+  return serverPending + pendingLocal(activities, ops).length
 }

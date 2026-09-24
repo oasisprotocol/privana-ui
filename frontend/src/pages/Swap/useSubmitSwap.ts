@@ -112,7 +112,7 @@ export const useSubmitSwap = ({ onSuccess, onRefused }: Params = {}) => {
           // Only a 4xx proves the swap was rejected. On a timeout/network
           // error/5xx the backend may still settle it (it holds requests
           // through a serialized settlement queue), so the entry stays
-          // in-progress and the unsettled feed reconciles it by quoteId —
+          // in-progress and the operations feed resolves it by quoteId —
           // marking it failed here fabricates a failure for a swap that
           // usually succeeded.
           if (isOperationPending(err)) {

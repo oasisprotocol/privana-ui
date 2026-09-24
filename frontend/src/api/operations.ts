@@ -1,24 +1,21 @@
 import { useEffect, useRef } from 'react'
 import { useQuery, useQueryClient } from '@tanstack/react-query'
 import { useSiweAuth } from '@oasisprotocol/privana-sdk'
+import type { Activity } from '@/contexts/ActivityProvider/context'
 import { request } from './http'
-import { isSettledFailure } from './operation-status'
+import { isInFlight } from './operation-status'
 
-// Pending/failed swap + earn operations, served by service from its own
-// DB (swaps + earn_transactions). Completed history lives on-chain in Accounting
-// (SDK `useHistory`); these two sets are disjoint by status - an op leaves this
-// list once it settles and shows up in history instead. The exception is
-// "undeployed": the accounting transfer settled (a history entry exists) but
-// the funds still await operator redeploy into the strategy, so the op stays
-// listed here at the same time.
-export type UnsettledOperationType = 'swap' | 'earn_deposit' | 'earn_withdraw'
-export { isSettledFailure, type UnsettledOperationStatus } from './operation-status'
-import type { UnsettledOperationStatus } from './operation-status'
+// Every swap and earn operation services has recorded for the user, in any
+// status, newest first. Services submits these transactions itself, so this is
+// the source of truth for them; accounting history only shows their legs.
+export type OperationType = 'swap' | 'earn_deposit' | 'earn_withdraw'
+export { isInFlight, isSettledFailure, type OperationStatus } from './operation-status'
+import type { OperationStatus } from './operation-status'
 
-export interface UnsettledOperation {
+export interface Operation {
   operation_id: string
-  operation_type: UnsettledOperationType
-  status: UnsettledOperationStatus
+  operation_type: OperationType
+  status: OperationStatus
   created_at: number
   updated_at: number
   tx_hash: string | null
@@ -34,28 +31,68 @@ export interface UnsettledOperation {
   pool_id: string | null
   token_id: string | null
   amount: string | null
+  // The nonce the user signed with: the one key the client holds before it
+  // has learned the operation id (e.g. the submit response was lost).
+  nonce: string | null
 }
 
-export interface UnsettledOperationsResponse {
-  operations: UnsettledOperation[]
+export interface OperationsResponse {
+  operations: Operation[]
+  next_cursor: string | null
 }
 
-const UNSETTLED_LIMIT = 100
+const OPERATIONS_PAGE_SIZE = 100
 
-export function getUnsettledOperations(jwt: string, limit = UNSETTLED_LIMIT) {
-  return request<UnsettledOperationsResponse>(`/v1/operations/unsettled?limit=${limit}`, undefined, jwt)
+export function getOperations(jwt: string, limit = OPERATIONS_PAGE_SIZE, before?: string) {
+  const search = new URLSearchParams({ limit: String(limit) })
+  if (before) search.set('before', before)
+  return request<OperationsResponse>(`/v1/operations?${search}`, undefined, jwt)
 }
+
+const serverIdOf = (a: Activity): string | undefined =>
+  a.type === 'swap' ? a.swapId : a.direction === 'deposit' ? a.depositId : a.withdrawId
+
+// The server row for a local entry: by operation id, or — when the submit
+// response never arrived and the id is unknown — by what the client signed:
+// the quote id for a swap; pool, amount and nonce for an earn move. A refused
+// earn request leaves its nonce unspent for the next one, so the nonce alone
+// is not unique and the newest row with the full identity wins.
+export function serverOperationFor(a: Activity, operations: readonly Operation[]): Operation | undefined {
+  const sid = serverIdOf(a)
+  if (sid != null) {
+    const byId = operations.find(o => o.operation_id === sid)
+    if (byId) return byId
+  }
+  if (a.type === 'swap') {
+    return a.quoteId != null
+      ? operations.find(o => o.operation_type === 'swap' && o.quote_id === a.quoteId)
+      : undefined
+  }
+  if (a.nonce == null) return undefined
+  const type = a.direction === 'deposit' ? 'earn_deposit' : 'earn_withdraw'
+  return operations
+    .filter(
+      o =>
+        o.operation_type === type && o.pool_id === a.poolId && o.amount === a.amount && o.nonce === a.nonce,
+    )
+    .sort((x, y) => y.created_at - x.created_at)[0]
+}
+
+// Still worth polling for: an operation the server has in flight, or a local
+// entry the server has not listed yet. A listed entry follows its server row,
+// so its own (never-updated) local status does not keep the poll alive.
+export const hasUnresolved = (operations: readonly Operation[], activities: readonly Activity[]): boolean =>
+  operations.some(o => isInFlight(o.status)) ||
+  activities.some(a => a.status === 'in-progress' && !serverOperationFor(a, operations))
 
 export const operationsKeys = {
   all: ['operations'] as const,
-  unsettled: (userAddress: string) => [...operationsKeys.all, 'unsettled', userAddress] as const,
+  list: (userAddress: string) => [...operationsKeys.all, 'list', userAddress] as const,
 }
 
-// `hasLocalPending` keeps the poll alive for an operation the server has not
-// listed yet. A withdraw is only recorded once its strategy reclaim finishes,
-// which on Midas is several minutes of Ethereum finality, so until then the
-// optimistic local activity is the only evidence anything is happening.
-export function useUnsettledOperations(hasLocalPending = false) {
+// `activities` are the local entries; one the server has not listed yet keeps
+// the poll alive so it is adopted as soon as its row exists.
+export function useOperations(activities: readonly Activity[] = []) {
   const { session, accessToken } = useSiweAuth()
   const address = session?.address
   const jwt = accessToken
@@ -70,13 +107,11 @@ export function useUnsettledOperations(hasLocalPending = false) {
   }, [jwt, queryClient])
 
   return useQuery({
-    queryKey: operationsKeys.unsettled(address ?? ''),
-    queryFn: () => getUnsettledOperations(jwt!),
+    queryKey: operationsKeys.list(address ?? ''),
+    queryFn: () => getOperations(jwt!),
     enabled: !!address && !!jwt,
-    // Poll while any in-flight op exists — without polling a session would
-    // never observe a scheduled swap executing or an undeployed redeploy.
     refetchInterval: query =>
-      hasLocalPending || query.state.data?.operations.some(o => !isSettledFailure(o.status)) ? 10_000 : false,
+      hasUnresolved(query.state.data?.operations ?? [], activities) ? 10_000 : false,
     staleTime: 5_000,
   })
 }

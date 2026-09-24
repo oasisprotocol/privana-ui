@@ -29,36 +29,36 @@ test('a deposit whose response was lost still resolves once the server settles i
   await installApi(page, funded())
   await page.route(`${SERVICES_API_URL}/v1/earn/deposit`, route => route.abort('connectionreset'))
 
-  // The backend records the operation, works it, and drops it from the feed
-  // once it settles. Leaving the feed is what proves it completed.
-  let listed = true
-  await page.route(`${SERVICES_API_URL}/v1/operations/unsettled**`, route =>
+  // The backend records the operation and works it; the row's status is what
+  // proves it completed.
+  let status = 'pending'
+  await page.route(`${SERVICES_API_URL}/v1/operations?**`, route =>
     route.fulfill({
       status: 200,
       contentType: 'application/json',
       body: JSON.stringify({
-        operations: listed
-          ? [
-              {
-                operation_id: 'srv-deposit-1',
-                operation_type: 'earn_deposit',
-                status: 'pending',
-                created_at: Math.floor(Date.now() / 1000),
-                updated_at: Math.floor(Date.now() / 1000),
-                tx_hash: null,
-                error: null,
-                quote_id: null,
-                from_token_id: null,
-                to_token_id: null,
-                from_amount: null,
-                to_amount_estimate: null,
-                to_amount_actual: null,
-                pool_id: 'e2e-pool-usdc',
-                token_id: USDC_TOKEN_ID,
-                amount: '100000000',
-              },
-            ]
-          : [],
+        next_cursor: null,
+        operations: [
+          {
+            operation_id: 'srv-deposit-1',
+            operation_type: 'earn_deposit',
+            status,
+            created_at: Math.floor(Date.now() / 1000),
+            updated_at: Math.floor(Date.now() / 1000),
+            tx_hash: null,
+            error: null,
+            quote_id: null,
+            from_token_id: null,
+            to_token_id: null,
+            from_amount: null,
+            to_amount_estimate: null,
+            to_amount_actual: null,
+            pool_id: 'e2e-pool-usdc',
+            token_id: USDC_TOKEN_ID,
+            amount: '100000000',
+            nonce: '7',
+          },
+        ],
       }),
     }),
   )
@@ -66,7 +66,7 @@ test('a deposit whose response was lost still resolves once the server settles i
   await deposit(page)
   await expect(page.getByRole('heading', { name: 'Moving to Earn…' })).toBeVisible()
 
-  listed = false
+  status = 'completed'
   await expect(page.getByRole('heading', { name: 'Now earning' })).toBeVisible({ timeout: 20_000 })
 })
 
