@@ -6,6 +6,7 @@ import { formatApyBps } from '@/lib/apy'
 import { ProtocolIcon } from './ProtocolLabel'
 import { VenueAPY } from './VenueAPY'
 import { getProtocolLabel } from '@/config/protocols'
+import { useIsDesktop, useMediaQuery } from '@/hooks/use-media-query'
 
 export type Venue = {
   poolId: string
@@ -45,6 +46,8 @@ export const VenueCard = ({
   onRequestDeposit,
 }: VenueCardProps) => {
   const isEarning = earning != null
+  const isDesktop = useIsDesktop()
+  const showSparkline = useMediaQuery('(min-width: 80rem)')
 
   const depositButton = (label: string, size: 'sm' | 'lg', className: string) =>
     hasAvailableBalance ? (
@@ -59,10 +62,9 @@ export const VenueCard = ({
       </Button>
     )
 
-  return (
-    <>
-      {/* Desktop: horizontal row */}
-      <SurfaceCard className="hidden items-center gap-5 p-5 md:flex">
+  if (isDesktop) {
+    return (
+      <SurfaceCard className="flex items-center gap-5 p-5">
         <span className="flex size-11 shrink-0 items-center justify-center overflow-hidden rounded-lg bg-muted text-base [&>img]:size-full [&>svg]:size-7">
           <ProtocolIcon strategy={strategyKey} size={28} />
         </span>
@@ -88,9 +90,11 @@ export const VenueCard = ({
             )}
           </div>
         </div>
-        <div className="hidden flex-1 items-center justify-center xl:flex">
-          <VenueAPY poolId={poolId} className="h-10 w-36" />
-        </div>
+        {showSparkline && (
+          <div className="flex flex-1 items-center justify-center">
+            <VenueAPY poolId={poolId} className="h-10 w-36" />
+          </div>
+        )}
         <div className="ml-auto flex shrink-0 justify-end gap-2 xl:ml-0">
           {isEarning ? (
             <>
@@ -106,57 +110,58 @@ export const VenueCard = ({
           )}
         </div>
       </SurfaceCard>
+    )
+  }
 
-      {/* Mobile: stacked card */}
-      <SurfaceCard className="flex flex-col gap-4 p-5 md:hidden">
-        <div className="flex items-center gap-3">
-          <span className="flex size-10 shrink-0 items-center justify-center overflow-hidden rounded-lg bg-muted text-base [&>img]:size-full [&>svg]:size-6">
-            <ProtocolIcon strategy={strategyKey} size={24} />
-          </span>
-          <div className="min-w-0 flex-1">
-            <div className="text-base font-semibold leading-tight text-foreground">
-              {getProtocolLabel(strategyKey)}
-            </div>
-            <p className="mt-0.5 text-xs text-muted-foreground">
-              {asset} on {chain}
-            </p>
+  return (
+    <SurfaceCard className="flex flex-col gap-4 p-5">
+      <div className="flex items-center gap-3">
+        <span className="flex size-10 shrink-0 items-center justify-center overflow-hidden rounded-lg bg-muted text-base [&>img]:size-full [&>svg]:size-6">
+          <ProtocolIcon strategy={strategyKey} size={24} />
+        </span>
+        <div className="min-w-0 flex-1">
+          <div className="text-base font-semibold leading-tight text-foreground">
+            {getProtocolLabel(strategyKey)}
           </div>
-          <ApyPill apyBps={apyBps} className="px-2.5 py-1" />
+          <p className="mt-0.5 text-xs text-muted-foreground">
+            {asset} on {chain}
+          </p>
         </div>
+        <ApyPill apyBps={apyBps} className="px-2.5 py-1" />
+      </div>
 
-        {isEarning ? (
-          <>
-            <div className="flex flex-col gap-0.5">
-              <span className="text-xs text-muted-foreground">Earning</span>
-              <span className="text-2xl font-semibold tracking-tight tabular-nums text-foreground">
-                {earning}
+      {isEarning ? (
+        <>
+          <div className="flex flex-col gap-0.5">
+            <span className="text-xs text-muted-foreground">Earning</span>
+            <span className="text-2xl font-semibold tracking-tight tabular-nums text-foreground">
+              {earning}
+            </span>
+            {earningToday && (
+              <span className="text-sm text-muted-foreground">
+                <span className="font-medium text-chart-positive">+{earningToday}</span> today
               </span>
-              {earningToday && (
-                <span className="text-sm text-muted-foreground">
-                  <span className="font-medium text-chart-positive">+{earningToday}</span> today
-                </span>
-              )}
-            </div>
-            <VenueAPY poolId={poolId} className="h-12 w-full" />
-            <div className="grid grid-cols-2 gap-2">
-              {depositButton('Add funds', 'lg', 'w-full')}
-              <Button asChild variant="outline" size="lg" className="w-full">
-                <Link to={earnWithdrawPath(poolId)} viewTransition>
-                  Remove funds
-                </Link>
-              </Button>
-            </div>
-          </>
-        ) : (
-          <>
-            <p className="text-sm text-muted-foreground">
-              Deposit {asset} to start earning {formatApyBps(apyBps)} APY.
-            </p>
-            <VenueAPY poolId={poolId} className="h-12 w-full" />
-            {depositButton('Start earning', 'lg', 'w-full')}
-          </>
-        )}
-      </SurfaceCard>
-    </>
+            )}
+          </div>
+          <VenueAPY poolId={poolId} className="h-12 w-full" />
+          <div className="grid grid-cols-2 gap-2">
+            {depositButton('Add funds', 'lg', 'w-full')}
+            <Button asChild variant="outline" size="lg" className="w-full">
+              <Link to={earnWithdrawPath(poolId)} viewTransition>
+                Remove funds
+              </Link>
+            </Button>
+          </div>
+        </>
+      ) : (
+        <>
+          <p className="text-sm text-muted-foreground">
+            Deposit {asset} to start earning {formatApyBps(apyBps)} APY.
+          </p>
+          <VenueAPY poolId={poolId} className="h-12 w-full" />
+          {depositButton('Start earning', 'lg', 'w-full')}
+        </>
+      )}
+    </SurfaceCard>
   )
 }
