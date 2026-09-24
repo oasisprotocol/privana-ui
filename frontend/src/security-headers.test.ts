@@ -22,6 +22,13 @@ describe('buildHeaderLines', () => {
     expect(() => buildHeaderLines(html, API_ORIGINS)).toThrow(/hashed 0 inline scripts .* contains 1/)
   })
 
+  it("lets Turnkey's Turnstile captcha load its script and challenge frame", () => {
+    const directives = cspOf(buildHeaderLines(HTML, API_ORIGINS)).split('; ')
+    for (const name of ['script-src', 'frame-src']) {
+      expect(directives.find(d => d.startsWith(`${name} `))).toContain('https://challenges.cloudflare.com')
+    }
+  })
+
   it('puts the given API origins into connect-src', () => {
     const csp = cspOf(buildHeaderLines(HTML, API_ORIGINS))
     const connect = csp.split('; ').find(d => d.startsWith('connect-src'))

@@ -17,7 +17,12 @@ const chainRpcOrigins = [
 
 const buildCsp = (apiOrigins: string[]): Record<string, string[]> => ({
   'default-src': ["'none'"],
-  'script-src': ["'self'", '__INLINE_SCRIPT_HASHES__'],
+  'script-src': [
+    "'self'",
+    '__INLINE_SCRIPT_HASHES__',
+    // Cloudflare Turnstile, which Turnkey's auth proxy requires for OTP resend and sign-up
+    'https://challenges.cloudflare.com',
+  ],
   'style-src': ["'self'", "'unsafe-inline'"],
   'font-src': ["'self'"],
   'img-src': ["'self'", 'data:', 'https:'],
@@ -50,6 +55,8 @@ const buildCsp = (apiOrigins: string[]): Record<string, string[]> => ({
     'https://auth.turnkey.com',
     'https://export.turnkey.com',
     'https://import.turnkey.com',
+    // Cloudflare Turnstile challenge (Turnkey auth proxy captcha)
+    'https://challenges.cloudflare.com',
   ],
   'frame-ancestors': ["'none'"],
   'base-uri': ["'self'"],
