@@ -123,7 +123,12 @@ export const DashboardHome = () => {
   const resetBalanceCaches = useResetBalanceCaches()
 
   // Hoisted out of LatestActivity so the history/operations fetch starts on mount in parallel with very slow balance reads.
-  const { rows: activityRows, isLoading: activityLoading } = useMergedActivity(HISTORY_FETCH_LIMIT)
+  const {
+    rows: activityRows,
+    isLoading: activityLoading,
+    isError: activityError,
+    refetch: refetchActivity,
+  } = useMergedActivity(HISTORY_FETCH_LIMIT)
 
   const [chartRange, setChartRange] = useState<ChartRange>('all')
   const { points: portfolioPoints, isLoading: chartLoading } = usePortfolioChart(chartRange)
@@ -338,7 +343,12 @@ export const DashboardHome = () => {
 
             <HoldingsSection />
 
-            <LatestActivity rows={activityRows} isLoading={activityLoading} />
+            <LatestActivity
+              rows={activityRows}
+              isLoading={activityLoading}
+              isError={activityError}
+              onRetry={refetchActivity}
+            />
           </div>
         )}
       </div>

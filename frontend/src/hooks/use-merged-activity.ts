@@ -24,7 +24,9 @@ export const rowKey = (r: MergedRow): string =>
 export interface UseMergedActivityResult {
   rows: MergedRow[]
   isLoading: boolean
+  // A source failed; `rows` is then empty because the list is unknown, not because it is.
   isError: boolean
+  refetch: () => void
 }
 
 // Shows the newest HISTORY_PAGE_SIZE entries; older ones aren't reachable yet.
@@ -38,8 +40,10 @@ const serverIdOf = (a: Activity): string | undefined =>
   a.type === 'swap' ? a.swapId : a.direction === 'deposit' ? a.depositId : a.withdrawId
 
 // The server row for a local entry: by operation id, or — when the submit
-// response never arrived and the id is unknown — by the key the client signed
-// with: the quote id for a swap, the nonce for an earn move.
+// response never arrived and the id is unknown — by what the client signed:
+// the quote id for a swap; pool, amount and nonce for an earn move. A refused
+// earn request leaves its nonce unspent for the next one, so the nonce alone
+// is not unique and the newest row with the full identity wins.
 export function serverOperationFor(a: Activity, operations: readonly Operation[]): Operation | undefined {
   const sid = serverIdOf(a)
   if (sid != null) {
@@ -51,8 +55,14 @@ export function serverOperationFor(a: Activity, operations: readonly Operation[]
       ? operations.find(o => o.operation_type === 'swap' && o.quote_id === a.quoteId)
       : undefined
   }
+  if (a.nonce == null) return undefined
   const type = a.direction === 'deposit' ? 'earn_deposit' : 'earn_withdraw'
-  return a.nonce != null ? operations.find(o => o.operation_type === type && o.nonce === a.nonce) : undefined
+  return operations
+    .filter(
+      o =>
+        o.operation_type === type && o.pool_id === a.poolId && o.amount === a.amount && o.nonce === a.nonce,
+    )
+    .sort((x, y) => y.created_at - x.created_at)[0]
 }
 
 // A local entry with the server's outcome laid over it. Keeps the labels only the
@@ -130,6 +140,7 @@ interface LatestHistoryResult {
   window: HistoryWindow
   isLoading: boolean
   isError: boolean
+  refetch: () => void
 }
 
 // Accounting's `offset` is a *page index* anchored to the oldest entry, not a row
@@ -159,6 +170,13 @@ function useLatestHistory(limit: number): LatestHistoryResult {
     [total, entries, leadIn],
   )
 
+  const refetchNewest = newest.refetch
+  const refetchPrior = prior.refetch
+  const refetch = useCallback(() => {
+    refetchNewest()
+    if (needsPrior) refetchPrior()
+  }, [refetchNewest, refetchPrior, needsPrior])
+
   return {
     entries,
     window,
@@ -166,6 +184,7 @@ function useLatestHistory(limit: number): LatestHistoryResult {
     // would flash a lone row before settling.
     isLoading: newest.isLoading || (needsPrior && prior.isLoading),
     isError: newest.isError || (needsPrior && prior.isError),
+    refetch,
   }
 }
 
@@ -222,11 +241,20 @@ export function useMergedActivity(historyLimit: number = HISTORY_PAGE_SIZE): Use
   )
 
   const isLoading = history.isLoading || poolsLoading || tokensLoading || operations.isLoading
+  const isError = history.isError || !!poolsError || !!tokensError || operations.isError
+
+  const refetchHistory = history.refetch
+  const refetchOperations = operations.refetch
+  const refetch = useCallback(() => {
+    refetchHistory()
+    void refetchOperations()
+  }, [refetchHistory, refetchOperations])
 
   const rows = useMemo<MergedRow[]>(() => {
     // The server rows land well before the chain history, so a partial merge
-    // would show them on top and then reshuffle once history arrives.
-    if (isLoading) return []
+    // would show them on top and then reshuffle once history arrives. With a
+    // source down the list is unknown; an empty list would read as "no history".
+    if (isLoading || isError) return []
 
     const merged: MergedRow[] = chainRows.map(row => ({
       source: 'chain' as const,
@@ -240,13 +268,9 @@ export function useMergedActivity(historyLimit: number = HISTORY_PAGE_SIZE): Use
     }
     merged.sort((a, b) => b.timestamp - a.timestamp)
     return merged
-  }, [isLoading, chainRows, serverRows, visibleOptimistic])
+  }, [isLoading, isError, chainRows, serverRows, visibleOptimistic])
 
-  return {
-    rows,
-    isLoading,
-    isError: history.isError || !!poolsError || !!tokensError || operations.isError,
-  }
+  return { rows, isLoading, isError, refetch }
 }
 
 // The local entry the result screens follow, with the server's outcome applied

@@ -31,7 +31,12 @@ vi.mock('@/api/earn', () => ({ useEarnPools: () => poolsState }))
 let tokensState: { data?: { tokens: unknown[] }; isLoading: boolean }
 vi.mock('@/api/swap', () => ({ useTokens: () => tokensState }))
 
-let operationsState: { data?: { operations: Operation[] }; isLoading: boolean }
+let operationsState: {
+  data?: { operations: Operation[] }
+  isLoading: boolean
+  isError?: boolean
+  refetch?: () => void
+}
 vi.mock('@/api/operations', () => ({ useOperations: () => operationsState }))
 
 let activityState: { activities: Activity[] }
@@ -232,6 +237,29 @@ describe('useMergedActivity', () => {
 
     const { result } = renderHook(() => useMergedActivity())
     expect(result.current.rows).toHaveLength(2)
+  })
+
+  it('matches an earn entry on pool, amount and nonce, newest row first', () => {
+    // A refused request left nonce 7 unspent; the retry reused it.
+    operationsState.data = {
+      operations: [
+        op({ operation_id: 'old-failed', status: 'failed', nonce: '7', created_at: 4_000 }),
+        op({ operation_id: 'retry', status: 'pending', nonce: '7', created_at: 5_000 }),
+        op({ operation_id: 'other-amount', status: 'pending', nonce: '7', amount: '5', created_at: 6_000 }),
+      ],
+    }
+    const local = localEarnActivity({ nonce: '7' } as Partial<Activity>)
+    const resolved = resolveActivity(local, operationsState.data.operations)
+    expect(resolved.type === 'earn' && resolved.depositId).toBe('retry')
+  })
+
+  it('reports an error and no rows when the operations feed fails', () => {
+    operationsState = { data: undefined, isLoading: false, isError: true }
+    historyState = { ...historyState, history: [histEntry({ kind: 'deposit' })], total: 1 }
+
+    const { result } = renderHook(() => useMergedActivity())
+    expect(result.current.isError).toBe(true)
+    expect(result.current.rows).toEqual([])
   })
 
   it('keeps a local swap whose quote the server does not know', () => {

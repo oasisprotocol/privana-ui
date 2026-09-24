@@ -84,7 +84,12 @@ export const Vault = () => {
   const { enabledTokens, getTokenById } = usePrivanaContext()
   const tokenIds = useMemo(() => enabledTokens.map(t => t.id), [enabledTokens])
   const { data: prices } = useTokenPrices(tokenIds)
-  const { rows: activityRows, isLoading: activityLoading } = useMergedActivity(HISTORY_FETCH_LIMIT)
+  const {
+    rows: activityRows,
+    isLoading: activityLoading,
+    isError: activityError,
+    refetch: refetchActivity,
+  } = useMergedActivity(HISTORY_FETCH_LIMIT)
   const [nowSeconds] = useState(() => Math.floor(Date.now() / 1000))
 
   const ready =
@@ -219,6 +224,8 @@ export const Vault = () => {
           <ActivityList
             rows={activityRows}
             isLoading={activityLoading}
+            isError={activityError}
+            onRetry={refetchActivity}
             max={MAX_ROWS}
             emptyState={<p className="text-sm text-muted-foreground">No vault activity yet.</p>}
           />
