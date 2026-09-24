@@ -104,6 +104,8 @@ export const useSubmitEarnWithdraw = ({ onSuccess }: Params = {}) => {
           const freshSignature = await signAt(freshNonce).catch(() => {
             throw new ApiError(err.status, 'Signature request rejected')
           })
+          // The server row carries the nonce of the request it received.
+          updateActivity(id, { nonce: String(freshNonce) })
           return withdrawEarn({
             pool_id: poolId,
             user_address: address,

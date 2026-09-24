@@ -37,7 +37,10 @@ let operationsState: {
   isError?: boolean
   refetch?: () => void
 }
-vi.mock('@/api/operations', () => ({ useOperations: () => operationsState }))
+vi.mock('@/api/operations', async importOriginal => ({
+  ...(await importOriginal<typeof import('@/api/operations')>()),
+  useOperations: () => operationsState,
+}))
 
 let activityState: { activities: Activity[] }
 vi.mock('@/contexts/ActivityProvider/useActivity', () => ({ useActivity: () => activityState }))
@@ -262,6 +265,20 @@ describe('useMergedActivity', () => {
     expect(result.current.rows).toEqual([])
   })
 
+  it('keeps the list on a failed background refetch while cached data exists', () => {
+    operationsState = { data: { operations: [op({ status: 'completed' })] }, isLoading: false, isError: true }
+    historyState = {
+      ...historyState,
+      history: [histEntry({ kind: 'deposit', counterparty: null, timestamp: 1_000 })],
+      total: 1,
+      isError: true,
+    }
+
+    const { result } = renderHook(() => useMergedActivity())
+    expect(result.current.isError).toBe(false)
+    expect(localIds(result.current.rows)).toEqual(['srv-1', 'chain:deposit'])
+  })
+
   it('keeps a local swap whose quote the server does not know', () => {
     operationsState.data = { operations: [swapOp({ quote_id: 'q-other' })] }
     activityState.activities = [localSwapActivity({ quoteId: 'q-1' } as Partial<Activity>)]
@@ -290,6 +307,20 @@ describe('resolveActivity', () => {
       txHash: '0xtx',
       toAmount: '390000000000000',
       rateLabel: '1 USDC = 0.0004 ETH',
+    })
+  })
+
+  it('settles a refunded swap as failed, with a reason when the row has none', () => {
+    const local = localSwapActivity({ quoteId: 'q-1' } as Partial<Activity>)
+    expect(resolveActivity(local, [swapOp({ status: 'refunded' })])).toMatchObject({
+      status: 'failed',
+      error: 'Swap refunded',
+    })
+    expect(
+      resolveActivity(local, [swapOp({ status: 'refunded', error: 'LiFi route failed' })]),
+    ).toMatchObject({
+      status: 'failed',
+      error: 'LiFi route failed',
     })
   })
 
@@ -325,6 +356,7 @@ describe('usePendingActivityCount', () => {
         op({ operation_id: 'u1', status: 'undeployed' }),
         op({ operation_id: 'f1', status: 'failed' }),
         op({ operation_id: 'c1', status: 'completed' }),
+        swapOp({ operation_id: 'r1', status: 'refunded' }),
       ],
     }
     activityState.activities = [

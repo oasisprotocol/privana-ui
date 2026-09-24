@@ -2,7 +2,7 @@ import { useCallback, useMemo } from 'react'
 import { useHistory, type HistoryEntry } from '@oasisprotocol/privana-sdk'
 import { useEarnPools, type EarnPool } from '@/api/earn'
 import { useTokens } from '@/api/swap'
-import { useOperations, type Operation } from '@/api/operations'
+import { serverOperationFor, useOperations, type Operation } from '@/api/operations'
 import { isInFlight, isSettledFailure } from '@/api/operation-status'
 import { useActivity } from '@/contexts/ActivityProvider/useActivity'
 import type { Activity, ActivityStatus, ActivityTokenInfo } from '@/contexts/ActivityProvider/context'
@@ -36,34 +36,9 @@ const HISTORY_PAGE_SIZE = 100
 const mapStatus = (s: Operation['status']): ActivityStatus =>
   s === 'completed' ? 'completed' : isSettledFailure(s) ? 'failed' : 'in-progress'
 
-const serverIdOf = (a: Activity): string | undefined =>
-  a.type === 'swap' ? a.swapId : a.direction === 'deposit' ? a.depositId : a.withdrawId
-
-// The server row for a local entry: by operation id, or — when the submit
-// response never arrived and the id is unknown — by what the client signed:
-// the quote id for a swap; pool, amount and nonce for an earn move. A refused
-// earn request leaves its nonce unspent for the next one, so the nonce alone
-// is not unique and the newest row with the full identity wins.
-export function serverOperationFor(a: Activity, operations: readonly Operation[]): Operation | undefined {
-  const sid = serverIdOf(a)
-  if (sid != null) {
-    const byId = operations.find(o => o.operation_id === sid)
-    if (byId) return byId
-  }
-  if (a.type === 'swap') {
-    return a.quoteId != null
-      ? operations.find(o => o.operation_type === 'swap' && o.quote_id === a.quoteId)
-      : undefined
-  }
-  if (a.nonce == null) return undefined
-  const type = a.direction === 'deposit' ? 'earn_deposit' : 'earn_withdraw'
-  return operations
-    .filter(
-      o =>
-        o.operation_type === type && o.pool_id === a.poolId && o.amount === a.amount && o.nonce === a.nonce,
-    )
-    .sort((x, y) => y.created_at - x.created_at)[0]
-}
+// A refund with no recorded reason still needs to read as a failure.
+const errorOf = (op: Operation): string | undefined =>
+  op.error ?? (op.status === 'refunded' ? 'Swap refunded' : undefined)
 
 // A local entry with the server's outcome laid over it. Keeps the labels only the
 // client knows (rate, fee, protocol) and takes status, ids and errors from the row.
@@ -73,7 +48,7 @@ export function resolveActivity(a: Activity, operations: readonly Operation[]): 
   const patch = {
     status: mapStatus(op.status),
     txHash: op.tx_hash ?? undefined,
-    error: op.error ?? undefined,
+    error: errorOf(op),
   }
   if (a.type === 'swap') {
     return { ...a, ...patch, swapId: op.operation_id, toAmount: op.to_amount_actual ?? a.toAmount }
@@ -113,7 +88,7 @@ export function mapOperationToActivity(
       swapId: op.operation_id,
       quoteId: op.quote_id ?? undefined,
       txHash: op.tx_hash ?? undefined,
-      error: op.error ?? undefined,
+      error: errorOf(op),
     }
   }
 
@@ -131,7 +106,7 @@ export function mapOperationToActivity(
     protocol: pool?.strategy ?? '',
     ...(direction === 'deposit' ? { depositId: op.operation_id } : { withdrawId: op.operation_id }),
     txHash: op.tx_hash ?? undefined,
-    error: op.error ?? undefined,
+    error: errorOf(op),
   }
 }
 
@@ -183,7 +158,9 @@ function useLatestHistory(limit: number): LatestHistoryResult {
     // Render the newest page only once its companion has landed, or the list
     // would flash a lone row before settling.
     isLoading: newest.isLoading || (needsPrior && prior.isLoading),
-    isError: newest.isError || (needsPrior && prior.isError),
+    // A failed background refetch keeps the cached pages, so only a failure
+    // with nothing to show is an error.
+    isError: (newest.isError || (needsPrior && prior.isError)) && entries.length === 0,
     refetch,
   }
 }
@@ -193,7 +170,7 @@ export function useMergedActivity(historyLimit: number = HISTORY_PAGE_SIZE): Use
   const { data: poolsData, isLoading: poolsLoading, isError: poolsError } = useEarnPools()
   const { data: tokensData, isLoading: tokensLoading, isError: tokensError } = useTokens()
   const { activities } = useActivity()
-  const operations = useOperations(activities.some(a => a.status === 'in-progress'))
+  const operations = useOperations(activities)
 
   const poolsByAddressToken = useMemo(() => indexPools(poolsData?.pools ?? []), [poolsData])
 
@@ -241,7 +218,13 @@ export function useMergedActivity(historyLimit: number = HISTORY_PAGE_SIZE): Use
   )
 
   const isLoading = history.isLoading || poolsLoading || tokensLoading || operations.isLoading
-  const isError = history.isError || !!poolsError || !!tokensError || operations.isError
+  // React Query flags a failed background refetch as an error while keeping the
+  // cached data; with 10–20 s polling that must not blank a list we can still show.
+  const isError =
+    history.isError ||
+    (!!poolsError && !poolsData) ||
+    (!!tokensError && !tokensData) ||
+    (operations.isError && !operations.data)
 
   const refetchHistory = history.refetch
   const refetchOperations = operations.refetch
@@ -277,7 +260,7 @@ export function useMergedActivity(historyLimit: number = HISTORY_PAGE_SIZE): Use
 // once the operation is listed.
 export function useResolvedActivity(id: string | null): Activity | undefined {
   const { activities } = useActivity()
-  const operations = useOperations(activities.some(a => a.status === 'in-progress'))
+  const operations = useOperations(activities)
   const ops = operations.data?.operations
   const resolve = useCallback((a: Activity) => (ops ? resolveActivity(a, ops) : a), [ops])
   return useMemo(() => {
@@ -291,7 +274,7 @@ export function useResolvedActivity(id: string | null): Activity | undefined {
 // server's in-flight operations, plus the local activities it hasn't listed yet.
 export function usePendingActivityCount(): number {
   const { activities } = useActivity()
-  const operations = useOperations(activities.some(a => a.status === 'in-progress'))
+  const operations = useOperations(activities)
   const ops = operations.data?.operations ?? []
   const serverPending = ops.filter(o => isInFlight(o.status)).length
   return serverPending + pendingLocal(activities, ops).length

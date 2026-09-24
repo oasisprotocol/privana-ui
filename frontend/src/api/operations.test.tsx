@@ -3,7 +3,15 @@ import { act, renderHook, waitFor } from '@testing-library/react'
 import { createQueryWrapper } from '@/test/query'
 import { signInAs, siweAuth } from '@/test/siwe'
 import { request } from '@/api/http'
-import { operationsKeys, useOperations, type Operation, type OperationStatus } from '@/api/operations'
+import {
+  hasUnresolved,
+  operationsKeys,
+  serverOperationFor,
+  useOperations,
+  type Operation,
+  type OperationStatus,
+} from '@/api/operations'
+import type { Activity } from '@/contexts/ActivityProvider/context'
 
 vi.mock('@/api/http', () => ({ request: vi.fn() }))
 
@@ -87,7 +95,7 @@ describe('useOperations', () => {
 
   it('does not poll when only settled ops remain', async () => {
     vi.useFakeTimers()
-    respondWith(op('failed'), op('canceled'), op('completed'))
+    respondWith(op('failed'), op('canceled'), op('completed'), op('refunded'))
     const { Wrapper } = createQueryWrapper()
     const { result } = renderHook(() => useOperations(), { wrapper: Wrapper })
     await flushInitialFetch(result)
@@ -106,5 +114,78 @@ describe('useOperations', () => {
     siweAuth.state = { session: { address: ADDRESS }, accessToken: null }
     rerender()
     await waitFor(() => expect(client.getQueryData(operationsKeys.list(ADDRESS))).toBeUndefined())
+  })
+})
+
+const localDeposit = (overrides: Partial<Activity> = {}): Activity =>
+  ({
+    id: 'tmp-1',
+    type: 'earn',
+    direction: 'deposit',
+    status: 'in-progress',
+    createdAt: 1_000_000_000,
+    token: { id: '0xc719', symbol: 'USDC', decimals: 6 },
+    amount: '1000000',
+    poolId: '0xeeed',
+    protocol: 'aave',
+    ...overrides,
+  }) as Activity
+
+describe('hasUnresolved', () => {
+  it('is true for an in-progress local entry the server has not listed', () => {
+    expect(hasUnresolved([], [localDeposit()])).toBe(true)
+  })
+
+  it('follows the server row once the entry is listed, whatever the local status says', () => {
+    const listed = localDeposit({ depositId: 'op-completed' } as Partial<Activity>)
+    expect(hasUnresolved([op('completed')], [listed])).toBe(false)
+    expect(hasUnresolved([{ ...op('pending'), operation_id: 'op-completed' }], [listed])).toBe(true)
+  })
+
+  it('treats a refunded swap as settled', () => {
+    expect(hasUnresolved([op('refunded')], [])).toBe(false)
+  })
+})
+
+describe('serverOperationFor', () => {
+  it('finds a lost-response earn entry by pool, amount and nonce, newest row first', () => {
+    const rows = [
+      { ...op('failed'), operation_id: 'refused', nonce: '7', created_at: 1 },
+      { ...op('pending'), operation_id: 'retry', nonce: '7', created_at: 2 },
+      { ...op('pending'), operation_id: 'other-amount', nonce: '7', amount: '5', created_at: 3 },
+    ]
+    expect(serverOperationFor(localDeposit({ nonce: '7' } as Partial<Activity>), rows)?.operation_id).toBe(
+      'retry',
+    )
+  })
+})
+
+describe('useOperations polling', () => {
+  beforeEach(() => {
+    signInAs(ADDRESS)
+  })
+
+  afterEach(() => {
+    vi.useRealTimers()
+    vi.resetAllMocks()
+  })
+
+  it('stops once a scheduled submit has settled, though the local entry was never updated', async () => {
+    vi.useFakeTimers()
+    const local = localDeposit({ depositId: 'op-completed' } as Partial<Activity>)
+    respondWith({ ...op('pending'), operation_id: 'op-completed' })
+    const { Wrapper } = createQueryWrapper()
+    const { result } = renderHook(() => useOperations([local]), { wrapper: Wrapper })
+    await act(async () => {
+      await vi.advanceTimersByTimeAsync(0)
+      expect(result.current.data).toBeDefined()
+    })
+
+    respondWith(op('completed'))
+    await act(() => vi.advanceTimersByTimeAsync(10_000))
+    expect(mockedRequest).toHaveBeenCalledTimes(2)
+
+    await act(() => vi.advanceTimersByTimeAsync(60_000))
+    expect(mockedRequest).toHaveBeenCalledTimes(2)
   })
 })

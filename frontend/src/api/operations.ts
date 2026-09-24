@@ -1,6 +1,7 @@
 import { useEffect, useRef } from 'react'
 import { useQuery, useQueryClient } from '@tanstack/react-query'
 import { useSiweAuth } from '@oasisprotocol/privana-sdk'
+import type { Activity } from '@/contexts/ActivityProvider/context'
 import { request } from './http'
 import { isInFlight } from './operation-status'
 
@@ -48,14 +49,50 @@ export function getOperations(jwt: string, limit = OPERATIONS_PAGE_SIZE, before?
   return request<OperationsResponse>(`/v1/operations?${search}`, undefined, jwt)
 }
 
+const serverIdOf = (a: Activity): string | undefined =>
+  a.type === 'swap' ? a.swapId : a.direction === 'deposit' ? a.depositId : a.withdrawId
+
+// The server row for a local entry: by operation id, or — when the submit
+// response never arrived and the id is unknown — by what the client signed:
+// the quote id for a swap; pool, amount and nonce for an earn move. A refused
+// earn request leaves its nonce unspent for the next one, so the nonce alone
+// is not unique and the newest row with the full identity wins.
+export function serverOperationFor(a: Activity, operations: readonly Operation[]): Operation | undefined {
+  const sid = serverIdOf(a)
+  if (sid != null) {
+    const byId = operations.find(o => o.operation_id === sid)
+    if (byId) return byId
+  }
+  if (a.type === 'swap') {
+    return a.quoteId != null
+      ? operations.find(o => o.operation_type === 'swap' && o.quote_id === a.quoteId)
+      : undefined
+  }
+  if (a.nonce == null) return undefined
+  const type = a.direction === 'deposit' ? 'earn_deposit' : 'earn_withdraw'
+  return operations
+    .filter(
+      o =>
+        o.operation_type === type && o.pool_id === a.poolId && o.amount === a.amount && o.nonce === a.nonce,
+    )
+    .sort((x, y) => y.created_at - x.created_at)[0]
+}
+
+// Still worth polling for: an operation the server has in flight, or a local
+// entry the server has not listed yet. A listed entry follows its server row,
+// so its own (never-updated) local status does not keep the poll alive.
+export const hasUnresolved = (operations: readonly Operation[], activities: readonly Activity[]): boolean =>
+  operations.some(o => isInFlight(o.status)) ||
+  activities.some(a => a.status === 'in-progress' && !serverOperationFor(a, operations))
+
 export const operationsKeys = {
   all: ['operations'] as const,
   list: (userAddress: string) => [...operationsKeys.all, 'list', userAddress] as const,
 }
 
-// `hasLocalPending` keeps the poll alive for an operation the server has not
-// listed yet, so the optimistic entry is adopted as soon as the row exists.
-export function useOperations(hasLocalPending = false) {
+// `activities` are the local entries; one the server has not listed yet keeps
+// the poll alive so it is adopted as soon as its row exists.
+export function useOperations(activities: readonly Activity[] = []) {
   const { session, accessToken } = useSiweAuth()
   const address = session?.address
   const jwt = accessToken
@@ -74,7 +111,7 @@ export function useOperations(hasLocalPending = false) {
     queryFn: () => getOperations(jwt!),
     enabled: !!address && !!jwt,
     refetchInterval: query =>
-      hasLocalPending || query.state.data?.operations.some(o => isInFlight(o.status)) ? 10_000 : false,
+      hasUnresolved(query.state.data?.operations ?? [], activities) ? 10_000 : false,
     staleTime: 5_000,
   })
 }
