@@ -14,12 +14,17 @@ vi.mock('./use-reset-balance-caches', () => ({ useResetBalanceCaches: () => rese
 
 const NOW = 1_800_000_000
 
-const op = (operation_id: string, status: OperationStatus, created_at = NOW - 3_600): Operation => ({
+const op = (
+  operation_id: string,
+  status: OperationStatus,
+  created_at = NOW - 3_600,
+  updated_at = created_at,
+): Operation => ({
   operation_id,
   operation_type: 'earn_deposit',
   status,
   created_at,
-  updated_at: created_at,
+  updated_at,
   tx_hash: null,
   error: null,
   quote_id: null,
@@ -57,10 +62,18 @@ describe('useResetOnSettle', () => {
     expect(reset).not.toHaveBeenCalled()
   })
 
-  it('treats the first response as already reflected, settled or not', () => {
+  it('ignores a first response whose operations settled before watching began', () => {
     const { rerender } = renderHook(() => useResetOnSettle([]))
     poll(rerender, op('done', 'completed'), op('open', 'scheduled'))
     expect(reset).not.toHaveBeenCalled()
+  })
+
+  it('resets when the first response has an operation that settled after watching began', () => {
+    // Balances loaded while it was still in flight, but the feed only answered after it settled.
+    const { rerender } = renderHook(() => useResetOnSettle([]))
+    vi.setSystemTime((NOW + 30) * 1000)
+    poll(rerender, op('a', 'completed', NOW - 600, NOW + 20))
+    expect(reset).toHaveBeenCalledTimes(1)
   })
 
   it('resets once when an in-flight operation completes, not on later polls', () => {
@@ -80,6 +93,17 @@ describe('useResetOnSettle', () => {
     const { rerender } = renderHook(() => useResetOnSettle([]))
     poll(rerender, op('a', 'pending'))
     poll(rerender, op('a', status))
+    expect(reset).toHaveBeenCalledTimes(1)
+  })
+
+  it('resets once when an earn deposit parks as undeployed, not again when it completes', () => {
+    const { rerender } = renderHook(() => useResetOnSettle([]))
+    poll(rerender, op('a', 'pending'))
+    poll(rerender, op('a', 'undeployed'))
+    expect(reset).toHaveBeenCalledTimes(1)
+
+    poll(rerender, op('a', 'undeployed'))
+    poll(rerender, op('a', 'completed'))
     expect(reset).toHaveBeenCalledTimes(1)
   })
 
