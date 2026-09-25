@@ -19,6 +19,7 @@ const TABS = [
   { id: 'deposits', label: 'Deposits' },
   { id: 'withdrawals', label: 'Withdrawals' },
   { id: 'earn', label: 'Earn' },
+  { id: 'swap', label: 'Swap' },
 ] as const
 
 type TabId = (typeof TABS)[number]['id']
@@ -28,13 +29,14 @@ const TYPE_FOR_TAB: Record<TabId, FilterType> = {
   deposits: 'deposit',
   withdrawals: 'withdraw',
   earn: 'earn',
+  swap: 'swap',
 }
 
 const TAB_FOR_TYPE: Record<FilterType, TabId> = {
   all: 'all',
   deposit: 'deposits',
   withdraw: 'withdrawals',
-  swap: 'all',
+  swap: 'swap',
   earn: 'earn',
   earnDeposit: 'earn',
   earnWithdraw: 'earn',
@@ -50,6 +52,7 @@ const TAB_REFLECTED_TYPES: ReadonlySet<FilterType> = new Set([
   'earn',
   'earnDeposit',
   'earnWithdraw',
+  'swap',
 ])
 
 // The search box and filter button are hidden until the redesigned Activity is completed.
