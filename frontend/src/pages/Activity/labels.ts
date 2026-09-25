@@ -39,10 +39,10 @@ export function activityRowTitle(
 
 const ACTIVITY_SUBTITLES: Record<DisplayKind, string> = {
   swap: 'Swapped in your vault',
-  earnDeposit: 'Put to work in Earn',
+  earnDeposit: 'Moved to Earn',
   earnWithdraw: 'Returned to Available',
-  deposit: 'No lock — stays available',
-  withdraw: 'To external wallet',
+  deposit: 'Added to Available',
+  withdraw: 'Sent to external wallet',
   lock: 'Under allowance policy',
   lockModified: 'Allowance increased',
   lockReleased: 'Returned to Available',
