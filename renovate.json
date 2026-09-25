@@ -1,6 +1,7 @@
 {
   "$schema": "https://docs.renovatebot.com/renovate-schema.json",
-  "extends": ["config:recommended", ":disableDependencyDashboard"],
+  "extends": ["config:recommended", ":disableDependencyDashboard", "group:allNonMajor", "schedule:weekly"],
+  "prConcurrentLimit": 2,
   "packageRules": [
     {
       "groupName": "lint dependencies",
