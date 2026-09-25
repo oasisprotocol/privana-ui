@@ -47,8 +47,11 @@ const stageLabel = (stage: string, protocol: string, detail?: OperationStage['de
 export function earnStageSteps(
   direction: 'deposit' | 'withdraw',
   protocol: string,
-  stages: OperationStage[],
+  allStages: OperationStage[],
 ): EarnStageStep[] {
+  // The services record status transitions in the same timeline; only the
+  // strategy stages are steps a user follows.
+  const stages = allStages.filter(s => s.stage !== 'status')
   const reached = new Map(stages.map(s => [s.stage, s]))
   const plan = PLAN[direction].filter(
     stage => reached.has(stage) || stages.length === 0 || isAhead(stage, stages, direction),
@@ -78,8 +81,9 @@ function isAhead(stage: string, stages: OperationStage[], direction: 'deposit' |
 export function earnStageSummary(
   direction: 'deposit' | 'withdraw',
   protocol: string,
-  stages: OperationStage[],
+  allStages: OperationStage[],
 ): { label: string; percent: number } | null {
+  const stages = allStages.filter(s => s.stage !== 'status')
   const last = stages[stages.length - 1]
   if (!last) return null
   const steps = earnStageSteps(direction, protocol, stages)

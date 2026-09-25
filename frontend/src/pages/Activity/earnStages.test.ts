@@ -17,6 +17,20 @@ describe('earnStageSteps', () => {
     expect(steps[2].label).toBe('Waiting for network confirmations (9 of 32)')
   })
 
+  it('ignores the status entries the services interleave', () => {
+    const steps = earnStageSteps('withdraw', 'midas-mtbill', [
+      { stage: 'status', at: 90, detail: { from: 'scheduled', to: 'executing' } as never },
+      { stage: 'reclaiming', at: 100 },
+      { stage: 'status', at: 105, detail: { from: 'executing', to: 'pending' } as never },
+    ])
+    expect(steps.map(s => [s.stage, s.state])).toEqual([
+      ['reclaiming', 'active'],
+      ['returning', 'upcoming'],
+      ['finality', 'upcoming'],
+      ['paying_out', 'upcoming'],
+    ])
+  })
+
   it('drops a step the operation skipped', () => {
     const steps = earnStageSteps('deposit', 'aave-v3', [
       { stage: 'recording', at: 100 },
