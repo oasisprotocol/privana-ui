@@ -6,6 +6,7 @@ import { Button } from '@/components/ui/button'
 import { ActivityUnavailable } from '@/components/ActivityList'
 import { Input } from '@/components/ui/input'
 import { Skeleton } from '@/components/ui/skeleton'
+import { ToggleGroup, ToggleGroupItem } from '@/components/ui/toggle-group'
 import { SurfaceCard } from '@/components/SurfaceCard'
 import { cn } from '@/lib/utils'
 import { useMergedActivity, rowKey } from '@/hooks/use-merged-activity'
@@ -132,28 +133,25 @@ export const Activity = () => {
             </div>
           )}
 
-          <div role="tablist" aria-label="Activity filter" className="inline-flex items-center gap-2 w-fit">
-            {TABS.map(tab => {
-              const isActive = tab.id === activeTab
-              return (
-                <button
-                  key={tab.id}
-                  type="button"
-                  role="tab"
-                  aria-selected={isActive}
-                  onClick={() => setFilters({ ...filters, type: TYPE_FOR_TAB[tab.id] })}
-                  className={cn(
-                    'h-8 px-3 rounded-full text-sm font-medium whitespace-nowrap transition-all outline-none focus-visible:ring-2 focus-visible:ring-ring',
-                    isActive
-                      ? 'bg-[linear-gradient(to_bottom,#E2E2E6,#EFEFF2)] dark:bg-[linear-gradient(to_bottom,#181B20,#22252B)] text-[#3f3f46] dark:text-[#b8b8b8] shadow-[inset_0_2px_3px_0_rgba(88,97,116,0.36),inset_0_-1px_1px_0_rgba(255,255,255,0.85),0_0_0_0.5px_rgba(88,97,116,0.06)] dark:shadow-[inset_0_2px_4px_0_rgba(0,0,0,0.6),inset_0_-1px_1px_0_rgba(255,255,255,0.06),0_0_0_0.5px_rgba(0,0,0,0.45)]'
-                      : 'bg-white dark:bg-card text-foreground shadow-[0_0.5px_1.5px_0_rgba(0,0,0,0.25),0_3.5px_7px_0_rgba(0,0,0,0.08)]',
-                  )}
-                >
-                  {tab.label}
-                </button>
-              )
-            })}
-          </div>
+          <ToggleGroup
+            type="single"
+            size="sm"
+            spacing={2}
+            aria-label="Activity filter"
+            value={activeTab}
+            onValueChange={(id: TabId | '') => setFilters({ ...filters, type: TYPE_FOR_TAB[id || 'all'] })}
+            className="max-w-full overflow-x-auto py-2 -my-2 scrollbar-none [&::-webkit-scrollbar]:hidden"
+          >
+            {TABS.map(tab => (
+              <ToggleGroupItem
+                key={tab.id}
+                value={tab.id}
+                className="rounded-full bg-white dark:bg-card text-foreground hover:bg-white dark:hover:bg-card hover:text-foreground transition-all focus-visible:ring-2 focus-visible:ring-ring shadow-[0_0.5px_1.5px_0_rgba(0,0,0,0.25),0_3.5px_7px_0_rgba(0,0,0,0.08)] data-[state=on]:bg-[linear-gradient(to_bottom,#E2E2E6,#EFEFF2)] dark:data-[state=on]:bg-[linear-gradient(to_bottom,#181B20,#22252B)] data-[state=on]:text-[#3f3f46] dark:data-[state=on]:text-[#b8b8b8] data-[state=on]:shadow-[inset_0_2px_3px_0_rgba(88,97,116,0.36),inset_0_-1px_1px_0_rgba(255,255,255,0.85),0_0_0_0.5px_rgba(88,97,116,0.06)] dark:data-[state=on]:shadow-[inset_0_2px_4px_0_rgba(0,0,0,0.6),inset_0_-1px_1px_0_rgba(255,255,255,0.06),0_0_0_0.5px_rgba(0,0,0,0.45)]"
+              >
+                {tab.label}
+              </ToggleGroupItem>
+            ))}
+          </ToggleGroup>
 
           {visible.length > 0 ? (
             <SurfaceCard className="overflow-hidden">
