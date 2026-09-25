@@ -36,7 +36,7 @@ describe('ChainActivityCard withdraw row', () => {
       </TooltipProvider>,
     )
 
-    const trigger = screen.getByText(/To external wallet: 0xBb1e…56A1/)
+    const trigger = screen.getByText(/Sent to external wallet: 0xBb1e…56A1/)
     expect(trigger).toBeInTheDocument()
 
     await user.hover(trigger)
