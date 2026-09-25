@@ -1,3 +1,4 @@
+import type { OperationStage } from '@/api/operations'
 import { createContext } from 'react'
 
 export type ActivityStatus = 'in-progress' | 'completed' | 'failed'
@@ -38,6 +39,8 @@ export type EarnActivity = {
   withdrawId?: string
   txHash?: string
   error?: string
+  /** Stages the services reported for this operation, oldest first. */
+  stages?: OperationStage[]
 }
 
 export type Activity = SwapActivity | EarnActivity

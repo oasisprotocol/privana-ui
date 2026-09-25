@@ -107,6 +107,7 @@ export function mapOperationToActivity(
     ...(direction === 'deposit' ? { depositId: op.operation_id } : { withdrawId: op.operation_id }),
     txHash: op.tx_hash ?? undefined,
     error: errorOf(op),
+    stages: op.stages ?? [],
   }
 }
 

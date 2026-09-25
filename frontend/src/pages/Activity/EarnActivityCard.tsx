@@ -5,6 +5,8 @@ import type { DisplayKind } from './historyMapping'
 import { ACTIVITY_TITLES, activityRowSubtitle } from './labels'
 import { resolveActivityVisual, TONE_SIGN, TONE_TEXT } from './activityVisuals'
 import { ActivityAmount, ActivityCard, ActivityIcon, ActivityRowBody } from './ActivityCardParts'
+import { earnStageSteps, earnStageSummary } from './earnStages'
+import { EarnStageList } from './EarnStageList'
 
 type EarnActivityCardProps = {
   activity: EarnActivity
@@ -16,6 +18,9 @@ export const EarnActivityCard = ({ activity, timestamp, divider }: EarnActivityC
   const { status, direction, token, amount, error } = activity
   const kind: DisplayKind = direction === 'deposit' ? 'earnDeposit' : 'earnWithdraw'
   const { Icon, tone, iconClass } = resolveActivityVisual({ kind, status })
+  const inProgress = status === 'in-progress'
+  const stages = activity.stages ?? []
+  const summary = inProgress ? earnStageSummary(direction, activity.protocol, stages) : null
 
   return (
     <ActivityCard divider={divider} icon={<ActivityIcon Icon={Icon} iconClass={iconClass} />}>
@@ -23,13 +28,16 @@ export const EarnActivityCard = ({ activity, timestamp, divider }: EarnActivityC
         title={ACTIVITY_TITLES[kind]}
         timestamp={timestamp}
         venue={venueForStrategy(activity.protocol)}
-        subtitle={activityRowSubtitle({ kind, status })}
+        subtitle={summary?.label ?? activityRowSubtitle({ kind, status })}
         failure={status === 'failed' ? error : undefined}
         amount={
           <ActivityAmount sign={TONE_SIGN[tone]} className={TONE_TEXT[tone]} token={token} amount={amount} />
         }
       />
-      {status === 'in-progress' && <Progress />}
+      {inProgress && <Progress value={summary?.percent} />}
+      {inProgress && stages.length > 0 && (
+        <EarnStageList steps={earnStageSteps(direction, activity.protocol, stages)} />
+      )}
     </ActivityCard>
   )
 }
