@@ -7,6 +7,8 @@ import { ProtocolIcon } from './ProtocolLabel'
 import { VenueAPY } from './VenueAPY'
 import { getProtocolLabel } from '@/config/protocols'
 import { useIsDesktop, useMediaQuery } from '@/hooks/use-media-query'
+import { formatAmountTrimmed } from '@/lib/tokens'
+import type { TokenAmount } from './useActiveStrategies'
 
 export type Venue = {
   poolId: string
@@ -17,8 +19,8 @@ export type Venue = {
   apyBps: number
   /** Formatted earning amount when the user has a position here, otherwise null. */
   earning: string | null
-  /** Formatted estimated daily accrual, e.g. "0.03 USDC", or null. */
-  earningToday: string | null
+  /** Yield earned on the position; null (and hidden) when the backend has no reliable figure. */
+  earned: TokenAmount | null
   /** A pool that no longer takes deposits; shown only while the user still holds a position. */
   paused?: boolean
 }
@@ -36,6 +38,12 @@ const ApyPill = ({ apyBps, className }: { apyBps: number; className?: string }) 
   </span>
 )
 
+const EarnedAmount = ({ earned }: { earned: TokenAmount }) => (
+  <span className="font-medium text-chart-positive">
+    {formatAmountTrimmed(earned.amount, earned.decimals)} {earned.symbol}
+  </span>
+)
+
 export const VenueCard = ({
   poolId,
   strategyKey,
@@ -43,7 +51,7 @@ export const VenueCard = ({
   chain,
   apyBps,
   earning,
-  earningToday,
+  earned,
   paused = false,
   hasAvailableBalance,
   onRequestDeposit,
@@ -79,16 +87,22 @@ export const VenueCard = ({
             <ApyPill apyBps={apyBps} />
           </div>
           <div className="mt-1.5 flex flex-wrap items-center gap-x-5 gap-y-1 text-xs text-muted-foreground">
-            <span>
-              Asset <span className="font-medium text-foreground">{asset}</span>
-            </span>
+            {!isEarning && (
+              <span>
+                Asset <span className="font-medium text-foreground">{asset}</span>
+              </span>
+            )}
             <span>
               Chain <span className="font-medium text-foreground">{chain}</span>
             </span>
             {isEarning && (
               <span>
-                Earning <span className="font-medium text-foreground">{earning}</span>{' '}
-                {earningToday && <span className="text-chart-positive">(+{earningToday} today)</span>}
+                Position <span className="font-medium text-foreground">{earning}</span>
+              </span>
+            )}
+            {isEarning && earned && (
+              <span>
+                Earned <EarnedAmount earned={earned} />
               </span>
             )}
           </div>
@@ -136,13 +150,13 @@ export const VenueCard = ({
       {isEarning ? (
         <>
           <div className="flex flex-col gap-0.5">
-            <span className="text-xs text-muted-foreground">Earning</span>
+            <span className="text-xs text-muted-foreground">Position</span>
             <span className="text-2xl font-semibold tracking-tight tabular-nums text-foreground">
               {earning}
             </span>
-            {earningToday && (
+            {earned && (
               <span className="text-sm text-muted-foreground">
-                <span className="font-medium text-chart-positive">+{earningToday}</span> today
+                Earned <EarnedAmount earned={earned} />
               </span>
             )}
           </div>

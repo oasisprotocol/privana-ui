@@ -132,3 +132,28 @@ describe('useActiveStrategies projected', () => {
     expect(result.current.projectedMonthly).toEqual([{ symbol: 'USDC', amount: 12_000n, decimals: 6 }])
   })
 })
+
+describe('useActiveStrategies per-venue position', () => {
+  it('reports the position value and its own earned figure', () => {
+    balanceState.data = { positions: [position()] }
+    const { result } = renderHook(() => useActiveStrategies())
+    expect(result.current.strategies).toEqual([
+      { poolId: '0xpool-a', earning: '1.01 USDC', earned: { symbol: 'USDC', amount: 8_000n, decimals: 6 } },
+    ])
+  })
+
+  it('leaves earned unset for a venue whose figure the backend cannot vouch for, without hiding others', () => {
+    poolsState.data = { pools: [pool(), pool({ pool_id: '0xpool-b' })] }
+    balanceState.data = {
+      positions: [
+        position(),
+        position({ pool_id: '0xpool-b', earned_active: '8000', earned_active_status: 'ledger_incomplete' }),
+      ],
+    }
+    const { result } = renderHook(() => useActiveStrategies())
+    expect(result.current.strategies.map(s => s.earned)).toEqual([
+      { symbol: 'USDC', amount: 8_000n, decimals: 6 },
+      null,
+    ])
+  })
+})

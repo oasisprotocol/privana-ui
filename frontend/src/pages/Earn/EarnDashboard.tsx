@@ -56,7 +56,7 @@ export const EarnDashboard = () => {
           chain: token?.chain_name ?? '—',
           apyBps: p.apy_bps,
           earning: position?.earning ?? null,
-          earningToday: position?.earningToday ?? null,
+          earned: position?.earned ?? null,
           paused: p.status !== 'active',
         }
       })
