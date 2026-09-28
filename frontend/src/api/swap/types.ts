@@ -22,6 +22,7 @@ export interface QuoteResponse {
   liquidity_provider: string
   transfer_nonce: number
   expires_at: number
+  expires_in?: number
 }
 
 export interface SwapRequest {
