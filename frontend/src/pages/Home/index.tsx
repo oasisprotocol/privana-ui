@@ -29,7 +29,9 @@ export const Home = () => {
 
   const autoLoginTried = useRef(false)
   useEffect(() => {
-    if (!isConnected) {
+    // Not isConnected: wagmi reports it while still reconnecting, and a reconnect that then
+    // fails would leave that signature pending while the next connect signs again (same nonce).
+    if (status !== 'connected') {
       autoLoginTried.current = false
       return
     }
@@ -37,7 +39,7 @@ export const Home = () => {
       autoLoginTried.current = true
       void login().catch(() => {})
     }
-  }, [isConnected, isAuthenticated, isAuthLoading, authError, login])
+  }, [status, isAuthenticated, isAuthLoading, authError, login])
 
   const authPending = isConnected && !isAuthenticated && !authError
   const showPendingEscape = useSlowSettlement(authPending ? 'in-progress' : 'completed')
