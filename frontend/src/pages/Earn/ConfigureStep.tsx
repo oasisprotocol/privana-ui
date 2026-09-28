@@ -4,7 +4,8 @@ import { useEarnPools } from '@/api/earn'
 import { useTokens } from '@/api/swap'
 import { Button } from '@/components/ui/button'
 import { Skeleton } from '@/components/ui/skeleton'
-import { exceedsAmount, formatAmount, isPositiveAmount } from '@/lib/tokens'
+import { TokenAmount } from '@/components/TokenAmount'
+import { exceedsAmount, isPositiveAmount } from '@/lib/tokens'
 import { cn } from '@/lib/utils'
 import { ApyValue } from './ApyValue'
 import { EarnAmountField } from './EarnAmountField'
@@ -62,7 +63,11 @@ export const ConfigureStep = ({
     !!selectedPool && isPositiveAmount(amount, decimals) && !exceedsAmount(amount, decimals, balanceWei)
 
   const availableLabel =
-    selectedToken && decimals != null ? `${formatAmount(balanceWei, decimals)} ${tokenSymbol}` : '-'
+    selectedToken && decimals != null ? (
+      <TokenAmount amount={balanceWei} token={{ symbol: tokenSymbol, decimals }} withSymbol />
+    ) : (
+      '-'
+    )
 
   if (isLoading) {
     return (

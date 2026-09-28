@@ -4,7 +4,7 @@ import { CheckCircle2, Circle, ExternalLink, Loader2, RotateCcw } from 'lucide-r
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { StepCard } from '@/components/StepCard'
-import { formatAmount } from '@/lib/tokens'
+import { TokenAmount } from '@/components/TokenAmount'
 import { type KnownApp } from '@/config/apps'
 
 type Props = {
@@ -52,7 +52,6 @@ export const ConnectedAppCard = ({ app, locks }: Props) => {
 
   const token = groupTokenId ? getTokenById(groupTokenId) : undefined
   const totalAmount = group.reduce((acc, l) => acc + BigInt(l.amount), 0n)
-  const displayAmount = token ? formatAmount(totalAmount, token.decimals) : ''
   const tokenSymbol = token?.symbol ?? ''
   const earliestExpiry = group.length > 0 ? Math.min(...group.map(l => l.expiry)) : 0
 
@@ -105,7 +104,13 @@ export const ConnectedAppCard = ({ app, locks }: Props) => {
               ) : (
                 <>
                   <RotateCcw />
-                  {token ? `Reclaim ${displayAmount} ${tokenSymbol}` : 'Reclaim funds'}
+                  {token ? (
+                    <>
+                      Reclaim <TokenAmount amount={totalAmount} token={token} withSymbol />
+                    </>
+                  ) : (
+                    'Reclaim funds'
+                  )}
                 </>
               )}
             </Button>
@@ -127,7 +132,7 @@ export const ConnectedAppCard = ({ app, locks }: Props) => {
             {state === 'active' && (
               <span className="inline-flex items-center gap-2 text-sm">
                 <span className="font-bold text-foreground inline-flex items-center gap-1">
-                  {displayAmount}
+                  {token && <TokenAmount amount={totalAmount} token={token} />}
                   {getTokenIcon(tokenSymbol, 14)}
                   {tokenSymbol}
                 </span>

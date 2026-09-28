@@ -3,8 +3,9 @@ import { Link } from 'react-router'
 import { ChevronRight } from 'lucide-react'
 import { getTokenIcon } from '@oasisprotocol/privana-sdk'
 import { SurfaceCard } from '@/components/SurfaceCard'
+import { TokenAmount } from '@/components/TokenAmount'
 import { useHoldings } from '@/hooks/useHoldings'
-import { formatAmount, formatFiat } from '@/lib/tokens'
+import { formatFiat } from '@/lib/tokens'
 import { formatApyBps } from '@/lib/apy'
 import { earnPath, tradePath } from '@/paths'
 import { ProtocolIcon } from '@/pages/Earn/ProtocolLabel'
@@ -21,7 +22,7 @@ const HoldingRow = ({
   to: string
   icon: ReactNode
   name: string
-  subtitle: string
+  subtitle: ReactNode
   fiat: number | undefined
   badge?: string
 }) => (
@@ -64,7 +65,7 @@ export const HoldingsSection = () => {
               </span>
             }
             name={holding.name}
-            subtitle={`${formatAmount(holding.amount, holding.decimals)} ${holding.symbol}`}
+            subtitle={<TokenAmount amount={holding.amount} token={holding} withSymbol />}
             fiat={holding.fiat}
           />
         ))}

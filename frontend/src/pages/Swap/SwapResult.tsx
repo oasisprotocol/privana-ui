@@ -3,7 +3,8 @@ import { getTokenIcon } from '@oasisprotocol/privana-sdk'
 import { Button } from '@/components/ui/button'
 import { Row } from '@/components/Row'
 import { SurfaceCard } from '@/components/SurfaceCard'
-import { formatAmount, formatFiat } from '@/lib/tokens'
+import { formatFiat } from '@/lib/tokens'
+import { TokenAmount as AmountText } from '@/components/TokenAmount'
 import { cn } from '@/lib/utils'
 import { useSlowSettlement } from '@/hooks/useSlowSettlement'
 import type { ActivityTokenInfo, SwapActivity } from '@/contexts/ActivityProvider/context'
@@ -23,7 +24,7 @@ const TokenAmount = ({
       align === 'end' && 'justify-end',
     )}
   >
-    <span className="break-all">{formatAmount(BigInt(wei || '0'), token.decimals)}</span>
+    <AmountText amount={wei || '0'} token={token} className="break-all" />
     {token.symbol && (
       <span className="shrink-0 size-4 overflow-hidden rounded-full">{getTokenIcon(token.symbol, 16)}</span>
     )}
@@ -39,7 +40,6 @@ type SwapResultProps = {
 
 export const SwapResult = ({ activity, onDone, onViewActivity }: SwapResultProps) => {
   const { fromToken, toToken, fromAmount, toAmount, rateLabel, feeFiat, status, error } = activity
-  const receiveFormatted = formatAmount(BigInt(toAmount || '0'), toToken.decimals)
 
   const slow = useSlowSettlement(status)
 
@@ -49,9 +49,9 @@ export const SwapResult = ({ activity, onDone, onViewActivity }: SwapResultProps
         <Loader2 className="h-12 w-12 animate-spin text-muted-foreground" />
         <h1 className="mt-6 text-2xl font-semibold tracking-tight">Swapping…</h1>
         <p className="mt-2 inline-flex items-center gap-2 text-sm text-muted-foreground">
-          {formatAmount(BigInt(fromAmount || '0'), fromToken.decimals)} {fromToken.symbol}
+          <AmountText amount={fromAmount || '0'} token={fromToken} withSymbol />
           <ArrowRight className="h-3.5 w-3.5" />
-          {receiveFormatted} {toToken.symbol}
+          <AmountText amount={toAmount || '0'} token={toToken} withSymbol />
         </p>
         <p className="mt-3 inline-flex items-center gap-1.5 text-xs text-muted-foreground">
           <EyeOff className="h-3.5 w-3.5" />
@@ -89,9 +89,13 @@ export const SwapResult = ({ activity, onDone, onViewActivity }: SwapResultProps
           {failed ? 'Swap failed' : 'Swap complete'}
         </h1>
         <p className="mt-2 text-sm text-muted-foreground">
-          {failed
-            ? error || 'Something went wrong. Please try again.'
-            : `${receiveFormatted} ${toToken.symbol} is in your wallet.`}
+          {failed ? (
+            error || 'Something went wrong. Please try again.'
+          ) : (
+            <>
+              <AmountText amount={toAmount || '0'} token={toToken} withSymbol /> is in your wallet.
+            </>
+          )}
         </p>
       </div>
 

@@ -3,7 +3,8 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Skeleton } from '@/components/ui/skeleton'
 import type { TokenInfo } from '@/api/swap'
-import { formatAmount, formatFiat } from '@/lib/tokens'
+import { formatFiat } from '@/lib/tokens'
+import { TokenAmount } from '@/components/TokenAmount'
 import { TokenSelectDialog } from './TokenSelectDialog'
 import { getTokenIcon } from '@oasisprotocol/privana-sdk'
 import { cn } from '@/lib/utils'
@@ -48,7 +49,14 @@ export const AssetRow = ({
     if (balance.loading) return <Skeleton className="h-4 w-32" />
     if (token.token_decimals == null) return <span>Balance: -</span>
     return (
-      <span>{`Balance: ${formatAmount(BigInt(balance.wei || '0'), token.token_decimals)} ${tokenLabel(token)}`}</span>
+      <span>
+        Balance:{' '}
+        <TokenAmount
+          amount={balance.wei || '0'}
+          token={{ symbol: token.token_symbol ?? '', decimals: token.token_decimals }}
+        />{' '}
+        {tokenLabel(token)}
+      </span>
     )
   }
 

@@ -138,7 +138,7 @@ describe('useActiveStrategies per-venue position', () => {
     balanceState.data = { positions: [position()] }
     const { result } = renderHook(() => useActiveStrategies())
     expect(result.current.strategies).toEqual([
-      { poolId: '0xpool-a', earning: '1.01 USDC', earned: { symbol: 'USDC', amount: 8_000n, decimals: 6 } },
+      { poolId: '0xpool-a', earning: '1.00 USDC', earned: { symbol: 'USDC', amount: 8_000n, decimals: 6 } },
     ])
   })
 

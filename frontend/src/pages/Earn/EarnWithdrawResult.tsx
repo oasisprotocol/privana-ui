@@ -3,7 +3,7 @@ import { getTokenIcon } from '@oasisprotocol/privana-sdk'
 import { Button } from '@/components/ui/button'
 import { Row } from '@/components/Row'
 import { SurfaceCard } from '@/components/SurfaceCard'
-import { formatAmount } from '@/lib/tokens'
+import { TokenAmount } from '@/components/TokenAmount'
 import { cn } from '@/lib/utils'
 import { useSlowSettlement } from '@/hooks/useSlowSettlement'
 import { slowSettlementMsFor } from '@/config/protocols'
@@ -17,7 +17,6 @@ type EarnWithdrawResultProps = {
 
 export const EarnWithdrawResult = ({ activity, onDone, onViewActivity }: EarnWithdrawResultProps) => {
   const { token, amount, protocol, status, error } = activity
-  const amountFormatted = formatAmount(BigInt(amount || '0'), token.decimals)
 
   const slow = useSlowSettlement(status, slowSettlementMsFor(protocol))
 
@@ -61,9 +60,13 @@ export const EarnWithdrawResult = ({ activity, onDone, onViewActivity }: EarnWit
           {failed ? 'Withdrawal failed' : 'Funds returned'}
         </h1>
         <p className="mt-2 text-sm text-muted-foreground">
-          {failed
-            ? error || 'Something went wrong. Please try again.'
-            : `${amountFormatted} ${token.symbol} is back in your balance.`}
+          {failed ? (
+            error || 'Something went wrong. Please try again.'
+          ) : (
+            <>
+              <TokenAmount amount={amount || '0'} token={token} withSymbol /> is back in your balance.
+            </>
+          )}
         </p>
       </div>
 
@@ -75,7 +78,7 @@ export const EarnWithdrawResult = ({ activity, onDone, onViewActivity }: EarnWit
           label="Amount"
           value={
             <span className="inline-flex items-center gap-1.5">
-              <span className="tabular-nums">{amountFormatted}</span>
+              <TokenAmount amount={amount || '0'} token={token} className="tabular-nums" />
               {token.symbol && (
                 <span className="size-4 shrink-0 overflow-hidden rounded-full">
                   {getTokenIcon(token.symbol, 16)}

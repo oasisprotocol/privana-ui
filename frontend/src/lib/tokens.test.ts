@@ -1,12 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import {
-  exceedsAmount,
-  formatAmount,
-  formatAmountTrimmed,
-  formatFiat,
-  isPositiveAmount,
-  mergeTokensBySymbol,
-} from '@/lib/tokens'
+import { exceedsAmount, formatFiat, isPositiveAmount, mergeTokensBySymbol } from '@/lib/tokens'
 
 describe('isPositiveAmount', () => {
   it('accepts a positive human-entered amount', () => {
@@ -138,43 +131,5 @@ describe('formatFiat', () => {
     expect(formatFiat(1234.5)).toBe('$1,234.50')
     expect(formatFiat(0)).toBe('$0.00')
     expect(formatFiat(-3.126)).toBe('-$3.13')
-  })
-})
-
-describe('formatAmount', () => {
-  it('defaults to 2 display decimals for tokens with up to 6 decimals', () => {
-    expect(formatAmount(1_234_567n, 6)).toBe('1.23')
-  })
-
-  it('defaults to 6 display decimals for higher-precision tokens', () => {
-    expect(formatAmount(1_500_000_000_000_000_000n, 18)).toBe('1.500000')
-  })
-
-  it('honours an explicit display-decimals override', () => {
-    expect(formatAmount(1_234_567n, 6, 4)).toBe('1.2346')
-  })
-
-  it('groups thousands', () => {
-    expect(formatAmount(1_234_567_000_000n, 6)).toBe('1,234,567.00')
-  })
-})
-
-describe('formatAmountTrimmed', () => {
-  it('truncates instead of rounding and drops trailing zeros', () => {
-    expect(formatAmountTrimmed(2_063_317_108_728_893n, 18)).toBe('0.002063')
-    expect(formatAmountTrimmed(1_999_999n, 6, 2)).toBe('1.99')
-  })
-
-  it('drops an all-zero fraction entirely', () => {
-    expect(formatAmountTrimmed(1_000_000n, 6)).toBe('1')
-  })
-
-  it('returns 0 for zero', () => {
-    expect(formatAmountTrimmed(0n, 6)).toBe('0')
-  })
-
-  it('shows dust as a less-than hint instead of 0', () => {
-    expect(formatAmountTrimmed(1n, 18)).toBe('<0.000001')
-    expect(formatAmountTrimmed(1n, 18, 4)).toBe('<0.0001')
   })
 })

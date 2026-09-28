@@ -8,7 +8,8 @@ import { ChainActivityCard } from './ChainActivityCard'
 const TOKEN_ID = '0x6a53c372368bfca6b9cb392eec897c3b685f4380af001f48fded5c2b59f5c873'
 const DESTINATION = '0xBb1e86fBd3e093E365bbe1d4E6Df19BF68e056A1'
 
-vi.mock('@oasisprotocol/privana-sdk', () => ({
+vi.mock('@oasisprotocol/privana-sdk', async importOriginal => ({
+  ...(await importOriginal<typeof import('@oasisprotocol/privana-sdk')>()),
   usePrivanaContext: () => ({
     getTokenById: () => ({ id: TOKEN_ID, symbol: 'USDC', decimals: 6 }),
   }),

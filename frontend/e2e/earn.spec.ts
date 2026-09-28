@@ -21,10 +21,10 @@ test('active position shows earning figures and the 24h yield badge', async ({ p
 
   await expect(page.getByText('$200.50').filter({ visible: true }).first()).toBeVisible()
   await expect(page.getByText('+$0.10 (+0.05%) 24h')).toBeVisible()
-  await expect(page.getByText('+0.5USDC')).toBeVisible()
+  await expect(page.getByText('+0.50USDC')).toBeVisible()
 
   await expect(page.getByText('200.50 USDC', { exact: true }).filter({ visible: true }).first()).toBeVisible()
-  await expect(page.getByText('0.5 USDC', { exact: true }).filter({ visible: true }).first()).toBeVisible()
+  await expect(page.getByText('0.50 USDC', { exact: true }).filter({ visible: true }).first()).toBeVisible()
   await expect(page.getByRole('link', { name: 'Add funds' })).toBeVisible()
   await expect(page.getByRole('link', { name: 'Remove funds' })).toBeVisible()
 })

@@ -1,17 +1,26 @@
-import { useMemo, useState } from 'react'
+import { useMemo, useState, type ReactNode } from 'react'
 import { getTokenIcon } from '@oasisprotocol/privana-sdk'
 import { endSeriesAt, useEarnChart, type ChartRange } from '@/api/portfolio'
 import { Skeleton } from '@/components/ui/skeleton'
 import { SurfaceCard } from '@/components/SurfaceCard'
 import { BalanceAmount } from '@/components/BalanceAmount'
+import { TokenAmount as AmountText } from '@/components/TokenAmount'
 import { PortfolioChartPlaceholder, PortfolioChartSection } from '@/components/PortfolioChart'
 import type { EarnChange24h } from '@/lib/earn'
-import { formatFiat, formatAmount, formatAmountTrimmed } from '@/lib/tokens'
+import { formatFiat } from '@/lib/tokens'
 import { formatApyBps } from '@/lib/apy'
 import { cn } from '@/lib/utils'
 import type { TokenAmount } from './useActiveStrategies'
 
-const TokenValue = ({ symbol, amount, positive }: { symbol: string; amount: string; positive?: boolean }) => (
+const TokenValue = ({
+  symbol,
+  amount,
+  positive,
+}: {
+  symbol: string
+  amount: ReactNode
+  positive?: boolean
+}) => (
   <span
     className={cn(
       'inline-flex items-center gap-1 font-medium tabular-nums',
@@ -109,7 +118,7 @@ export const EarnBalance = ({
                   <TokenValue
                     key={t.symbol}
                     symbol={t.symbol}
-                    amount={formatAmountTrimmed(t.amount, t.decimals)}
+                    amount={<AmountText amount={t.amount} token={t} />}
                     positive={t.amount >= 0n}
                   />
                 ))
@@ -126,7 +135,7 @@ export const EarnBalance = ({
                     <TokenValue
                       key={t.symbol}
                       symbol={t.symbol}
-                      amount={formatAmount(t.amount, t.decimals)}
+                      amount={<AmountText amount={t.amount} token={t} />}
                       positive
                     />
                   ))

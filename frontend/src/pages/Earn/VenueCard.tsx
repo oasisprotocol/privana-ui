@@ -7,7 +7,7 @@ import { ProtocolIcon } from './ProtocolLabel'
 import { VenueAPY } from './VenueAPY'
 import { getProtocolLabel } from '@/config/protocols'
 import { useIsDesktop, useMediaQuery } from '@/hooks/use-media-query'
-import { formatAmountTrimmed } from '@/lib/tokens'
+import { TokenAmount as AmountText } from '@/components/TokenAmount'
 import type { TokenAmount } from './useActiveStrategies'
 
 export type Venue = {
@@ -39,9 +39,7 @@ const ApyPill = ({ apyBps, className }: { apyBps: number; className?: string }) 
 )
 
 const EarnedAmount = ({ earned }: { earned: TokenAmount }) => (
-  <span className="font-medium text-chart-positive">
-    {formatAmountTrimmed(earned.amount, earned.decimals)} {earned.symbol}
-  </span>
+  <AmountText amount={earned.amount} token={earned} withSymbol className="font-medium text-chart-positive" />
 )
 
 export const VenueCard = ({

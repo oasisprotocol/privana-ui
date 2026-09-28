@@ -82,6 +82,7 @@ export const SwapDashboard = () => {
     address,
     fromDecimals: fromToken?.token_decimals,
     toDecimals: toToken?.token_decimals,
+    toSymbol: toToken?.token_symbol,
     disabled: insufficientFunds,
   })
 

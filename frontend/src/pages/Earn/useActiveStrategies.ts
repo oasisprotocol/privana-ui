@@ -1,6 +1,6 @@
 import { useEarnBalance, useEarnPools } from '@/api/earn'
 import { useTokens } from '@/api/swap'
-import { formatAmount } from '@/lib/tokens'
+import { formatTokenAmount } from '@oasisprotocol/privana-sdk'
 
 export type ActiveStrategy = {
   poolId: string
@@ -50,7 +50,10 @@ export const useActiveStrategies = (): {
     const underlying = BigInt(pos.underlying_amount)
     return {
       poolId: pos.pool_id,
-      earning: decimals != null ? `${formatAmount(underlying, decimals)} ${symbol}` : '-',
+      earning:
+        decimals != null
+          ? formatTokenAmount(underlying, { symbol, decimals }, { withSymbol: true }).display
+          : '-',
       earned:
         decimals != null && symbol && pos.earned_active != null && pos.earned_active_status === 'ok'
           ? { symbol, amount: BigInt(pos.earned_active), decimals }

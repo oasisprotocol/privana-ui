@@ -2,7 +2,8 @@ import type { EarnBalance, EarnPool } from '@/api/earn'
 import type { TokenInfo } from '@/api/swap'
 import { Button } from '@/components/ui/button'
 import { Skeleton } from '@/components/ui/skeleton'
-import { exceedsAmount, formatAmount, isPositiveAmount } from '@/lib/tokens'
+import { TokenAmount } from '@/components/TokenAmount'
+import { exceedsAmount, isPositiveAmount } from '@/lib/tokens'
 import { EarnAmountField } from './EarnAmountField'
 import { VenueHeader } from './VenueHeader'
 
@@ -39,7 +40,8 @@ export const WithdrawConfigureStep = ({
   const chain = token?.chain_name ?? ''
 
   const positionWei = toPositionWei(position?.underlying_amount)
-  const positionLabel = decimals != null ? formatAmount(positionWei, decimals) : '-'
+  const positionLabel =
+    decimals != null ? <TokenAmount amount={positionWei} token={{ symbol: tokenSymbol, decimals }} /> : '-'
 
   const canReview =
     !!position && isPositiveAmount(amount, decimals) && !exceedsAmount(amount, decimals, positionWei)
