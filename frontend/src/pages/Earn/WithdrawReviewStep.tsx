@@ -1,13 +1,14 @@
 import type { EarnBalance, EarnPool } from '@/api/earn'
 import type { TokenInfo } from '@/api/swap'
 import { Skeleton } from '@/components/ui/skeleton'
-import { getProtocolLabel } from '@/config/protocols'
+import { getProtocolLabel, withdrawNoticeFor } from '@/config/protocols'
 import {
   ReviewAmountCard,
   ReviewConfirmButton,
   ReviewDetails,
   ReviewDisclaimer,
   ReviewHeader,
+  ReviewNotice,
 } from './ReviewParts'
 
 type WithdrawReviewStepProps = {
@@ -37,6 +38,7 @@ export const WithdrawReviewStep = ({
 }: WithdrawReviewStepProps) => {
   const tokenSymbol = token?.token_symbol ?? token?.token_type_name ?? ''
   const protocol = pool ? getProtocolLabel(pool.strategy) : ''
+  const withdrawNotice = pool ? withdrawNoticeFor(pool.strategy) : undefined
 
   if (isLoading) {
     return (
@@ -72,6 +74,8 @@ export const WithdrawReviewStep = ({
           { label: 'Fee', value: 'Free', muted: true },
         ]}
       />
+
+      {withdrawNotice && <ReviewNotice>{withdrawNotice}</ReviewNotice>}
 
       <ReviewDisclaimer>
         These funds stop earning and return to your Available balance as {tokenSymbol}. From there you can

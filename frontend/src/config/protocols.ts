@@ -10,6 +10,8 @@ const PROTOCOLS = [
     color: '#2a3e6e',
     slowAfterMs: 8 * 60_000,
     depositNotice: 'Midas has no instant liquidity - withdrawing these funds can take up to 12 hours.',
+    withdrawNotice:
+      'Midas has no instant liquidity - these funds can take up to 12 hours to arrive in Available. They stop earning as soon as you confirm.',
   },
 ] as const
 
@@ -28,6 +30,11 @@ export const slowSettlementMsFor = (strategy: string): number =>
 export const depositNoticeFor = (strategy: string): string | undefined => {
   const protocol = protocolFor(strategy)
   return protocol && 'depositNotice' in protocol ? protocol.depositNotice : undefined
+}
+
+export const withdrawNoticeFor = (strategy: string): string | undefined => {
+  const protocol = protocolFor(strategy)
+  return protocol && 'withdrawNotice' in protocol ? protocol.withdrawNotice : undefined
 }
 
 export function venueForStrategy(strategy: string | null | undefined): Venue | null {
