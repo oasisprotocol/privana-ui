@@ -96,7 +96,7 @@ export const ConfigureStep = ({
   return (
     <div className="flex flex-col items-center gap-6 w-full max-w-110 mx-auto">
       <h2 className="text-xl font-semibold text-foreground">
-        {selectedPool ? `Move to ${protocol}` : 'Add funds'}
+        {selectedPool ? `Add to ${protocol}` : 'Add funds'}
       </h2>
 
       <EarnAmountField
