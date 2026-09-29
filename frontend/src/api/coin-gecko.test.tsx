@@ -13,7 +13,9 @@ vi.mock('@/config/tokens', () => ({ getGeckoId: (id: string) => GECKO[id] }))
 
 const fetchMock = vi.fn(async () => ({
   ok: true,
-  json: async () => ({ 'usd-coin': { usd: 1 }, ethereum: { usd: 2500 } }),
+  json: async () => ({
+    coins: { 'coingecko:usd-coin': { price: 1 }, 'coingecko:ethereum': { price: 2500 } },
+  }),
 }))
 
 const wrapperFor = (client: QueryClient) =>

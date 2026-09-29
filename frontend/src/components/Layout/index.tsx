@@ -136,12 +136,12 @@ export const Layout = ({ children }: LayoutProps) => {
               <span>
                 Price data by{' '}
                 <a
-                  href="https://www.coingecko.com/"
+                  href="https://defillama.com/"
                   target="_blank"
                   rel="noopener noreferrer"
                   className="hover:text-foreground hover:underline transition-colors"
                 >
-                  CoinGecko
+                  DefiLlama
                 </a>
               </span>
             </div>

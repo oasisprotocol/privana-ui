@@ -31,7 +31,7 @@ const buildCsp = (apiOrigins: string[]): Record<string, string[]> => ({
     // Privana APIs for the mode being built (VITE_PRIVANA_*_URL)
     ...apiOrigins,
     // Prices
-    'https://api.coingecko.com',
+    'https://coins.llama.fi',
     // Turnkey
     'https://authproxy.turnkey.com',
     'https://api.turnkey.com',
