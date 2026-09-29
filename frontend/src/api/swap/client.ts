@@ -10,7 +10,7 @@ import type {
 
 import { request } from '../http'
 
-export function getQuote(params: QuoteParams, signal?: AbortSignal) {
+export async function getQuote(params: QuoteParams, signal?: AbortSignal) {
   const search = new URLSearchParams({
     from_token_id: params.fromTokenId,
     to_token_id: params.toTokenId,
@@ -20,7 +20,10 @@ export function getQuote(params: QuoteParams, signal?: AbortSignal) {
   if (params.slippage !== undefined) {
     search.set('slippage', String(params.slippage))
   }
-  return request<QuoteResponse>(`/v1/quote?${search}`, { signal })
+  const quote = await request<QuoteResponse>(`/v1/quote?${search}`, { signal })
+  return quote.expires_in == null
+    ? quote
+    : { ...quote, expires_at: Math.ceil(Date.now() / 1000) + quote.expires_in }
 }
 
 export function executeSwap(body: SwapRequest) {
