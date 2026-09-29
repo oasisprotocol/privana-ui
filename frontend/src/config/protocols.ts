@@ -4,7 +4,13 @@ const DEFAULT_COLOR = '#0F4C81'
 
 const PROTOCOLS = [
   { prefix: 'aave', label: 'Aave', color: '#8777ff', slowAfterMs: 90_000 },
-  { prefix: 'midas', label: 'Midas', color: '#2a3e6e', slowAfterMs: 8 * 60_000 },
+  {
+    prefix: 'midas',
+    label: 'Midas',
+    color: '#2a3e6e',
+    slowAfterMs: 8 * 60_000,
+    depositNotice: 'Midas has no instant liquidity - withdrawing these funds can take up to 12 hours.',
+  },
 ] as const
 
 const DEFAULT_SLOW_AFTER_MS = 90_000
@@ -18,6 +24,11 @@ export const getProtocolLabel = (strategy: string): string => protocolFor(strate
 
 export const slowSettlementMsFor = (strategy: string): number =>
   protocolFor(strategy)?.slowAfterMs ?? DEFAULT_SLOW_AFTER_MS
+
+export const depositNoticeFor = (strategy: string): string | undefined => {
+  const protocol = protocolFor(strategy)
+  return protocol && 'depositNotice' in protocol ? protocol.depositNotice : undefined
+}
 
 export function venueForStrategy(strategy: string | null | undefined): Venue | null {
   if (!strategy) return null
