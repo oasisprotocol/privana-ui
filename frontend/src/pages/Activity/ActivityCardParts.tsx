@@ -1,7 +1,7 @@
 import type { LucideIcon } from 'lucide-react'
 import type { ReactNode } from 'react'
 import { cn } from '@/lib/utils'
-import { formatAmount } from '@/lib/tokens'
+import { TokenAmount } from '@/components/TokenAmount'
 import type { ActivityTokenInfo } from '@/contexts/ActivityProvider/context'
 import type { Venue } from '@/config/protocols'
 import { formatActivityTime } from './formatTime'
@@ -84,6 +84,6 @@ export const ActivityAmount = ({
 }) => (
   <div className={cn('whitespace-nowrap text-sm font-semibold tabular-nums', className)}>
     {sign}
-    {formatAmount(BigInt(amount), token.decimals)} {token.symbol}
+    <TokenAmount amount={amount} token={token} withSymbol />
   </div>
 )

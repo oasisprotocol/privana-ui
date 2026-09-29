@@ -1,10 +1,10 @@
 import { useEffect, useState } from 'react'
 import { formatUnits, parseUnits } from 'viem'
+import { formatTokenAmount } from '@oasisprotocol/privana-sdk'
 import { getQuote } from '@/api/swap'
 import type { QuoteResponse } from '@/api/swap'
 import { useDebouncedValue } from '@/hooks/use-debounced-value'
 import { useQuoteExpiry } from '@/hooks/use-quote-expiry'
-import { formatAmountTrimmed } from '@/lib/tokens'
 
 type Params = {
   fromTokenId: string
@@ -13,6 +13,7 @@ type Params = {
   address: string | undefined
   fromDecimals: number | null | undefined
   toDecimals: number | null | undefined
+  toSymbol: string | null | undefined
   disabled?: boolean
 }
 
@@ -23,6 +24,7 @@ export const useSwapQuote = ({
   address,
   fromDecimals,
   toDecimals,
+  toSymbol,
   disabled,
 }: Params) => {
   const debouncedFromAmount = useDebouncedValue(fromAmount)
@@ -85,7 +87,13 @@ export const useSwapQuote = ({
   const data = fresh ?? stale
   const loading = enabled && !fresh && !error
   const toAmount =
-    data && toDecimals != null ? formatAmountTrimmed(BigInt(data.to_amount_estimate), toDecimals) : ''
+    data && toDecimals != null
+      ? formatTokenAmount(
+          data.to_amount_estimate,
+          { symbol: toSymbol ?? '', decimals: toDecimals },
+          { context: 'quote' },
+        ).display
+      : ''
   const toAmountExact =
     data && toDecimals != null ? formatUnits(BigInt(data.to_amount_estimate), toDecimals) : ''
 
