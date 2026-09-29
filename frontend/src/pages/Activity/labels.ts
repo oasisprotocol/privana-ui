@@ -38,7 +38,7 @@ export function activityRowTitle(
 }
 
 const ACTIVITY_SUBTITLES: Record<DisplayKind, string> = {
-  swap: 'Swapped in your vault',
+  swap: 'Swapped inside Privana Vault',
   earnDeposit: 'Moved to Earn',
   earnWithdraw: 'Returned to Available',
   deposit: 'Added to Available',
