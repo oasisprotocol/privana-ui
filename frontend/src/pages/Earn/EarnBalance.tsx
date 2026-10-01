@@ -6,8 +6,7 @@ import { SurfaceCard } from '@/components/SurfaceCard'
 import { BalanceAmount } from '@/components/BalanceAmount'
 import { TokenAmount as AmountText } from '@/components/TokenAmount'
 import { PortfolioChartPlaceholder, PortfolioChartSection } from '@/components/PortfolioChart'
-import type { EarnChange24h } from '@/lib/earn'
-import { formatFiat } from '@/lib/tokens'
+import { formatEarnChange24h, type EarnChange24h } from '@/lib/earn'
 import { formatApyBps } from '@/lib/apy'
 import { cn } from '@/lib/utils'
 import type { TokenAmount } from './useActiveStrategies'
@@ -58,6 +57,7 @@ export const EarnBalance = ({
   loading,
 }: EarnBalanceProps) => {
   const isEarning = (earningFiatValue ?? 0) > 0
+  const changeBadge = change ? formatEarnChange24h(change) : null
   const [chartRange, setChartRange] = useState<ChartRange>('all')
   const { points: earnPoints, isLoading: chartLoading } = useEarnChart(chartRange)
   const chartData = useMemo(
@@ -90,16 +90,14 @@ export const EarnBalance = ({
           <BalanceAmount value={earningFiatValue} className="mt-3 text-6xl animate-fade-in" />
         )}
 
-        {!loading && isEarning && change && (
+        {!loading && isEarning && changeBadge && (
           <span
             className={cn(
               'mt-2 text-sm font-medium',
-              change.usd < 0 ? 'text-destructive' : 'text-chart-positive',
+              changeBadge.negative ? 'text-destructive' : 'text-chart-positive',
             )}
           >
-            {change.usd < 0 ? '' : '+'}
-            {formatFiat(change.usd)} ({change.pct < 0 ? '' : '+'}
-            {change.pct.toFixed(2)}%) <span className="text-muted-foreground">24h</span>
+            {changeBadge.text} <span className="text-muted-foreground">24h</span>
           </span>
         )}
 

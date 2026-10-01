@@ -1,4 +1,5 @@
 import type { EarnBalance } from '@/api/earn'
+import { formatFiat } from '@/lib/tokens'
 
 export interface EarnChange24h {
   /** Fiat delta over the last ~24h. */
@@ -30,4 +31,15 @@ export const computeEarnChange24h = (
   )
   if (baseUsd <= 0) return null
   return { usd, pct: (usd / baseUsd) * 100 }
+}
+
+export const formatEarnChange24h = (change: EarnChange24h): { text: string; negative: boolean } => {
+  const usd = Math.round(change.usd * 100) / 100
+  const pct = Math.round(change.pct * 100) / 100
+  const negative = usd < 0 || pct < 0
+  const sign = negative ? '-' : '+'
+  return {
+    text: `${sign}${formatFiat(Math.abs(usd))} (${sign}${Math.abs(pct).toFixed(2)}%)`,
+    negative,
+  }
 }
