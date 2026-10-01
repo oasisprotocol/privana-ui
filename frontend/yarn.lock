@@ -3553,9 +3553,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@turnkey/core@npm:2.12.0":
-  version: 2.12.0
-  resolution: "@turnkey/core@npm:2.12.0"
+"@turnkey/core@npm:2.12.1":
+  version: 2.12.1
+  resolution: "@turnkey/core@npm:2.12.1"
   dependencies:
     "@turnkey/api-key-stamper": "npm:0.6.17"
     "@turnkey/crypto": "npm:2.13.2"
@@ -3583,7 +3583,7 @@ __metadata:
       optional: true
     react-native-keychain:
       optional: true
-  checksum: 10c0/44037565dcd99325fa754e5b6ffea89f5de73dd743f1b8ce9342ea518a3de5c6812382f9a6417220d15de0de7ce757a35604d93bf69036d17d53af09b054fe6e
+  checksum: 10c0/993ac3204205b9547c6ce63b540309108303bede0ae81bc21241413ecbd8da6b6633557ab7bda6ed564ae904c0c657bca7d894f960217333913e7af62a4a9fcd
   languageName: node
   linkType: hard
 
@@ -3642,9 +3642,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@turnkey/react-wallet-kit@npm:^2.5.1":
-  version: 2.5.1
-  resolution: "@turnkey/react-wallet-kit@npm:2.5.1"
+"@turnkey/react-wallet-kit@npm:^2.5.2":
+  version: 2.5.2
+  resolution: "@turnkey/react-wallet-kit@npm:2.5.2"
   dependencies:
     "@fortawesome/fontawesome-svg-core": "npm:^6.7.2"
     "@fortawesome/free-brands-svg-icons": "npm:^6.7.2"
@@ -3654,7 +3654,7 @@ __metadata:
     "@lottiefiles/react-lottie-player": "npm:^3.6.0"
     "@marsidev/react-turnstile": "npm:^1.4.2"
     "@noble/hashes": "npm:^1.8.0"
-    "@turnkey/core": "npm:2.12.0"
+    "@turnkey/core": "npm:2.12.1"
     "@turnkey/iframe-stamper": "npm:^2.11.1"
     "@turnkey/sdk-types": "npm:1.10.0"
     buffer: "npm:^6.0.3"
@@ -3669,7 +3669,7 @@ __metadata:
   peerDependenciesMeta:
     "@types/react":
       optional: true
-  checksum: 10c0/c11f763f6e88275179ceec0d5648c41cbe05d4dc865eb9b318be34b51151f8e9c4bea26366684000f0f1eae2d8526ae9ba8ca5152f067db3e4a7626a89782898
+  checksum: 10c0/01723bb1fe06332f90264dbf5e556826382c6ea02f0297ace3ca4edded314cb3a142741f2493ea974c07318ee268342cc80a7107480f62d276c1283d1506c74f
   languageName: node
   linkType: hard
 
@@ -3715,21 +3715,21 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@turnkey/viem@npm:^0.14.43":
-  version: 0.14.43
-  resolution: "@turnkey/viem@npm:0.14.43"
+"@turnkey/viem@npm:^0.14.44":
+  version: 0.14.44
+  resolution: "@turnkey/viem@npm:0.14.44"
   dependencies:
     "@noble/curves": "npm:1.8.0"
     "@openzeppelin/contracts": "npm:^5.0.2"
     "@turnkey/api-key-stamper": "npm:0.6.17"
-    "@turnkey/core": "npm:2.12.0"
+    "@turnkey/core": "npm:2.12.1"
     "@turnkey/http": "npm:6.6.0"
     "@turnkey/sdk-browser": "npm:8.6.0"
     "@turnkey/sdk-server": "npm:8.6.0"
     cross-fetch: "npm:^4.0.0"
   peerDependencies:
     viem: ^1.16.6 || ^2.24.2
-  checksum: 10c0/5f18e86adadb76821fce081869d18c489be325346a75e444c3d561228397bcd828fd7bfa70d9e605c0f034dcd250cbcfd04ebf13c9eb51ab5edc7df157977679
+  checksum: 10c0/49a57ba12e9b145f85d1a70b9afd27b99cda7b5408c6b9a6e6db5615a1f9de870f8a22f9aba996758302e0bb8d13bcd6bc09aee0769bca87b02c9144178c4d0e
   languageName: node
   linkType: hard
 
@@ -7113,8 +7113,8 @@ __metadata:
     "@testing-library/jest-dom": "npm:^7.0.1"
     "@testing-library/react": "npm:^16.3.3"
     "@testing-library/user-event": "npm:^14.6.7"
-    "@turnkey/react-wallet-kit": "npm:^2.5.1"
-    "@turnkey/viem": "npm:^0.14.43"
+    "@turnkey/react-wallet-kit": "npm:^2.5.2"
+    "@turnkey/viem": "npm:^0.14.44"
     "@types/node": "npm:^26.6.2"
     "@types/react": "npm:^19.3.0"
     "@types/react-dom": "npm:^19.3.0"
@@ -7143,7 +7143,7 @@ __metadata:
     tw-animate-css: "npm:^1.4.0"
     typescript: "npm:^6.0.3"
     typescript-eslint: "npm:^8.70.1"
-    viem: "npm:^2.56.9"
+    viem: "npm:^2.57.2"
     vite: "npm:^8.3.1"
     vitest: "npm:^5.0.2"
     wagmi: "npm:^3.7.7"
@@ -8237,9 +8237,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"viem@npm:^2.56.9":
-  version: 2.56.9
-  resolution: "viem@npm:2.56.9"
+"viem@npm:^2.57.2":
+  version: 2.57.2
+  resolution: "viem@npm:2.57.2"
   dependencies:
     "@noble/curves": "npm:1.9.1"
     "@noble/hashes": "npm:1.8.0"
@@ -8254,7 +8254,7 @@ __metadata:
   peerDependenciesMeta:
     typescript:
       optional: true
-  checksum: 10c0/cd84385c248c2cbe928df63777db7cd3ecb58a45fbec1a5255d9e2125a5b97f3b3cbea1c9fce1b11ecb5c5ff38de1c53ba19c6b1ed6551185f68d1b1ac4032a2
+  checksum: 10c0/24ad0a04bfdb94c6e38102c39bbf6029a25d84c98857fc927e2e5cb347d41b14f8b54cccd9a620f94e274430203f663d2c5fc89441a1761824fb66884155d801
   languageName: node
   linkType: hard
 
