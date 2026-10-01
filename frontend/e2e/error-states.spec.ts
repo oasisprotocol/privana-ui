@@ -8,7 +8,7 @@ const serverError = { status: 500, contentType: 'application/json', body: '{}' }
 test('price feed failure degrades fiat values to dashes', async ({ page }) => {
   await installWallet(page)
   await installApi(page, funded())
-  await page.route('https://api.coingecko.com/api/v3/simple/price**', route => route.fulfill(serverError))
+  await page.route(`${SERVICES_API_URL}/v1/prices`, route => route.fulfill(serverError))
   await page.goto('/dashboard')
 
   const accountValue = page.getByText('Account value').filter({ visible: true }).first().locator('..')

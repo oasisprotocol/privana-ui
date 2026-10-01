@@ -1,6 +1,6 @@
 import { useMemo } from 'react'
 import { formatUnits, parseUnits } from 'viem'
-import { useTokenPrices } from '@/api/coin-gecko'
+import { useTokenPrices } from '@/api/prices'
 import type { TokenInfo } from '@/api/swap'
 
 // Fiat value of a human-entered token amount, or undefined while prices/token
