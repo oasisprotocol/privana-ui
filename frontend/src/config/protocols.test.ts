@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { getProtocolLabel, venueForStrategy } from '@/config/protocols'
+import { depositNoticeFor, getProtocolLabel, venueForStrategy, withdrawNoticeFor } from '@/config/protocols'
 
 describe('getProtocolLabel', () => {
   it('maps backend strategy keys to display labels', () => {
@@ -37,5 +37,26 @@ describe('venueForStrategy', () => {
     expect(venueForStrategy(null)).toBeNull()
     expect(venueForStrategy(undefined)).toBeNull()
     expect(venueForStrategy('')).toBeNull()
+  })
+})
+
+describe('depositNoticeFor', () => {
+  it('asks Midas depositors to accept its withdrawal delay', () => {
+    expect(depositNoticeFor('midas-mtbill')).toMatch(/up to 12 hours/)
+  })
+
+  it('has nothing for protocols with instant liquidity', () => {
+    expect(depositNoticeFor('aave-v3')).toBeUndefined()
+    expect(depositNoticeFor('compound')).toBeUndefined()
+  })
+})
+
+describe('withdrawNoticeFor', () => {
+  it('warns that Midas withdrawals can take up to 12 hours', () => {
+    expect(withdrawNoticeFor('midas-mtbill')).toMatch(/up to 12 hours/)
+  })
+
+  it('has nothing for protocols with instant liquidity', () => {
+    expect(withdrawNoticeFor('aave-v3')).toBeUndefined()
   })
 })

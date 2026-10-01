@@ -1,4 +1,4 @@
-import { useEffect } from 'react'
+import { useEffect, useState } from 'react'
 import { useBalance } from '@oasisprotocol/privana-sdk'
 import { useEarnPools } from '@/api/earn'
 import { useTokens } from '@/api/swap'
@@ -10,7 +10,7 @@ import { cn } from '@/lib/utils'
 import { ApyValue } from './ApyValue'
 import { EarnAmountField } from './EarnAmountField'
 import { ProtocolLabel } from './ProtocolLabel'
-import { getProtocolLabel } from '@/config/protocols'
+import { depositNoticeFor, getProtocolLabel } from '@/config/protocols'
 
 type ConfigureStepProps = {
   poolId: string | undefined
@@ -48,6 +48,10 @@ export const ConfigureStep = ({
   })
   const balanceWei = tokenBalance.balanceWei ? BigInt(tokenBalance.balanceWei) : 0n
 
+  const [acceptedPoolId, setAcceptedPoolId] = useState<string>()
+  const depositNotice = selectedPool ? depositNoticeFor(selectedPool.strategy) : undefined
+  const noticeAccepted = !depositNotice || acceptedPoolId === poolId
+
   // Keep a venue selected: drop a stale URL poolId, otherwise default to the first
   // active pool so the amount/chips/"Available" line always have a context.
   useEffect(() => {
@@ -60,7 +64,10 @@ export const ConfigureStep = ({
   }, [isLoading, poolId, strategyLocked, activePools, onPoolIdChange])
 
   const canReview =
-    !!selectedPool && isPositiveAmount(amount, decimals) && !exceedsAmount(amount, decimals, balanceWei)
+    !!selectedPool &&
+    isPositiveAmount(amount, decimals) &&
+    !exceedsAmount(amount, decimals, balanceWei) &&
+    noticeAccepted
 
   const availableLabel =
     selectedToken && decimals != null ? (
@@ -89,7 +96,7 @@ export const ConfigureStep = ({
   return (
     <div className="flex flex-col items-center gap-6 w-full max-w-110 mx-auto">
       <h2 className="text-xl font-semibold text-foreground">
-        {selectedPool ? `Move to ${protocol}` : 'Add funds'}
+        {selectedPool ? `Add to ${protocol}` : 'Add funds'}
       </h2>
 
       <EarnAmountField
@@ -135,6 +142,18 @@ export const ConfigureStep = ({
             })}
           </div>
         </div>
+      )}
+
+      {depositNotice && (
+        <label className="flex w-full cursor-pointer items-start gap-3 text-sm text-muted-foreground">
+          <input
+            type="checkbox"
+            checked={noticeAccepted}
+            onChange={e => setAcceptedPoolId(e.target.checked ? poolId : undefined)}
+            className="mt-0.5 size-4 shrink-0 cursor-pointer accent-foreground"
+          />
+          {depositNotice}
+        </label>
       )}
 
       <Button size="lg" className="mt-2 h-12 w-full text-base" disabled={!canReview} onClick={onReview}>

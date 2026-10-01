@@ -880,9 +880,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@oasisprotocol/privana-sdk@npm:^0.7.6":
-  version: 0.7.6
-  resolution: "@oasisprotocol/privana-sdk@npm:0.7.6"
+"@oasisprotocol/privana-sdk@npm:^0.7.7":
+  version: 0.7.7
+  resolution: "@oasisprotocol/privana-sdk@npm:0.7.7"
   dependencies:
     "@moonpay/moonpay-react": "npm:^1.10.6"
     "@radix-ui/react-dialog": "npm:^1.1.15"
@@ -904,7 +904,7 @@ __metadata:
     react-dom: ">=18.0.0"
     viem: ">=2.0.0"
     wagmi: ">=2.0.0"
-  checksum: 10c0/9eef1bb579b9704653c98cce42f17d3843f9c40b496066d3cf6da41b000cd16d4af40ba5e7e5ee5f39cf9c46cb5ae350b6ad2ef547e04e52b5711c8bf535ae2f
+  checksum: 10c0/8ce196b3e793e64da410a9e67c78dc563d90aba1a3c439da14ed08a6427672905b2774eb8876e400da5d4acfda3ef058f84c5f173ee1ab782ec765c19c4ca341
   languageName: node
   linkType: hard
 
@@ -7105,7 +7105,7 @@ __metadata:
     "@fontsource-variable/geist": "npm:^5.3.0"
     "@hookform/resolvers": "npm:^5.9.1"
     "@metamask/jazzicon": "npm:^2.0.0"
-    "@oasisprotocol/privana-sdk": "npm:^0.7.6"
+    "@oasisprotocol/privana-sdk": "npm:^0.7.7"
     "@playwright/test": "npm:^1.63.0"
     "@tailwindcss/vite": "npm:^4.3.3"
     "@tanstack/react-query": "npm:^5.103.2"

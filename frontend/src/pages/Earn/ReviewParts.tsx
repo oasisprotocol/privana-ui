@@ -1,5 +1,5 @@
 import type { ReactNode } from 'react'
-import { ChevronLeft, ShieldCheck } from 'lucide-react'
+import { ChevronLeft, Clock, ShieldCheck } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { SurfaceCard } from '@/components/SurfaceCard'
 import { Row } from '@/components/Row'
@@ -71,6 +71,13 @@ export const ReviewDisclaimer = ({ children }: { children: ReactNode }) => (
   <div className="flex gap-2 rounded-xl border border-border bg-muted/30 px-4 py-3">
     <ShieldCheck className="mt-0.5 size-4 shrink-0 text-muted-foreground" />
     <p className="text-xs text-muted-foreground">{children}</p>
+  </div>
+)
+
+export const ReviewNotice = ({ children }: { children: ReactNode }) => (
+  <div className="flex gap-2 rounded-xl border border-amber-200 bg-amber-50 px-4 py-3 dark:border-amber-500/30 dark:bg-amber-500/10">
+    <Clock className="mt-0.5 size-4 shrink-0 text-amber-500" />
+    <p className="text-xs text-foreground">{children}</p>
   </div>
 )
 
