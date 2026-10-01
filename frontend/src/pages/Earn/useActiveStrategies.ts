@@ -2,6 +2,8 @@ import { useEarnBalance, useEarnPools } from '@/api/earn'
 import { useTokens } from '@/api/swap'
 import { formatTokenAmount } from '@oasisprotocol/privana-sdk'
 
+const atLeastZero = (amount: bigint) => (amount < 0n ? 0n : amount)
+
 export type ActiveStrategy = {
   poolId: string
   /** Formatted underlying amount + symbol, e.g. "200.00 USDC". */
@@ -56,7 +58,7 @@ export const useActiveStrategies = (): {
           : '-',
       earned:
         decimals != null && symbol && pos.earned_active != null && pos.earned_active_status === 'ok'
-          ? { symbol, amount: BigInt(pos.earned_active), decimals }
+          ? { symbol, amount: atLeastZero(BigInt(pos.earned_active)), decimals }
           : null,
     }
   })
