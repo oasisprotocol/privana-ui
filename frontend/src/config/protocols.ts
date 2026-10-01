@@ -11,7 +11,7 @@ const PROTOCOLS = [
     slowAfterMs: 8 * 60_000,
     depositNotice: 'Midas has no instant liquidity - withdrawing these funds can take up to 12 hours.',
     withdrawNotice:
-      'Midas has no instant liquidity - these funds can take up to 12 hours to arrive in Available. They stop earning as soon as you confirm.',
+      'Midas has no instant liquidity - these funds can take up to 12 hours to arrive in Available.',
   },
 ] as const
 
