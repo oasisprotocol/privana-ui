@@ -24,6 +24,7 @@ import type {
 } from '../../src/api/earn'
 import type { OperationsResponse } from '../../src/api/operations'
 import type { EarnHistoryResponse, PortfolioHistoryResponse } from '../../src/api/portfolio'
+import type { PriceListResponse } from '../../src/api/prices'
 import type {
   ChainListResponse,
   TokenListResponse as ServicesTokenListResponse,
@@ -293,9 +294,12 @@ export async function installApi(page: Page, state: StubState) {
     json(route, { points: [] } satisfies EarnHistoryResponse),
   )
 
-  // --- CoinGecko ---
-
-  await page.route('https://api.coingecko.com/api/v3/simple/price**', route =>
-    json(route, Object.fromEntries(Object.entries(state.prices).map(([geckoId, usd]) => [geckoId, { usd }]))),
+  await page.route(`${SERVICES_API_URL}/v1/prices`, route =>
+    json(route, {
+      prices: ALLOWED_TOKEN_IDS.flatMap(id => {
+        const usd = state.prices[getGeckoId(id) ?? '']
+        return usd == null ? [] : [{ token_id: id, usd: String(usd), updated_at: 0 }]
+      }),
+    } satisfies PriceListResponse),
   )
 }

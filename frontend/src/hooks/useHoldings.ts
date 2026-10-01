@@ -2,7 +2,7 @@ import { useMemo } from 'react'
 import { formatUnits } from 'viem'
 import { usePrivanaContext, useBatchBalances } from '@oasisprotocol/privana-sdk'
 import { useEarnBalance, useEarnPools } from '@/api/earn'
-import { useTokenPrices } from '@/api/coin-gecko'
+import { useTokenPrices } from '@/api/prices'
 import { mergeTokensBySymbol, type MergedTokenAmount } from '@/lib/tokens'
 
 export interface EarnHolding {
