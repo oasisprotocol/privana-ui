@@ -7,7 +7,7 @@ import {
 } from '@oasisprotocol/privana-sdk'
 import { formatUnits } from 'viem'
 import { useEarnPools, useEarnBalance } from '@/api/earn'
-import { useTokenPrices } from '@/api/coin-gecko'
+import { useTokenPrices } from '@/api/prices'
 import { computeEarnChange24h, type EarnChange24h } from '@/lib/earn'
 import { mergeTokensBySymbol } from '@/lib/tokens'
 

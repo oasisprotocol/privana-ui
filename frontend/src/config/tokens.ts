@@ -1,5 +1,4 @@
 interface TokenConfig {
-  geckoId: string
   swappable?: boolean
 }
 
@@ -10,73 +9,44 @@ export const MAINNET_TRANSAK_TOKEN_ID = '0x5e7facf6b7b5b9887e41398db2ae1990ff7e3
 // Each service (swap / earn / on-ramp) uses a different token, some aren't swappable,
 // and honoroll's tokens (their own USDC deployments) are excluded.
 const TESTNET_TOKENS = {
-  '0x330ba47d00c7ce3018deee017b319fd7cc6473a2ddc9e6eba6ebb4207be15279': {
-    geckoId: 'usd-coin',
-  },
-  '0x335b5cccd1e63b2fe79863a0db73fce430e4e66902e2b78424f8662621e29fb7': {
-    geckoId: 'ethereum',
-  },
+  '0x330ba47d00c7ce3018deee017b319fd7cc6473a2ddc9e6eba6ebb4207be15279': {},
+  '0x335b5cccd1e63b2fe79863a0db73fce430e4e66902e2b78424f8662621e29fb7': {},
   '0xc719650e9f4b0f27d956638c54518932ef9d15e720a1a2b2850250bcd0816514': {
-    geckoId: 'usd-coin',
     swappable: false,
   },
   [TESTNET_TRANSAK_TOKEN_ID]: {
-    geckoId: 'usd-coin',
     swappable: false,
   },
   '0xbd3a41ffd21be1cfcdca7a4e7755842a5b78c9443fb7ea008e6a7314f0caea87': {
-    geckoId: 'usd-coin',
     swappable: false,
   },
 } as const satisfies Record<string, TokenConfig>
 
 // Mainnet ids from https://api.privana.finance/v1/accounting/tokens
-// Every token is swappable. The map still has to exist for the CoinGecko ids.
+// Every token is swappable; the map lists the tokens the app shows.
 const MAINNET_TOKENS = {
   // Base (8453) — native ETH
-  '0xe5e6c795953f93ec9c872a4a6000788aacf182163c7abf8a5e982fedcd9f1620': {
-    geckoId: 'ethereum',
-  },
+  '0xe5e6c795953f93ec9c872a4a6000788aacf182163c7abf8a5e982fedcd9f1620': {},
   // Base (8453) — USDC (0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913)
-  [MAINNET_TRANSAK_TOKEN_ID]: {
-    geckoId: 'usd-coin',
-  },
+  [MAINNET_TRANSAK_TOKEN_ID]: {},
   // Ethereum (1) — native ETH
-  '0xa52deb863f04f0481adb11470f3e3789b541f4253662bf69b0c3e6879792cf0b': {
-    geckoId: 'ethereum',
-  },
+  '0xa52deb863f04f0481adb11470f3e3789b541f4253662bf69b0c3e6879792cf0b': {},
   // Ethereum (1) — USDC (0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48)
-  '0x6a53c372368bfca6b9cb392eec897c3b685f4380af001f48fded5c2b59f5c873': {
-    geckoId: 'usd-coin',
-  },
+  '0x6a53c372368bfca6b9cb392eec897c3b685f4380af001f48fded5c2b59f5c873': {},
   // HyperEVM (999) — native HYPE
-  '0x85b9d7ada49e51566fb5032bfc642b4799ec6c5ecc4942aa117493e946e18770': {
-    geckoId: 'hyperliquid',
-  },
+  '0x85b9d7ada49e51566fb5032bfc642b4799ec6c5ecc4942aa117493e946e18770': {},
   // HyperEVM (999) — USDC (0xb88339CB7199b77E23DB6E890353E22632Ba630f)
-  '0xbb600e800a38b161b32e0f797b798f09cb12498ab1457f2b2a92d768a6dd0105': {
-    geckoId: 'usd-coin',
-  },
+  '0xbb600e800a38b161b32e0f797b798f09cb12498ab1457f2b2a92d768a6dd0105': {},
   // Base (8453) — LINK (0x88Fb150BDc53A65fe94Dea0c9BA0a6dAf8C6e196)
-  '0x73ea35bc4304a8cc1b4f6d68788d0b35656bbcaf25cd2d387195ac74742dcdb9': {
-    geckoId: 'chainlink',
-  },
+  '0x73ea35bc4304a8cc1b4f6d68788d0b35656bbcaf25cd2d387195ac74742dcdb9': {},
   // Ethereum (1) — LINK (0x514910771AF9Ca656af840dff83E8264EcF986CA)
-  '0x0c6719ba2b58a0202e67ccc6a498b50caf6015c631b3cb5550e43094ac65f2db': {
-    geckoId: 'chainlink',
-  },
+  '0x0c6719ba2b58a0202e67ccc6a498b50caf6015c631b3cb5550e43094ac65f2db': {},
   // Ethereum (1) — UNI (0x1f9840a85d5aF5bf1D1762F925BDADdC4201F984)
-  '0x63955ea62ffbdf7b094497e960741ce09f9493da15191157405d00178613a196': {
-    geckoId: 'uniswap',
-  },
+  '0x63955ea62ffbdf7b094497e960741ce09f9493da15191157405d00178613a196': {},
   // HyperEVM (999) — Unit BTC (0x9FDBdA0A5e284c32744D2f17Ee5c74B284993463)
-  '0xa71ce404078cb7a57d8534dfa8e9564298e4bac14ecbea8b7b8aaea038e6080f': {
-    geckoId: 'unit-bitcoin',
-  },
+  '0xa71ce404078cb7a57d8534dfa8e9564298e4bac14ecbea8b7b8aaea038e6080f': {},
   // HyperEVM (999) — Unit SOL (0x068f321Fa8Fb9f0D135f290Ef6a3e2813e1c8A29)
-  '0xf096e4eaba925782f870c1007312ba3bc69dd80d8f18e25d6b1dc599043b0d9f': {
-    geckoId: 'unit-solana',
-  },
+  '0xf096e4eaba925782f870c1007312ba3bc69dd80d8f18e25d6b1dc599043b0d9f': {},
 } as const satisfies Record<string, TokenConfig>
 
 export type TokenId = keyof typeof TESTNET_TOKENS | keyof typeof MAINNET_TOKENS
@@ -89,5 +59,3 @@ export const ALLOWED_TOKEN_IDS = Object.keys(TOKENS) as TokenId[]
 export const SWAPPABLE_TOKEN_IDS: TokenId[] = (Object.entries(TOKENS) as [TokenId, TokenConfig][])
   .filter(([, cfg]) => cfg.swappable !== false)
   .map(([id]) => id)
-
-export const getGeckoId = (tokenId: string): string | undefined => TOKENS[tokenId]?.geckoId
