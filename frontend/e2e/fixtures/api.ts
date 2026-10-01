@@ -293,9 +293,13 @@ export async function installApi(page: Page, state: StubState) {
     json(route, { points: [] } satisfies EarnHistoryResponse),
   )
 
-  // --- CoinGecko ---
+  // --- Prices (DefiLlama, keyed by CoinGecko id) ---
 
-  await page.route('https://api.coingecko.com/api/v3/simple/price**', route =>
-    json(route, Object.fromEntries(Object.entries(state.prices).map(([geckoId, usd]) => [geckoId, { usd }]))),
+  await page.route('https://coins.llama.fi/prices/current/**', route =>
+    json(route, {
+      coins: Object.fromEntries(
+        Object.entries(state.prices).map(([geckoId, price]) => [`coingecko:${geckoId}`, { price }]),
+      ),
+    }),
   )
 }

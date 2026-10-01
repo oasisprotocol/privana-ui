@@ -1,28 +1,25 @@
 import { useQuery } from '@tanstack/react-query'
 import { getGeckoId } from '../config/tokens'
 
-const COINGECKO_API = 'https://api.coingecko.com/api/v3'
+const PRICES_API = 'https://coins.llama.fi/prices/current'
 
 export { getGeckoId }
 
-type GeckoResponse = Record<string, Record<string, number>>
+type PricesResponse = { coins: Record<string, { price: number } | undefined> }
 type GeckoPriceMap = Record<string, number | undefined>
 type PriceMap = Record<string, number | undefined>
 
-export function useTokenPrices(tokenIds: string[], fiatCurrency = 'usd') {
+export function useTokenPrices(tokenIds: string[]) {
   const geckoIds = [...new Set(tokenIds.map(getGeckoId).filter((id): id is string => !!id))].sort()
 
   return useQuery<GeckoPriceMap, Error, PriceMap>({
-    queryKey: ['coingecko-prices', geckoIds, fiatCurrency],
+    queryKey: ['token-prices', geckoIds],
     queryFn: async ({ signal }) => {
-      const params = new URLSearchParams({
-        ids: geckoIds.join(','),
-        vs_currencies: fiatCurrency,
-      })
-      const res = await fetch(`${COINGECKO_API}/simple/price?${params}`, { signal })
-      if (!res.ok) throw new Error(`CoinGecko API error: ${res.status}`)
-      const data: GeckoResponse = await res.json()
-      return Object.fromEntries(geckoIds.map(id => [id, data[id]?.[fiatCurrency]]))
+      const coins = geckoIds.map(id => `coingecko:${id}`).join(',')
+      const res = await fetch(`${PRICES_API}/${coins}`, { signal })
+      if (!res.ok) throw new Error(`Price API error: ${res.status}`)
+      const data: PricesResponse = await res.json()
+      return Object.fromEntries(geckoIds.map(id => [id, data.coins[`coingecko:${id}`]?.price]))
     },
     select: byGeckoId => {
       const result: PriceMap = {}
