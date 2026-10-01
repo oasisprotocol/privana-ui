@@ -142,6 +142,12 @@ describe('useActiveStrategies per-venue position', () => {
     ])
   })
 
+  it('shows a position below cost as nothing earned', () => {
+    balanceState.data = { positions: [position({ earned_active: '-255' })] }
+    const { result } = renderHook(() => useActiveStrategies())
+    expect(result.current.strategies[0].earned).toEqual({ symbol: 'USDC', amount: 0n, decimals: 6 })
+  })
+
   it('leaves earned unset for a venue whose figure the backend cannot vouch for, without hiding others', () => {
     poolsState.data = { pools: [pool(), pool({ pool_id: '0xpool-b' })] }
     balanceState.data = {

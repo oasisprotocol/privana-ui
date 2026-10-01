@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { computeEarnChange24h } from './earn'
+import { computeEarnChange24h, formatEarnChange24h } from './earn'
 
 // Base units → fiat at a fixed per-token price, 6 decimals everywhere.
 const PRICES: Record<string, number> = { '0xusdc': 1, '0xweth': 2 }
@@ -63,5 +63,28 @@ describe('computeEarnChange24h', () => {
     )
     expect(change?.usd).toBeCloseTo(-0.008)
     expect(change?.pct).toBeCloseTo(-0.8)
+  })
+})
+
+describe('formatEarnChange24h', () => {
+  it('shows a move too small to display as a positive zero', () => {
+    expect(formatEarnChange24h({ usd: -0.0011, pct: -0.004 })).toEqual({
+      text: '+$0.00 (+0.00%)',
+      negative: false,
+    })
+  })
+
+  it('stays negative when either rounded figure is below zero', () => {
+    expect(formatEarnChange24h({ usd: -0.0011, pct: -0.0125 })).toEqual({
+      text: '-$0.00 (-0.01%)',
+      negative: true,
+    })
+  })
+
+  it('signs a positive day', () => {
+    expect(formatEarnChange24h({ usd: 1.234, pct: 0.8 })).toEqual({
+      text: '+$1.23 (+0.80%)',
+      negative: false,
+    })
   })
 })
