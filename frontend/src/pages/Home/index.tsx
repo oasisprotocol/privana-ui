@@ -21,7 +21,7 @@ import { dashboardPath } from '@/paths'
 //   - fully signed in     → redirect to the dashboard
 export const Home = () => {
   const { isConnected, status } = useConnection()
-  const { isAuthenticated, isLoading: isAuthLoading, error: authError, login } = useSiweAuth()
+  const { isAuthenticated, isLoading: isAuthLoading, error: authError, sessionExpired, login } = useSiweAuth()
   const isSignedIn = useIsSignedIn()
   const signInForm = useSignInForm()
   const signOut = useSignOut()
@@ -35,13 +35,14 @@ export const Home = () => {
       autoLoginTried.current = false
       return
     }
-    if (!isAuthenticated && !isAuthLoading && !authError && !autoLoginTried.current) {
+    // An expired session waits for the user to sign again rather than opening the wallet.
+    if (!isAuthenticated && !isAuthLoading && !authError && !sessionExpired && !autoLoginTried.current) {
       autoLoginTried.current = true
       void login().catch(() => {})
     }
-  }, [status, isAuthenticated, isAuthLoading, authError, login])
+  }, [status, isAuthenticated, isAuthLoading, authError, sessionExpired, login])
 
-  const authPending = isConnected && !isAuthenticated && !authError
+  const authPending = isConnected && !isAuthenticated && !authError && !sessionExpired
   const showPendingEscape = useSlowSettlement(authPending ? 'in-progress' : 'completed')
 
   if (isSignedIn) {
@@ -66,7 +67,7 @@ export const Home = () => {
           {isConnected ? (
             // Auth step: wallet connected, finish with the SIWE signature. Kept on
             // this surface (not bounced to /dashboard) as a distinct confirm step.
-            authError ? (
+            authError || sessionExpired ? (
               <div className="flex flex-col items-center text-center">
                 <AuthBadge />
                 <h1 className="mt-6 text-3xl font-semibold tracking-tight text-foreground">
@@ -75,9 +76,15 @@ export const Home = () => {
                 <p className="mt-2 text-sm text-muted-foreground">
                   Sign a message to finish signing in — it&apos;s free and never moves your funds.
                 </p>
-                <p role="alert" className="mt-4 text-sm text-destructive">
-                  Signature request wasn&apos;t completed. Please try again.
-                </p>
+                {authError ? (
+                  <p role="alert" className="mt-4 text-sm text-destructive">
+                    Signature request wasn&apos;t completed. Please try again.
+                  </p>
+                ) : (
+                  <p className="mt-4 text-sm text-foreground">
+                    Your session expired. Sign the message to continue.
+                  </p>
+                )}
                 <Button
                   size="lg"
                   className="mt-8 h-14 w-full px-6 text-base"
