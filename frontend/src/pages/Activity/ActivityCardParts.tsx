@@ -1,89 +1,90 @@
-import type { LucideIcon } from 'lucide-react'
+import { ArrowRight, type LucideIcon } from 'lucide-react'
 import type { ReactNode } from 'react'
+import { getTokenIcon } from '@oasisprotocol/privana-sdk'
 import { cn } from '@/lib/utils'
 import { TokenAmount } from '@/components/TokenAmount'
-import type { ActivityTokenInfo } from '@/contexts/ActivityProvider/context'
-import type { Venue } from '@/config/protocols'
-import { formatActivityTime } from './formatTime'
-import { TONE_TEXT } from './activityVisuals'
-import { CounterpartyBadge } from './CounterpartyBadge'
+import type { ActivityStatus, ActivityTokenInfo } from '@/contexts/ActivityProvider/context'
 import { describeFailure } from './failureCopy'
 
-export const ActivityIcon = ({ Icon, iconClass }: { Icon: LucideIcon; iconClass: string }) => (
-  <span className={cn('flex h-10 w-10 shrink-0 items-center justify-center rounded-xl', iconClass)}>
-    <Icon className="h-4 w-4" />
+export const ActivityIcon = ({ Icon, status }: { Icon: LucideIcon; status?: ActivityStatus }) => (
+  <span className="flex w-4 shrink-0 items-center justify-center">
+    {status === 'in-progress' ? (
+      <span
+        role="img"
+        aria-label="In progress"
+        className="size-2 rounded-full bg-primary motion-safe:animate-blink"
+      />
+    ) : status === 'failed' ? (
+      <span role="img" aria-label="Failed" className="size-2 rounded-full bg-destructive" />
+    ) : (
+      <Icon aria-hidden="true" className="size-4 text-foreground" />
+    )}
   </span>
 )
 
-export const ActivityCard = ({
-  children,
-  divider,
-  icon,
-}: {
-  children: ReactNode
-  divider?: boolean
-  icon?: ReactNode
-}) => (
-  <div className={cn('flex items-start gap-3 p-4', divider && 'border-t border-border')}>
-    {icon}
-    <div className="flex min-w-0 flex-1 flex-col gap-2">{children}</div>
-  </div>
+export const ActivityCard = ({ children, divider }: { children: ReactNode; divider?: boolean }) => (
+  <div className={cn('px-4 py-2.5', divider && 'border-t border-border')}>{children}</div>
 )
 
 export const ActivityRowBody = ({
+  icon,
   title,
-  timestamp,
-  counterparty,
-  venue,
+  amount,
   subtitle,
   failure,
-  amount,
+  aside,
 }: {
+  icon: ReactNode
   title: string
-  timestamp?: number
-  counterparty?: string | null
-  venue?: Venue | null
+  amount?: ReactNode
   subtitle?: ReactNode
   failure?: string
-  amount?: ReactNode
+  /** Right side of the second line: the venue, or what a swap received. */
+  aside?: ReactNode
 }) => (
-  <div className="flex items-start justify-between gap-3">
-    <div className="min-w-0 flex-1">
-      <p className="truncate text-sm font-semibold leading-tight text-foreground">{title}</p>
-      <div className="mt-1 flex items-center gap-2 text-xs text-muted-foreground">
-        {timestamp != null && <span>{formatActivityTime(timestamp)}</span>}
-        <CounterpartyBadge counterparty={counterparty} venue={venue} />
-      </div>
-      {subtitle != null && (
-        <p
-          title={failure}
-          className={cn(
-            'mt-1 text-xs',
-            failure ? cn('break-all', TONE_TEXT.red) : 'truncate text-muted-foreground',
-          )}
-        >
-          {subtitle}
-          {failure && ` · ${describeFailure(failure)}`}
-        </p>
-      )}
+  <>
+    <div className="flex items-center justify-between gap-3">
+      <span className="flex min-w-0 items-center gap-1.5">
+        {icon}
+        <span className="truncate text-sm font-semibold leading-tight text-foreground">{title}</span>
+      </span>
+      {amount != null && <span className="shrink-0">{amount}</span>}
     </div>
-    {amount != null && <div className="shrink-0 pl-2 text-right">{amount}</div>}
-  </div>
+    {(subtitle != null || aside != null) && (
+      <div className="mt-0.5 flex items-center justify-between gap-3">
+        {subtitle != null ? (
+          <p
+            title={failure}
+            className={cn(
+              'min-w-0 text-xs',
+              failure ? 'break-all text-destructive' : 'truncate text-muted-foreground',
+            )}
+          >
+            {subtitle}
+            {failure && ` · ${describeFailure(failure)}`}
+          </p>
+        ) : (
+          <span />
+        )}
+        {aside}
+      </div>
+    )}
+  </>
 )
 
-export const ActivityAmount = ({
-  sign,
-  className,
-  token,
-  amount,
-}: {
-  sign: string
-  className?: string
-  token: ActivityTokenInfo
-  amount: string
-}) => (
-  <div className={cn('whitespace-nowrap text-sm font-semibold tabular-nums', className)}>
-    {sign}
+export const ActivityAmount = ({ token, amount }: { token: ActivityTokenInfo; amount: string }) => (
+  <span className="inline-flex items-center gap-1.5 whitespace-nowrap text-sm font-semibold leading-none tabular-nums text-foreground">
+    <span className="inline-flex size-3 shrink-0 overflow-hidden rounded-full">
+      {getTokenIcon(token.symbol, 12)}
+    </span>
     <TokenAmount amount={amount} token={token} withSymbol />
-  </div>
+  </span>
+)
+
+export const SwapReceived = ({ token, amount }: { token: ActivityTokenInfo; amount: string }) => (
+  <span className="flex shrink-0 items-center gap-1.5">
+    <ArrowRight aria-hidden="true" className="size-3.5 shrink-0 text-muted-foreground" />
+    <span className="sr-only">for</span>
+    <ActivityAmount token={token} amount={amount} />
+  </span>
 )

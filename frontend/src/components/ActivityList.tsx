@@ -5,6 +5,32 @@ import { Skeleton } from '@/components/ui/skeleton'
 import { cn } from '@/lib/utils'
 import { type MergedRow, rowKey } from '@/hooks/use-merged-activity'
 import { ActivityRow } from '@/pages/Activity/ActivityRow'
+import { groupRowsByDay } from '@/pages/Activity/groupByDay'
+
+export const ActivityGroups = ({ rows }: { rows: MergedRow[] }) => (
+  <div className="flex flex-col gap-5">
+    {groupRowsByDay(rows).map(group => (
+      <div key={group.key}>
+        <p className="mb-1.5 px-1 text-xs font-medium text-muted-foreground">{group.label}</p>
+        <SurfaceCard className="overflow-hidden">
+          {group.rows.map((row, i) => (
+            <ActivityRow key={rowKey(row)} row={row} divider={i > 0} />
+          ))}
+        </SurfaceCard>
+      </div>
+    ))}
+  </div>
+)
+
+export const ActivitySkeleton = ({ rows }: { rows: number }) => (
+  <SurfaceCard className="overflow-hidden">
+    {Array.from({ length: rows }).map((_, i) => (
+      <div key={i} className={cn('px-4 py-2.5', i > 0 && 'border-t border-border')}>
+        <Skeleton className="h-9 w-full" />
+      </div>
+    ))}
+  </SurfaceCard>
+)
 
 export const ActivityList = ({
   rows,
@@ -25,27 +51,9 @@ export const ActivityList = ({
 
   if (isError) return <ActivityUnavailable onRetry={onRetry} />
 
-  if (latest.length > 0) {
-    return (
-      <SurfaceCard className="overflow-hidden">
-        {latest.map((row, i) => (
-          <ActivityRow key={rowKey(row)} row={row} divider={i > 0} />
-        ))}
-      </SurfaceCard>
-    )
-  }
+  if (latest.length > 0) return <ActivityGroups rows={latest} />
 
-  if (isLoading) {
-    return (
-      <SurfaceCard className="overflow-hidden">
-        {Array.from({ length: max }).map((_, i) => (
-          <div key={i} className={cn('p-4', i > 0 && 'border-t border-border')}>
-            <Skeleton className="h-14 w-full" />
-          </div>
-        ))}
-      </SurfaceCard>
-    )
-  }
+  if (isLoading) return <ActivitySkeleton rows={max} />
 
   return <>{emptyState}</>
 }
