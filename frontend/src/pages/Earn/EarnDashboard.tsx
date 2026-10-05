@@ -6,7 +6,6 @@ import { useTokens } from '@/api/swap'
 import { PageHeading } from '@/components/PageHeading'
 import { useFunds } from '@/hooks/useFunds'
 import { SWAPPABLE_TOKEN_IDS } from '@/config/tokens'
-import { useResetBalanceCaches } from '@/hooks/use-reset-balance-caches'
 import { useActiveStrategies } from './useActiveStrategies'
 import { EarnBalance } from './EarnBalance'
 import { VenueCard, type Venue } from './VenueCard'
@@ -37,7 +36,6 @@ export const EarnDashboard = () => {
   const isLoading = poolsLoading || tokensLoading || positionsLoading || positionsError
   const [depositOpen, setDepositOpen] = useState(false)
   const [getTokenFor, setGetTokenFor] = useState<Venue | null>(null)
-  const resetBalanceCaches = useResetBalanceCaches()
 
   const venues = useMemo<Venue[]>(() => {
     if (!poolsData || !tokensData) return []
@@ -128,10 +126,7 @@ export const EarnDashboard = () => {
       <DepositModal
         open={depositOpen}
         onClose={() => setDepositOpen(false)}
-        onDepositSuccess={() => {
-          resetBalanceCaches()
-          setDepositOpen(false)
-        }}
+        onDepositSuccess={() => setDepositOpen(false)}
       />
     </>
   )

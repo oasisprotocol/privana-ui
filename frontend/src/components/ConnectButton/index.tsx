@@ -218,10 +218,7 @@ export const ConnectButton: FC = () => {
       <DepositModal
         open={activeModal === 'deposit'}
         onClose={() => setActiveModal(null)}
-        onDepositSuccess={() => {
-          resetBalanceCaches()
-          setActiveModal(null)
-        }}
+        onDepositSuccess={() => setActiveModal(null)}
       />
       <WithdrawModal
         open={activeModal === 'withdraw'}

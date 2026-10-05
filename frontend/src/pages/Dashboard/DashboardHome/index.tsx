@@ -356,10 +356,7 @@ export const DashboardHome = () => {
       <DepositModal
         open={depositTab !== null}
         onClose={() => setDepositTab(null)}
-        onDepositSuccess={() => {
-          resetBalanceCaches()
-          setDepositTab(null)
-        }}
+        onDepositSuccess={() => setDepositTab(null)}
         defaultTab={depositTab ?? 'crypto'}
       />
 
