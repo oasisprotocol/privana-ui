@@ -57,15 +57,17 @@ const HISTORY_ONLY: Record<Exclude<DisplayKind, MoveKind | 'swap'>, RowCopy> = {
   unknown: { title: 'Activity', subtitle: 'Unrecognized activity' },
 }
 
+/** `status` is in-progress for a deposit not yet credited or a withdrawal not yet paid out. */
 export function historyRowCopy(
   row: Pick<ClassifiedHistoryEntry, 'kind' | 'counterparty' | 'entry'>,
+  status: ActivityStatus = 'completed',
 ): RowCopy {
   switch (row.kind) {
     case 'deposit':
     case 'withdraw':
     case 'earnDeposit':
     case 'earnWithdraw':
-      return moveCopy(row.kind, 'completed')
+      return moveCopy(row.kind, status)
     case 'swap':
       return swapCopy('completed', '')
     case 'lock': {

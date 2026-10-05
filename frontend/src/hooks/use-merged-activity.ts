@@ -13,13 +13,21 @@ import {
   type HistoryWindow,
   indexPools,
 } from '@/pages/Activity/historyMapping'
+import { chainRowsWithPending } from '@/pages/Activity/pendingRows'
+import { usePendingTransfers } from './usePendingTransfers'
 
 export type MergedRow =
-  | { source: 'chain'; timestamp: number; row: ClassifiedHistoryEntry }
+  | {
+      source: 'chain'
+      timestamp: number
+      row: ClassifiedHistoryEntry
+      pending?: true
+      pendingKey?: string
+    }
   | { source: 'local'; timestamp: number; activity: Activity }
 
 export const rowKey = (r: MergedRow): string =>
-  r.source === 'local' ? `local:${r.activity.id}` : `chain:${r.row.index}`
+  r.source === 'local' ? `local:${r.activity.id}` : (r.pendingKey ?? `chain:${r.row.index}`)
 
 export interface UseMergedActivityResult {
   rows: MergedRow[]
@@ -172,6 +180,7 @@ export function useMergedActivity(historyLimit: number = HISTORY_PAGE_SIZE): Use
   const { data: tokensData, isLoading: tokensLoading, isError: tokensError } = useTokens()
   const { activities } = useActivity()
   const operations = useOperations(activities)
+  const pendingTransfers = usePendingTransfers()
 
   const poolsByAddressToken = useMemo(() => indexPools(poolsData?.pools ?? []), [poolsData])
 
@@ -240,11 +249,7 @@ export function useMergedActivity(historyLimit: number = HISTORY_PAGE_SIZE): Use
     // source down the list is unknown; an empty list would read as "no history".
     if (isLoading || isError) return []
 
-    const merged: MergedRow[] = chainRows.map(row => ({
-      source: 'chain' as const,
-      timestamp: row.timestamp,
-      row,
-    }))
+    const merged: MergedRow[] = chainRowsWithPending(chainRows, pendingTransfers)
 
     for (const a of [...serverRows, ...visibleOptimistic]) {
       // Activity.createdAt is ms; HistoryEntry.timestamp is seconds.
@@ -252,7 +257,7 @@ export function useMergedActivity(historyLimit: number = HISTORY_PAGE_SIZE): Use
     }
     merged.sort((a, b) => b.timestamp - a.timestamp)
     return merged
-  }, [isLoading, isError, chainRows, serverRows, visibleOptimistic])
+  }, [isLoading, isError, chainRows, pendingTransfers, serverRows, visibleOptimistic])
 
   return { rows, isLoading, isError, refetch }
 }

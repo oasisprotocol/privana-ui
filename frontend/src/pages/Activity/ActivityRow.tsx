@@ -11,5 +11,5 @@ export const ActivityRow = ({ row, divider }: { row: MergedRow; divider?: boolea
       <EarnActivityCard activity={row.activity} divider={divider} />
     )
   }
-  return <ChainActivityCard row={row.row} divider={divider} />
+  return <ChainActivityCard row={row.row} pending={row.pending} divider={divider} />
 }

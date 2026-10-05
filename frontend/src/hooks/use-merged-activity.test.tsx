@@ -4,6 +4,7 @@ import type { HistoryEntry } from '@oasisprotocol/privana-sdk'
 import type { EarnPool } from '@/api/earn'
 import type { Operation } from '@/api/operations'
 import type { Activity } from '@/contexts/ActivityProvider/context'
+import type { PendingTransfer } from './usePendingTransfers'
 import {
   resolveActivity,
   useMergedActivity,
@@ -41,6 +42,9 @@ vi.mock('@/api/operations', async importOriginal => ({
   ...(await importOriginal<typeof import('@/api/operations')>()),
   useOperations: () => operationsState,
 }))
+
+let pendingState: PendingTransfer[]
+vi.mock('./usePendingTransfers', () => ({ usePendingTransfers: () => pendingState }))
 
 let activityState: { activities: Activity[] }
 vi.mock('@/contexts/ActivityProvider/useActivity', () => ({ useActivity: () => activityState }))
@@ -136,6 +140,7 @@ const localIds = (rows: ReturnType<typeof useMergedActivity>['rows']) =>
   rows.map(r => (r.source === 'local' ? r.activity.id : `chain:${r.row.kind}`))
 
 beforeEach(() => {
+  pendingState = []
   historyState = { history: [], total: 0, isLoading: false, isError: false, refetch: vi.fn() }
   poolsState = { data: { pools: [POOL] }, isLoading: false, isError: false }
   tokensState = {

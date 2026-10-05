@@ -73,7 +73,8 @@ export function appOf(r: MergedRow): string {
 }
 
 export function statusOf(r: MergedRow): ActivityStatus {
-  return r.source === 'local' ? r.activity.status : 'completed'
+  if (r.source === 'local') return r.activity.status
+  return r.pending ? 'in-progress' : 'completed'
 }
 
 export type ResolveSymbol = (tokenId: string | null | undefined) => string | undefined

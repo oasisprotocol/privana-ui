@@ -16,15 +16,18 @@ const deposit = (step: 1 | 2, token: TokenConfig | undefined): PendingTransfer =
   kind: 'deposit',
   key: 'deposit:0xabc',
   amount: 10_000_000n,
+  tokenId: '0xusdc',
   token,
   step,
   sentAt: 0,
+  depositId: undefined,
 })
 
 const withdrawal = (token: TokenConfig | undefined): PendingTransfer => ({
   kind: 'withdraw',
   key: 'withdraw:1',
   amount: '2500000',
+  tokenId: '0xusdc',
   token,
   index: 1,
   to: '0x2',
