@@ -46,7 +46,7 @@ export const ActivityRowBody = ({
   amount?: ReactNode
   subtitle?: ReactNode
   failure?: string
-  /** Right side of the second line: the venue, or what a swap received. */
+  /** Right side of the second line: the venue. */
   aside?: ReactNode
 }) => (
   <>

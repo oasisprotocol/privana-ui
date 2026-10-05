@@ -77,21 +77,9 @@ function isAhead(stage: string, stages: OperationStage[], direction: 'deposit' |
   return last == null || order.indexOf(stage) > order.indexOf(last)
 }
 
-/** One-line status for the row, and how far along the bar should be. */
-export function earnStageSummary(
-  direction: 'deposit' | 'withdraw',
-  protocol: string,
-  allStages: OperationStage[],
-): { label: string; percent: number } | null {
+/** One-line status for the row: the latest stage the services reported. */
+export function earnStageLabel(protocol: string, allStages: OperationStage[]): string | null {
   const stages = allStages.filter(s => s.stage !== 'status')
   const last = stages[stages.length - 1]
-  if (!last) return null
-  const steps = earnStageSteps(direction, protocol, stages)
-  const index = steps.findIndex(s => s.stage === last.stage)
-  let within = 0.5
-  if (last.stage === 'finality' && last.detail?.confirmations != null && last.detail?.required) {
-    within = Math.min(1, last.detail.confirmations / last.detail.required)
-  }
-  const percent = steps.length ? Math.round(((Math.max(index, 0) + within) / steps.length) * 100) : 50
-  return { label: stageLabel(last.stage, protocol, last.detail), percent }
+  return last ? stageLabel(last.stage, protocol, last.detail) : null
 }
