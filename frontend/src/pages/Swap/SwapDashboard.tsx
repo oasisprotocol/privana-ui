@@ -11,7 +11,7 @@ import { activityPath } from '@/paths'
 import { SWAPPABLE_TOKEN_IDS } from '@/config/tokens'
 import { cn } from '@/lib/utils'
 import { amountFiat, amountInputError, exceedsAmount, parseAmount } from '@/lib/tokens'
-import { useResetBalanceCaches } from '@/hooks/use-reset-balance-caches'
+import { useRefreshBalanceCaches } from '@/hooks/use-reset-balance-caches'
 import { DESKTOP_CARD } from '@/lib/surface'
 import { useResolvedActivity } from '@/hooks/use-merged-activity'
 import { QuoteCountdown } from '@/components/QuoteCountdown'
@@ -29,7 +29,7 @@ export const SwapDashboard = () => {
   const { data, isLoading, error } = useTokens()
   const { address } = useConnection()
   const walletClient = useSigningClient()
-  const resetBalanceCaches = useResetBalanceCaches()
+  const refreshBalanceCaches = useRefreshBalanceCaches()
   const navigate = useNavigate()
   const [searchParams] = useSearchParams()
   const [fromTokenId, setFromTokenId] = useState('')
@@ -88,7 +88,7 @@ export const SwapDashboard = () => {
     error: swapError,
     reset: resetSubmit,
   } = useSubmitSwap({
-    onSuccess: resetBalanceCaches,
+    onSuccess: refreshBalanceCaches,
     // The quote on screen carries the nonce the pending operation holds;
     // re-quote so a retry signs against the current one.
     onRefused: () => {

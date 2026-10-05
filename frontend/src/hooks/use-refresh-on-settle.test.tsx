@@ -1,7 +1,7 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { renderHook } from '@testing-library/react'
 import type { Operation, OperationStatus } from '@/api/operations'
-import { useResetOnSettle } from './use-reset-on-settle'
+import { useRefreshOnSettle } from './use-refresh-on-settle'
 
 let operationsState: { data?: { operations: Operation[] } }
 vi.mock('@/api/operations', async importOriginal => ({
@@ -9,8 +9,8 @@ vi.mock('@/api/operations', async importOriginal => ({
   useOperations: () => operationsState,
 }))
 
-const reset = vi.fn()
-vi.mock('./use-reset-balance-caches', () => ({ useResetBalanceCaches: () => reset }))
+const refresh = vi.fn()
+vi.mock('./use-reset-balance-caches', () => ({ useRefreshBalanceCaches: () => refresh }))
 
 const NOW = 1_800_000_000
 
@@ -49,84 +49,84 @@ beforeEach(() => {
   vi.useFakeTimers()
   vi.setSystemTime(NOW * 1000)
   operationsState = {}
-  reset.mockClear()
+  refresh.mockClear()
 })
 
 afterEach(() => {
   vi.useRealTimers()
 })
 
-describe('useResetOnSettle', () => {
+describe('useRefreshOnSettle', () => {
   it('does nothing before the feed has loaded', () => {
-    renderHook(() => useResetOnSettle([]))
-    expect(reset).not.toHaveBeenCalled()
+    renderHook(() => useRefreshOnSettle([]))
+    expect(refresh).not.toHaveBeenCalled()
   })
 
   it('ignores a first response whose operations settled before watching began', () => {
-    const { rerender } = renderHook(() => useResetOnSettle([]))
+    const { rerender } = renderHook(() => useRefreshOnSettle([]))
     poll(rerender, op('done', 'completed'), op('open', 'scheduled'))
-    expect(reset).not.toHaveBeenCalled()
+    expect(refresh).not.toHaveBeenCalled()
   })
 
-  it('resets when the first response has an operation that settled after watching began', () => {
+  it('refreshes when the first response has an operation that settled after watching began', () => {
     // Balances loaded while it was still in flight, but the feed only answered after it settled.
-    const { rerender } = renderHook(() => useResetOnSettle([]))
+    const { rerender } = renderHook(() => useRefreshOnSettle([]))
     vi.setSystemTime((NOW + 30) * 1000)
     poll(rerender, op('a', 'completed', NOW - 600, NOW + 20))
-    expect(reset).toHaveBeenCalledTimes(1)
+    expect(refresh).toHaveBeenCalledTimes(1)
   })
 
-  it('resets once when an in-flight operation completes, not on later polls', () => {
-    const { rerender } = renderHook(() => useResetOnSettle([]))
+  it('refreshes once when an in-flight operation completes, not on later polls', () => {
+    const { rerender } = renderHook(() => useRefreshOnSettle([]))
     poll(rerender, op('a', 'scheduled'))
     poll(rerender, op('a', 'executing'))
-    expect(reset).not.toHaveBeenCalled()
+    expect(refresh).not.toHaveBeenCalled()
 
     poll(rerender, op('a', 'completed'))
-    expect(reset).toHaveBeenCalledTimes(1)
+    expect(refresh).toHaveBeenCalledTimes(1)
 
     poll(rerender, op('a', 'completed'))
-    expect(reset).toHaveBeenCalledTimes(1)
+    expect(refresh).toHaveBeenCalledTimes(1)
   })
 
-  it.each(['failed', 'refunded', 'canceled'] as const)('resets when an operation ends %s', status => {
-    const { rerender } = renderHook(() => useResetOnSettle([]))
+  it.each(['failed', 'refunded', 'canceled'] as const)('refreshes when an operation ends %s', status => {
+    const { rerender } = renderHook(() => useRefreshOnSettle([]))
     poll(rerender, op('a', 'pending'))
     poll(rerender, op('a', status))
-    expect(reset).toHaveBeenCalledTimes(1)
+    expect(refresh).toHaveBeenCalledTimes(1)
   })
 
-  it('resets once when an earn deposit parks as undeployed, not again when it completes', () => {
-    const { rerender } = renderHook(() => useResetOnSettle([]))
+  it('refreshes once when an earn deposit parks as undeployed, not again when it completes', () => {
+    const { rerender } = renderHook(() => useRefreshOnSettle([]))
     poll(rerender, op('a', 'pending'))
     poll(rerender, op('a', 'undeployed'))
-    expect(reset).toHaveBeenCalledTimes(1)
+    expect(refresh).toHaveBeenCalledTimes(1)
 
     poll(rerender, op('a', 'undeployed'))
     poll(rerender, op('a', 'completed'))
-    expect(reset).toHaveBeenCalledTimes(1)
+    expect(refresh).toHaveBeenCalledTimes(1)
   })
 
-  it('resets once for several operations settling in the same poll', () => {
-    const { rerender } = renderHook(() => useResetOnSettle([]))
+  it('refreshes once for several operations settling in the same poll', () => {
+    const { rerender } = renderHook(() => useRefreshOnSettle([]))
     poll(rerender, op('a', 'scheduled'), op('b', 'scheduled'))
     poll(rerender, op('a', 'completed'), op('b', 'failed'))
-    expect(reset).toHaveBeenCalledTimes(1)
+    expect(refresh).toHaveBeenCalledTimes(1)
   })
 
   it('counts an operation that started after watching began and was first seen settled', () => {
     // A quick swap can finish between two polls and never show as in flight.
-    const { rerender } = renderHook(() => useResetOnSettle([]))
+    const { rerender } = renderHook(() => useRefreshOnSettle([]))
     poll(rerender, op('old', 'completed'))
     poll(rerender, op('old', 'completed'), op('quick', 'completed', NOW + 5))
-    expect(reset).toHaveBeenCalledTimes(1)
+    expect(refresh).toHaveBeenCalledTimes(1)
   })
 
   it('ignores settled operations that predate watching when they first appear', () => {
     // e.g. another account's history after a switch, or an older page.
-    const { rerender } = renderHook(() => useResetOnSettle([]))
+    const { rerender } = renderHook(() => useRefreshOnSettle([]))
     poll(rerender, op('mine', 'completed'))
     poll(rerender, op('theirs', 'completed', NOW - 86_400))
-    expect(reset).not.toHaveBeenCalled()
+    expect(refresh).not.toHaveBeenCalled()
   })
 })

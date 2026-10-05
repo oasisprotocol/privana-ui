@@ -3,7 +3,7 @@ import { useNavigate, useParams } from 'react-router'
 import { useConnection } from 'wagmi'
 import { useEarnPools } from '@/api/earn'
 import { useTokens } from '@/api/swap'
-import { useResetBalanceCaches } from '@/hooks/use-reset-balance-caches'
+import { useRefreshBalanceCaches } from '@/hooks/use-reset-balance-caches'
 import { activityPath, earnCreatePath, earnPath } from '@/paths'
 import { cn } from '@/lib/utils'
 import { parseAmount } from '@/lib/tokens'
@@ -21,7 +21,7 @@ import { useSigningClient } from '@/hooks/use-signing-client'
 export const EarnCreate = () => {
   const { poolId } = useParams<{ poolId?: string }>()
   const navigate = useNavigate()
-  const resetBalanceCaches = useResetBalanceCaches()
+  const refreshBalanceCaches = useRefreshBalanceCaches()
   const { address } = useConnection()
   const walletClient = useSigningClient()
   const [amount, setAmount] = useState('')
@@ -65,7 +65,7 @@ export const EarnCreate = () => {
     error: depositError,
     reset: resetDeposit,
   } = useSubmitEarnDeposit({
-    onSuccess: resetBalanceCaches,
+    onSuccess: refreshBalanceCaches,
     onRefused: () => {
       resetQuote()
       setStep(1)

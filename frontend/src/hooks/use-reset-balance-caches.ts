@@ -23,9 +23,9 @@ export const useResetBalanceCaches = () => {
 }
 
 /**
- * Refetches balances while the old figures stay on screen. Only for money
- * arriving: the old figure is then lower, so it never overstates what the user
- * has, and the dashboard updates in place instead of blanking.
+ * Refetches balances while the old figures stay on screen, so the dashboard
+ * updates in place instead of blanking. Only for money arriving or moving
+ * within the account (swap, earn); money leaving it resets.
  */
 export const useRefreshBalanceCaches = () => {
   const queryClient = useQueryClient()
