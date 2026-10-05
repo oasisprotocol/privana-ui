@@ -39,7 +39,7 @@ const MidasIcon = ({ size = 20 }: { size?: number }) => (
   </svg>
 )
 
-const PROTOCOL_ICONS: Record<string, (props: { size?: number }) => ReactNode> = {
+export const PROTOCOL_ICONS: Record<string, (props: { size?: number }) => ReactNode> = {
   'aave-v3': AaveIcon,
   'midas-mtbill': MidasIcon,
 }

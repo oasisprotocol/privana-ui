@@ -3,17 +3,13 @@ import { Search, SlidersHorizontal } from 'lucide-react'
 import { usePrivanaContext } from '@oasisprotocol/privana-sdk'
 import { PageHeading } from '@/components/PageHeading'
 import { Button } from '@/components/ui/button'
-import { ActivityUnavailable } from '@/components/ActivityList'
+import { ActivityGroups, ActivitySkeleton, ActivityUnavailable } from '@/components/ActivityList'
 import { Input } from '@/components/ui/input'
-import { Skeleton } from '@/components/ui/skeleton'
 import { ToggleGroup, ToggleGroupItem } from '@/components/ui/toggle-group'
-import { SurfaceCard } from '@/components/SurfaceCard'
-import { cn } from '@/lib/utils'
-import { useMergedActivity, rowKey } from '@/hooks/use-merged-activity'
+import { useMergedActivity } from '@/hooks/use-merged-activity'
 import { ActivityFilterSheet } from './ActivityFilterSheet'
 import { applyFilters, type ActivityFilters, type FilterType } from './filters'
 import { useActivityFilters } from './useActivityFilters'
-import { ActivityRow } from './ActivityRow'
 
 const TABS = [
   { id: 'all', label: 'All' },
@@ -154,19 +150,9 @@ export const Activity = () => {
           </ToggleGroup>
 
           {visible.length > 0 ? (
-            <SurfaceCard className="overflow-hidden">
-              {visible.map((r, i) => (
-                <ActivityRow key={rowKey(r)} row={r} divider={i > 0} />
-              ))}
-            </SurfaceCard>
+            <ActivityGroups rows={visible} />
           ) : isLoading ? (
-            <SurfaceCard className="overflow-hidden">
-              {Array.from({ length: 5 }).map((_, i) => (
-                <div key={i} className={cn('p-4', i > 0 && 'border-t border-border')}>
-                  <Skeleton className="h-14 w-full" />
-                </div>
-              ))}
-            </SurfaceCard>
+            <ActivitySkeleton rows={5} />
           ) : (
             <p className="text-base text-muted-foreground">No matching activity</p>
           )}
