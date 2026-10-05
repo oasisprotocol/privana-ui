@@ -1,7 +1,7 @@
 import { Progress } from '@/components/ui/progress'
 import type { EarnActivity } from '@/contexts/ActivityProvider/context'
 import type { DisplayKind } from './historyMapping'
-import { ACTIVITY_TITLES, activityRowSubtitle } from './labels'
+import { moveCopy } from './labels'
 import { activityIcon } from './activityVisuals'
 import { ActivityAmount, ActivityCard, ActivityIcon, ActivityRowBody } from './ActivityCardParts'
 import { earnStageSteps, earnStageSummary } from './earnStages'
@@ -19,13 +19,14 @@ export const EarnActivityCard = ({ activity, divider }: EarnActivityCardProps) =
   const inProgress = status === 'in-progress'
   const stages = activity.stages ?? []
   const summary = inProgress ? earnStageSummary(direction, activity.protocol, stages) : null
+  const { title, subtitle } = moveCopy(kind, status)
 
   return (
     <ActivityCard divider={divider}>
       <ActivityRowBody
         icon={<ActivityIcon Icon={activityIcon(kind)} status={status} />}
-        title={ACTIVITY_TITLES[kind]}
-        subtitle={summary?.label ?? activityRowSubtitle({ kind, status })}
+        title={title}
+        subtitle={summary?.label ?? subtitle}
         failure={status === 'failed' ? error : undefined}
         amount={<ActivityAmount token={token} amount={amount} />}
         aside={<VenueBadge strategy={activity.protocol} />}

@@ -1,14 +1,9 @@
 import { Progress } from '@/components/ui/progress'
 import type { SwapActivity } from '@/contexts/ActivityProvider/context'
-import { activityRowSubtitle } from './labels'
+import { swapCopy } from './labels'
+import { useSwapChains } from './useSwapChains'
 import { activityIcon } from './activityVisuals'
-import {
-  ActivityAmount,
-  ActivityCard,
-  ActivityIcon,
-  ActivityRowBody,
-  SwapReceived,
-} from './ActivityCardParts'
+import { ActivityCard, ActivityIcon, ActivityRowBody, SwapAmounts } from './ActivityCardParts'
 
 type SwapActivityCardProps = {
   activity: SwapActivity
@@ -17,16 +12,26 @@ type SwapActivityCardProps = {
 
 export const SwapActivityCard = ({ activity, divider }: SwapActivityCardProps) => {
   const { status, fromToken, toToken, fromAmount, toAmount, error } = activity
+  const chains = useSwapChains(fromToken.id, toToken.id)
+  const { title, subtitle } = swapCopy(status, toToken.symbol)
 
   return (
     <ActivityCard divider={divider}>
       <ActivityRowBody
         icon={<ActivityIcon Icon={activityIcon('swap')} status={status} />}
-        title="Swap"
-        subtitle={activityRowSubtitle({ kind: 'swap', status })}
+        title={title}
+        subtitle={subtitle}
         failure={status === 'failed' ? error : undefined}
-        amount={<ActivityAmount token={fromToken} amount={fromAmount} />}
-        aside={<SwapReceived token={toToken} amount={toAmount} />}
+        amount={
+          <SwapAmounts
+            from={fromToken}
+            fromAmount={fromAmount}
+            fromChain={chains.from}
+            to={toToken}
+            toAmount={toAmount}
+            toChain={chains.to}
+          />
+        }
       />
       {status === 'in-progress' && <Progress className="mt-2" />}
     </ActivityCard>

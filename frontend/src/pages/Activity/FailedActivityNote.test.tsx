@@ -1,9 +1,14 @@
-import { describe, expect, it } from 'vitest'
+import { describe, expect, it, vi } from 'vitest'
 import { render, screen } from '@testing-library/react'
 import { TooltipProvider } from '@/components/ui/tooltip'
 import type { EarnActivity, SwapActivity } from '@/contexts/ActivityProvider/context'
 import { SwapActivityCard } from './SwapActivityCard'
 import { EarnActivityCard } from './EarnActivityCard'
+
+vi.mock('@oasisprotocol/privana-sdk', async importOriginal => ({
+  ...(await importOriginal<typeof import('@oasisprotocol/privana-sdk')>()),
+  usePrivanaContext: () => ({ getTokenById: () => undefined, getChainById: () => undefined }),
+}))
 
 const USDC = { id: '0x1', symbol: 'USDC', decimals: 6 }
 const ETH = { id: '0x2', symbol: 'ETH', decimals: 18 }
@@ -40,18 +45,20 @@ const renderCard = (node: React.ReactNode) => render(<TooltipProvider>{node}</To
 describe('failed activity note', () => {
   it('shows the failure reason under a failed swap', () => {
     renderCard(<SwapActivityCard activity={swap('failed', ERROR)} />)
-    expect(screen.getByText(`Failed · ${ERROR}`)).toBeInTheDocument()
+    expect(screen.getByText('Swap failed')).toBeInTheDocument()
+    expect(screen.getByText(ERROR)).toBeInTheDocument()
   })
 
   it('shows the failure reason under a failed earn operation', () => {
     renderCard(<EarnActivityCard activity={earn('failed', ERROR)} />)
-    expect(screen.getByText(`Failed · ${ERROR}`)).toBeInTheDocument()
+    expect(screen.getByText('Move to Earn failed')).toBeInTheDocument()
+    expect(screen.getByText(ERROR)).toBeInTheDocument()
   })
 
   it('translates a known failure and keeps the raw reason on hover', () => {
     const raw = '429 Client Error: Too Many Requests for url: https://sapphire.oasis.io/'
     renderCard(<SwapActivityCard activity={swap('failed', raw)} />)
-    const line = screen.getByText('Failed · The network was busy — try again')
+    const line = screen.getByText('The network was busy — try again')
     expect(line).toHaveAttribute('title', raw)
   })
 

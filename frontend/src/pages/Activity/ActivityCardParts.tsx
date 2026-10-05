@@ -23,7 +23,14 @@ export const ActivityIcon = ({ Icon, status }: { Icon: LucideIcon; status?: Acti
 )
 
 export const ActivityCard = ({ children, divider }: { children: ReactNode; divider?: boolean }) => (
-  <div className={cn('px-4 py-2.5', divider && 'border-t border-border')}>{children}</div>
+  <div
+    className={cn(
+      'flex min-h-[58px] flex-col justify-center px-4 py-2.5 transition-colors hover:bg-secondary/40',
+      divider && 'border-t border-border',
+    )}
+  >
+    {children}
+  </div>
 )
 
 export const ActivityRowBody = ({
@@ -50,9 +57,9 @@ export const ActivityRowBody = ({
       </span>
       {amount != null && <span className="shrink-0">{amount}</span>}
     </div>
-    {(subtitle != null || aside != null) && (
+    {(subtitle != null || failure || aside != null) && (
       <div className="mt-0.5 flex items-center justify-between gap-3">
-        {subtitle != null ? (
+        {subtitle != null || failure ? (
           <p
             title={failure}
             className={cn(
@@ -60,8 +67,7 @@ export const ActivityRowBody = ({
               failure ? 'break-all text-destructive' : 'truncate text-muted-foreground',
             )}
           >
-            {subtitle}
-            {failure && ` · ${describeFailure(failure)}`}
+            {failure ? describeFailure(failure) : subtitle}
           </p>
         ) : (
           <span />
@@ -72,19 +78,44 @@ export const ActivityRowBody = ({
   </>
 )
 
-export const ActivityAmount = ({ token, amount }: { token: ActivityTokenInfo; amount: string }) => (
+export const ActivityAmount = ({
+  token,
+  amount,
+  chain,
+}: {
+  token: ActivityTokenInfo
+  amount: string
+  /** Tells apart tokens sharing a symbol, like USDC on Base and on HyperEVM. */
+  chain?: string
+}) => (
   <span className="inline-flex items-center gap-1.5 whitespace-nowrap text-sm font-semibold leading-none tabular-nums text-foreground">
     <span className="inline-flex size-3 shrink-0 overflow-hidden rounded-full">
       {getTokenIcon(token.symbol, 12)}
     </span>
     <TokenAmount amount={amount} token={token} withSymbol />
+    {chain && <span className="text-xs font-normal text-muted-foreground">{chain}</span>}
   </span>
 )
 
-export const SwapReceived = ({ token, amount }: { token: ActivityTokenInfo; amount: string }) => (
-  <span className="flex shrink-0 items-center gap-1.5">
+export const SwapAmounts = ({
+  from,
+  fromAmount,
+  fromChain,
+  to,
+  toAmount,
+  toChain,
+}: {
+  from: ActivityTokenInfo
+  fromAmount: string
+  fromChain?: string
+  to: ActivityTokenInfo
+  toAmount: string
+  toChain?: string
+}) => (
+  <span className="flex items-center gap-1.5">
+    <ActivityAmount token={from} amount={fromAmount} chain={fromChain} />
     <ArrowRight aria-hidden="true" className="size-3.5 shrink-0 text-muted-foreground" />
     <span className="sr-only">for</span>
-    <ActivityAmount token={token} amount={amount} />
+    <ActivityAmount token={to} amount={toAmount} chain={toChain} />
   </span>
 )
