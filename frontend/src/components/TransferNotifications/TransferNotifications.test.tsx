@@ -17,8 +17,8 @@ vi.mock('@oasisprotocol/privana-sdk', async importOriginal => ({
 }))
 vi.mock('wagmi', () => ({ useConnection: () => ({ address }) }))
 vi.mock('@/hooks/useIsSignedIn', () => ({ useIsSignedIn: () => signedIn }))
-const resetBalanceCaches = vi.fn()
-vi.mock('@/hooks/use-reset-balance-caches', () => ({ useResetBalanceCaches: () => resetBalanceCaches }))
+const refreshBalanceCaches = vi.fn()
+vi.mock('@/hooks/use-reset-balance-caches', () => ({ useRefreshBalanceCaches: () => refreshBalanceCaches }))
 vi.mock('./notify', () => ({ notify: vi.fn() }))
 
 const deposit = (stage: DepositProgress['stage']): DepositProgress => ({
@@ -45,7 +45,7 @@ const titles = () => vi.mocked(notify).mock.calls.map(([n]) => n.title)
 
 beforeEach(() => {
   vi.mocked(notify).mockClear()
-  resetBalanceCaches.mockClear()
+  refreshBalanceCaches.mockClear()
   depositProgress = null
   pending = { withdrawals: [], isLoading: false, isError: false }
   signedIn = true
@@ -59,7 +59,7 @@ describe('TransferNotifications deposits', () => {
     depositProgress = deposit('credited')
     rerender(<TransferNotifications />)
     expect(titles()).toEqual(['Deposit complete'])
-    expect(resetBalanceCaches).toHaveBeenCalledTimes(1)
+    expect(refreshBalanceCaches).toHaveBeenCalledTimes(1)
   })
 
   it('stays quiet about a credit that was already there on mount', () => {
@@ -75,7 +75,7 @@ describe('TransferNotifications deposits', () => {
     depositProgress = deposit('failed')
     rerender(<TransferNotifications />)
     expect(titles()).toEqual(['Deposit failed'])
-    expect(resetBalanceCaches).not.toHaveBeenCalled()
+    expect(refreshBalanceCaches).not.toHaveBeenCalled()
   })
 })
 

@@ -8,14 +8,14 @@ import {
   type WithdrawalInfo,
 } from '@oasisprotocol/privana-sdk'
 import { useIsSignedIn } from '@/hooks/useIsSignedIn'
-import { useResetBalanceCaches } from '@/hooks/use-reset-balance-caches'
+import { useRefreshBalanceCaches } from '@/hooks/use-reset-balance-caches'
 import { useResolvedTheme } from '@/lib/theme'
 import { completedWithdrawals, depositNotification, withdrawalNotification } from './notifications'
 import { notify } from './notify'
 
 export const TransferNotifications = () => {
   const { getTokenById } = usePrivanaContext()
-  const resetBalanceCaches = useResetBalanceCaches()
+  const refreshBalanceCaches = useRefreshBalanceCaches()
 
   const { progress } = useDeposit()
   const depositKey = progress ? `${progress.txHash}:${progress.stage}` : null
@@ -24,13 +24,13 @@ export const TransferNotifications = () => {
     if (seenDepositKey.current === depositKey) return
     seenDepositKey.current = depositKey
     if (!progress) return
-    if (progress.stage === 'credited') resetBalanceCaches()
+    if (progress.stage === 'credited') refreshBalanceCaches()
     const notification = depositNotification(
       progress,
       progress.tokenId ? getTokenById(progress.tokenId) : undefined,
     )
     if (notification) notify(notification)
-  }, [depositKey, progress, getTokenById, resetBalanceCaches])
+  }, [depositKey, progress, getTokenById, refreshBalanceCaches])
 
   const isSignedIn = useIsSignedIn()
   const { address } = useConnection()
