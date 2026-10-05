@@ -1,4 +1,3 @@
-import { Progress } from '@/components/ui/progress'
 import type { SwapActivity } from '@/contexts/ActivityProvider/context'
 import { swapCopy } from './labels'
 import { useSwapChains } from './useSwapChains'
@@ -33,7 +32,6 @@ export const SwapActivityCard = ({ activity, divider }: SwapActivityCardProps) =
           />
         }
       />
-      {status === 'in-progress' && <Progress className="mt-2" />}
     </ActivityCard>
   )
 }

@@ -25,7 +25,7 @@ export const ActivityIcon = ({ Icon, status }: { Icon: LucideIcon; status?: Acti
 export const ActivityCard = ({ children, divider }: { children: ReactNode; divider?: boolean }) => (
   <div
     className={cn(
-      'flex min-h-[58px] flex-col justify-center px-4 py-2.5 transition-colors hover:bg-secondary/40',
+      'flex flex-col justify-center px-4 py-2.5 transition-colors hover:bg-secondary/40 gap-0.5',
       divider && 'border-t border-border',
     )}
   >
@@ -62,10 +62,7 @@ export const ActivityRowBody = ({
         {subtitle != null || failure ? (
           <p
             title={failure}
-            className={cn(
-              'min-w-0 text-xs',
-              failure ? 'break-all text-destructive' : 'truncate text-muted-foreground',
-            )}
+            className={cn('min-w-0 text-xs text-muted-foreground', failure ? 'break-all' : 'truncate')}
           >
             {failure ? describeFailure(failure) : subtitle}
           </p>

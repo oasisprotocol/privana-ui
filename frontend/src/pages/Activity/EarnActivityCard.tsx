@@ -1,4 +1,3 @@
-import { Progress } from '@/components/ui/progress'
 import type { EarnActivity } from '@/contexts/ActivityProvider/context'
 import type { DisplayKind } from './historyMapping'
 import { moveCopy } from './labels'
@@ -31,13 +30,8 @@ export const EarnActivityCard = ({ activity, divider }: EarnActivityCardProps) =
         amount={<ActivityAmount token={token} amount={amount} />}
         aside={<VenueBadge strategy={activity.protocol} />}
       />
-      {inProgress && (
-        <div className="mt-2 flex flex-col gap-2">
-          <Progress value={summary?.percent} />
-          {stages.length > 0 && (
-            <EarnStageList steps={earnStageSteps(direction, activity.protocol, stages)} />
-          )}
-        </div>
+      {inProgress && stages.length > 0 && (
+        <EarnStageList steps={earnStageSteps(direction, activity.protocol, stages)} />
       )}
     </ActivityCard>
   )
