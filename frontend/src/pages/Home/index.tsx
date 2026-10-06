@@ -35,7 +35,7 @@ export const Home = () => {
       autoLoginTried.current = false
       return
     }
-    // An expired session waits for the user to sign again rather than opening the wallet.
+    // An ended session (expired, or ended in another tab) waits for the user to sign again.
     if (!isAuthenticated && !isAuthLoading && !authError && !sessionExpired && !autoLoginTried.current) {
       autoLoginTried.current = true
       void login().catch(() => {})
@@ -82,7 +82,7 @@ export const Home = () => {
                   </p>
                 ) : (
                   <p className="mt-4 text-sm text-foreground">
-                    Your session expired. Sign the message to continue.
+                    Your session ended. Sign the message to continue.
                   </p>
                 )}
                 <Button

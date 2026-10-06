@@ -5,11 +5,12 @@ import { useConnectedWalletRecord } from '@/wallet/turnkeyConnectedWallet'
 
 export const useAuthBootstrapping = (): boolean => {
   const { status } = useConnection()
-  const { isLoading: isAuthLoading, error: siweError } = useSiweAuth()
+  const { isLoading: isAuthLoading, error: siweError, sessionExpired } = useSiweAuth()
   const intent = useTurnkeyWalletIntent()
   const connectedWallet = useConnectedWalletRecord()
 
   if (status === 'reconnecting' || status === 'connecting' || isAuthLoading) return true
-  if (!siweError && (intent === 'embedded' || connectedWallet)) return true
+  // An ended session is settled: Home asks the user to sign again.
+  if (!siweError && !sessionExpired && (intent === 'embedded' || connectedWallet)) return true
   return false
 }
