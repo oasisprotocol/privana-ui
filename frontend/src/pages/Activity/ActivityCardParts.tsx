@@ -50,12 +50,13 @@ export const ActivityRowBody = ({
   aside?: ReactNode
 }) => (
   <>
-    <div className="flex items-center justify-between gap-3">
+    {/* A wide amount drops under the title instead of squeezing it away. */}
+    <div className="flex flex-wrap items-center justify-between gap-x-3 gap-y-1">
       <span className="flex min-w-0 items-center gap-1.5">
         {icon}
         <span className="truncate text-sm font-semibold leading-tight text-foreground">{title}</span>
       </span>
-      {amount != null && <span className="shrink-0">{amount}</span>}
+      {amount != null && <span className="ml-auto min-w-0 max-w-full">{amount}</span>}
     </div>
     {(subtitle != null || failure || aside != null) && (
       <div className="mt-0.5 flex items-center justify-between gap-3">
@@ -109,7 +110,7 @@ export const SwapAmounts = ({
   toAmount: string
   toChain?: string
 }) => (
-  <span className="flex items-center gap-1.5">
+  <span className="flex flex-wrap items-center justify-end gap-x-1.5 gap-y-1">
     <ActivityAmount token={from} amount={fromAmount} chain={fromChain} />
     <ArrowRight aria-hidden="true" className="size-3.5 shrink-0 text-muted-foreground" />
     <span className="sr-only">for</span>

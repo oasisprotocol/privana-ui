@@ -1,7 +1,6 @@
 import { useState } from 'react'
 import { appForAddress } from '@/config/apps'
-import { venueForStrategy } from '@/config/protocols'
-import { PROTOCOL_ICONS } from '@/pages/Earn/ProtocolLabel'
+import { getProtocolIcon, venueForStrategy } from '@/config/protocols'
 
 const LOGO_SIZE = 14
 
@@ -42,17 +41,16 @@ export const VenueBadge = ({
   const badge = venue ?? app
   if (!badge) return null
 
-  const ProtocolLogo = strategy ? PROTOCOL_ICONS[strategy] : undefined
+  const protocolLogo = strategy ? getProtocolIcon(strategy, LOGO_SIZE) : null
 
   return (
     <span className="flex shrink-0 items-center gap-1.5">
-      {ProtocolLogo ? (
-        <ProtocolLogo size={LOGO_SIZE} />
-      ) : app ? (
-        <AppLogo name={app.name} color={app.color} src={app.logoUrl} />
-      ) : (
-        <LetterMark name={badge.name} color={badge.color} />
-      )}
+      {protocolLogo ??
+        (app ? (
+          <AppLogo name={app.name} color={app.color} src={app.logoUrl} />
+        ) : (
+          <LetterMark name={badge.name} color={badge.color} />
+        ))}
       <span className="text-xs font-medium leading-tight text-foreground">{badge.name}</span>
     </span>
   )
