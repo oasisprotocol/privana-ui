@@ -1,76 +1,71 @@
 import { usePrivanaContext } from '@oasisprotocol/privana-sdk'
-import { venueForStrategy } from '@/config/protocols'
 import { shortenAddress } from '@/lib/utils'
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip'
 import type { ClassifiedHistoryEntry } from './historyMapping'
-import { ACTIVITY_TITLES, activityRowSubtitle, activityRowTitle } from './labels'
-import { resolveActivityVisual, TONE_SIGN, TONE_TEXT } from './activityVisuals'
-import { ActivityAmount, ActivityCard, ActivityIcon, ActivityRowBody } from './ActivityCardParts'
+import { historyRowCopy, swapCopy } from './labels'
+import { useSwapChains } from './useSwapChains'
+import { activityIcon } from './activityVisuals'
+import { ActivityAmount, ActivityCard, ActivityIcon, ActivityRowBody, SwapAmounts } from './ActivityCardParts'
+import { VenueBadge } from './VenueBadge'
 
 type Props = {
   row: ClassifiedHistoryEntry
-  timestamp?: number
   divider?: boolean
 }
 
-export const ChainActivityCard = ({ row, timestamp, divider }: Props) => {
+export const ChainActivityCard = ({ row, divider }: Props) => {
   const { getTokenById } = usePrivanaContext()
   const token = row.tokenId ? getTokenById(row.tokenId) : undefined
   const toToken = row.toTokenId ? getTokenById(row.toTokenId) : undefined
   const incoming = row.entry.kind === 'transferBalanceIn'
-  const { Icon, tone, iconClass } = resolveActivityVisual({ kind: row.kind, incoming })
-  const icon = <ActivityIcon Icon={Icon} iconClass={iconClass} />
+  const icon = <ActivityIcon Icon={activityIcon(row.kind, incoming)} />
+  const chains = useSwapChains(row.tokenId, row.toTokenId)
 
   if (row.kind === 'swap' && token && row.amount && toToken && row.toAmount) {
+    const { title, subtitle } = swapCopy('completed', toToken.symbol)
     return (
-      <ActivityCard divider={divider} icon={icon}>
+      <ActivityCard divider={divider}>
         <ActivityRowBody
-          title={ACTIVITY_TITLES.swap}
-          timestamp={timestamp}
-          counterparty={row.counterparty}
-          subtitle={activityRowSubtitle({ kind: 'swap' })}
+          icon={icon}
+          title={title}
+          subtitle={subtitle}
           amount={
-            <div className="flex flex-col items-end">
-              <ActivityAmount sign="−" className={TONE_TEXT.amber} token={token} amount={row.amount} />
-              <ActivityAmount sign="+" className={TONE_TEXT.green} token={toToken} amount={row.toAmount} />
-            </div>
+            <SwapAmounts
+              from={token}
+              fromAmount={row.amount}
+              fromChain={chains.from}
+              to={toToken}
+              toAmount={row.toAmount}
+              toChain={chains.to}
+            />
           }
         />
       </ActivityCard>
     )
   }
 
+  const { title, subtitle } = historyRowCopy(row)
   return (
-    <ActivityCard divider={divider} icon={icon}>
+    <ActivityCard divider={divider}>
       <ActivityRowBody
-        title={activityRowTitle(row)}
-        timestamp={timestamp}
-        counterparty={row.counterparty}
-        venue={venueForStrategy(row.pool?.strategy)}
+        icon={icon}
+        title={title}
         subtitle={
           row.kind === 'withdraw' && row.counterparty ? (
             <Tooltip>
               <TooltipTrigger asChild>
                 <span tabIndex={0} className="cursor-help">
-                  {activityRowSubtitle({ kind: row.kind, incoming })}: {shortenAddress(row.counterparty)}
+                  {subtitle}: {shortenAddress(row.counterparty)}
                 </span>
               </TooltipTrigger>
               <TooltipContent>{row.counterparty}</TooltipContent>
             </Tooltip>
           ) : (
-            activityRowSubtitle({ kind: row.kind, incoming })
+            subtitle
           )
         }
-        amount={
-          token && row.amount ? (
-            <ActivityAmount
-              sign={TONE_SIGN[tone]}
-              className={TONE_TEXT[tone]}
-              token={token}
-              amount={row.amount}
-            />
-          ) : undefined
-        }
+        amount={token && row.amount ? <ActivityAmount token={token} amount={row.amount} /> : undefined}
+        aside={<VenueBadge strategy={row.pool?.strategy} counterparty={row.counterparty} />}
       />
     </ActivityCard>
   )

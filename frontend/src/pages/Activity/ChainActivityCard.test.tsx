@@ -8,10 +8,16 @@ import { ChainActivityCard } from './ChainActivityCard'
 const TOKEN_ID = '0x6a53c372368bfca6b9cb392eec897c3b685f4380af001f48fded5c2b59f5c873'
 const DESTINATION = '0xBb1e86fBd3e093E365bbe1d4E6Df19BF68e056A1'
 
+const HYPE_USDC_ID = '0x2c0e1a5ad6ac4bdd3b0b7f6b2f81e8c25bd5d3f1f4a7e1c46a0f7cbd2c8b9a10'
+
 vi.mock('@oasisprotocol/privana-sdk', async importOriginal => ({
   ...(await importOriginal<typeof import('@oasisprotocol/privana-sdk')>()),
   usePrivanaContext: () => ({
-    getTokenById: () => ({ id: TOKEN_ID, symbol: 'USDC', decimals: 6 }),
+    getTokenById: (id: string) =>
+      id === HYPE_USDC_ID
+        ? { id, symbol: 'USDC', decimals: 6, chainId: 999 }
+        : { id: TOKEN_ID, symbol: 'USDC', decimals: 6, chainId: 8453 },
+    getChainById: (id: number) => ({ 8453: { id, name: 'Base' }, 999: { id, name: 'HyperEVM' } })[id],
   }),
 }))
 
@@ -43,5 +49,32 @@ describe('ChainActivityCard withdraw row', () => {
     await user.hover(trigger)
     const contents = await screen.findAllByText(DESTINATION)
     expect(contents.length).toBeGreaterThan(0)
+  })
+})
+
+describe('ChainActivityCard swap row', () => {
+  it('names the chain of each side, so two USDCs tell apart', () => {
+    const row = {
+      source: 'chain',
+      kind: 'swap',
+      index: 1,
+      timestamp: 1_788_961_656,
+      tokenId: TOKEN_ID,
+      amount: '2000000',
+      toTokenId: HYPE_USDC_ID,
+      toAmount: '1960000',
+      counterparty: null,
+      pool: undefined,
+      entry: { kind: 'transferBalanceOut', timestamp: 1_788_961_656 },
+    } as unknown as ClassifiedHistoryEntry
+    render(
+      <TooltipProvider>
+        <ChainActivityCard row={row} />
+      </TooltipProvider>,
+    )
+    expect(screen.getByText('Swapped for USDC')).toBeInTheDocument()
+    expect(screen.getByText('No public trace')).toBeInTheDocument()
+    expect(screen.getByText('Base')).toBeInTheDocument()
+    expect(screen.getByText('HyperEVM')).toBeInTheDocument()
   })
 })

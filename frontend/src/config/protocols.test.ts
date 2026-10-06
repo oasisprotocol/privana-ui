@@ -1,5 +1,12 @@
 import { describe, expect, it } from 'vitest'
-import { depositNoticeFor, getProtocolLabel, venueForStrategy, withdrawNoticeFor } from '@/config/protocols'
+import { isValidElement, type ReactElement } from 'react'
+import {
+  depositNoticeFor,
+  getProtocolIcon,
+  getProtocolLabel,
+  venueForStrategy,
+  withdrawNoticeFor,
+} from '@/config/protocols'
 
 describe('getProtocolLabel', () => {
   it('maps backend strategy keys to display labels', () => {
@@ -15,6 +22,26 @@ describe('getProtocolLabel', () => {
 
   it('falls back to the raw value for unknown strategies', () => {
     expect(getProtocolLabel('compound')).toBe('compound')
+  })
+})
+
+describe('getProtocolIcon', () => {
+  const icon = (strategy: string, size?: number) =>
+    getProtocolIcon(strategy, size) as ReactElement<{ height?: number }>
+
+  it('matches like the label, so a strategy variant keeps its logo', () => {
+    expect(icon('aave-v3').type).toBe('img')
+    expect(icon('aave_v2').type).toBe('img')
+    expect(icon('midas-mtbill').type).toBe('svg')
+  })
+
+  it('draws the logo at the requested size', () => {
+    expect(isValidElement(icon('midas-mtbill', 14))).toBe(true)
+    expect(icon('midas-mtbill', 14).props.height).toBe(14)
+  })
+
+  it('has no icon for an unknown strategy', () => {
+    expect(getProtocolIcon('compound')).toBeNull()
   })
 })
 

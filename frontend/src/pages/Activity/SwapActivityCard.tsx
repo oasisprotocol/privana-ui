@@ -1,34 +1,37 @@
-import { Progress } from '@/components/ui/progress'
 import type { SwapActivity } from '@/contexts/ActivityProvider/context'
-import { activityRowSubtitle } from './labels'
-import { resolveActivityVisual, TONE_TEXT } from './activityVisuals'
-import { ActivityAmount, ActivityCard, ActivityIcon, ActivityRowBody } from './ActivityCardParts'
+import { swapCopy } from './labels'
+import { useSwapChains } from './useSwapChains'
+import { activityIcon } from './activityVisuals'
+import { ActivityCard, ActivityIcon, ActivityRowBody, SwapAmounts } from './ActivityCardParts'
 
 type SwapActivityCardProps = {
   activity: SwapActivity
-  timestamp?: number
   divider?: boolean
 }
 
-export const SwapActivityCard = ({ activity, timestamp, divider }: SwapActivityCardProps) => {
+export const SwapActivityCard = ({ activity, divider }: SwapActivityCardProps) => {
   const { status, fromToken, toToken, fromAmount, toAmount, error } = activity
-  const { Icon, iconClass } = resolveActivityVisual({ kind: 'swap', status })
+  const chains = useSwapChains(fromToken.id, toToken.id)
+  const { title, subtitle } = swapCopy(status, toToken.symbol)
 
   return (
-    <ActivityCard divider={divider} icon={<ActivityIcon Icon={Icon} iconClass={iconClass} />}>
+    <ActivityCard divider={divider}>
       <ActivityRowBody
-        title="Swap"
-        timestamp={timestamp}
-        subtitle={activityRowSubtitle({ kind: 'swap', status })}
+        icon={<ActivityIcon Icon={activityIcon('swap')} status={status} />}
+        title={title}
+        subtitle={subtitle}
         failure={status === 'failed' ? error : undefined}
         amount={
-          <div className="flex flex-col items-end">
-            <ActivityAmount sign="−" className={TONE_TEXT.amber} token={fromToken} amount={fromAmount} />
-            <ActivityAmount sign="+" className={TONE_TEXT.green} token={toToken} amount={toAmount} />
-          </div>
+          <SwapAmounts
+            from={fromToken}
+            fromAmount={fromAmount}
+            fromChain={chains.from}
+            to={toToken}
+            toAmount={toAmount}
+            toChain={chains.to}
+          />
         }
       />
-      {status === 'in-progress' && <Progress />}
     </ActivityCard>
   )
 }

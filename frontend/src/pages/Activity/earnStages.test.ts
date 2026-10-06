@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { earnStageSteps, earnStageSummary } from './earnStages'
+import { earnStageLabel, earnStageSteps } from './earnStages'
 
 describe('earnStageSteps', () => {
   it('stamps the steps a withdraw has reached and marks the rest upcoming', () => {
@@ -40,23 +40,18 @@ describe('earnStageSteps', () => {
   })
 })
 
-describe('earnStageSummary', () => {
+describe('earnStageLabel', () => {
   it('is null before the services report any stage', () => {
-    expect(earnStageSummary('withdraw', 'midas-mtbill', [])).toBeNull()
+    expect(earnStageLabel('midas-mtbill', [])).toBeNull()
   })
 
-  it('moves the bar with the finality confirmations', () => {
-    const early = earnStageSummary('withdraw', 'midas-mtbill', [
-      { stage: 'reclaiming', at: 1 },
-      { stage: 'returning', at: 2 },
-      { stage: 'finality', at: 3, detail: { confirmations: 8, required: 32 } },
-    ])
-    const late = earnStageSummary('withdraw', 'midas-mtbill', [
-      { stage: 'reclaiming', at: 1 },
-      { stage: 'returning', at: 2 },
-      { stage: 'finality', at: 3, detail: { confirmations: 30, required: 32 } },
-    ])
-    expect(early!.percent).toBeLessThan(late!.percent)
-    expect(late!.percent).toBeLessThan(75)
+  it('names the latest stage, with the finality confirmations', () => {
+    expect(
+      earnStageLabel('midas-mtbill', [
+        { stage: 'reclaiming', at: 1 },
+        { stage: 'returning', at: 2 },
+        { stage: 'finality', at: 3, detail: { confirmations: 8, required: 32 } },
+      ]),
+    ).toBe('Waiting for network confirmations (8 of 32)')
   })
 })

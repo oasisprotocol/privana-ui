@@ -1,40 +1,35 @@
-import { Progress } from '@/components/ui/progress'
-import { venueForStrategy } from '@/config/protocols'
 import type { EarnActivity } from '@/contexts/ActivityProvider/context'
 import type { DisplayKind } from './historyMapping'
-import { ACTIVITY_TITLES, activityRowSubtitle } from './labels'
-import { resolveActivityVisual, TONE_SIGN, TONE_TEXT } from './activityVisuals'
+import { moveCopy } from './labels'
+import { activityIcon } from './activityVisuals'
 import { ActivityAmount, ActivityCard, ActivityIcon, ActivityRowBody } from './ActivityCardParts'
-import { earnStageSteps, earnStageSummary } from './earnStages'
+import { earnStageLabel, earnStageSteps } from './earnStages'
 import { EarnStageList } from './EarnStageList'
+import { VenueBadge } from './VenueBadge'
 
 type EarnActivityCardProps = {
   activity: EarnActivity
-  timestamp?: number
   divider?: boolean
 }
 
-export const EarnActivityCard = ({ activity, timestamp, divider }: EarnActivityCardProps) => {
+export const EarnActivityCard = ({ activity, divider }: EarnActivityCardProps) => {
   const { status, direction, token, amount, error } = activity
   const kind: DisplayKind = direction === 'deposit' ? 'earnDeposit' : 'earnWithdraw'
-  const { Icon, tone, iconClass } = resolveActivityVisual({ kind, status })
   const inProgress = status === 'in-progress'
   const stages = activity.stages ?? []
-  const summary = inProgress ? earnStageSummary(direction, activity.protocol, stages) : null
+  const stageLabel = inProgress ? earnStageLabel(activity.protocol, stages) : null
+  const { title, subtitle } = moveCopy(kind, status)
 
   return (
-    <ActivityCard divider={divider} icon={<ActivityIcon Icon={Icon} iconClass={iconClass} />}>
+    <ActivityCard divider={divider}>
       <ActivityRowBody
-        title={ACTIVITY_TITLES[kind]}
-        timestamp={timestamp}
-        venue={venueForStrategy(activity.protocol)}
-        subtitle={summary?.label ?? activityRowSubtitle({ kind, status })}
+        icon={<ActivityIcon Icon={activityIcon(kind)} status={status} />}
+        title={title}
+        subtitle={stageLabel ?? subtitle}
         failure={status === 'failed' ? error : undefined}
-        amount={
-          <ActivityAmount sign={TONE_SIGN[tone]} className={TONE_TEXT[tone]} token={token} amount={amount} />
-        }
+        amount={<ActivityAmount token={token} amount={amount} />}
+        aside={<VenueBadge strategy={activity.protocol} />}
       />
-      {inProgress && <Progress value={summary?.percent} />}
       {inProgress && stages.length > 0 && (
         <EarnStageList steps={earnStageSteps(direction, activity.protocol, stages)} />
       )}
