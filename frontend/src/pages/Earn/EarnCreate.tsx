@@ -1,12 +1,12 @@
-import { useMemo, useState } from 'react'
+import { useState } from 'react'
 import { useNavigate, useParams } from 'react-router'
 import { useConnection } from 'wagmi'
-import { parseUnits } from 'viem'
 import { useEarnPools } from '@/api/earn'
 import { useTokens } from '@/api/swap'
 import { useResetBalanceCaches } from '@/hooks/use-reset-balance-caches'
 import { activityPath, earnCreatePath, earnPath } from '@/paths'
 import { cn } from '@/lib/utils'
+import { parseAmount } from '@/lib/tokens'
 import { DESKTOP_CARD } from '@/lib/surface'
 import { useResolvedActivity } from '@/hooks/use-merged-activity'
 import { ConfigureStep } from './ConfigureStep'
@@ -44,14 +44,7 @@ export const EarnCreate = () => {
   const token = pool ? tokensData?.tokens.find(t => t.token_id === pool.token_id) : undefined
   const decimals = token?.token_decimals
 
-  const amountBaseUnits = useMemo(() => {
-    if (!amount || decimals == null) return ''
-    try {
-      return parseUnits(amount, decimals).toString()
-    } catch {
-      return ''
-    }
-  }, [amount, decimals])
+  const amountBaseUnits = parseAmount(amount, decimals)?.toString() ?? ''
 
   const onReview = step === 1
   const {

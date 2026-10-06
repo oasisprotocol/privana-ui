@@ -1,5 +1,60 @@
 import { describe, expect, it } from 'vitest'
-import { exceedsAmount, formatFiat, isPositiveAmount, mergeTokensBySymbol } from '@/lib/tokens'
+import {
+  amountFiat,
+  amountInputError,
+  exceedsAmount,
+  formatFiat,
+  isPositiveAmount,
+  mergeTokensBySymbol,
+  parseAmount,
+} from '@/lib/tokens'
+
+describe('parseAmount', () => {
+  it('reads an amount exactly into base units', () => {
+    expect(parseAmount('1.5', 6)).toBe(1_500_000n)
+    expect(parseAmount('.5', 6)).toBe(500_000n)
+    expect(parseAmount('0.000000000000000001', 18)).toBe(1n)
+  })
+
+  it('reads thousands grouping, like a pasted displayed balance', () => {
+    expect(parseAmount('1,234.5', 6)).toBe(1_234_500_000n)
+  })
+
+  it('refuses more decimals than the token has instead of rounding them away', () => {
+    expect(parseAmount('1.1234567', 6)).toBeNull()
+  })
+
+  it('is null for missing or unparseable input', () => {
+    expect(parseAmount('', 6)).toBeNull()
+    expect(parseAmount('1', undefined)).toBeNull()
+    expect(parseAmount('1,5', 6)).toBeNull()
+  })
+})
+
+describe('amountFiat', () => {
+  it('values a typed amount at the price', () => {
+    expect(amountFiat('1.5', 6, 2)).toBe(3)
+  })
+
+  it('is undefined until the amount and the price can both be read', () => {
+    expect(amountFiat('', 6, 2)).toBeUndefined()
+    expect(amountFiat('1.1234567', 6, 2)).toBeUndefined()
+    expect(amountFiat('1', 6, undefined)).toBeUndefined()
+    expect(amountFiat('1', undefined, 2)).toBeUndefined()
+  })
+})
+
+describe('amountInputError', () => {
+  it('names the precision the token allows', () => {
+    expect(amountInputError('1.1234567', 6)).toBe('Too many decimal places (max: 6)')
+  })
+
+  it('stays quiet for amounts the token can hold, and while typing', () => {
+    expect(amountInputError('1.123456', 6)).toBeNull()
+    expect(amountInputError('1.', 6)).toBeNull()
+    expect(amountInputError('', 6)).toBeNull()
+  })
+})
 
 describe('isPositiveAmount', () => {
   it('accepts a positive human-entered amount', () => {

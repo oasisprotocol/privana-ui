@@ -6,7 +6,7 @@ import type { TokenInfo } from '@/api/swap'
 import { formatFiat } from '@/lib/tokens'
 import { TokenAmount } from '@/components/TokenAmount'
 import { TokenSelectDialog } from './TokenSelectDialog'
-import { getTokenIcon } from '@oasisprotocol/privana-sdk'
+import { getTokenIcon, normalizeAmountInput } from '@oasisprotocol/privana-sdk'
 import { cn } from '@/lib/utils'
 
 const tokenLabel = (token: TokenInfo) => token.token_symbol ?? token.token_type_name
@@ -100,11 +100,9 @@ export const AssetRow = ({
             readOnly={readOnly}
             disabled={disabled}
             onChange={e => {
-              const next = e.target.value
-              if (next === '') return onAmountChange?.('')
-              const max = token?.token_decimals ?? 0
-              const pattern = max > 0 ? new RegExp(`^\\d*\\.?\\d{0,${max}}$`) : /^\d*$/
-              if (pattern.test(next)) onAmountChange?.(next)
+              // Pasted "1,234.50" and a decimal comma both become one plain number.
+              const next = normalizeAmountInput(e.target.value)
+              if (next != null) onAmountChange?.(next)
             }}
           />
           {loading && !amount && (

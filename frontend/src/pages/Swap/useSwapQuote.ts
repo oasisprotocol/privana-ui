@@ -1,10 +1,11 @@
 import { useEffect, useState } from 'react'
-import { formatUnits, parseUnits } from 'viem'
+import { formatUnits } from 'viem'
 import { formatTokenAmount } from '@oasisprotocol/privana-sdk'
 import { getQuote } from '@/api/swap'
 import type { QuoteResponse } from '@/api/swap'
 import { useDebouncedValue } from '@/hooks/use-debounced-value'
 import { useQuoteExpiry } from '@/hooks/use-quote-expiry'
+import { parseAmount } from '@/lib/tokens'
 
 type Params = {
   fromTokenId: string
@@ -30,14 +31,8 @@ export const useSwapQuote = ({
   const debouncedFromAmount = useDebouncedValue(fromAmount)
   const [refetchKey, setRefetchKey] = useState(0)
 
-  const positiveAmount = (() => {
-    if (!debouncedFromAmount || fromDecimals == null) return false
-    try {
-      return parseUnits(debouncedFromAmount, fromDecimals) > 0n
-    } catch {
-      return false
-    }
-  })()
+  const fromBaseUnits = parseAmount(debouncedFromAmount, fromDecimals)
+  const positiveAmount = fromBaseUnits != null && fromBaseUnits > 0n
 
   const enabled =
     !!fromTokenId &&
@@ -55,13 +50,13 @@ export const useSwapQuote = ({
   const [errorState, setErrorState] = useState<{ key: string; message: string } | null>(null)
 
   useEffect(() => {
-    if (!enabled) return
+    if (!enabled || fromBaseUnits == null) return
     const abort = new AbortController()
     getQuote(
       {
         fromTokenId,
         toTokenId,
-        fromAmount: parseUnits(debouncedFromAmount, fromDecimals).toString(),
+        fromAmount: fromBaseUnits.toString(),
         userAddress: address,
       },
       abort.signal,
@@ -79,7 +74,7 @@ export const useSwapQuote = ({
         })
       })
     return () => abort.abort()
-  }, [enabled, inputKey, inputId, fromTokenId, toTokenId, debouncedFromAmount, address, fromDecimals])
+  }, [enabled, inputKey, inputId, fromTokenId, toTokenId, fromBaseUnits, address])
 
   const fresh = enabled && result?.key === inputKey ? result.quote : null
   const error = errorState?.key === inputKey ? errorState.message : null

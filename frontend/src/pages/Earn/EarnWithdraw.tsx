@@ -1,12 +1,12 @@
-import { useMemo, useState } from 'react'
+import { useState } from 'react'
 import { useNavigate, useParams } from 'react-router'
 import { useConnection } from 'wagmi'
-import { parseUnits } from 'viem'
 import { useEarnBalance, useEarnPools } from '@/api/earn'
 import { useTokens } from '@/api/swap'
 import { useResetBalanceCaches } from '@/hooks/use-reset-balance-caches'
 import { activityPath, earnPath } from '@/paths'
 import { cn } from '@/lib/utils'
+import { parseAmount } from '@/lib/tokens'
 import { DESKTOP_CARD } from '@/lib/surface'
 import { useResolvedActivity } from '@/hooks/use-merged-activity'
 import { getProtocolLabel } from '@/config/protocols'
@@ -42,14 +42,7 @@ export const EarnWithdraw = () => {
   const protocol = pool ? getProtocolLabel(pool.strategy) : ''
   const apyLabel = pool ? `${formatApyBps(pool.apy_bps)} APY` : undefined
 
-  const amountBaseUnits = useMemo(() => {
-    if (!amount || decimals == null) return ''
-    try {
-      return parseUnits(amount, decimals).toString()
-    } catch {
-      return ''
-    }
-  }, [amount, decimals])
+  const amountBaseUnits = parseAmount(amount, decimals)?.toString() ?? ''
 
   const {
     execute: runWithdraw,
