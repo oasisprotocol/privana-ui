@@ -9,6 +9,9 @@
 export interface MockSiweAuthState {
   session: { address: string } | null
   accessToken: string | null
+  isLoading?: boolean
+  error?: Error | null
+  sessionExpired?: boolean
 }
 
 export const siweAuth: { state: MockSiweAuthState } = {
