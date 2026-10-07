@@ -34,14 +34,17 @@ const withdrawRow = (): ClassifiedHistoryEntry =>
     entry: { kind: 'withdraw', timestamp: 1_788_961_656 },
   }) as unknown as ClassifiedHistoryEntry
 
+const renderCard = (pending?: boolean) =>
+  render(
+    <TooltipProvider delayDuration={0}>
+      <ChainActivityCard row={withdrawRow()} pending={pending} />
+    </TooltipProvider>,
+  )
+
 describe('ChainActivityCard withdraw row', () => {
   it('shows the trimmed destination and the full address in a tooltip', async () => {
     const user = userEvent.setup()
-    render(
-      <TooltipProvider delayDuration={0}>
-        <ChainActivityCard row={withdrawRow()} />
-      </TooltipProvider>,
-    )
+    renderCard()
 
     const trigger = screen.getByText(/Sent to external wallet: 0xBb1e…56A1/)
     expect(trigger).toBeInTheDocument()
@@ -49,6 +52,20 @@ describe('ChainActivityCard withdraw row', () => {
     await user.hover(trigger)
     const contents = await screen.findAllByText(DESTINATION)
     expect(contents.length).toBeGreaterThan(0)
+  })
+
+  it('reads in progress, with the blinking dot, until it pays out', () => {
+    renderCard(true)
+    expect(screen.getByText('Withdrawing')).toBeInTheDocument()
+    expect(screen.getByText('Sending to external wallet…')).toBeInTheDocument()
+    expect(screen.getByRole('img', { name: 'In progress' })).toBeInTheDocument()
+    expect(screen.queryByRole('progressbar')).not.toBeInTheDocument()
+  })
+
+  it('reads as done once paid out', () => {
+    renderCard()
+    expect(screen.getByText('Withdrawn')).toBeInTheDocument()
+    expect(screen.queryByRole('img', { name: 'In progress' })).not.toBeInTheDocument()
   })
 })
 

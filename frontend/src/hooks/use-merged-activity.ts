@@ -3,23 +3,30 @@ import { useHistory, type HistoryEntry } from '@oasisprotocol/privana-sdk'
 import { useEarnPools, type EarnPool } from '@/api/earn'
 import { useTokens } from '@/api/swap'
 import { serverOperationFor, useOperations, type Operation } from '@/api/operations'
-import { isInFlight, isSettledFailure } from '@/api/operation-status'
+import { isSettledFailure } from '@/api/operation-status'
 import { useActivity } from '@/contexts/ActivityProvider/useActivity'
 import type { Activity, ActivityStatus, ActivityTokenInfo } from '@/contexts/ActivityProvider/context'
 import {
   classifyHistory,
   HIDDEN_KINDS,
   type ClassifiedHistoryEntry,
+  type DisplayEntry,
   type HistoryWindow,
   indexPools,
 } from '@/pages/Activity/historyMapping'
+import { chainRowsWithPending } from '@/pages/Activity/pendingRows'
+import { usePendingTransfers } from './usePendingTransfers'
 
 export type MergedRow =
-  | { source: 'chain'; timestamp: number; row: ClassifiedHistoryEntry }
+  | { source: 'chain'; timestamp: number; row: ClassifiedHistoryEntry; pending?: true }
+  /** A deposit on its way, until history lists it. */
+  | { source: 'pending'; timestamp: number; key: string; row: DisplayEntry }
   | { source: 'local'; timestamp: number; activity: Activity }
 
-export const rowKey = (r: MergedRow): string =>
-  r.source === 'local' ? `local:${r.activity.id}` : `chain:${r.row.index}`
+export const rowKey = (r: MergedRow): string => {
+  if (r.source === 'local') return `local:${r.activity.id}`
+  return r.source === 'pending' ? r.key : `chain:${r.row.index}`
+}
 
 export interface UseMergedActivityResult {
   rows: MergedRow[]
@@ -59,12 +66,6 @@ export function resolveActivity(a: Activity, operations: readonly Operation[]): 
     ...(a.direction === 'deposit' ? { depositId: op.operation_id } : { withdrawId: op.operation_id }),
   }
 }
-
-// The single definition of an in-flight local activity. The badge counts these
-// and the list renders these; routing both through one predicate is what keeps
-// them from drifting apart.
-const pendingLocal = (activities: Activity[], operations: readonly Operation[]): Activity[] =>
-  activities.filter(a => a.status === 'in-progress' && !serverOperationFor(a, operations))
 
 export function mapOperationToActivity(
   op: Operation,
@@ -172,6 +173,7 @@ export function useMergedActivity(historyLimit: number = HISTORY_PAGE_SIZE): Use
   const { data: tokensData, isLoading: tokensLoading, isError: tokensError } = useTokens()
   const { activities } = useActivity()
   const operations = useOperations(activities)
+  const pendingTransfers = usePendingTransfers()
 
   const poolsByAddressToken = useMemo(() => indexPools(poolsData?.pools ?? []), [poolsData])
 
@@ -240,11 +242,7 @@ export function useMergedActivity(historyLimit: number = HISTORY_PAGE_SIZE): Use
     // source down the list is unknown; an empty list would read as "no history".
     if (isLoading || isError) return []
 
-    const merged: MergedRow[] = chainRows.map(row => ({
-      source: 'chain' as const,
-      timestamp: row.timestamp,
-      row,
-    }))
+    const merged: MergedRow[] = chainRowsWithPending(chainRows, pendingTransfers)
 
     for (const a of [...serverRows, ...visibleOptimistic]) {
       // Activity.createdAt is ms; HistoryEntry.timestamp is seconds.
@@ -252,7 +250,7 @@ export function useMergedActivity(historyLimit: number = HISTORY_PAGE_SIZE): Use
     }
     merged.sort((a, b) => b.timestamp - a.timestamp)
     return merged
-  }, [isLoading, isError, chainRows, serverRows, visibleOptimistic])
+  }, [isLoading, isError, chainRows, pendingTransfers, serverRows, visibleOptimistic])
 
   return { rows, isLoading, isError, refetch }
 }
@@ -269,14 +267,4 @@ export function useResolvedActivity(id: string | null): Activity | undefined {
     const local = activities.find(a => a.id === id)
     return local ? resolve(local) : undefined
   }, [id, activities, resolve])
-}
-
-// Counts exactly the rows useMergedActivity would render as in-progress: the
-// server's in-flight operations, plus the local activities it hasn't listed yet.
-export function usePendingActivityCount(): number {
-  const { activities } = useActivity()
-  const operations = useOperations(activities)
-  const ops = operations.data?.operations ?? []
-  const serverPending = ops.filter(o => isInFlight(o.status)).length
-  return serverPending + pendingLocal(activities, ops).length
 }

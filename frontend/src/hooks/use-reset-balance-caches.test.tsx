@@ -4,7 +4,7 @@ import { useQuery, type QueryKey } from '@tanstack/react-query'
 import { createQueryWrapper } from '@/test/query'
 import { earnKeys } from '@/api/earn'
 import { historyKeys } from '@/api/portfolio'
-import { useResetBalanceCaches } from './use-reset-balance-caches'
+import { useRefreshBalanceCaches, useResetBalanceCaches } from './use-reset-balance-caches'
 
 const ADDRESS = '0x705b2433b76c383C20AE0d60803334f0AD13b6e8'
 vi.mock('wagmi', () => ({ useConnection: () => ({ address: ADDRESS }) }))
@@ -12,7 +12,12 @@ vi.mock('wagmi', () => ({ useConnection: () => ({ address: ADDRESS }) }))
 // Mounts one query next to the reset hook and records every value it renders.
 // The refetch takes a moment, like the real endpoints, so whether the screen
 // blanks or keeps the old value during it is visible to the test.
-async function renderWithReset(queryKey: QueryKey, before: number, after: number) {
+async function renderWithReset(
+  queryKey: QueryKey,
+  before: number,
+  after: number,
+  useRecache: () => () => void = useResetBalanceCaches,
+) {
   let value = before
   let calls = 0
   const fetch = vi.fn(async () => {
@@ -25,7 +30,7 @@ async function renderWithReset(queryKey: QueryKey, before: number, after: number
     () => {
       const query = useQuery({ queryKey, queryFn: fetch, staleTime: 5 * 60_000 })
       rendered.push(query.data)
-      return { query, reset: useResetBalanceCaches() }
+      return { query, reset: useRecache() }
     },
     { wrapper: Wrapper },
   )
@@ -62,5 +67,41 @@ describe('useResetBalanceCaches', () => {
     const first = result.current
     rerender()
     expect(result.current).toBe(first)
+  })
+})
+
+describe('useRefreshBalanceCaches', () => {
+  it('keeps a mounted balance on screen while the new figure loads', async () => {
+    const { fetch, rendered } = await renderWithReset(
+      earnKeys.balance(ADDRESS),
+      6,
+      8,
+      useRefreshBalanceCaches,
+    )
+    expect(fetch).toHaveBeenCalledTimes(2)
+    // Never blank: the old figure stays until the new one replaces it.
+    expect(rendered).not.toContain(undefined)
+  })
+
+  it('refreshes the portfolio card balances too', async () => {
+    const { rendered } = await renderWithReset(
+      ['accounting-batch-balances', 'scope'],
+      1,
+      2,
+      useRefreshBalanceCaches,
+    )
+    expect(rendered[rendered.length - 1]).toBe(2)
+    expect(rendered).not.toContain(undefined)
+  })
+
+  it('refreshes Activity history so a credited deposit replaces its pending row right away', async () => {
+    const { rendered } = await renderWithReset(
+      ['accounting-history', 'scope', -1, 20],
+      1,
+      2,
+      useRefreshBalanceCaches,
+    )
+    expect(rendered[rendered.length - 1]).toBe(2)
+    expect(rendered).not.toContain(undefined)
   })
 })
