@@ -1,5 +1,5 @@
 import { useMemo } from 'react'
-import { useTokenPrices } from '@/api/coin-gecko'
+import { useTokenPrices } from '@/api/prices'
 import type { TokenInfo } from '@/api/swap'
 import { amountFiat } from '@/lib/tokens'
 

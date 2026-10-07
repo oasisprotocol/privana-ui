@@ -24,18 +24,19 @@ import type {
 } from '../../src/api/earn'
 import type { OperationsResponse } from '../../src/api/operations'
 import type { EarnHistoryResponse, PortfolioHistoryResponse } from '../../src/api/portfolio'
+import type { PriceListResponse } from '../../src/api/prices'
 import type {
   ChainListResponse,
   TokenListResponse as ServicesTokenListResponse,
 } from '../../src/api/swap/types'
-import { ALLOWED_TOKEN_IDS, getGeckoId } from '../../src/config/tokens'
+import { ALLOWED_TOKEN_IDS } from '../../src/config/tokens'
 import { ACCOUNTING_API_URL, SERVICES_API_URL } from '../env'
 import { e2eAddress } from './wallet'
 
-// Real token ids from the app config, so the stubs exercise the same id
-// wiring (gecko price lookup, enabled-token filtering) as production.
-export const USDC_TOKEN_ID = ALLOWED_TOKEN_IDS.find(id => getGeckoId(id) === 'usd-coin')!
-export const ETH_TOKEN_ID = ALLOWED_TOKEN_IDS.find(id => getGeckoId(id) === 'ethereum')!
+// Testnet's swap pair from the app config, so the stubs exercise the same id
+// wiring (enabled-token filtering) as production.
+export const USDC_TOKEN_ID = '0x330ba47d00c7ce3018deee017b319fd7cc6473a2ddc9e6eba6ebb4207be15279'
+export const ETH_TOKEN_ID = '0x335b5cccd1e63b2fe79863a0db73fce430e4e66902e2b78424f8662621e29fb7'
 
 const TOKEN_META: Record<string, { symbol: string; name: string; decimals: number; chainId: number }> = {
   [USDC_TOKEN_ID]: { symbol: 'USDC', name: 'USD Coin', decimals: 6, chainId: 84532 },
@@ -61,7 +62,7 @@ export interface StubState {
   prices: Record<string, number>
 }
 
-const DEFAULT_PRICES = { 'usd-coin': 1, ethereum: 2500 }
+const DEFAULT_PRICES = { [USDC_TOKEN_ID]: 1, [ETH_TOKEN_ID]: 2500 }
 
 export const emptyAccount = (): StubState => ({
   balances: {},
@@ -293,9 +294,12 @@ export async function installApi(page: Page, state: StubState) {
     json(route, { points: [] } satisfies EarnHistoryResponse),
   )
 
-  // --- CoinGecko ---
-
-  await page.route('https://api.coingecko.com/api/v3/simple/price**', route =>
-    json(route, Object.fromEntries(Object.entries(state.prices).map(([geckoId, usd]) => [geckoId, { usd }]))),
+  await page.route(`${SERVICES_API_URL}/v1/prices`, route =>
+    json(route, {
+      prices: ALLOWED_TOKEN_IDS.flatMap(id => {
+        const usd = state.prices[id]
+        return usd == null ? [] : [{ token_id: id, usd: String(usd), updated_at: 0 }]
+      }),
+    } satisfies PriceListResponse),
   )
 }
