@@ -4,13 +4,13 @@ import { Button } from '@/components/ui/button'
 import { useTokens } from '@/api/swap'
 import { useTokenPrices } from '@/api/coin-gecko'
 import { Skeleton } from '@/components/ui/skeleton'
-import { useBalance } from '@oasisprotocol/privana-sdk'
-import { formatUnits, parseUnits } from 'viem'
+import { maxAmount, useBalance } from '@oasisprotocol/privana-sdk'
 import { useConnection } from 'wagmi'
 import { ArrowLeft, ArrowUpDown, EyeOff } from 'lucide-react'
 import { activityPath } from '@/paths'
 import { SWAPPABLE_TOKEN_IDS } from '@/config/tokens'
 import { cn } from '@/lib/utils'
+import { amountFiat, amountInputError, exceedsAmount, parseAmount } from '@/lib/tokens'
 import { useResetBalanceCaches } from '@/hooks/use-reset-balance-caches'
 import { DESKTOP_CARD } from '@/lib/surface'
 import { useResolvedActivity } from '@/hooks/use-merged-activity'
@@ -60,12 +60,8 @@ export const SwapDashboard = () => {
   })
 
   const insufficientFunds = useMemo(() => {
-    if (fromToken?.token_decimals == null || !fromAmount || fromBalance.isLoading) return false
-    try {
-      return parseUnits(fromAmount, fromToken.token_decimals) > BigInt(fromBalance.balanceWei || '0')
-    } catch {
-      return false
-    }
+    if (fromBalance.isLoading) return false
+    return exceedsAmount(fromAmount, fromToken?.token_decimals, BigInt(fromBalance.balanceWei || '0'))
   }, [fromToken, fromAmount, fromBalance.isLoading, fromBalance.balanceWei])
 
   const {
@@ -103,36 +99,19 @@ export const SwapDashboard = () => {
 
   const summary = useQuoteSummary(quoteData, fromToken, toToken, prices)
 
-  const fromFiat = useMemo(() => {
-    if (!prices || !fromAmount || fromToken?.token_decimals == null) return undefined
-    const price = prices[fromTokenId]
-    if (price == null) return undefined
-    try {
-      const units = parseUnits(fromAmount, fromToken.token_decimals)
-      const asNum = Number(formatUnits(units, fromToken.token_decimals))
-      return Number.isFinite(asNum) ? asNum * price : undefined
-    } catch {
-      return undefined
-    }
-  }, [prices, fromTokenId, fromAmount, fromToken])
-  const toFiat = useMemo(() => {
-    if (!prices || !toAmountExact || toToken?.token_decimals == null) return undefined
-    const price = prices[toTokenId]
-    if (price == null) return undefined
-    const asNum = Number(toAmountExact)
-    return Number.isFinite(asNum) ? asNum * price : undefined
-  }, [prices, toTokenId, toAmountExact, toToken])
+  const fromFiat = useMemo(
+    () => amountFiat(fromAmount, fromToken?.token_decimals, prices?.[fromTokenId]),
+    [prices, fromTokenId, fromAmount, fromToken],
+  )
+  const toFiat = useMemo(
+    () => amountFiat(toAmountExact, toToken?.token_decimals, prices?.[toTokenId]),
+    [prices, toTokenId, toAmountExact, toToken],
+  )
 
   // Guard against submitting a stale quote while the user is still typing
   // (debounce window) by requiring the quote's amount to match the current input.
-  const quoteMatchesInput = (() => {
-    if (!quoteData || fromToken?.token_decimals == null) return false
-    try {
-      return parseUnits(fromAmount, fromToken.token_decimals).toString() === quoteData.from_amount
-    } catch {
-      return false
-    }
-  })()
+  const quoteMatchesInput =
+    !!quoteData && parseAmount(fromAmount, fromToken?.token_decimals)?.toString() === quoteData.from_amount
   const canSwap =
     !!quoteData && !quoteLoading && !!walletClient && !!address && !insufficientFunds && quoteMatchesInput
 
@@ -283,11 +262,15 @@ export const SwapDashboard = () => {
               amount={fromAmount}
               onAmountChange={setFromAmount}
               balance={{ wei: fromBalance.balanceWei, loading: fromBalance.isLoading }}
-              amountError={insufficientFunds ? 'Insufficient funds' : null}
+              amountError={
+                amountInputError(fromAmount, fromToken?.token_decimals) ??
+                (insufficientFunds ? 'Insufficient funds' : null)
+              }
               fiatValue={fromFiat}
               onMax={() => {
                 if (fromToken?.token_decimals == null || !fromBalance.balanceWei) return
-                setFromAmount(formatUnits(BigInt(fromBalance.balanceWei), fromToken.token_decimals))
+                const token = { symbol: fromToken.token_symbol ?? '', decimals: fromToken.token_decimals }
+                setFromAmount(maxAmount(BigInt(fromBalance.balanceWei), token).input)
               }}
             />
           </div>

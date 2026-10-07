@@ -1,13 +1,18 @@
-import { formatUnits, parseUnits } from 'viem'
+import { formatUnits } from 'viem'
+import { parseAmountInput } from '@oasisprotocol/privana-sdk'
 
-export const isPositiveAmount = (amount: string, decimals: number | null | undefined): boolean => {
-  if (!amount || decimals == null) return false
-  try {
-    return parseUnits(amount, decimals) > 0n
-  } catch {
-    return false
-  }
+// Typed amounts are parsed by the SDK, like its own modals: no float, no rounding.
+const parse = (amount: string, decimals: number) => parseAmountInput(amount, { symbol: '', decimals })
+
+/** Base units of a typed amount, or null while it is empty, not a number, or too precise. */
+export const parseAmount = (amount: string, decimals: number | null | undefined): bigint | null => {
+  if (decimals == null) return null
+  const parsed = parse(amount, decimals)
+  return parsed.ok ? parsed.raw : null
 }
+
+export const isPositiveAmount = (amount: string, decimals: number | null | undefined): boolean =>
+  (parseAmount(amount, decimals) ?? 0n) > 0n
 
 // Whether a human-entered amount exceeds a base-units cap (wallet balance / position).
 export const exceedsAmount = (
@@ -15,12 +20,26 @@ export const exceedsAmount = (
   decimals: number | null | undefined,
   maxWei: bigint,
 ): boolean => {
-  if (!amount || decimals == null) return false
-  try {
-    return parseUnits(amount, decimals) > maxWei
-  } catch {
-    return false
-  }
+  const raw = parseAmount(amount, decimals)
+  return raw != null && raw > maxWei
+}
+
+export const amountFiat = (
+  amount: string,
+  decimals: number | null | undefined,
+  price: number | undefined,
+): number | undefined => {
+  const units = parseAmount(amount, decimals)
+  if (units == null || decimals == null || price == null) return undefined
+  const value = Number(formatUnits(units, decimals))
+  return Number.isFinite(value) ? value * price : undefined
+}
+
+/** What is wrong with a typed amount the token can't hold, worded like the SDK's modals. */
+export const amountInputError = (amount: string, decimals: number | null | undefined): string | null => {
+  if (decimals == null) return null
+  const parsed = parse(amount, decimals)
+  return !parsed.ok && parsed.reason === 'too-precise' ? `Too many decimal places (max: ${decimals})` : null
 }
 
 export interface MergedTokenAmount {

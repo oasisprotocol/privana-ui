@@ -1,7 +1,7 @@
 import type { ReactNode } from 'react'
-import { formatUnits } from 'viem'
+import { maxAmount, normalizeAmountInput } from '@oasisprotocol/privana-sdk'
 import type { TokenInfo } from '@/api/swap'
-import { exceedsAmount, formatFiat } from '@/lib/tokens'
+import { amountInputError, exceedsAmount, formatFiat } from '@/lib/tokens'
 import { useAmountFiat } from '@/hooks/useAmountFiat'
 
 const DEFAULT_PERCENTS = [25, 50, 75, 100] as const
@@ -35,21 +35,21 @@ export const EarnAmountField = ({
   const decimals = token?.token_decimals
   const tokenSymbol = token?.token_symbol ?? token?.token_type_name ?? ''
   const fiat = useAmountFiat(token, amount)
+  const inputError = amountInputError(amount, decimals)
   const exceeds = exceedsAmount(amount, decimals, maxWei)
 
-  const handleInput = (next: string) => {
+  const handleInput = (text: string) => {
     if (disabled) return
-    if (next === '') return onAmountChange('')
-    const max = decimals ?? 0
-    const pattern = max > 0 ? new RegExp(`^\\d*\\.?\\d{0,${max}}$`) : /^\d*$/
-    if (pattern.test(next)) onAmountChange(next)
+    // Pasted "1,234.50" and a decimal comma both become one plain number.
+    const next = normalizeAmountInput(text)
+    if (next != null) onAmountChange(next)
   }
 
   const percentDisabled = disabled || decimals == null || maxWei === 0n
   const handlePercent = (pct: number) => {
     if (percentDisabled || decimals == null) return
     const portion = pct === 100 ? maxWei : (maxWei * BigInt(pct)) / 100n
-    onAmountChange(formatUnits(portion, decimals))
+    onAmountChange(maxAmount(portion, { symbol: tokenSymbol, decimals }).input)
   }
 
   return (
@@ -72,7 +72,9 @@ export const EarnAmountField = ({
         </div>
         <p className="text-sm text-muted-foreground">{sublabel}</p>
         <div className="h-4 text-xs">
-          {exceeds ? (
+          {inputError ? (
+            <span className="text-destructive">{inputError}</span>
+          ) : exceeds ? (
             <span className="text-destructive">Exceeds balance</span>
           ) : fiat != null ? (
             <span className="text-muted-foreground">≈ {formatFiat(fiat)}</span>
