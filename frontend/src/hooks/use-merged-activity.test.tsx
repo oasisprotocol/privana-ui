@@ -5,12 +5,7 @@ import type { EarnPool } from '@/api/earn'
 import type { Operation } from '@/api/operations'
 import type { Activity } from '@/contexts/ActivityProvider/context'
 import type { PendingTransfer } from './usePendingTransfers'
-import {
-  resolveActivity,
-  useMergedActivity,
-  usePendingActivityCount,
-  useResolvedActivity,
-} from './use-merged-activity'
+import { resolveActivity, useMergedActivity, useResolvedActivity } from './use-merged-activity'
 
 let historyState: {
   history: HistoryEntry[]
@@ -350,26 +345,5 @@ describe('useResolvedActivity', () => {
     operationsState = { data: { operations: [op({ status: 'completed' })] }, isLoading: false }
     rerender()
     expect(result.current?.status).toBe('completed')
-  })
-})
-
-describe('usePendingActivityCount', () => {
-  it('counts in-flight server ops plus unlisted local activities', () => {
-    operationsState.data = {
-      operations: [
-        op({ operation_id: 'p1', status: 'pending' }),
-        op({ operation_id: 'u1', status: 'undeployed' }),
-        op({ operation_id: 'f1', status: 'failed' }),
-        op({ operation_id: 'c1', status: 'completed' }),
-        swapOp({ operation_id: 'r1', status: 'refunded' }),
-      ],
-    }
-    activityState.activities = [
-      localEarnActivity({ id: 'tmp-1' }),
-      localEarnActivity({ id: 'tmp-2', depositId: 'f1' } as Partial<Activity>),
-    ]
-
-    const { result } = renderHook(() => usePendingActivityCount())
-    expect(result.current).toBe(3)
   })
 })

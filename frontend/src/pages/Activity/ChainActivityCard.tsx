@@ -1,7 +1,7 @@
 import { usePrivanaContext } from '@oasisprotocol/privana-sdk'
 import { shortenAddress } from '@/lib/utils'
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip'
-import type { ClassifiedHistoryEntry } from './historyMapping'
+import type { DisplayEntry } from './historyMapping'
 import { historyRowCopy, swapCopy } from './labels'
 import { useSwapChains } from './useSwapChains'
 import { activityIcon } from './activityVisuals'
@@ -9,7 +9,7 @@ import { ActivityAmount, ActivityCard, ActivityIcon, ActivityRowBody, SwapAmount
 import { VenueBadge } from './VenueBadge'
 
 type Props = {
-  row: ClassifiedHistoryEntry
+  row: DisplayEntry
   /** A withdrawal not yet paid out, or a deposit not yet credited. */
   pending?: boolean
   divider?: boolean

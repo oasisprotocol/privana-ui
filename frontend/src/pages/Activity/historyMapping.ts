@@ -46,6 +46,9 @@ export type ClassifiedHistoryEntry = {
   toAmount?: string | null
 }
 
+/** What a row shows of an entry. A deposit still on its way has no history position yet. */
+export type DisplayEntry = Omit<ClassifiedHistoryEntry, 'source' | 'index'>
+
 // The slice of history a ClassifiedHistoryEntry[] was built from.
 export type HistoryWindow = {
   // Global index of entries[0].

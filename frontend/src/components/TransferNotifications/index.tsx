@@ -43,10 +43,12 @@ export const TransferNotifications = () => {
       return
     }
     if (isLoading || isError) return
+    // Right after an account switch the list can still be the previous account's.
+    const own = withdrawals.filter(w => w.user_address.toLowerCase() === account)
     const previous = seenWithdrawals.current
-    seenWithdrawals.current = { account, byIndex: new Map(withdrawals.map(w => [w.index, w])) }
+    seenWithdrawals.current = { account, byIndex: new Map(own.map(w => [w.index, w])) }
     if (previous?.account !== account) return
-    for (const withdrawal of completedWithdrawals(previous.byIndex, withdrawals)) {
+    for (const withdrawal of completedWithdrawals(previous.byIndex, own)) {
       notify(withdrawalNotification(withdrawal, getTokenById(withdrawal.token_id)))
     }
   }, [account, withdrawals, isLoading, isError, getTokenById])

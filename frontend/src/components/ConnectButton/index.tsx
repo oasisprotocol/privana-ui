@@ -22,7 +22,6 @@ import { sapphire, sapphireTestnet, base, mainnet, hyperEvm, baseSepolia, sepoli
 import { wagmiConfig, type AppChainId } from '@/wagmi-config'
 import { TURNKEY_CONNECTOR_ID } from '@/wallet/turnkeyConnector'
 import { useTurnkeyWalletIntent } from '@/wallet/turnkeyIntent'
-import { usePendingActivityCount } from '@/hooks/use-merged-activity'
 import { useResetBalanceCaches } from '@/hooks/use-reset-balance-caches'
 import { useSignOut } from '@/hooks/useSignOut'
 import { activityPath } from '@/paths'
@@ -59,7 +58,6 @@ export const ConnectButton: FC = () => {
   const walletIntent = useTurnkeyWalletIntent()
   const isEmbeddedWallet = isTurnkeyActive && walletIntent === 'embedded'
   const resolvedTheme = useResolvedTheme()
-  const pendingCount = usePendingActivityCount()
   const resetBalanceCaches = useResetBalanceCaches()
 
   const [menuOpen, setMenuOpen] = useState(false)
@@ -167,11 +165,6 @@ export const ConnectButton: FC = () => {
             >
               <History className="size-4 text-muted-foreground" />
               Vault activity
-              {pendingCount > 0 && (
-                <span className="inline-flex h-5 min-w-5 items-center justify-center rounded-full bg-primary px-1.5 text-xs font-semibold leading-none text-primary-foreground">
-                  {pendingCount}
-                </span>
-              )}
               <ChevronRight className="ml-auto size-4 text-muted-foreground" />
             </Link>
           </div>

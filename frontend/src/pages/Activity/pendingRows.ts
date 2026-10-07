@@ -2,7 +2,7 @@ import type { MergedRow } from '@/hooks/use-merged-activity'
 import type { PendingTransfer } from '@/hooks/usePendingTransfers'
 import type { ClassifiedHistoryEntry } from './historyMapping'
 
-export type ChainRow = Extract<MergedRow, { source: 'chain' }>
+export type HistoryRow = Extract<MergedRow, { source: 'chain' | 'pending' }>
 
 const same = (a: string | null | undefined, b: string | null | undefined) =>
   !!a && !!b && a.toLowerCase() === b.toLowerCase()
@@ -16,7 +16,7 @@ const same = (a: string | null | undefined, b: string | null | undefined) =>
 export function chainRowsWithPending(
   entries: readonly ClassifiedHistoryEntry[],
   transfers: readonly PendingTransfer[],
-): ChainRow[] {
+): HistoryRow[] {
   // History has no withdrawal index, so token, amount and recipient identify the
   // request, newest first. Two identical pending withdrawals are both pending anyway.
   const newestFirst = [...entries].sort((a, b) => b.timestamp - a.timestamp || b.index - a.index)
@@ -34,7 +34,7 @@ export function chainRowsWithPending(
     if (match) pendingIndexes.add(match.index)
   }
 
-  const rows: ChainRow[] = entries.map(row => ({
+  const rows: HistoryRow[] = entries.map(row => ({
     source: 'chain',
     timestamp: row.timestamp,
     row,
@@ -47,14 +47,11 @@ export function chainRowsWithPending(
     const timestamp = Math.floor(t.sentAt / 1000)
     const amount = t.amount.toString()
     rows.push({
-      source: 'chain',
+      source: 'pending',
       timestamp,
-      pending: true,
-      pendingKey: t.key,
+      key: t.key,
       row: {
-        source: 'chain',
         kind: 'deposit',
-        index: -1,
         timestamp,
         tokenId: t.tokenId ?? null,
         amount,

@@ -30,9 +30,12 @@ const deposit = (stage: DepositProgress['stage']): DepositProgress => ({
   stage,
 })
 
-const withdrawal = (index: number): WithdrawalInfo => ({
+const USER: `0x${string}` = '0x0000000000000000000000000000000000000001'
+const OTHER: `0x${string}` = '0x00000000000000000000000000000000000000aa'
+
+const withdrawal = (index: number, owner = USER): WithdrawalInfo => ({
   index,
-  user_address: '0x0000000000000000000000000000000000000001',
+  user_address: owner,
   to_address: '0x0000000000000000000000000000000000000002',
   amount: '1000000',
   block_number: 1,
@@ -49,7 +52,7 @@ beforeEach(() => {
   depositProgress = null
   pending = { withdrawals: [], isLoading: false, isError: false }
   signedIn = true
-  address = '0xUser'
+  address = USER
 })
 
 describe('TransferNotifications deposits', () => {
@@ -101,8 +104,19 @@ describe('TransferNotifications withdrawals', () => {
   it('does not count another account’s list as payouts', () => {
     pending = { ...pending, withdrawals: [withdrawal(1)] }
     const { rerender } = render(<TransferNotifications />)
-    address = '0xOther'
+    address = OTHER
     pending = { ...pending, withdrawals: [] }
+    rerender(<TransferNotifications />)
+    expect(titles()).toEqual([])
+  })
+
+  it('does not count the previous account’s list, still shown right after a switch', () => {
+    pending = { ...pending, withdrawals: [withdrawal(1)] }
+    const { rerender } = render(<TransferNotifications />)
+    // The address changes first; the new account's list arrives a render later.
+    address = OTHER
+    rerender(<TransferNotifications />)
+    pending = { ...pending, withdrawals: [withdrawal(7, OTHER)] }
     rerender(<TransferNotifications />)
     expect(titles()).toEqual([])
   })

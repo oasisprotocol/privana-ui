@@ -43,7 +43,7 @@ const pendingDeposit = (depositId?: string): PendingTransfer => ({
 })
 
 const pendingIndexes = (rows: ReturnType<typeof chainRowsWithPending>) =>
-  rows.filter(r => r.pending).map(r => r.row.index)
+  rows.flatMap(r => (r.source === 'chain' && r.pending ? [r.row.index] : []))
 
 describe('chainRowsWithPending', () => {
   it('marks the withdrawal row a pending withdrawal came from', () => {
@@ -69,14 +69,17 @@ describe('chainRowsWithPending', () => {
     expect(pendingIndexes(rows)).toEqual([])
   })
 
-  it('adds a row for a deposit that has not reached history yet', () => {
+  it('adds a row of its own for a deposit that has not reached history yet', () => {
     const rows = chainRowsWithPending([entry(1)], [pendingDeposit()])
     const deposit = rows.find(r => r.row.kind === 'deposit')
     expect(deposit).toMatchObject({
-      pending: true,
+      source: 'pending',
       timestamp: 2_000,
       row: { amount: '10000000', tokenId: USDC },
     })
+    // It has no history position, so nothing can key it by one.
+    expect(deposit?.row).not.toHaveProperty('index')
+    expect(statusOf(deposit!)).toBe('in-progress')
     expect(rowKey(deposit!)).toBe('deposit:0xabc')
   })
 
@@ -87,6 +90,7 @@ describe('chainRowsWithPending', () => {
     })
     const rows = chainRowsWithPending([credited], [pendingDeposit('0xd1')])
     expect(rows).toHaveLength(1)
-    expect(rows[0].pending).toBeUndefined()
+    expect(rows[0].source).toBe('chain')
+    expect(statusOf(rows[0])).toBe('completed')
   })
 })
