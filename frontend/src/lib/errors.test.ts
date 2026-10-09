@@ -3,8 +3,11 @@ import { describe, expect, it } from 'vitest'
 import {
   extractErrorMessage,
   isDefinitiveRejection,
-  isOperationPending,
+  isNonceRefusal,
+  nonceRefusalMessage,
+  OPERATION_PENDING_MESSAGE,
   shouldRetryQuery,
+  STALE_NONCE_MESSAGE,
 } from '@/lib/errors'
 
 describe('extractErrorMessage', () => {
@@ -78,11 +81,21 @@ describe('isDefinitiveRejection', () => {
   })
 })
 
-describe('isOperationPending', () => {
+describe('isNonceRefusal', () => {
   it('is exactly a 409 from either API client shape', () => {
-    expect(isOperationPending({ status: 409 })).toBe(true)
-    expect(isOperationPending({ statusCode: 409 })).toBe(true)
-    expect(isOperationPending({ status: 400 })).toBe(false)
-    expect(isOperationPending(new Error('timeout'))).toBe(false)
+    expect(isNonceRefusal({ status: 409 })).toBe(true)
+    expect(isNonceRefusal({ statusCode: 409 })).toBe(true)
+    expect(isNonceRefusal({ status: 400 })).toBe(false)
+    expect(isNonceRefusal(new Error('timeout'))).toBe(false)
+  })
+})
+
+describe('nonceRefusalMessage', () => {
+  it('asks to confirm the updated quote when the nonce was already used', () => {
+    expect(nonceRefusalMessage({ status: 409, code: 'stale_nonce' })).toBe(STALE_NONCE_MESSAGE)
+  })
+
+  it('asks to wait while an earlier operation holds the nonce', () => {
+    expect(nonceRefusalMessage({ status: 409, code: null })).toBe(OPERATION_PENDING_MESSAGE)
   })
 })

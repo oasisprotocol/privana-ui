@@ -7,12 +7,7 @@ import type { QuoteResponse, TokenInfo } from '@/api/swap'
 import { operationsKeys } from '@/api/operations'
 import { useActivity } from '@/contexts/ActivityProvider/useActivity'
 import type { ActivityStatus } from '@/contexts/ActivityProvider/context'
-import {
-  OPERATION_PENDING_MESSAGE,
-  extractErrorMessage,
-  isDefinitiveRejection,
-  isOperationPending,
-} from '@/lib/errors'
+import { extractErrorMessage, isDefinitiveRejection, isNonceRefusal, nonceRefusalMessage } from '@/lib/errors'
 
 const CHAIN_ID = parseInt(import.meta.env.VITE_CHAIN_ID, 10)
 const ACCOUNTING_CONTRACT = import.meta.env.VITE_ACCOUNTING_CONTRACT_ADDRESS
@@ -113,9 +108,9 @@ export const useSubmitSwap = ({ onSuccess, onRefused }: Params = {}) => {
           // in-progress and the operations feed resolves it by quoteId —
           // marking it failed here fabricates a failure for a swap that
           // usually succeeded.
-          if (isOperationPending(err)) {
+          if (isNonceRefusal(err)) {
             removeActivity(id)
-            setError(OPERATION_PENDING_MESSAGE)
+            setError(nonceRefusalMessage(err))
             onRefused?.()
             return
           }
