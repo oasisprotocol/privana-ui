@@ -26,7 +26,6 @@ const swap = (
   toToken: { id: toId, symbol: toSymbol, decimals: 6 },
   fromAmount: '2000000',
   toAmount: '1960000',
-  rateLabel: '',
 })
 
 const renderCard = (activity: SwapActivity) =>

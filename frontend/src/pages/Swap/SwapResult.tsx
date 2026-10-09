@@ -8,6 +8,7 @@ import { TokenAmount as AmountText } from '@/components/TokenAmount'
 import { cn } from '@/lib/utils'
 import { useSlowSettlement } from '@/hooks/useSlowSettlement'
 import type { ActivityTokenInfo, SwapActivity } from '@/contexts/ActivityProvider/context'
+import { formatRate } from './quoteHelpers'
 
 const TokenAmount = ({
   wei,
@@ -39,7 +40,8 @@ type SwapResultProps = {
 }
 
 export const SwapResult = ({ activity, onDone, onViewActivity }: SwapResultProps) => {
-  const { fromToken, toToken, fromAmount, toAmount, rateLabel, feeFiat, status, error } = activity
+  const { fromToken, toToken, fromAmount, toAmount, feeFiat, status, error } = activity
+  const rate = formatRate({ amount: fromAmount, ...fromToken }, { amount: toAmount, ...toToken })
 
   const slow = useSlowSettlement(status)
 
@@ -51,7 +53,9 @@ export const SwapResult = ({ activity, onDone, onViewActivity }: SwapResultProps
         <p className="mt-2 inline-flex items-center gap-2 text-sm text-muted-foreground">
           <AmountText amount={fromAmount || '0'} token={fromToken} withSymbol />
           <ArrowRight className="h-3.5 w-3.5" />
-          <AmountText amount={toAmount || '0'} token={toToken} withSymbol />
+          <span>
+            ≈ <AmountText amount={toAmount || '0'} token={toToken} withSymbol />
+          </span>
         </p>
         <p className="mt-3 inline-flex items-center gap-1.5 text-xs text-muted-foreground">
           <EyeOff className="h-3.5 w-3.5" />
@@ -114,7 +118,7 @@ export const SwapResult = ({ activity, onDone, onViewActivity }: SwapResultProps
       </SurfaceCard>
 
       <SurfaceCard className="mt-4 flex flex-col gap-0 p-0">
-        <Row size="md" className="px-4 py-3 border-b border-border" label="Rate" value={rateLabel || '-'} />
+        <Row size="md" className="px-4 py-3 border-b border-border" label="Rate" value={rate ?? '-'} />
         <Row
           size="md"
           className="px-4 py-3 border-b border-border"

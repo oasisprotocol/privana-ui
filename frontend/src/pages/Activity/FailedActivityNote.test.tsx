@@ -23,7 +23,6 @@ const swap = (status: SwapActivity['status'], error?: string): SwapActivity => (
   toToken: ETH,
   fromAmount: '4000000',
   toAmount: '1563331105820013',
-  rateLabel: '',
   error,
 })
 

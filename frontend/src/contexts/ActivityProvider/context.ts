@@ -14,7 +14,6 @@ export type SwapActivity = {
   toToken: ActivityTokenInfo
   fromAmount: string
   toAmount: string
-  rateLabel: string
   feeFiat?: number
   swapId?: string
   quoteId?: string

@@ -147,7 +147,6 @@ export const SwapDashboard = () => {
       address,
       fromToken,
       toToken,
-      rateLabel: summary.rateLabel,
       feeFiat: summary.totalFeeFiat,
     })
     if (id) {

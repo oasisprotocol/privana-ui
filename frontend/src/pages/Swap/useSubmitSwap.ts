@@ -30,7 +30,6 @@ export type SubmitSwapParams = {
   address: `0x${string}`
   fromToken: TokenInfo
   toToken: TokenInfo
-  rateLabel: string
   feeFiat?: number
 }
 
@@ -44,7 +43,7 @@ export const useSubmitSwap = ({ onSuccess, onRefused }: Params = {}) => {
   // status for the swapping/result screens) or null if signing failed / was
   // rejected before an activity was created.
   const execute = async (params: SubmitSwapParams): Promise<string | null> => {
-    const { quote, walletClient, address, fromToken, toToken, rateLabel, feeFiat } = params
+    const { quote, walletClient, address, fromToken, toToken, feeFiat } = params
     if (fromToken.token_decimals == null || toToken.token_decimals == null) {
       setError('Missing token decimals')
       return null
@@ -83,7 +82,6 @@ export const useSubmitSwap = ({ onSuccess, onRefused }: Params = {}) => {
         },
         fromAmount: quote.from_amount,
         toAmount: quote.to_amount_estimate,
-        rateLabel,
         feeFiat,
       })
       setLoading(false)

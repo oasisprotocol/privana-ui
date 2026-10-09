@@ -127,7 +127,6 @@ const localSwapActivity = (overrides: Partial<Activity> = {}): Activity =>
     toToken: { id: '0xbeef', symbol: 'ETH', decimals: 18 },
     fromAmount: '1000000',
     toAmount: '400000000000000',
-    rateLabel: '1 USDC = 0.0004 ETH',
     ...overrides,
   }) as Activity
 
@@ -306,7 +305,6 @@ describe('resolveActivity', () => {
       swapId: 'srv-swap-1',
       txHash: '0xtx',
       toAmount: '390000000000000',
-      rateLabel: '1 USDC = 0.0004 ETH',
     })
   })
 

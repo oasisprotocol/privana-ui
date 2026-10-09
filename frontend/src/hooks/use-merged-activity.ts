@@ -85,7 +85,6 @@ export function mapOperationToActivity(
       toToken: resolveToken(op.to_token_id),
       fromAmount: op.from_amount ?? '0',
       toAmount: op.to_amount_actual ?? op.to_amount_estimate ?? '0',
-      rateLabel: '',
       swapId: op.operation_id,
       quoteId: op.quote_id ?? undefined,
       txHash: op.tx_hash ?? undefined,
