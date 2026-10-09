@@ -20,6 +20,7 @@ type AssetRowProps = {
   onAmountChange?: (v: string) => void
   readOnly?: boolean
   loading?: boolean
+  refreshing?: boolean
   disabled?: boolean
   balance?: { wei: string; loading: boolean }
   amountError?: string | null
@@ -37,6 +38,7 @@ export const AssetRow = ({
   onAmountChange,
   readOnly,
   loading,
+  refreshing,
   disabled,
   balance,
   amountError,
@@ -90,7 +92,7 @@ export const AssetRow = ({
           <Input
             className={cn(
               'h-[58px] w-full rounded-r-full border-0 bg-transparent dark:bg-transparent px-3 text-right text-xl font-semibold text-foreground shadow-none focus-visible:ring-0 md:text-xl',
-              loading && 'opacity-50',
+              refreshing ? 'motion-safe:animate-pulse motion-reduce:opacity-50' : loading && 'opacity-50',
               loading && !amount && 'pr-10',
             )}
             type="text"

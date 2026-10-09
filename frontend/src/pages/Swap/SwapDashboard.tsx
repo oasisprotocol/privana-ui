@@ -14,10 +14,11 @@ import { amountFiat, amountInputError, exceedsAmount, parseAmount } from '@/lib/
 import { useRefreshBalanceCaches } from '@/hooks/use-reset-balance-caches'
 import { DESKTOP_CARD } from '@/lib/surface'
 import { useResolvedActivity } from '@/hooks/use-merged-activity'
-import { QuoteCountdown } from '@/components/QuoteCountdown'
 import { AssetRow } from './AssetRow'
 import { QuoteInfo } from './QuoteInfo'
 import { ReviewStep } from './ReviewStep'
+import { SwapSettings } from './SwapSettings'
+import { parseSlippage, slippageLabel } from './slippage'
 import { SwapResult } from './SwapResult'
 import { useSwapQuote } from './useSwapQuote'
 import { useSubmitSwap } from './useSubmitSwap'
@@ -38,6 +39,8 @@ export const SwapDashboard = () => {
     return (SWAPPABLE_TOKEN_IDS as string[]).includes(requested) ? requested : ''
   })
   const [fromAmount, setFromAmount] = useState('')
+  const [slippageInput, setSlippageInput] = useState('')
+  const customSlippage = parseSlippage(slippageInput)
   const [swapActivityId, setSwapActivityId] = useState<string | null>(null)
   const tokens = useMemo(
     () => (data?.tokens ?? []).filter(t => (SWAPPABLE_TOKEN_IDS as string[]).includes(t.token_id)),
@@ -67,6 +70,7 @@ export const SwapDashboard = () => {
   const {
     data: quoteData,
     loading: quoteLoading,
+    refreshing: quoteRefreshing,
     error: quoteError,
     toAmount,
     toAmountExact,
@@ -79,6 +83,7 @@ export const SwapDashboard = () => {
     fromDecimals: fromToken?.token_decimals,
     toDecimals: toToken?.token_decimals,
     toSymbol: toToken?.token_symbol,
+    slippage: customSlippage == null ? undefined : customSlippage / 100,
     disabled: insufficientFunds,
   })
 
@@ -142,7 +147,6 @@ export const SwapDashboard = () => {
       address,
       fromToken,
       toToken,
-      rateLabel: summary.rateLabel,
       feeFiat: summary.totalFeeFiat,
     })
     if (id) {
@@ -179,11 +183,14 @@ export const SwapDashboard = () => {
   return (
     <div className={cn('mx-auto flex w-full max-w-lg flex-col', DESKTOP_CARD)}>
       {step === 0 && (
-        <div className="flex flex-col gap-1">
-          <h1 className="text-foreground text-3xl font-semibold tracking-tight leading-9">Swap</h1>
-          <p className="text-muted-foreground text-sm font-normal leading-5">
-            Choose the asset you want to swap.
-          </p>
+        <div className="flex items-start justify-between gap-4">
+          <div className="flex flex-col gap-1">
+            <h1 className="text-foreground text-3xl font-semibold tracking-tight leading-9">Swap</h1>
+            <p className="text-muted-foreground text-sm font-normal leading-5">
+              Choose the asset you want to swap.
+            </p>
+          </div>
+          <SwapSettings slippage={slippageInput} onSlippageChange={setSlippageInput} />
         </div>
       )}
       {step === 1 && (
@@ -221,8 +228,10 @@ export const SwapDashboard = () => {
           summary={summary}
           quoteLoading={quoteLoading}
           canConfirm={canSwap}
-          expiresAt={quoteData?.expires_at}
+          quoteRefreshing={quoteRefreshing}
           toAmountExact={toAmountExact}
+          minReceived={quoteData?.to_amount_min}
+          slippageLabel={slippageLabel(customSlippage)}
           onConfirm={handleSwap}
           loading={swapLoading}
           error={swapError}
@@ -299,6 +308,7 @@ export const SwapDashboard = () => {
               amount={toAmount}
               readOnly
               loading={quoteLoading}
+              refreshing={quoteRefreshing}
               balance={{ wei: toBalance.balanceWei, loading: toBalance.isLoading }}
               fiatValue={toFiat}
               balanceLabel="Receive (incl. fees)"
@@ -323,12 +333,6 @@ export const SwapDashboard = () => {
               Review swap
             </Button>
           </div>
-
-          {quoteData && (
-            <div className="animate-fade-in flex justify-center">
-              <QuoteCountdown quoteLoading={quoteLoading} expiresAt={quoteData.expires_at} />
-            </div>
-          )}
 
           <div className="flex items-center justify-center gap-2 px-0.5 text-xs font-medium text-muted-foreground">
             <EyeOff className="size-4 shrink-0" />

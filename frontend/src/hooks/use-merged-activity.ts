@@ -58,7 +58,13 @@ export function resolveActivity(a: Activity, operations: readonly Operation[]): 
     error: errorOf(op),
   }
   if (a.type === 'swap') {
-    return { ...a, ...patch, swapId: op.operation_id, toAmount: op.to_amount_actual ?? a.toAmount }
+    return {
+      ...a,
+      ...patch,
+      swapId: op.operation_id,
+      toAmount: op.to_amount_actual ?? a.toAmount,
+      reason: op.reason ?? undefined,
+    }
   }
   return {
     ...a,
@@ -85,11 +91,11 @@ export function mapOperationToActivity(
       toToken: resolveToken(op.to_token_id),
       fromAmount: op.from_amount ?? '0',
       toAmount: op.to_amount_actual ?? op.to_amount_estimate ?? '0',
-      rateLabel: '',
       swapId: op.operation_id,
       quoteId: op.quote_id ?? undefined,
       txHash: op.tx_hash ?? undefined,
       error: errorOf(op),
+      reason: op.reason ?? undefined,
     }
   }
 

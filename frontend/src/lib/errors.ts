@@ -29,12 +29,19 @@ export const isDefinitiveRejection = (err: unknown): boolean => {
   return status !== undefined && status >= 400 && status < 500
 }
 
-// 409: the backend refused to queue the request because an earlier operation
-// still holds the user's nonce. Nothing was recorded server-side.
-export const isOperationPending = (err: unknown): boolean => httpStatusOf(err) === 409
+// 409: the backend refused to queue the request over the nonce it was signed
+// with: an earlier operation still holds it, or (code stale_nonce) another one
+// already used it. Nothing was recorded server-side.
+export const isNonceRefusal = (err: unknown): boolean => httpStatusOf(err) === 409
 
 export const OPERATION_PENDING_MESSAGE =
   'Your previous operation is still being processed — try again in a moment'
+
+export const STALE_NONCE_MESSAGE =
+  'Another operation went through first — review the updated quote and confirm again'
+
+export const nonceRefusalMessage = (err: unknown): string =>
+  (err as { code?: unknown } | null)?.code === 'stale_nonce' ? STALE_NONCE_MESSAGE : OPERATION_PENDING_MESSAGE
 
 export const extractErrorMessage = (err: unknown, fallback = 'Something went wrong'): string => {
   if (err instanceof BaseError) {

@@ -1,23 +1,38 @@
 import { formatUnits } from 'viem'
 import type { QuoteResponse, TokenInfo } from '@/api/swap'
 
+type RateSide = { amount: string; decimals: number; symbol: string }
+
+export const formatRate = (from: RateSide, to: RateSide): string | null => {
+  try {
+    const fromAmountNum = Number(formatUnits(BigInt(from.amount), from.decimals))
+    const toAmountNum = Number(formatUnits(BigInt(to.amount), to.decimals))
+    if (!fromAmountNum || !Number.isFinite(fromAmountNum) || !Number.isFinite(toAmountNum)) return null
+    const rate = toAmountNum / fromAmountNum
+    return `1 ${from.symbol} = ${rate.toLocaleString('en-US', { maximumSignificantDigits: 6 })} ${to.symbol}`
+  } catch {
+    return null
+  }
+}
+
 export const computeRate = (
   quote: QuoteResponse,
   fromToken: TokenInfo | undefined,
   toToken: TokenInfo | undefined,
 ): string | null => {
   if (fromToken?.token_decimals == null || toToken?.token_decimals == null) return null
-  try {
-    const fromAmountNum = Number(formatUnits(BigInt(quote.from_amount), fromToken.token_decimals))
-    const toAmountNum = Number(formatUnits(BigInt(quote.to_amount_estimate), toToken.token_decimals))
-    if (!fromAmountNum || !Number.isFinite(fromAmountNum) || !Number.isFinite(toAmountNum)) return null
-    const rate = toAmountNum / fromAmountNum
-    const fromSymbol = fromToken.token_symbol ?? fromToken.token_type_name
-    const toSymbol = toToken.token_symbol ?? toToken.token_type_name
-    return `1 ${fromSymbol} = ${rate.toLocaleString('en-US', { maximumSignificantDigits: 6 })} ${toSymbol}`
-  } catch {
-    return null
-  }
+  return formatRate(
+    {
+      amount: quote.from_amount,
+      decimals: fromToken.token_decimals,
+      symbol: fromToken.token_symbol ?? fromToken.token_type_name,
+    },
+    {
+      amount: quote.to_amount_estimate,
+      decimals: toToken.token_decimals,
+      symbol: toToken.token_symbol ?? toToken.token_type_name,
+    },
+  )
 }
 
 export const computeFeeFiat = (

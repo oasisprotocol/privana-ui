@@ -127,7 +127,6 @@ const localSwapActivity = (overrides: Partial<Activity> = {}): Activity =>
     toToken: { id: '0xbeef', symbol: 'ETH', decimals: 18 },
     fromAmount: '1000000',
     toAmount: '400000000000000',
-    rateLabel: '1 USDC = 0.0004 ETH',
     ...overrides,
   }) as Activity
 
@@ -306,8 +305,13 @@ describe('resolveActivity', () => {
       swapId: 'srv-swap-1',
       txHash: '0xtx',
       toAmount: '390000000000000',
-      rateLabel: '1 USDC = 0.0004 ETH',
     })
+  })
+
+  it('carries why a swap failed', () => {
+    const local = localSwapActivity({ quoteId: 'q-1' } as Partial<Activity>)
+    const row = swapOp({ status: 'failed', reason: 'needs_support', error: 'Contact Privana support' })
+    expect(resolveActivity(local, [row])).toMatchObject({ status: 'failed', reason: 'needs_support' })
   })
 
   it('settles a refunded swap as failed, with a reason when the row has none', () => {
