@@ -17,6 +17,8 @@ import { useResolvedActivity } from '@/hooks/use-merged-activity'
 import { AssetRow } from './AssetRow'
 import { QuoteInfo } from './QuoteInfo'
 import { ReviewStep } from './ReviewStep'
+import { SwapSettings } from './SwapSettings'
+import { parseSlippage } from './slippage'
 import { SwapResult } from './SwapResult'
 import { useSwapQuote } from './useSwapQuote'
 import { useSubmitSwap } from './useSubmitSwap'
@@ -37,6 +39,8 @@ export const SwapDashboard = () => {
     return (SWAPPABLE_TOKEN_IDS as string[]).includes(requested) ? requested : ''
   })
   const [fromAmount, setFromAmount] = useState('')
+  const [slippageInput, setSlippageInput] = useState('')
+  const customSlippage = parseSlippage(slippageInput)
   const [swapActivityId, setSwapActivityId] = useState<string | null>(null)
   const tokens = useMemo(
     () => (data?.tokens ?? []).filter(t => (SWAPPABLE_TOKEN_IDS as string[]).includes(t.token_id)),
@@ -79,6 +83,7 @@ export const SwapDashboard = () => {
     fromDecimals: fromToken?.token_decimals,
     toDecimals: toToken?.token_decimals,
     toSymbol: toToken?.token_symbol,
+    slippage: customSlippage == null ? undefined : customSlippage / 100,
     disabled: insufficientFunds,
   })
 
@@ -179,11 +184,14 @@ export const SwapDashboard = () => {
   return (
     <div className={cn('mx-auto flex w-full max-w-lg flex-col', DESKTOP_CARD)}>
       {step === 0 && (
-        <div className="flex flex-col gap-1">
-          <h1 className="text-foreground text-3xl font-semibold tracking-tight leading-9">Swap</h1>
-          <p className="text-muted-foreground text-sm font-normal leading-5">
-            Choose the asset you want to swap.
-          </p>
+        <div className="flex items-start justify-between gap-4">
+          <div className="flex flex-col gap-1">
+            <h1 className="text-foreground text-3xl font-semibold tracking-tight leading-9">Swap</h1>
+            <p className="text-muted-foreground text-sm font-normal leading-5">
+              Choose the asset you want to swap.
+            </p>
+          </div>
+          <SwapSettings slippage={slippageInput} onSlippageChange={setSlippageInput} />
         </div>
       )}
       {step === 1 && (

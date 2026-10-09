@@ -19,6 +19,7 @@ type Params = {
   fromDecimals: number | null | undefined
   toDecimals: number | null | undefined
   toSymbol: string | null | undefined
+  slippage?: number
   disabled?: boolean
 }
 
@@ -30,9 +31,11 @@ export const useSwapQuote = ({
   fromDecimals,
   toDecimals,
   toSymbol,
+  slippage,
   disabled,
 }: Params) => {
   const debouncedFromAmount = useDebouncedValue(fromAmount)
+  const debouncedSlippage = useDebouncedValue(slippage)
   const [refetchKey, setRefetchKey] = useState(0)
 
   const fromBaseUnits = parseAmount(debouncedFromAmount, fromDecimals)
@@ -47,7 +50,9 @@ export const useSwapQuote = ({
     fromDecimals != null &&
     toDecimals != null
 
-  const inputId = enabled ? `${fromTokenId}|${toTokenId}|${debouncedFromAmount}|${address}` : ''
+  const inputId = enabled
+    ? `${fromTokenId}|${toTokenId}|${debouncedFromAmount}|${address}|${debouncedSlippage ?? 'auto'}`
+    : ''
   const inputKey = enabled ? `${inputId}|${refetchKey}` : ''
 
   const [result, setResult] = useState<{
@@ -68,6 +73,7 @@ export const useSwapQuote = ({
         toTokenId,
         fromAmount: fromBaseUnits.toString(),
         userAddress: address,
+        slippage: debouncedSlippage,
       },
       abort.signal,
     )
@@ -85,7 +91,7 @@ export const useSwapQuote = ({
         })
       })
     return () => abort.abort()
-  }, [enabled, inputKey, inputId, fromTokenId, toTokenId, fromBaseUnits, address])
+  }, [enabled, inputKey, inputId, fromTokenId, toTokenId, fromBaseUnits, address, debouncedSlippage])
 
   const fresh = enabled && result?.key === inputKey ? result.quote : null
   const error = errorState?.key === inputKey ? errorState.message : null

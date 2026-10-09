@@ -60,6 +60,20 @@ describe('useSwapQuote', () => {
     expect(getQuote).toHaveBeenCalledTimes(2)
   })
 
+  it('sends a custom slippage and fetches a new quote when it changes', async () => {
+    vi.mocked(getQuote).mockImplementation(async () => quote(1800))
+    const { rerender } = renderHook((props: { slippage?: number }) => useSwapQuote({ ...params, ...props }), {
+      initialProps: {},
+    })
+    await act(async () => {})
+    expect(vi.mocked(getQuote).mock.calls[0][0].slippage).toBeUndefined()
+
+    rerender({ slippage: 0.01 })
+    await act(() => vi.advanceTimersByTimeAsync(500))
+    expect(getQuote).toHaveBeenCalledTimes(2)
+    expect(vi.mocked(getQuote).mock.calls[1][0].slippage).toBe(0.01)
+  })
+
   it('counts as refreshing from 5 seconds before a refresh until the new quote arrives', async () => {
     let arrive: (q: QuoteResponse) => void = () => {}
     vi.mocked(getQuote)
