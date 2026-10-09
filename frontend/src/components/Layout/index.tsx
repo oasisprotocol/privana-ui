@@ -129,10 +129,7 @@ export const Layout = ({ children }: LayoutProps) => {
           <Separator className="data-[orientation=horizontal]:h-[0.5px]" />
           <div className="self-stretch flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
             <div className="flex flex-col gap-3 md:flex-row md:items-center md:gap-2">
-              <span>
-                Copyright © <span className="md:hidden">OPF</span>
-                <span className="hidden md:inline">Oasis Protocol Foundation</span> {new Date().getFullYear()}
-              </span>
+              <span>© {new Date().getFullYear()} Oasis. All rights reserved</span>
               <span className="hidden md:inline">·</span>
               <span>
                 Price data by{' '}
