@@ -1,4 +1,4 @@
-import type { ReactNode } from 'react'
+import { useState, type ReactNode } from 'react'
 import { Info, Settings } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover'
@@ -27,7 +27,8 @@ type SwapSettingsProps = {
 
 export const SwapSettings = ({ slippage, onSlippageChange }: SwapSettingsProps) => {
   const custom = parseSlippage(slippage)
-  const note = slippageNote(slippage)
+  const [typing, setTyping] = useState(false)
+  const note = slippageNote(slippage, typing)
 
   return (
     <Popover
@@ -71,6 +72,8 @@ export const SwapSettings = ({ slippage, onSlippageChange }: SwapSettingsProps) 
               </button>
               <input
                 aria-label="Max slippage in percent"
+                onFocus={() => setTyping(true)}
+                onBlur={() => setTyping(false)}
                 inputMode="decimal"
                 placeholder={AUTO_SLIPPAGE_PERCENT.toFixed(2)}
                 value={slippage}

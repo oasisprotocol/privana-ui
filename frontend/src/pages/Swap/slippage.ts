@@ -11,10 +11,17 @@ export const parseSlippage = (input: string): number | null => {
   return value >= MIN_SLIPPAGE_PERCENT && value <= MAX_SLIPPAGE_PERCENT ? value : null
 }
 
-export const slippageNote = (input: string): { kind: 'error' | 'warning'; text: string } | null => {
+const stillTyping = (input: string): boolean =>
+  (Number(input) || 0) < MIN_SLIPPAGE_PERCENT && !/\.\d{2}$/.test(input)
+
+export const slippageNote = (
+  input: string,
+  typing = false,
+): { kind: 'error' | 'warning'; text: string } | null => {
   if (!input) return null
   const value = parseSlippage(input)
   if (value == null) {
+    if (typing && stillTyping(input)) return null
     return {
       kind: 'error',
       text: `Enter a value from ${MIN_SLIPPAGE_PERCENT}% to ${MAX_SLIPPAGE_PERCENT}%`,
