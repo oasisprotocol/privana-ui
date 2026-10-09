@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { parseSlippage, slippageNote } from './slippage'
+import { parseSlippage, slippageLabel, slippageNote } from './slippage'
 
 describe('parseSlippage', () => {
   it('reads a value in range', () => {
@@ -33,5 +33,12 @@ describe('slippageNote', () => {
 
   it('rejects a value out of range', () => {
     expect(slippageNote('10')?.kind).toBe('error')
+  })
+})
+
+describe('slippageLabel', () => {
+  it('shows the default for Auto and a custom value as is', () => {
+    expect(slippageLabel(null)).toBe('Auto (0.5%)')
+    expect(slippageLabel(1.5)).toBe('1.5%')
   })
 })

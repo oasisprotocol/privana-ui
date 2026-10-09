@@ -25,3 +25,6 @@ export const slippageNote = (input: string): { kind: 'error' | 'warning'; text: 
   }
   return null
 }
+
+export const slippageLabel = (custom: number | null): string =>
+  custom == null ? `Auto (${AUTO_SLIPPAGE_PERCENT}%)` : `${custom}%`

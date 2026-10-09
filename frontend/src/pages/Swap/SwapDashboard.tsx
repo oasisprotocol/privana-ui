@@ -18,7 +18,7 @@ import { AssetRow } from './AssetRow'
 import { QuoteInfo } from './QuoteInfo'
 import { ReviewStep } from './ReviewStep'
 import { SwapSettings } from './SwapSettings'
-import { parseSlippage } from './slippage'
+import { parseSlippage, slippageLabel } from './slippage'
 import { SwapResult } from './SwapResult'
 import { useSwapQuote } from './useSwapQuote'
 import { useSubmitSwap } from './useSubmitSwap'
@@ -231,6 +231,8 @@ export const SwapDashboard = () => {
           canConfirm={canSwap}
           quoteRefreshing={quoteRefreshing}
           toAmountExact={toAmountExact}
+          minReceived={quoteData?.to_amount_min}
+          slippageLabel={slippageLabel(customSlippage)}
           onConfirm={handleSwap}
           loading={swapLoading}
           error={swapError}

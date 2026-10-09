@@ -4,6 +4,7 @@ import { Button } from '@/components/ui/button'
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip'
 import { Row } from '@/components/Row'
 import { SurfaceCard } from '@/components/SurfaceCard'
+import { TokenAmount } from '@/components/TokenAmount'
 import type { TokenInfo } from '@/api/swap'
 import { cn } from '@/lib/utils'
 import type { QuoteSummary } from './useQuoteSummary'
@@ -16,6 +17,8 @@ type ReviewStepProps = {
   fromAmount: string
   toAmount: string
   toAmountExact?: string
+  minReceived?: string
+  slippageLabel: string
   summary: QuoteSummary
   quoteLoading?: boolean
   quoteRefreshing?: boolean
@@ -31,6 +34,8 @@ export const ReviewStep = ({
   fromAmount,
   toAmount,
   toAmountExact,
+  minReceived,
+  slippageLabel,
   summary,
   quoteLoading,
   quoteRefreshing,
@@ -72,12 +77,12 @@ export const ReviewStep = ({
               {toAmountExact && toAmountExact !== toAmount ? (
                 <Tooltip>
                   <TooltipTrigger asChild>
-                    <span className={cn(toAmountClassName, 'cursor-help')}>{toAmount}</span>
+                    <span className={cn(toAmountClassName, 'cursor-help')}>≈ {toAmount}</span>
                   </TooltipTrigger>
                   <TooltipContent>{toAmountExact}</TooltipContent>
                 </Tooltip>
               ) : (
-                <span className={toAmountClassName}>{toAmount}</span>
+                <span className={toAmountClassName}>≈ {toAmount}</span>
               )}
               {toToken?.token_symbol && (
                 <span className="shrink-0 size-4 overflow-hidden rounded-full">
@@ -97,6 +102,21 @@ export const ReviewStep = ({
       <SurfaceCard className="flex flex-col gap-0 p-5">
         {[
           { label: 'Rate', value: summary.rateLabel || '-' },
+          {
+            label: 'Minimum received',
+            value:
+              minReceived && toToken?.token_decimals != null ? (
+                <TokenAmount
+                  amount={minReceived}
+                  token={{ symbol: tokenLabel(toToken), decimals: toToken.token_decimals }}
+                  context="quote"
+                  withSymbol
+                />
+              ) : (
+                '-'
+              ),
+          },
+          { label: 'Max slippage', value: slippageLabel, mutedValue: true },
           {
             label: 'Privacy',
             value: (
