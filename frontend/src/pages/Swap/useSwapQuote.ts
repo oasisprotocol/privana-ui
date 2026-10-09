@@ -4,8 +4,12 @@ import { formatTokenAmount } from '@oasisprotocol/privana-sdk'
 import { getQuote } from '@/api/swap'
 import type { QuoteResponse } from '@/api/swap'
 import { useDebouncedValue } from '@/hooks/use-debounced-value'
-import { useQuoteExpiry } from '@/hooks/use-quote-expiry'
 import { parseAmount } from '@/lib/tokens'
+
+// Keep refreshing quote to have estimate and nonce up to date.
+const QUOTE_REFRESH_SECONDS = 30
+// Mark quote as refreshing shortly.
+const REFRESH_NOTICE_SECONDS = 5
 
 type Params = {
   fromTokenId: string
@@ -46,8 +50,14 @@ export const useSwapQuote = ({
   const inputId = enabled ? `${fromTokenId}|${toTokenId}|${debouncedFromAmount}|${address}` : ''
   const inputKey = enabled ? `${inputId}|${refetchKey}` : ''
 
-  const [result, setResult] = useState<{ inputId: string; key: string; quote: QuoteResponse } | null>(null)
+  const [result, setResult] = useState<{
+    inputId: string
+    key: string
+    quote: QuoteResponse
+    refreshAt: number
+  } | null>(null)
   const [errorState, setErrorState] = useState<{ key: string; message: string } | null>(null)
+  const [refreshNotice, setRefreshNotice] = useState<string | null>(null)
 
   useEffect(() => {
     if (!enabled || fromBaseUnits == null) return
@@ -63,7 +73,8 @@ export const useSwapQuote = ({
     )
       .then(quote => {
         if (abort.signal.aborted) return
-        setResult({ inputId, key: inputKey, quote })
+        const refreshAt = Math.min(quote.expires_at, Math.floor(Date.now() / 1000) + QUOTE_REFRESH_SECONDS)
+        setResult({ inputId, key: inputKey, quote, refreshAt })
         setErrorState(null)
       })
       .catch(err => {
@@ -92,12 +103,23 @@ export const useSwapQuote = ({
   const toAmountExact =
     data && toDecimals != null ? formatUnits(BigInt(data.to_amount_estimate), toDecimals) : ''
 
-  useQuoteExpiry({
-    data,
-    onRefetch: () => setRefetchKey(k => k + 1),
-  })
+  const shown = data ? result : null
+  useEffect(() => {
+    if (!shown) return
+    const msUntil = (seconds: number) => Math.max(0, seconds * 1000 - Date.now())
+    const notice = setTimeout(
+      () => setRefreshNotice(shown.key),
+      msUntil(shown.refreshAt - REFRESH_NOTICE_SECONDS),
+    )
+    const refresh = setTimeout(() => setRefetchKey(k => k + 1), msUntil(shown.refreshAt))
+    return () => {
+      clearTimeout(notice)
+      clearTimeout(refresh)
+    }
+  }, [shown])
+  const refreshing = !!shown && (loading || refreshNotice === shown.key)
 
   const reset = () => setRefetchKey(k => k + 1)
 
-  return { data, loading, error, toAmount, toAmountExact, reset }
+  return { data, loading, refreshing, error, toAmount, toAmountExact, reset }
 }

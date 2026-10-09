@@ -14,7 +14,6 @@ import { amountFiat, amountInputError, exceedsAmount, parseAmount } from '@/lib/
 import { useRefreshBalanceCaches } from '@/hooks/use-reset-balance-caches'
 import { DESKTOP_CARD } from '@/lib/surface'
 import { useResolvedActivity } from '@/hooks/use-merged-activity'
-import { QuoteCountdown } from '@/components/QuoteCountdown'
 import { AssetRow } from './AssetRow'
 import { QuoteInfo } from './QuoteInfo'
 import { ReviewStep } from './ReviewStep'
@@ -67,6 +66,7 @@ export const SwapDashboard = () => {
   const {
     data: quoteData,
     loading: quoteLoading,
+    refreshing: quoteRefreshing,
     error: quoteError,
     toAmount,
     toAmountExact,
@@ -221,7 +221,7 @@ export const SwapDashboard = () => {
           summary={summary}
           quoteLoading={quoteLoading}
           canConfirm={canSwap}
-          expiresAt={quoteData?.expires_at}
+          quoteRefreshing={quoteRefreshing}
           toAmountExact={toAmountExact}
           onConfirm={handleSwap}
           loading={swapLoading}
@@ -299,6 +299,7 @@ export const SwapDashboard = () => {
               amount={toAmount}
               readOnly
               loading={quoteLoading}
+              refreshing={quoteRefreshing}
               balance={{ wei: toBalance.balanceWei, loading: toBalance.isLoading }}
               fiatValue={toFiat}
               balanceLabel="Receive (incl. fees)"
@@ -323,12 +324,6 @@ export const SwapDashboard = () => {
               Review swap
             </Button>
           </div>
-
-          {quoteData && (
-            <div className="animate-fade-in flex justify-center">
-              <QuoteCountdown quoteLoading={quoteLoading} expiresAt={quoteData.expires_at} />
-            </div>
-          )}
 
           <div className="flex items-center justify-center gap-2 px-0.5 text-xs font-medium text-muted-foreground">
             <EyeOff className="size-4 shrink-0" />
