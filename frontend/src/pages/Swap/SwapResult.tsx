@@ -1,4 +1,4 @@
-import { ArrowRight, Check, EyeOff, Loader2, X } from 'lucide-react'
+import { ArrowRight, Check, Copy, EyeOff, Loader2, X } from 'lucide-react'
 import { getTokenIcon } from '@oasisprotocol/privana-sdk'
 import { Button } from '@/components/ui/button'
 import { Row } from '@/components/Row'
@@ -40,7 +40,7 @@ type SwapResultProps = {
 }
 
 export const SwapResult = ({ activity, onDone, onViewActivity }: SwapResultProps) => {
-  const { fromToken, toToken, fromAmount, toAmount, feeFiat, status, error } = activity
+  const { fromToken, toToken, fromAmount, toAmount, feeFiat, status, error, swapId } = activity
   const rate = formatRate({ amount: fromAmount, ...fromToken }, { amount: toAmount, ...toToken })
 
   const slow = useSlowSettlement(status)
@@ -77,6 +77,7 @@ export const SwapResult = ({ activity, onDone, onViewActivity }: SwapResultProps
   }
 
   const failed = status === 'failed'
+  const needsSupport = failed && activity.reason === 'needs_support'
 
   return (
     <div className="mt-6 flex flex-col animate-fade-in">
@@ -92,7 +93,12 @@ export const SwapResult = ({ activity, onDone, onViewActivity }: SwapResultProps
         <h1 className="mt-6 text-2xl font-semibold tracking-tight">
           {failed ? 'Swap failed' : 'Swap complete'}
         </h1>
-        <p className="mt-2 text-sm text-muted-foreground">
+        <p
+          className={cn(
+            'mt-2 text-sm',
+            needsSupport ? 'font-medium text-destructive' : 'text-muted-foreground',
+          )}
+        >
           {failed ? (
             error || 'Something went wrong. Please try again.'
           ) : (
@@ -101,6 +107,17 @@ export const SwapResult = ({ activity, onDone, onViewActivity }: SwapResultProps
             </>
           )}
         </p>
+        {needsSupport && swapId && (
+          <Button
+            variant="outline"
+            size="sm"
+            className="mt-4"
+            onClick={() => void navigator.clipboard.writeText(swapId)}
+          >
+            <Copy />
+            Copy swap ID
+          </Button>
+        )}
       </div>
 
       <SurfaceCard className="mt-8 flex items-center gap-3 p-4">

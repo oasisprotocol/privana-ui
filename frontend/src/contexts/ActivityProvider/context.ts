@@ -1,4 +1,4 @@
-import type { OperationStage } from '@/api/operations'
+import type { OperationStage, SwapFailureReason } from '@/api/operations'
 import { createContext } from 'react'
 
 export type ActivityStatus = 'in-progress' | 'completed' | 'failed'
@@ -19,6 +19,7 @@ export type SwapActivity = {
   quoteId?: string
   txHash?: string
   error?: string
+  reason?: SwapFailureReason
 }
 
 export type EarnActivity = {

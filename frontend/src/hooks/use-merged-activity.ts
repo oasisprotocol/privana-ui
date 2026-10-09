@@ -58,7 +58,13 @@ export function resolveActivity(a: Activity, operations: readonly Operation[]): 
     error: errorOf(op),
   }
   if (a.type === 'swap') {
-    return { ...a, ...patch, swapId: op.operation_id, toAmount: op.to_amount_actual ?? a.toAmount }
+    return {
+      ...a,
+      ...patch,
+      swapId: op.operation_id,
+      toAmount: op.to_amount_actual ?? a.toAmount,
+      reason: op.reason ?? undefined,
+    }
   }
   return {
     ...a,
@@ -89,6 +95,7 @@ export function mapOperationToActivity(
       quoteId: op.quote_id ?? undefined,
       txHash: op.tx_hash ?? undefined,
       error: errorOf(op),
+      reason: op.reason ?? undefined,
     }
   }
 

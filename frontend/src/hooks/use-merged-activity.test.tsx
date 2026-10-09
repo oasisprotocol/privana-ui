@@ -308,6 +308,12 @@ describe('resolveActivity', () => {
     })
   })
 
+  it('carries why a swap failed', () => {
+    const local = localSwapActivity({ quoteId: 'q-1' } as Partial<Activity>)
+    const row = swapOp({ status: 'failed', reason: 'needs_support', error: 'Contact Privana support' })
+    expect(resolveActivity(local, [row])).toMatchObject({ status: 'failed', reason: 'needs_support' })
+  })
+
   it('settles a refunded swap as failed, with a reason when the row has none', () => {
     const local = localSwapActivity({ quoteId: 'q-1' } as Partial<Activity>)
     expect(resolveActivity(local, [swapOp({ status: 'refunded' })])).toMatchObject({

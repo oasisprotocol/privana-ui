@@ -48,6 +48,11 @@ describe('failed activity note', () => {
     expect(screen.getByText(ERROR)).toBeInTheDocument()
   })
 
+  it('makes a failure that needs support stand out', () => {
+    renderCard(<SwapActivityCard activity={{ ...swap('failed', ERROR), reason: 'needs_support' }} />)
+    expect(screen.getByText(ERROR)).toHaveClass('text-destructive')
+  })
+
   it('shows the failure reason under a failed earn operation', () => {
     renderCard(<EarnActivityCard activity={earn('failed', ERROR)} />)
     expect(screen.getByText('Move to Earn failed')).toBeInTheDocument()
