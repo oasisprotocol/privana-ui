@@ -3,41 +3,22 @@ import { ArrowLeft } from 'lucide-react'
 import { Link, useLocation, useNavigate, useParams } from 'react-router'
 import { Button } from '@/components/ui/button'
 import { Skeleton } from '@/components/ui/skeleton'
-import { CopyButton } from '@/components/CopyButton'
-import { Row } from '@/components/Row'
-import { SurfaceCard } from '@/components/SurfaceCard'
 import { ActivityUnavailable } from '@/components/ActivityList'
 import { useMergedActivity, type MergedRow } from '@/hooks/use-merged-activity'
 import { formatDateTime } from '@/lib/dates'
 import { DESKTOP_CARD } from '@/lib/surface'
 import { cn } from '@/lib/utils'
 import { activityPath } from '@/paths'
-import { trimLongString } from '@/utils/trimLongString'
-import { detailsTitle, findDetailsRow, operationIdOf, parseDetailsId } from './details'
-
-const DetailsRow = ({ label, children }: { label: string; children: ReactNode }) => (
-  <Row
-    size="md"
-    className="px-4 py-3 border-b border-border last:border-b-0"
-    label={label}
-    value={children}
-  />
-)
+import { detailsTitle, findDetailsRow, parseDetailsId } from './details'
+import { DetailsCard, DetailsRow } from './DetailsParts'
+import { OperationDetails } from './OperationDetails'
 
 const Details = ({ row }: { row: MergedRow }) => {
-  const operationId = row.source === 'local' ? operationIdOf(row.activity) : undefined
+  if (row.source === 'local') return <OperationDetails activity={row.activity} />
   return (
-    <SurfaceCard className="mt-6 flex flex-col p-0">
+    <DetailsCard>
       <DetailsRow label="Date">{formatDateTime(row.timestamp)}</DetailsRow>
-      {operationId && (
-        <DetailsRow label="Operation ID">
-          <span className="flex items-center gap-1">
-            <span title={operationId}>{trimLongString(operationId)}</span>
-            <CopyButton value={operationId} label="Copy operation ID" />
-          </span>
-        </DetailsRow>
-      )}
-    </SurfaceCard>
+    </DetailsCard>
   )
 }
 

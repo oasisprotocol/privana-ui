@@ -11,6 +11,11 @@ vi.mock('@oasisprotocol/privana-sdk', async importOriginal => ({
   usePrivanaContext: () => ({ getTokenById: () => undefined, getChainById: () => undefined }),
 }))
 
+vi.mock('@/api/operations', async importOriginal => ({
+  ...(await importOriginal<typeof import('@/api/operations')>()),
+  useOperations: () => ({ data: undefined }),
+}))
+
 let merged: UseMergedActivityResult
 vi.mock('@/hooks/use-merged-activity', async importOriginal => ({
   ...(await importOriginal<typeof import('@/hooks/use-merged-activity')>()),
@@ -19,15 +24,16 @@ vi.mock('@/hooks/use-merged-activity', async importOriginal => ({
 
 const USDC = { id: '0x1', symbol: 'USDC', decimals: 6 }
 const OPERATION_ID = '3f2a1b7c-0000-4000-8000-00000000c1d9'
+const CREATED_MS = new Date(2026, 9, 12, 11, 17).getTime()
 
 const swap: MergedRow = {
   source: 'local',
-  timestamp: new Date(2026, 9, 12, 11, 17).getTime() / 1000,
+  timestamp: CREATED_MS / 1000,
   activity: {
     id: OPERATION_ID,
     type: 'swap',
     status: 'completed',
-    createdAt: 0,
+    createdAt: CREATED_MS,
     fromToken: USDC,
     toToken: { id: '0x2', symbol: 'ETH', decimals: 18 },
     fromAmount: '1000000',
