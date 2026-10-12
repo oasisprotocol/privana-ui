@@ -7,6 +7,11 @@ import { useDebouncedValue } from '@/hooks/use-debounced-value'
 import { useQuoteExpiry } from '@/hooks/use-quote-expiry'
 import { parseAmount } from '@/lib/tokens'
 
+// Keep refreshing quote to have estimate and nonce up to date.
+const QUOTE_REFRESH_SECONDS = 30
+// Mark quote as refreshing shortly.
+const REFRESH_NOTICE_SECONDS = 5
+
 type Params = {
   fromTokenId: string
   toTokenId: string
@@ -15,6 +20,7 @@ type Params = {
   fromDecimals: number | null | undefined
   toDecimals: number | null | undefined
   toSymbol: string | null | undefined
+  slippageFraction?: number
   disabled?: boolean
 }
 
@@ -26,6 +32,7 @@ export const useSwapQuote = ({
   fromDecimals,
   toDecimals,
   toSymbol,
+  slippageFraction,
   disabled,
 }: Params) => {
   const debouncedFromAmount = useDebouncedValue(fromAmount)
@@ -43,7 +50,9 @@ export const useSwapQuote = ({
     fromDecimals != null &&
     toDecimals != null
 
-  const inputId = enabled ? `${fromTokenId}|${toTokenId}|${debouncedFromAmount}|${address}` : ''
+  const inputId = enabled
+    ? `${fromTokenId}|${toTokenId}|${debouncedFromAmount}|${address}|${slippageFraction ?? 'auto'}`
+    : ''
   const inputKey = enabled ? `${inputId}|${refetchKey}` : ''
 
   const [result, setResult] = useState<{ inputId: string; key: string; quote: QuoteResponse } | null>(null)
@@ -58,6 +67,7 @@ export const useSwapQuote = ({
         toTokenId,
         fromAmount: fromBaseUnits.toString(),
         userAddress: address,
+        slippageFraction,
       },
       abort.signal,
     )
@@ -74,7 +84,7 @@ export const useSwapQuote = ({
         })
       })
     return () => abort.abort()
-  }, [enabled, inputKey, inputId, fromTokenId, toTokenId, fromBaseUnits, address])
+  }, [enabled, inputKey, inputId, fromTokenId, toTokenId, fromBaseUnits, address, slippageFraction])
 
   const fresh = enabled && result?.key === inputKey ? result.quote : null
   const error = errorState?.key === inputKey ? errorState.message : null
@@ -92,12 +102,15 @@ export const useSwapQuote = ({
   const toAmountExact =
     data && toDecimals != null ? formatUnits(BigInt(data.to_amount_estimate), toDecimals) : ''
 
-  useQuoteExpiry({
+  const { refreshSoon } = useQuoteExpiry({
     data,
     onRefetch: () => setRefetchKey(k => k + 1),
+    maxAgeSeconds: QUOTE_REFRESH_SECONDS,
+    noticeSeconds: REFRESH_NOTICE_SECONDS,
   })
+  const refreshing = !!data && (loading || refreshSoon)
 
   const reset = () => setRefetchKey(k => k + 1)
 
-  return { data, loading, error, toAmount, toAmountExact, reset }
+  return { data, loading, refreshing, error, toAmount, toAmountExact, reset }
 }

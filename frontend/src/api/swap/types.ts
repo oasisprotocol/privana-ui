@@ -3,7 +3,7 @@ export interface QuoteParams {
   toTokenId: string
   fromAmount: string
   userAddress: string
-  slippage?: number
+  slippageFraction?: number
 }
 
 export interface QuoteResponse {

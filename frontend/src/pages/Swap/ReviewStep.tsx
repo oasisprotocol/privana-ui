@@ -2,10 +2,11 @@ import { ArrowRight, EyeOff } from 'lucide-react'
 import { getTokenIcon } from '@oasisprotocol/privana-sdk'
 import { Button } from '@/components/ui/button'
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip'
-import { QuoteCountdown } from '@/components/QuoteCountdown'
 import { Row } from '@/components/Row'
 import { SurfaceCard } from '@/components/SurfaceCard'
+import { TokenAmount } from '@/components/TokenAmount'
 import type { TokenInfo } from '@/api/swap'
+import { cn } from '@/lib/utils'
 import type { QuoteSummary } from './useQuoteSummary'
 
 const tokenLabel = (token: TokenInfo) => token.token_symbol ?? token.token_type_name
@@ -16,10 +17,12 @@ type ReviewStepProps = {
   fromAmount: string
   toAmount: string
   toAmountExact?: string
+  minReceived?: string
+  slippageLabel: string
   summary: QuoteSummary
   quoteLoading?: boolean
+  quoteRefreshing?: boolean
   canConfirm?: boolean
-  expiresAt?: number
   onConfirm: () => void
   loading?: boolean
   error?: string | null
@@ -31,14 +34,20 @@ export const ReviewStep = ({
   fromAmount,
   toAmount,
   toAmountExact,
+  minReceived,
+  slippageLabel,
   summary,
   quoteLoading,
+  quoteRefreshing,
   canConfirm = true,
-  expiresAt,
   onConfirm,
   loading,
   error,
 }: ReviewStepProps) => {
+  const toAmountClassName = cn(
+    'text-xl font-semibold text-foreground leading-none',
+    quoteRefreshing && 'motion-safe:animate-pulse motion-reduce:opacity-50',
+  )
   return (
     <div className="mt-6 flex flex-col gap-4">
       <SurfaceCard className="flex flex-col gap-4 p-5">
@@ -68,14 +77,12 @@ export const ReviewStep = ({
               {toAmountExact && toAmountExact !== toAmount ? (
                 <Tooltip>
                   <TooltipTrigger asChild>
-                    <span className="text-xl font-semibold text-foreground leading-none cursor-help">
-                      {toAmount}
-                    </span>
+                    <span className={cn(toAmountClassName, 'cursor-help')}>≈ {toAmount}</span>
                   </TooltipTrigger>
                   <TooltipContent>{toAmountExact}</TooltipContent>
                 </Tooltip>
               ) : (
-                <span className="text-xl font-semibold text-foreground leading-none">{toAmount}</span>
+                <span className={toAmountClassName}>≈ {toAmount}</span>
               )}
               {toToken?.token_symbol && (
                 <span className="shrink-0 size-4 overflow-hidden rounded-full">
@@ -95,6 +102,21 @@ export const ReviewStep = ({
       <SurfaceCard className="flex flex-col gap-0 p-5">
         {[
           { label: 'Rate', value: summary.rateLabel || '-' },
+          {
+            label: 'Minimum received',
+            value:
+              minReceived && toToken?.token_decimals != null ? (
+                <TokenAmount
+                  amount={minReceived}
+                  token={{ symbol: tokenLabel(toToken), decimals: toToken.token_decimals }}
+                  context="quote"
+                  withSymbol
+                />
+              ) : (
+                '-'
+              ),
+          },
+          { label: 'Max slippage', value: slippageLabel, mutedValue: true },
           {
             label: 'Privacy',
             value: (
@@ -126,10 +148,6 @@ export const ReviewStep = ({
       >
         {loading ? 'Signing & submitting...' : 'Confirm swap'}
       </Button>
-
-      <div className="flex justify-center">
-        <QuoteCountdown quoteLoading={quoteLoading} expiresAt={expiresAt} />
-      </div>
 
       {error && <p className="text-sm text-center text-destructive">{error}</p>}
     </div>

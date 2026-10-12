@@ -9,6 +9,9 @@ import { isInFlight } from './operation-status'
 // status, newest first. Services submits these transactions itself, so this is
 // the source of truth for them; accounting history only shows their legs.
 export type OperationType = 'swap' | 'earn_deposit' | 'earn_withdraw'
+// Why a swap did not complete. needs_support: its funds were not returned
+// automatically, and `error` tells the user to contact support.
+export type SwapFailureReason = 'refunded' | 'no_funds_moved' | 'needs_support'
 export { isInFlight, isSettledFailure, type OperationStatus } from './operation-status'
 import type { OperationStatus } from './operation-status'
 
@@ -30,6 +33,7 @@ export interface Operation {
   tx_hash: string | null
   error: string | null
   // Swap-only fields
+  reason?: SwapFailureReason | null
   quote_id: string | null
   from_token_id: string | null
   to_token_id: string | null

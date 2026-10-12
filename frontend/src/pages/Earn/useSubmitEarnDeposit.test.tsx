@@ -6,7 +6,7 @@ import type { WalletClient } from 'viem'
 import { ApiError } from '@/api/http'
 import { depositEarn, type DepositQuoteResponse } from '@/api/earn'
 import type { TokenInfo } from '@/api/swap'
-import { OPERATION_PENDING_MESSAGE } from '@/lib/errors'
+import { OPERATION_PENDING_MESSAGE, STALE_NONCE_MESSAGE } from '@/lib/errors'
 import { useSubmitEarnDeposit } from './useSubmitEarnDeposit'
 
 vi.mock('@oasisprotocol/privana-sdk', () => ({ signTransferMessage: vi.fn(async () => '0xsig') }))
@@ -56,5 +56,20 @@ describe('useSubmitEarnDeposit', () => {
     expect(onRefused).toHaveBeenCalledTimes(1)
     expect(result.current.error).toBe(OPERATION_PENDING_MESSAGE)
     expect(result.current.loading).toBe(false)
+  })
+
+  it('asks to confirm the updated quote when another operation used the nonce first', async () => {
+    vi.mocked(depositEarn).mockRejectedValue(
+      new ApiError(409, 'Nonce 7 has already been used; sign again with nonce 8', 'stale_nonce'),
+    )
+    const onRefused = vi.fn()
+    const { result } = renderHook(() => useSubmitEarnDeposit({ onRefused }), { wrapper })
+
+    await act(async () => {
+      await result.current.execute(params)
+    })
+
+    await waitFor(() => expect(onRefused).toHaveBeenCalledTimes(1))
+    expect(result.current.error).toBe(STALE_NONCE_MESSAGE)
   })
 })

@@ -67,4 +67,27 @@ describe('useQuoteExpiry', () => {
     expect(stale).not.toHaveBeenCalled()
     expect(fresh).toHaveBeenCalledOnce()
   })
+
+  it('refetches after maxAgeSeconds when the quote is valid for longer', () => {
+    const onRefetch = vi.fn()
+    const data = quote(1800)
+    renderHook(() => useQuoteExpiry({ data, onRefetch, maxAgeSeconds: 30 }))
+
+    act(() => vi.advanceTimersByTime(29_999))
+    expect(onRefetch).not.toHaveBeenCalled()
+    act(() => vi.advanceTimersByTime(1))
+    expect(onRefetch).toHaveBeenCalledOnce()
+  })
+
+  it('reports refreshSoon noticeSeconds before the refetch', () => {
+    const data = quote(1800)
+    const { result } = renderHook(() =>
+      useQuoteExpiry({ data, onRefetch: vi.fn(), maxAgeSeconds: 30, noticeSeconds: 5 }),
+    )
+
+    act(() => vi.advanceTimersByTime(24_999))
+    expect(result.current.refreshSoon).toBe(false)
+    act(() => vi.advanceTimersByTime(1))
+    expect(result.current.refreshSoon).toBe(true)
+  })
 })

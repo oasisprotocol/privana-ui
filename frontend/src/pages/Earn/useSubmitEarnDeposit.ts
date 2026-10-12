@@ -8,12 +8,7 @@ import { operationsKeys } from '@/api/operations'
 import { earnKeys } from '@/api/earn'
 import type { ActivityStatus } from '@/contexts/ActivityProvider/context'
 import { useActivity } from '@/contexts/ActivityProvider/useActivity'
-import {
-  OPERATION_PENDING_MESSAGE,
-  extractErrorMessage,
-  isDefinitiveRejection,
-  isOperationPending,
-} from '@/lib/errors'
+import { extractErrorMessage, isDefinitiveRejection, isNonceRefusal, nonceRefusalMessage } from '@/lib/errors'
 
 const CHAIN_ID = parseInt(import.meta.env.VITE_CHAIN_ID, 10)
 const ACCOUNTING_CONTRACT = import.meta.env.VITE_ACCOUNTING_CONTRACT_ADDRESS
@@ -123,9 +118,9 @@ export const useSubmitEarnDeposit = ({ onSuccess, onRefused }: Params = {}) => {
           // completes, and sends people back to retry with a nonce that has
           // already been consumed. Leave it in-progress and let the operations
           // feed reconcile it.
-          if (isOperationPending(err)) {
+          if (isNonceRefusal(err)) {
             removeActivity(id)
-            setError(OPERATION_PENDING_MESSAGE)
+            setError(nonceRefusalMessage(err))
             onRefused?.()
             return
           }

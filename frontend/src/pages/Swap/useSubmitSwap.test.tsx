@@ -32,7 +32,6 @@ const params = {
   address: ('0x' + 'a'.repeat(40)) as `0x${string}`,
   fromToken: token,
   toToken: token,
-  rateLabel: '',
 }
 
 const wrapper = ({ children }: { children: ReactNode }) => (

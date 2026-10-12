@@ -23,7 +23,6 @@ const swap = (status: SwapActivity['status'], error?: string): SwapActivity => (
   toToken: ETH,
   fromAmount: '4000000',
   toAmount: '1563331105820013',
-  rateLabel: '',
   error,
 })
 
@@ -47,6 +46,11 @@ describe('failed activity note', () => {
     renderCard(<SwapActivityCard activity={swap('failed', ERROR)} />)
     expect(screen.getByText('Swap failed')).toBeInTheDocument()
     expect(screen.getByText(ERROR)).toBeInTheDocument()
+  })
+
+  it('makes a failure that needs support stand out', () => {
+    renderCard(<SwapActivityCard activity={{ ...swap('failed', ERROR), reason: 'needs_support' }} />)
+    expect(screen.getByText(ERROR)).toHaveClass('text-destructive')
   })
 
   it('shows the failure reason under a failed earn operation', () => {

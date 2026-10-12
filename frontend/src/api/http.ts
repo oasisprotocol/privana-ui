@@ -11,11 +11,13 @@ export const BASE_URL = requireEnv(
 export class ApiError extends Error {
   readonly status: number
   readonly detail: string | null
-  constructor(status: number, detail: string | null) {
+  readonly code: string | null
+  constructor(status: number, detail: string | null, code: string | null = null) {
     super(detail ?? `Request failed: ${status}`)
     this.name = 'ApiError'
     this.status = status
     this.detail = detail
+    this.code = code
   }
 }
 
@@ -28,7 +30,7 @@ export async function request<T>(path: string, init?: RequestInit, bearer?: stri
   })
   if (!res.ok) {
     const body = await res.json().catch(() => null)
-    throw new ApiError(res.status, body?.detail ?? null)
+    throw new ApiError(res.status, body?.detail ?? null, body?.code ?? null)
   }
   return res.json()
 }

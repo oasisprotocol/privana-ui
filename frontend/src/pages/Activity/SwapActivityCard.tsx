@@ -21,6 +21,7 @@ export const SwapActivityCard = ({ activity, divider }: SwapActivityCardProps) =
         title={title}
         subtitle={subtitle}
         failure={status === 'failed' ? error : undefined}
+        failureNeedsAction={activity.reason === 'needs_support'}
         amount={
           <SwapAmounts
             from={fromToken}

@@ -39,6 +39,7 @@ export const ActivityRowBody = ({
   amount,
   subtitle,
   failure,
+  failureNeedsAction,
   aside,
 }: {
   icon: ReactNode
@@ -46,6 +47,7 @@ export const ActivityRowBody = ({
   amount?: ReactNode
   subtitle?: ReactNode
   failure?: string
+  failureNeedsAction?: boolean
   /** Right side of the second line: the venue. */
   aside?: ReactNode
 }) => (
@@ -63,7 +65,11 @@ export const ActivityRowBody = ({
         {subtitle != null || failure ? (
           <p
             title={failure}
-            className={cn('min-w-0 text-xs text-muted-foreground', failure ? 'break-all' : 'truncate')}
+            className={cn(
+              'min-w-0 text-xs',
+              failure && failureNeedsAction ? 'font-medium text-destructive' : 'text-muted-foreground',
+              failure ? 'break-all' : 'truncate',
+            )}
           >
             {failure ? describeFailure(failure) : subtitle}
           </p>

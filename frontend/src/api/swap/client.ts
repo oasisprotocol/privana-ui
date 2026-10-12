@@ -17,8 +17,8 @@ export async function getQuote(params: QuoteParams, signal?: AbortSignal) {
     from_amount: params.fromAmount,
     user_address: params.userAddress,
   })
-  if (params.slippage !== undefined) {
-    search.set('slippage', String(params.slippage))
+  if (params.slippageFraction !== undefined) {
+    search.set('slippage', String(params.slippageFraction))
   }
   const quote = await request<QuoteResponse>(`/v1/quote?${search}`, { signal })
   return quote.expires_in == null
