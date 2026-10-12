@@ -6,7 +6,7 @@ import { formatDateTime } from '@/lib/dates'
 import { cn } from '@/lib/utils'
 import { formatRate } from '@/pages/Swap/quoteHelpers'
 import { activityIcon } from './activityVisuals'
-import { operationIdOf } from './details'
+import { operationIdOf, progressLine } from './details'
 import {
   AmountValue,
   DetailsCard,
@@ -33,10 +33,8 @@ const OPERATION_STATUS_LABEL: Record<OperationStatus, string> = {
   refunded: 'Refunded',
 }
 
-const IN_PROGRESS_NOTE = 'This can take a few minutes. You can safely leave this screen.'
-
 const statusLine = (activity: Activity, inProgressSubtitle?: string) =>
-  activity.status === 'in-progress' ? `${inProgressSubtitle ?? ''} ${IN_PROGRESS_NOTE}`.trim() : undefined
+  activity.status === 'in-progress' ? progressLine(inProgressSubtitle) : undefined
 
 const OperationRows = ({ activity, operation }: { activity: Activity; operation?: Operation }) => {
   const operationId = operationIdOf(activity)

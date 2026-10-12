@@ -38,3 +38,7 @@ export const detailsTitle = (row: MergedRow): string => {
   const pending = row.source === 'pending' || row.pending
   return historyRowCopy(row.row, pending ? 'in-progress' : 'completed').title
 }
+
+const IN_PROGRESS_NOTE = 'This can take a few minutes. You can safely leave this screen.'
+
+export const progressLine = (subtitle?: string): string => `${subtitle ?? ''} ${IN_PROGRESS_NOTE}`.trim()

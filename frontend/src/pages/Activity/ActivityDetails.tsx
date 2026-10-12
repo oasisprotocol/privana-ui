@@ -5,22 +5,19 @@ import { Button } from '@/components/ui/button'
 import { Skeleton } from '@/components/ui/skeleton'
 import { ActivityUnavailable } from '@/components/ActivityList'
 import { useMergedActivity, type MergedRow } from '@/hooks/use-merged-activity'
-import { formatDateTime } from '@/lib/dates'
 import { DESKTOP_CARD } from '@/lib/surface'
 import { cn } from '@/lib/utils'
 import { activityPath } from '@/paths'
 import { detailsTitle, findDetailsRow, parseDetailsId } from './details'
-import { DetailsCard, DetailsRow } from './DetailsParts'
+import { HistoryDetails } from './HistoryDetails'
 import { OperationDetails } from './OperationDetails'
 
-const Details = ({ row }: { row: MergedRow }) => {
-  if (row.source === 'local') return <OperationDetails activity={row.activity} />
-  return (
-    <DetailsCard>
-      <DetailsRow label="Date">{formatDateTime(row.timestamp)}</DetailsRow>
-    </DetailsCard>
+const Details = ({ row }: { row: MergedRow }) =>
+  row.source === 'local' ? (
+    <OperationDetails activity={row.activity} />
+  ) : (
+    <HistoryDetails row={row.row} pending={row.source === 'pending' || row.pending} />
   )
-}
 
 export const ActivityDetails = () => {
   const { id = '' } = useParams()
