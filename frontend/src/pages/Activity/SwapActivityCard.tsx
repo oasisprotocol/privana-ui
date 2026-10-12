@@ -7,15 +7,16 @@ import { ActivityCard, ActivityIcon, ActivityRowBody, SwapAmounts } from './Acti
 type SwapActivityCardProps = {
   activity: SwapActivity
   divider?: boolean
+  href?: string
 }
 
-export const SwapActivityCard = ({ activity, divider }: SwapActivityCardProps) => {
+export const SwapActivityCard = ({ activity, divider, href }: SwapActivityCardProps) => {
   const { status, fromToken, toToken, fromAmount, toAmount, error } = activity
   const chains = useSwapChains(fromToken.id, toToken.id)
   const { title, subtitle } = swapCopy(status, toToken.symbol)
 
   return (
-    <ActivityCard divider={divider}>
+    <ActivityCard divider={divider} href={href} label={title}>
       <ActivityRowBody
         icon={<ActivityIcon Icon={activityIcon('swap')} status={status} />}
         title={title}

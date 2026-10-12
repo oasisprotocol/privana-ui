@@ -10,9 +10,10 @@ import { VenueBadge } from './VenueBadge'
 type EarnActivityCardProps = {
   activity: EarnActivity
   divider?: boolean
+  href?: string
 }
 
-export const EarnActivityCard = ({ activity, divider }: EarnActivityCardProps) => {
+export const EarnActivityCard = ({ activity, divider, href }: EarnActivityCardProps) => {
   const { status, direction, token, amount, error } = activity
   const kind: DisplayKind = direction === 'deposit' ? 'earnDeposit' : 'earnWithdraw'
   const inProgress = status === 'in-progress'
@@ -21,7 +22,7 @@ export const EarnActivityCard = ({ activity, divider }: EarnActivityCardProps) =
   const { title, subtitle } = moveCopy(kind, status)
 
   return (
-    <ActivityCard divider={divider}>
+    <ActivityCard divider={divider} href={href} label={title}>
       <ActivityRowBody
         icon={<ActivityIcon Icon={activityIcon(kind)} status={status} />}
         title={title}

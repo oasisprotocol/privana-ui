@@ -1,5 +1,6 @@
 import { ArrowRight, type LucideIcon } from 'lucide-react'
 import type { ReactNode } from 'react'
+import { Link } from 'react-router'
 import { getTokenIcon } from '@oasisprotocol/privana-sdk'
 import { cn } from '@/lib/utils'
 import { TokenAmount } from '@/components/TokenAmount'
@@ -22,13 +23,28 @@ export const ActivityIcon = ({ Icon, status }: { Icon: LucideIcon; status?: Acti
   </span>
 )
 
-export const ActivityCard = ({ children, divider }: { children: ReactNode; divider?: boolean }) => (
+type ActivityCardProps = {
+  children: ReactNode
+  divider?: boolean
+  href?: string
+  label?: string
+}
+
+export const ActivityCard = ({ children, divider, href, label }: ActivityCardProps) => (
   <div
     className={cn(
       'flex flex-col justify-center px-4 py-2.5 transition-colors hover:bg-secondary/40 gap-0.5',
       divider && 'border-t border-border',
+      href && 'relative',
     )}
   >
+    {href && (
+      <Link
+        to={href}
+        aria-label={label}
+        className="absolute inset-0 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-ring"
+      />
+    )}
     {children}
   </div>
 )
