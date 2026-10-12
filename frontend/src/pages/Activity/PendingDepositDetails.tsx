@@ -5,6 +5,14 @@ import { activityIcon } from './activityVisuals'
 import { AmountValue, DetailsCard, DetailsHero, DetailsRow, HeroAmount, IdValue } from './DetailsParts'
 import { moveCopy } from './labels'
 
+const STAGE_LINE: Partial<Record<DepositProgress['stage'], string>> = {
+  confirming: 'Step 1/2 · Confirming your deposit on-chain',
+  crediting: 'Step 2/2 · Adding your deposit to Available',
+  timeout: 'This is taking longer than usual. It will be added to Available once confirmed.',
+  failed:
+    "We couldn't confirm this deposit yet. Your funds have left your wallet and may still be added to Available.",
+}
+
 /** A deposit on its way: what the SDK's deposit flow knows before history lists it. */
 export const PendingDepositDetails = ({ progress }: { progress: DepositProgress }) => {
   const { getTokenById, getChainById } = usePrivanaContext()
@@ -18,11 +26,7 @@ export const PendingDepositDetails = ({ progress }: { progress: DepositProgress 
         Icon={activityIcon('deposit')}
         status="in-progress"
         amount={token ? <HeroAmount amount={amount} token={token} /> : null}
-        statusLine={
-          progress.stage === 'confirming'
-            ? 'Step 1/2 · Confirming your deposit on-chain'
-            : 'Step 2/2 · Adding your deposit to Available'
-        }
+        statusLine={STAGE_LINE[progress.stage]}
       />
       <DetailsCard>
         {token && (

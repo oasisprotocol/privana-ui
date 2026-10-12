@@ -2,7 +2,7 @@ import { usePrivanaContext } from '@oasisprotocol/privana-sdk'
 import { shortenAddress } from '@/lib/utils'
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip'
 import type { DisplayEntry } from './historyMapping'
-import { historyRowCopy, swapCopy } from './labels'
+import { amountText, historyRowCopy, swapCopy } from './labels'
 import { useSwapChains } from './useSwapChains'
 import { activityIcon } from './activityVisuals'
 import { ActivityAmount, ActivityCard, ActivityIcon, ActivityRowBody, SwapAmounts } from './ActivityCardParts'
@@ -29,7 +29,11 @@ export const ChainActivityCard = ({ row, pending, divider, href }: Props) => {
   if (row.kind === 'swap' && token && row.amount && toToken && row.toAmount) {
     const { title, subtitle } = swapCopy('completed', toToken.symbol)
     return (
-      <ActivityCard divider={divider} href={href} label={title}>
+      <ActivityCard
+        divider={divider}
+        href={href}
+        label={`${title}, ${amountText(row.amount, token)} to ${amountText(row.toAmount, toToken)}`}
+      >
         <ActivityRowBody
           icon={icon}
           title={title}
@@ -51,7 +55,11 @@ export const ChainActivityCard = ({ row, pending, divider, href }: Props) => {
 
   const { title, subtitle } = historyRowCopy(row, pending ? 'in-progress' : 'completed')
   return (
-    <ActivityCard divider={divider} href={href} label={title}>
+    <ActivityCard
+      divider={divider}
+      href={href}
+      label={token && row.amount ? `${title}, ${amountText(row.amount, token)}` : title}
+    >
       <ActivityRowBody
         icon={icon}
         title={title}

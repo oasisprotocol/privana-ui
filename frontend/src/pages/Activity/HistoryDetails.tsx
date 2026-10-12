@@ -6,6 +6,7 @@ import { AmountValue, DetailsCard, DetailsHero, DetailsRow, HeroAmount, IdValue 
 import { progressLine } from './details'
 import type { DisplayEntry } from './historyMapping'
 import { historyRowCopy } from './labels'
+import { useSwapChains } from './useSwapChains'
 
 const CounterpartyRow = ({ row }: { row: DisplayEntry }) => {
   const address = row.counterparty
@@ -37,9 +38,9 @@ const CounterpartyRow = ({ row }: { row: DisplayEntry }) => {
 }
 
 export const HistoryDetails = ({ row, pending }: { row: DisplayEntry; pending?: boolean }) => {
-  const { getTokenById, getChainById } = usePrivanaContext()
+  const { getTokenById } = usePrivanaContext()
   const token = row.tokenId ? getTokenById(row.tokenId) : undefined
-  const chain = token ? getChainById(token.chainId)?.name : undefined
+  const { from: chain } = useSwapChains(row.tokenId, undefined)
   const status = pending ? 'in-progress' : 'completed'
   const depositId = row.entry.deposit_id
 

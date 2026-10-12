@@ -2,11 +2,11 @@ import type { ReactNode } from 'react'
 import { Check, type LucideIcon } from 'lucide-react'
 import { getTokenIcon } from '@oasisprotocol/privana-sdk'
 import { CopyButton } from '@/components/CopyButton'
+import { Badge } from '@/components/ui/badge'
 import { Row } from '@/components/Row'
 import { SurfaceCard } from '@/components/SurfaceCard'
 import { TokenAmount } from '@/components/TokenAmount'
 import type { ActivityStatus, ActivityTokenInfo } from '@/contexts/ActivityProvider/context'
-import { cn } from '@/lib/utils'
 import { trimLongString } from '@/utils/trimLongString'
 
 const STATUS_BADGE: Record<ActivityStatus, { label: string; className: string }> = {
@@ -18,12 +18,10 @@ const STATUS_BADGE: Record<ActivityStatus, { label: string; className: string }>
 export const StatusBadge = ({ status }: { status: ActivityStatus }) => {
   const { label, className } = STATUS_BADGE[status]
   return (
-    <span
-      className={cn('inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-xs font-medium', className)}
-    >
-      {status === 'completed' && <Check className="h-3 w-3" strokeWidth={3} />}
+    <Badge className={className}>
+      {status === 'completed' && <Check strokeWidth={3} />}
       {label}
-    </span>
+    </Badge>
   )
 }
 

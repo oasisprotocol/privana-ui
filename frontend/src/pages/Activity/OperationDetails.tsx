@@ -1,4 +1,10 @@
-import { isInFlight, useOperations, type Operation, type OperationStatus } from '@/api/operations'
+import {
+  isInFlight,
+  operationIdOf,
+  useOperations,
+  type Operation,
+  type OperationStatus,
+} from '@/api/operations'
 import { getProtocolLabel } from '@/config/protocols'
 import type { Activity, EarnActivity, SwapActivity } from '@/contexts/ActivityProvider/context'
 import { SurfaceCard } from '@/components/SurfaceCard'
@@ -6,7 +12,7 @@ import { formatDateTime } from '@/lib/dates'
 import { cn } from '@/lib/utils'
 import { formatRate } from '@/pages/Swap/quoteHelpers'
 import { activityIcon } from './activityVisuals'
-import { operationIdOf, progressLine } from './details'
+import { progressLine } from './details'
 import {
   AmountValue,
   DetailsCard,
@@ -42,7 +48,7 @@ const OperationRows = ({ activity, operation }: { activity: Activity; operation?
   const created = operation?.created_at ?? Math.floor(activity.createdAt / 1000)
   return (
     <>
-      {operation && (
+      {operation && operation.status !== 'completed' && operation.status !== 'failed' && (
         <DetailsRow label="Status">
           <span className={cn(isInFlight(operation.status) && 'motion-safe:animate-pulse')}>
             {OPERATION_STATUS_LABEL[operation.status] ?? operation.status}

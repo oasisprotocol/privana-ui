@@ -1,32 +1,9 @@
 import type { ReactNode } from 'react'
-import { ChevronLeft, Clock, ShieldCheck } from 'lucide-react'
+import { Clock, ShieldCheck } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { SurfaceCard } from '@/components/SurfaceCard'
 import { Row } from '@/components/Row'
 import { cn } from '@/lib/utils'
-
-export const ReviewHeader = ({
-  title,
-  onBack,
-  disabled,
-}: {
-  title: string
-  onBack: () => void
-  disabled?: boolean
-}) => (
-  <div className="relative flex items-center justify-center">
-    <button
-      type="button"
-      onClick={onBack}
-      disabled={disabled}
-      aria-label="Back"
-      className="absolute left-0 flex size-8 items-center justify-center rounded-full text-muted-foreground transition-colors hover:bg-accent disabled:opacity-50"
-    >
-      <ChevronLeft className="size-5" />
-    </button>
-    <h2 className="text-xl font-semibold text-foreground">{title}</h2>
-  </div>
-)
 
 export const ReviewAmountCard = ({
   eyebrow,

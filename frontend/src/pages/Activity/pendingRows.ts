@@ -1,11 +1,9 @@
 import type { MergedRow } from '@/hooks/use-merged-activity'
 import type { PendingTransfer } from '@/hooks/usePendingTransfers'
+import { sameId } from '@/lib/utils'
 import type { ClassifiedHistoryEntry } from './historyMapping'
 
 export type HistoryRow = Extract<MergedRow, { source: 'chain' | 'pending' }>
-
-const same = (a: string | null | undefined, b: string | null | undefined) =>
-  !!a && !!b && a.toLowerCase() === b.toLowerCase()
 
 /**
  * History rows with the pending transfers folded in. A withdrawal is in history
@@ -27,9 +25,9 @@ export function chainRowsWithPending(
       e =>
         e.kind === 'withdraw' &&
         !pendingIndexes.has(e.index) &&
-        same(e.tokenId, t.tokenId) &&
+        sameId(e.tokenId, t.tokenId) &&
         e.amount === t.amount &&
-        same(e.counterparty, t.to),
+        sameId(e.counterparty, t.to),
     )
     if (match) pendingIndexes.add(match.index)
   }
@@ -43,7 +41,7 @@ export function chainRowsWithPending(
 
   for (const t of transfers) {
     if (t.kind !== 'deposit') continue
-    if (t.depositId && entries.some(e => same(e.entry.deposit_id, t.depositId))) continue
+    if (t.depositId && entries.some(e => sameId(e.entry.deposit_id, t.depositId))) continue
     const timestamp = Math.floor(t.sentAt / 1000)
     const amount = t.amount.toString()
     rows.push({

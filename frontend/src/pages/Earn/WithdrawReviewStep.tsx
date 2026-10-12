@@ -1,13 +1,13 @@
 import type { EarnBalance, EarnPool } from '@/api/earn'
 import type { TokenInfo } from '@/api/swap'
 import { Skeleton } from '@/components/ui/skeleton'
+import { BackHeader } from '@/components/BackHeader'
 import { getProtocolLabel, withdrawNoticeFor } from '@/config/protocols'
 import {
   ReviewAmountCard,
   ReviewConfirmButton,
   ReviewDetails,
   ReviewDisclaimer,
-  ReviewHeader,
   ReviewNotice,
 } from './ReviewParts'
 
@@ -57,7 +57,7 @@ export const WithdrawReviewStep = ({
 
   return (
     <div className="flex flex-col gap-4 w-full max-w-110 mx-auto">
-      <ReviewHeader title="Review transaction" onBack={onBack} disabled={loading} />
+      <BackHeader title="Review transaction" onBack={onBack} disabled={loading} />
 
       <ReviewAmountCard
         eyebrow="You're moving out"

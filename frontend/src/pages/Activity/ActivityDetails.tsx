@@ -1,16 +1,17 @@
 import type { ReactNode } from 'react'
-import { ArrowLeft } from 'lucide-react'
 import { Link, Navigate, useLocation, useNavigate, useParams } from 'react-router'
 import { useDeposit, type DepositProgress } from '@oasisprotocol/privana-sdk'
 import { Button } from '@/components/ui/button'
 import { Skeleton } from '@/components/ui/skeleton'
 import { ActivityUnavailable } from '@/components/ActivityList'
+import { BackHeader } from '@/components/BackHeader'
 import { useMergedActivity, type MergedRow } from '@/hooks/use-merged-activity'
 import { DESKTOP_CARD } from '@/lib/surface'
-import { cn } from '@/lib/utils'
+import { cn, sameId } from '@/lib/utils'
 import { activityDetailsPath, activityPath } from '@/paths'
 import { detailsIdOf, detailsTitle, findDetailsRow, parseDetailsId } from './details'
 import { HistoryDetails } from './HistoryDetails'
+import { moveCopy } from './labels'
 import { OperationDetails } from './OperationDetails'
 import { PendingDepositDetails } from './PendingDepositDetails'
 
@@ -34,8 +35,18 @@ export const ActivityDetails = () => {
   const creditedId = ref?.source === 'deposit' && row?.source === 'chain' ? detailsIdOf(row) : null
   if (creditedId) return <Navigate replace to={activityDetailsPath(creditedId)} />
 
+  const stalled =
+    ref?.source === 'deposit' &&
+    !row &&
+    progress &&
+    sameId(progress.txHash, ref.txHash) &&
+    (progress.stage === 'failed' || progress.stage === 'timeout')
+      ? progress
+      : null
+
   let content: ReactNode
   if (row) content = <Details row={row} progress={progress} />
+  else if (stalled) content = <PendingDepositDetails progress={stalled} />
   else if (ref && isError) content = <ActivityUnavailable onRetry={refetch} />
   else if (ref && isLoading) content = <Skeleton className="mt-6 h-24 w-full" />
   else {
@@ -51,20 +62,10 @@ export const ActivityDetails = () => {
 
   return (
     <div className={cn('mx-auto flex w-full max-w-lg flex-col', DESKTOP_CARD)}>
-      <div className="flex items-center justify-between">
-        <button
-          type="button"
-          onClick={goBack}
-          aria-label="Back"
-          className="flex h-8 w-8 items-center justify-center rounded-full text-muted-foreground hover:bg-muted"
-        >
-          <ArrowLeft className="h-5 w-5" />
-        </button>
-        <h1 className="text-foreground text-xl font-semibold tracking-tight">
-          {row ? detailsTitle(row) : 'Transaction'}
-        </h1>
-        <div className="w-8" />
-      </div>
+      <BackHeader
+        title={row ? detailsTitle(row) : stalled ? moveCopy('deposit', 'in-progress').title : 'Transaction'}
+        onBack={goBack}
+      />
       {content}
     </div>
   )

@@ -1,6 +1,6 @@
 import type { EarnActivity } from '@/contexts/ActivityProvider/context'
 import type { DisplayKind } from './historyMapping'
-import { moveCopy } from './labels'
+import { amountText, moveCopy } from './labels'
 import { activityIcon } from './activityVisuals'
 import { ActivityAmount, ActivityCard, ActivityIcon, ActivityRowBody } from './ActivityCardParts'
 import { earnStageLabel, earnStageSteps } from './earnStages'
@@ -22,7 +22,7 @@ export const EarnActivityCard = ({ activity, divider, href }: EarnActivityCardPr
   const { title, subtitle } = moveCopy(kind, status)
 
   return (
-    <ActivityCard divider={divider} href={href} label={title}>
+    <ActivityCard divider={divider} href={href} label={`${title}, ${amountText(amount, token)}`}>
       <ActivityRowBody
         icon={<ActivityIcon Icon={activityIcon(kind)} status={status} />}
         title={title}

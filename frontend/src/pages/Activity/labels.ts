@@ -1,9 +1,13 @@
+import { formatTokenAmount, type TokenMeta } from '@oasisprotocol/privana-sdk'
 import { appNameForAddress } from '@/config/apps'
 import type { ActivityStatus } from '@/contexts/ActivityProvider/context'
 import type { ClassifiedHistoryEntry, DisplayKind } from './historyMapping'
 import type { FilterType } from './filters'
 
 export type RowCopy = { title: string; subtitle?: string }
+
+export const amountText = (amount: string, token: TokenMeta): string =>
+  formatTokenAmount(amount, token, { withSymbol: true }).display
 
 type MoveKind = 'deposit' | 'withdraw' | 'earnDeposit' | 'earnWithdraw'
 

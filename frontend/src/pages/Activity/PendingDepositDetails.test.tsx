@@ -47,4 +47,10 @@ describe('PendingDepositDetails', () => {
     expect(screen.getByText('Step 2/2 · Adding your deposit to Available')).toBeInTheDocument()
     expect(screen.getByRole('button', { name: 'Copy deposit ID' })).toBeInTheDocument()
   })
+
+  it('says a deposit it could not confirm may still arrive', () => {
+    render(<PendingDepositDetails progress={progress({ stage: 'failed' })} />)
+    expect(screen.getByText(/may still be added to Available/)).toBeInTheDocument()
+    expect(screen.getByText('In progress')).toBeInTheDocument()
+  })
 })

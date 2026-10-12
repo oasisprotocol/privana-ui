@@ -115,6 +115,14 @@ describe('ActivityDetails: a deposit on its way', () => {
     expect(screen.getByText('Step 1/2 · Confirming your deposit on-chain')).toBeInTheDocument()
   })
 
+  it('keeps a deposit whose verification stopped short, instead of losing it', () => {
+    progress = { ...sent, stage: 'timeout' }
+    merged = { ...merged, rows: [] }
+    renderAt('/activity/dep-0xabc')
+    expect(screen.getByRole('heading', { name: 'Depositing to vault' })).toBeInTheDocument()
+    expect(screen.getByText(/taking longer than usual/)).toBeInTheDocument()
+  })
+
   it('moves to the history entry once credited', () => {
     progress = { ...sent, stage: 'credited', depositId: '0xd1' }
     const credited: MergedRow = {
@@ -151,7 +159,7 @@ describe('ActivityRow', () => {
 
   it('links a row to its details', () => {
     renderRow(swap)
-    expect(screen.getByRole('link', { name: 'Swapped for ETH' })).toHaveAttribute(
+    expect(screen.getByRole('link', { name: /^Swapped for ETH, 1\.00 USDC to .+ ETH$/ })).toHaveAttribute(
       'href',
       `/activity/op-${OPERATION_ID}`,
     )

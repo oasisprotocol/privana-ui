@@ -1,10 +1,8 @@
 import type { DepositProgress } from '@oasisprotocol/privana-sdk'
 import type { MergedRow } from '@/hooks/use-merged-activity'
-import type { Activity } from '@/contexts/ActivityProvider/context'
+import { operationIdOf } from '@/api/operations'
+import { sameId } from '@/lib/utils'
 import { historyRowCopy, moveCopy, swapCopy } from './labels'
-
-export const operationIdOf = (a: Activity): string | undefined =>
-  a.type === 'swap' ? a.swapId : a.direction === 'deposit' ? a.depositId : a.withdrawId
 
 const PENDING_DEPOSIT_KEY = 'deposit:'
 
@@ -30,9 +28,6 @@ export const parseDetailsId = (id: string): DetailsRef | null => {
   return history ? { source: 'history', index: Number(history[1]) } : null
 }
 
-const same = (a: string | null | undefined, b: string | null | undefined) =>
-  !!a && !!b && a.toLowerCase() === b.toLowerCase()
-
 export const findDetailsRow = (
   rows: MergedRow[],
   ref: DetailsRef,
@@ -48,8 +43,8 @@ export const findDetailsRow = (
     row => row.source === 'pending' && row.key === `${PENDING_DEPOSIT_KEY}${ref.txHash}`,
   )
   if (pending) return pending
-  const depositId = same(progress?.txHash, ref.txHash) ? progress?.depositId : undefined
-  return rows.find(row => row.source === 'chain' && same(row.row.entry.deposit_id, depositId))
+  const depositId = sameId(progress?.txHash, ref.txHash) ? progress?.depositId : undefined
+  return rows.find(row => row.source === 'chain' && sameId(row.row.entry.deposit_id, depositId))
 }
 
 export const detailsTitle = (row: MergedRow): string => {
