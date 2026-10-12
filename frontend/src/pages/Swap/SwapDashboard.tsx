@@ -18,7 +18,7 @@ import { AssetRow } from './AssetRow'
 import { QuoteInfo } from './QuoteInfo'
 import { ReviewStep } from './ReviewStep'
 import { SwapSettings } from './SwapSettings'
-import { parseSlippage, slippageLabel } from './slippage'
+import { parseSlippagePercent, slippageLabel } from './slippage'
 import { SwapResult } from './SwapResult'
 import { useSwapQuote } from './useSwapQuote'
 import { useSubmitSwap } from './useSubmitSwap'
@@ -40,7 +40,7 @@ export const SwapDashboard = () => {
   })
   const [fromAmount, setFromAmount] = useState('')
   const [slippageInput, setSlippageInput] = useState('')
-  const customSlippage = parseSlippage(slippageInput)
+  const slippagePercent = parseSlippagePercent(slippageInput)
   const [swapActivityId, setSwapActivityId] = useState<string | null>(null)
   const tokens = useMemo(
     () => (data?.tokens ?? []).filter(t => (SWAPPABLE_TOKEN_IDS as string[]).includes(t.token_id)),
@@ -83,7 +83,7 @@ export const SwapDashboard = () => {
     fromDecimals: fromToken?.token_decimals,
     toDecimals: toToken?.token_decimals,
     toSymbol: toToken?.token_symbol,
-    slippage: customSlippage == null ? undefined : customSlippage / 100,
+    slippageFraction: slippagePercent == null ? undefined : slippagePercent / 100,
     disabled: insufficientFunds,
   })
 
@@ -190,7 +190,7 @@ export const SwapDashboard = () => {
               Choose the asset you want to swap.
             </p>
           </div>
-          <SwapSettings slippage={slippageInput} onSlippageChange={setSlippageInput} />
+          <SwapSettings slippageInput={slippageInput} onSlippageInputChange={setSlippageInput} />
         </div>
       )}
       {step === 1 && (
@@ -231,7 +231,7 @@ export const SwapDashboard = () => {
           quoteRefreshing={quoteRefreshing}
           toAmountExact={toAmountExact}
           minReceived={quoteData?.to_amount_min}
-          slippageLabel={slippageLabel(customSlippage)}
+          slippageLabel={slippageLabel(slippagePercent)}
           onConfirm={handleSwap}
           loading={swapLoading}
           error={swapError}

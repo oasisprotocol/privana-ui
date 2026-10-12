@@ -1,19 +1,19 @@
 import { describe, expect, it } from 'vitest'
-import { parseSlippage, slippageLabel, slippageNote } from './slippage'
+import { parseSlippagePercent, slippageLabel, slippageNote } from './slippage'
 
-describe('parseSlippage', () => {
+describe('parseSlippagePercent', () => {
   it('reads a value in range', () => {
-    expect(parseSlippage('0.05')).toBe(0.05)
-    expect(parseSlippage('1.5')).toBe(1.5)
-    expect(parseSlippage('5')).toBe(5)
+    expect(parseSlippagePercent('0.05')).toBe(0.05)
+    expect(parseSlippagePercent('1.5')).toBe(1.5)
+    expect(parseSlippagePercent('5')).toBe(5)
   })
 
   it('is null while empty, unfinished or out of range', () => {
-    expect(parseSlippage('')).toBeNull()
-    expect(parseSlippage('.')).toBeNull()
-    expect(parseSlippage('0')).toBeNull()
-    expect(parseSlippage('0.04')).toBeNull()
-    expect(parseSlippage('5.01')).toBeNull()
+    expect(parseSlippagePercent('')).toBeNull()
+    expect(parseSlippagePercent('.')).toBeNull()
+    expect(parseSlippagePercent('0')).toBeNull()
+    expect(parseSlippagePercent('0.04')).toBeNull()
+    expect(parseSlippagePercent('5.01')).toBeNull()
   })
 })
 

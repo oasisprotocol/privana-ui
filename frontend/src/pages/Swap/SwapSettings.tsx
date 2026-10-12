@@ -4,7 +4,7 @@ import { Button } from '@/components/ui/button'
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover'
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip'
 import { cn } from '@/lib/utils'
-import { AUTO_SLIPPAGE_PERCENT, parseSlippage, slippageNote } from './slippage'
+import { AUTO_SLIPPAGE_PERCENT, parseSlippagePercent, slippageNote } from './slippage'
 
 const SWAP_DEADLINE_MINUTES = 30
 
@@ -21,19 +21,19 @@ const SettingLabel = ({ children, info }: { children: ReactNode; info: string })
 )
 
 type SwapSettingsProps = {
-  slippage: string
-  onSlippageChange: (value: string) => void
+  slippageInput: string
+  onSlippageInputChange: (value: string) => void
 }
 
-export const SwapSettings = ({ slippage, onSlippageChange }: SwapSettingsProps) => {
-  const custom = parseSlippage(slippage)
+export const SwapSettings = ({ slippageInput, onSlippageInputChange }: SwapSettingsProps) => {
+  const customPercent = parseSlippagePercent(slippageInput)
   const [typing, setTyping] = useState(false)
-  const note = slippageNote(slippage, typing)
+  const note = slippageNote(slippageInput, typing)
 
   return (
     <Popover
       onOpenChange={open => {
-        if (!open && slippage && custom == null) onSlippageChange('')
+        if (!open && slippageInput && customPercent == null) onSlippageInputChange('')
       }}
     >
       <PopoverTrigger asChild>
@@ -44,12 +44,12 @@ export const SwapSettings = ({ slippage, onSlippageChange }: SwapSettingsProps) 
           aria-label="Swap settings"
           className={cn(
             '[&_svg]:size-5',
-            custom == null
+            customPercent == null
               ? 'text-muted-foreground'
               : 'bg-primary/25 text-foreground hover:bg-primary/35 dark:hover:bg-primary/35',
           )}
         >
-          {custom != null && <span className="text-sm font-semibold">{custom}%</span>}
+          {customPercent != null && <span className="text-sm font-semibold">{customPercent}%</span>}
           <Settings />
         </Button>
       </PopoverTrigger>
@@ -62,10 +62,12 @@ export const SwapSettings = ({ slippage, onSlippageChange }: SwapSettingsProps) 
             <div className="flex h-9 items-center gap-1 rounded-full border border-input pl-1 pr-3">
               <button
                 type="button"
-                onClick={() => onSlippageChange('')}
+                onClick={() => onSlippageInputChange('')}
                 className={cn(
                   'rounded-full px-2 py-1 text-xs font-semibold',
-                  slippage ? 'text-muted-foreground hover:text-foreground' : 'bg-primary/25 text-foreground',
+                  slippageInput
+                    ? 'text-muted-foreground hover:text-foreground'
+                    : 'bg-primary/25 text-foreground',
                 )}
               >
                 Auto
@@ -76,10 +78,10 @@ export const SwapSettings = ({ slippage, onSlippageChange }: SwapSettingsProps) 
                 onBlur={() => setTyping(false)}
                 inputMode="decimal"
                 placeholder={AUTO_SLIPPAGE_PERCENT.toFixed(2)}
-                value={slippage}
+                value={slippageInput}
                 onChange={e => {
                   const next = e.target.value.replace(',', '.')
-                  if (/^\d{0,2}(\.\d{0,2})?$/.test(next)) onSlippageChange(next)
+                  if (/^\d{0,2}(\.\d{0,2})?$/.test(next)) onSlippageInputChange(next)
                 }}
                 className="w-12 bg-transparent text-right text-sm outline-none placeholder:text-muted-foreground"
               />

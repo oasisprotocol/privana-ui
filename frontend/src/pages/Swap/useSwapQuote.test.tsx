@@ -60,18 +60,24 @@ describe('useSwapQuote', () => {
     expect(getQuote).toHaveBeenCalledTimes(2)
   })
 
-  it('sends a custom slippage and fetches a new quote when it changes', async () => {
-    vi.mocked(getQuote).mockImplementation(async () => quote(1800))
-    const { rerender } = renderHook((props: { slippage?: number }) => useSwapQuote({ ...params, ...props }), {
-      initialProps: {},
-    })
+  it('drops the quote at once when the slippage changes, and fetches one for the new slippage', async () => {
+    vi.mocked(getQuote)
+      .mockImplementationOnce(async () => quote(1800))
+      .mockImplementationOnce(() => new Promise(() => {}))
+    const { result, rerender } = renderHook(
+      (props: { slippageFraction?: number }) => useSwapQuote({ ...params, ...props }),
+      { initialProps: {} },
+    )
     await act(async () => {})
-    expect(vi.mocked(getQuote).mock.calls[0][0].slippage).toBeUndefined()
+    expect(vi.mocked(getQuote).mock.calls[0][0].slippageFraction).toBeUndefined()
+    expect(result.current.data).not.toBeNull()
 
-    rerender({ slippage: 0.01 })
-    await act(() => vi.advanceTimersByTimeAsync(500))
+    rerender({ slippageFraction: 0.01 })
+    await act(async () => {})
     expect(getQuote).toHaveBeenCalledTimes(2)
-    expect(vi.mocked(getQuote).mock.calls[1][0].slippage).toBe(0.01)
+    expect(vi.mocked(getQuote).mock.calls[1][0].slippageFraction).toBe(0.01)
+    // The quote for the old slippage can no longer be shown or submitted.
+    expect(result.current.data).toBeNull()
   })
 
   it('counts as refreshing from 5 seconds before a refresh until the new quote arrives', async () => {

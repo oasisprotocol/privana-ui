@@ -10,8 +10,8 @@ const Harness = ({ initial, onChange }: { initial: string; onChange: (value: str
   return (
     <TooltipProvider>
       <SwapSettings
-        slippage={slippage}
-        onSlippageChange={value => {
+        slippageInput={slippage}
+        onSlippageInputChange={value => {
           setSlippage(value)
           onChange(value)
         }}

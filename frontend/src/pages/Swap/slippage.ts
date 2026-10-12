@@ -5,7 +5,7 @@ export const MIN_SLIPPAGE_PERCENT = 0.05
 export const MAX_SLIPPAGE_PERCENT = 5
 const HIGH_SLIPPAGE_PERCENT = 1
 
-export const parseSlippage = (input: string): number | null => {
+export const parseSlippagePercent = (input: string): number | null => {
   if (!input) return null
   const value = Number(input)
   return value >= MIN_SLIPPAGE_PERCENT && value <= MAX_SLIPPAGE_PERCENT ? value : null
@@ -19,7 +19,7 @@ export const slippageNote = (
   typing = false,
 ): { kind: 'error' | 'warning'; text: string } | null => {
   if (!input) return null
-  const value = parseSlippage(input)
+  const value = parseSlippagePercent(input)
   if (value == null) {
     if (typing && stillTyping(input)) return null
     return {
@@ -33,5 +33,5 @@ export const slippageNote = (
   return null
 }
 
-export const slippageLabel = (custom: number | null): string =>
-  custom == null ? `Auto (${AUTO_SLIPPAGE_PERCENT}%)` : `${custom}%`
+export const slippageLabel = (percent: number | null): string =>
+  percent == null ? `Auto (${AUTO_SLIPPAGE_PERCENT}%)` : `${percent}%`
