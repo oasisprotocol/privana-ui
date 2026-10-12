@@ -1,3 +1,4 @@
+import type { DepositProgress } from '@oasisprotocol/privana-sdk'
 import type { MergedRow } from '@/hooks/use-merged-activity'
 import type { Activity } from '@/contexts/ActivityProvider/context'
 import { historyRowCopy, moveCopy, swapCopy } from './labels'
@@ -5,29 +6,51 @@ import { historyRowCopy, moveCopy, swapCopy } from './labels'
 export const operationIdOf = (a: Activity): string | undefined =>
   a.type === 'swap' ? a.swapId : a.direction === 'deposit' ? a.depositId : a.withdrawId
 
+const PENDING_DEPOSIT_KEY = 'deposit:'
+
 export const detailsIdOf = (row: MergedRow): string | null => {
   if (row.source === 'chain') return `h-${row.row.index}`
   if (row.source === 'local') {
     const operationId = operationIdOf(row.activity)
     return operationId ? `op-${operationId}` : null
   }
-  return null
+  // A deposit on its way, by its source transaction, until it is credited.
+  return row.key.startsWith(PENDING_DEPOSIT_KEY) ? `dep-${row.key.slice(PENDING_DEPOSIT_KEY.length)}` : null
 }
 
-export type DetailsRef = { source: 'operation'; operationId: string } | { source: 'history'; index: number }
+export type DetailsRef =
+  | { source: 'operation'; operationId: string }
+  | { source: 'history'; index: number }
+  | { source: 'deposit'; txHash: string }
 
 export const parseDetailsId = (id: string): DetailsRef | null => {
   if (id.startsWith('op-') && id.length > 3) return { source: 'operation', operationId: id.slice(3) }
+  if (id.startsWith('dep-') && id.length > 4) return { source: 'deposit', txHash: id.slice(4) }
   const history = /^h-(\d+)$/.exec(id)
   return history ? { source: 'history', index: Number(history[1]) } : null
 }
 
-export const findDetailsRow = (rows: MergedRow[], ref: DetailsRef): MergedRow | undefined =>
-  rows.find(row =>
-    ref.source === 'operation'
-      ? row.source === 'local' && operationIdOf(row.activity) === ref.operationId
-      : row.source === 'chain' && row.row.index === ref.index,
+const same = (a: string | null | undefined, b: string | null | undefined) =>
+  !!a && !!b && a.toLowerCase() === b.toLowerCase()
+
+export const findDetailsRow = (
+  rows: MergedRow[],
+  ref: DetailsRef,
+  progress?: DepositProgress | null,
+): MergedRow | undefined => {
+  if (ref.source === 'operation') {
+    return rows.find(row => row.source === 'local' && operationIdOf(row.activity) === ref.operationId)
+  }
+  if (ref.source === 'history') {
+    return rows.find(row => row.source === 'chain' && row.row.index === ref.index)
+  }
+  const pending = rows.find(
+    row => row.source === 'pending' && row.key === `${PENDING_DEPOSIT_KEY}${ref.txHash}`,
   )
+  if (pending) return pending
+  const depositId = same(progress?.txHash, ref.txHash) ? progress?.depositId : undefined
+  return rows.find(row => row.source === 'chain' && same(row.row.entry.deposit_id, depositId))
+}
 
 export const detailsTitle = (row: MergedRow): string => {
   if (row.source === 'local') {

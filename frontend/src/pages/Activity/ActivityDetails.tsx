@@ -1,23 +1,24 @@
 import type { ReactNode } from 'react'
 import { ArrowLeft } from 'lucide-react'
-import { Link, useLocation, useNavigate, useParams } from 'react-router'
+import { Link, Navigate, useLocation, useNavigate, useParams } from 'react-router'
+import { useDeposit, type DepositProgress } from '@oasisprotocol/privana-sdk'
 import { Button } from '@/components/ui/button'
 import { Skeleton } from '@/components/ui/skeleton'
 import { ActivityUnavailable } from '@/components/ActivityList'
 import { useMergedActivity, type MergedRow } from '@/hooks/use-merged-activity'
 import { DESKTOP_CARD } from '@/lib/surface'
 import { cn } from '@/lib/utils'
-import { activityPath } from '@/paths'
-import { detailsTitle, findDetailsRow, parseDetailsId } from './details'
+import { activityDetailsPath, activityPath } from '@/paths'
+import { detailsIdOf, detailsTitle, findDetailsRow, parseDetailsId } from './details'
 import { HistoryDetails } from './HistoryDetails'
 import { OperationDetails } from './OperationDetails'
+import { PendingDepositDetails } from './PendingDepositDetails'
 
-const Details = ({ row }: { row: MergedRow }) =>
-  row.source === 'local' ? (
-    <OperationDetails activity={row.activity} />
-  ) : (
-    <HistoryDetails row={row.row} pending={row.source === 'pending' || row.pending} />
-  )
+const Details = ({ row, progress }: { row: MergedRow; progress: DepositProgress | null }) => {
+  if (row.source === 'local') return <OperationDetails activity={row.activity} />
+  if (row.source === 'pending' && progress) return <PendingDepositDetails progress={progress} />
+  return <HistoryDetails row={row.row} pending={row.source === 'pending' || row.pending} />
+}
 
 export const ActivityDetails = () => {
   const { id = '' } = useParams()
@@ -25,12 +26,16 @@ export const ActivityDetails = () => {
   const location = useLocation()
   const ref = parseDetailsId(id)
   const { rows, isLoading, isError, refetch } = useMergedActivity()
-  const row = ref ? findDetailsRow(rows, ref) : undefined
+  const { progress } = useDeposit()
+  const row = ref ? findDetailsRow(rows, ref, progress) : undefined
 
   const goBack = () => (location.key === 'default' ? navigate(activityPath()) : navigate(-1))
 
+  const creditedId = ref?.source === 'deposit' && row?.source === 'chain' ? detailsIdOf(row) : null
+  if (creditedId) return <Navigate replace to={activityDetailsPath(creditedId)} />
+
   let content: ReactNode
-  if (row) content = <Details row={row} />
+  if (row) content = <Details row={row} progress={progress} />
   else if (ref && isError) content = <ActivityUnavailable onRetry={refetch} />
   else if (ref && isLoading) content = <Skeleton className="mt-6 h-24 w-full" />
   else {

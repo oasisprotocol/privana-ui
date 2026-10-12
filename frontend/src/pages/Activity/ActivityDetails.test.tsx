@@ -2,13 +2,17 @@ import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { render, screen } from '@testing-library/react'
 import { MemoryRouter, Route, Routes } from 'react-router'
 import { TooltipProvider } from '@/components/ui/tooltip'
+import type { DepositProgress, HistoryEntry } from '@oasisprotocol/privana-sdk'
 import type { MergedRow, UseMergedActivityResult } from '@/hooks/use-merged-activity'
+import type { ClassifiedHistoryEntry } from './historyMapping'
 import { ActivityDetails } from './ActivityDetails'
 import { ActivityRow } from './ActivityRow'
 
+let progress: DepositProgress | null = null
 vi.mock('@oasisprotocol/privana-sdk', async importOriginal => ({
   ...(await importOriginal<typeof import('@oasisprotocol/privana-sdk')>()),
   usePrivanaContext: () => ({ getTokenById: () => undefined, getChainById: () => undefined }),
+  useDeposit: () => ({ progress }),
 }))
 
 vi.mock('@/api/operations', async importOriginal => ({
@@ -55,6 +59,7 @@ const renderAt = (path: string) =>
 
 beforeEach(() => {
   merged = { rows: [swap], isLoading: false, isError: false, refetch: vi.fn() }
+  progress = null
 })
 
 describe('ActivityDetails', () => {
@@ -76,6 +81,61 @@ describe('ActivityDetails', () => {
     renderAt(`/activity/op-${OPERATION_ID}`)
     expect(screen.queryByText("We couldn't find that transaction.")).not.toBeInTheDocument()
     expect(screen.getByRole('heading', { name: 'Transaction' })).toBeInTheDocument()
+  })
+})
+
+describe('ActivityDetails: a deposit on its way', () => {
+  const sent: DepositProgress = {
+    txHash: '0xabc',
+    chainId: 8453,
+    amount: 1_000_000n,
+    sentAt: CREATED_MS,
+    stage: 'confirming',
+  }
+  const pendingRow: MergedRow = {
+    source: 'pending',
+    timestamp: 1,
+    key: 'deposit:0xabc',
+    row: {
+      kind: 'deposit',
+      timestamp: 1,
+      tokenId: null,
+      amount: '1000000',
+      counterparty: null,
+      pool: undefined,
+      entry: { kind: 'deposit', timestamp: 1 },
+    },
+  }
+
+  it('shows the step it is at', () => {
+    progress = sent
+    merged = { ...merged, rows: [pendingRow] }
+    renderAt('/activity/dep-0xabc')
+    expect(screen.getByRole('heading', { name: 'Depositing to vault' })).toBeInTheDocument()
+    expect(screen.getByText('Step 1/2 · Confirming your deposit on-chain')).toBeInTheDocument()
+  })
+
+  it('moves to the history entry once credited', () => {
+    progress = { ...sent, stage: 'credited', depositId: '0xd1' }
+    const credited: MergedRow = {
+      source: 'chain',
+      timestamp: 1,
+      row: {
+        source: 'chain',
+        kind: 'deposit',
+        index: 12,
+        timestamp: 1,
+        tokenId: null,
+        amount: null,
+        counterparty: null,
+        pool: undefined,
+        entry: { kind: 'deposit', timestamp: 1, deposit_id: '0xd1' } as HistoryEntry,
+      } satisfies ClassifiedHistoryEntry,
+    }
+    merged = { ...merged, rows: [credited] }
+    renderAt('/activity/dep-0xabc')
+    expect(screen.getByRole('heading', { name: 'Deposited to vault' })).toBeInTheDocument()
+    expect(screen.getByRole('button', { name: 'Copy deposit ID' })).toBeInTheDocument()
   })
 })
 
