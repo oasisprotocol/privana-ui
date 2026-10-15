@@ -10,9 +10,9 @@ import type { ActivityStatus, ActivityTokenInfo } from '@/contexts/ActivityProvi
 import { trimLongString } from '@/utils/trimLongString'
 
 const STATUS_BADGE: Record<ActivityStatus, { label: string; className: string }> = {
-  completed: { label: 'Completed', className: 'bg-chart-positive/15 text-chart-positive' },
+  completed: { label: 'Completed', className: 'bg-chart-positive text-chart-positive-foreground' },
   'in-progress': { label: 'In progress', className: 'bg-primary/25 text-foreground' },
-  failed: { label: 'Failed', className: 'bg-destructive/15 text-destructive' },
+  failed: { label: 'Failed', className: 'bg-destructive text-destructive-foreground' },
 }
 
 export const StatusBadge = ({ status }: { status: ActivityStatus }) => {
@@ -46,11 +46,13 @@ export const DetailsHero = ({
   status,
   amount,
   statusLine,
+  error,
 }: {
   Icon: LucideIcon
   status: ActivityStatus
   amount: ReactNode
   statusLine?: string
+  error?: string
 }) => (
   <div className="mt-4 flex flex-col items-center text-center">
     {status === 'in-progress' ? (
@@ -70,6 +72,7 @@ export const DetailsHero = ({
       <StatusBadge status={status} />
     </div>
     {statusLine && <p className="mt-2 text-xs text-muted-foreground">{statusLine}</p>}
+    {error && <p className="mt-2 text-xs break-words text-destructive">{error}</p>}
   </div>
 )
 
@@ -116,11 +119,4 @@ export const IdValue = ({ value, copyLabel }: { value: string; copyLabel: string
     </span>
     <CopyButton value={value} label={copyLabel} />
   </span>
-)
-
-export const ErrorBox = ({ message, reason }: { message: string; reason?: string }) => (
-  <div className="mt-4 rounded-xl border border-destructive/30 bg-destructive/10 p-4 text-sm text-destructive">
-    <p className="whitespace-pre-wrap break-words">{message}</p>
-    {reason && <p className="mt-2 text-xs text-muted-foreground">Reason: {reason}</p>}
-  </div>
 )

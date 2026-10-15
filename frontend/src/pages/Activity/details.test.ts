@@ -3,7 +3,8 @@ import type { HistoryEntry } from '@oasisprotocol/privana-sdk'
 import type { MergedRow } from '@/hooks/use-merged-activity'
 import type { SwapActivity } from '@/contexts/ActivityProvider/context'
 import type { ClassifiedHistoryEntry } from './historyMapping'
-import { detailsIdOf, findDetailsRow, parseDetailsId } from './details'
+import type { PendingTransfer } from '@/hooks/usePendingTransfers'
+import { detailsIdOf, findDetailsRow, parseDetailsId, pendingTransferDetailsId } from './details'
 
 const USDC = { id: '0x1', symbol: 'USDC', decimals: 6 }
 
@@ -105,5 +106,37 @@ describe('findDetailsRow', () => {
     } as const
     expect(findDetailsRow([...rows, credited], ref, progress)).toBe(credited)
     expect(findDetailsRow([...rows, credited], ref, { ...progress, txHash: '0xother' })).toBeUndefined()
+  })
+})
+
+describe('pendingTransferDetailsId', () => {
+  const withdrawal: PendingTransfer = {
+    kind: 'withdraw',
+    key: 'withdraw:7',
+    amount: '1000000',
+    tokenId: '0x1',
+    token: undefined,
+    index: 7,
+    to: '0x2',
+  }
+
+  it('names a pending deposit by its source transaction', () => {
+    const deposit: PendingTransfer = {
+      kind: 'deposit',
+      key: 'deposit:0xabc',
+      amount: 1n,
+      tokenId: undefined,
+      token: undefined,
+      step: 1,
+      sentAt: 0,
+      depositId: undefined,
+    }
+    expect(pendingTransferDetailsId(deposit, [])).toBe('dep-0xabc')
+  })
+
+  it('names a pending withdrawal by the history row it was matched to', () => {
+    const row = { ...chainRow(4), pending: true as const, pendingKey: 'withdraw:7' }
+    expect(pendingTransferDetailsId(withdrawal, [chainRow(3), row])).toBe('h-4')
+    expect(pendingTransferDetailsId(withdrawal, [chainRow(3)])).toBeNull()
   })
 })

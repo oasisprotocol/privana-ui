@@ -8,7 +8,7 @@ describe('moveCopy', () => {
     kind => {
       expect(moveCopy(kind, 'completed').title).not.toMatch(/ing\b|failed/)
       expect(moveCopy(kind, 'in-progress').title).toMatch(/ing\b/)
-      expect(moveCopy(kind, 'in-progress').subtitle).toMatch(/…$/)
+      expect(moveCopy(kind, 'in-progress').subtitle).toMatch(/\.$/)
       // The failure reason fills the line under a failed row.
       expect(moveCopy(kind, 'failed')).toEqual({ title: expect.stringMatching(/ failed$/) })
     },

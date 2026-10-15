@@ -44,7 +44,7 @@ describe('EarnActivityCard', () => {
   it('falls back to a generic line while no stage is known', () => {
     renderCard(withdraw())
     expect(screen.getByText('Moving to Available')).toBeInTheDocument()
-    expect(screen.getByText('Returning to Available…')).toBeInTheDocument()
+    expect(screen.getByText('Returning to Available.')).toBeInTheDocument()
     expect(screen.queryByRole('list', { name: 'Progress' })).not.toBeInTheDocument()
   })
 

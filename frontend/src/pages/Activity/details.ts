@@ -1,6 +1,6 @@
 import type { DepositProgress } from '@oasisprotocol/privana-sdk'
 import type { MergedRow } from '@/hooks/use-merged-activity'
-import { pendingDepositKey, pendingDepositTxHash } from '@/hooks/usePendingTransfers'
+import { pendingDepositKey, pendingDepositTxHash, type PendingTransfer } from '@/hooks/usePendingTransfers'
 import { operationIdOf } from '@/api/operations'
 import { sameId } from '@/lib/utils'
 import { statusOf } from './filters'
@@ -15,6 +15,18 @@ export const detailsIdOf = (row: MergedRow): string | null => {
   // A deposit on its way, by its source transaction, until it is credited.
   const txHash = pendingDepositTxHash(row.key)
   return txHash ? `dep-${txHash}` : null
+}
+
+export const pendingTransferDetailsId = (
+  transfer: PendingTransfer,
+  rows: readonly MergedRow[],
+): string | null => {
+  if (transfer.kind === 'deposit') {
+    const txHash = pendingDepositTxHash(transfer.key)
+    return txHash ? `dep-${txHash}` : null
+  }
+  const row = rows.find(r => r.source === 'chain' && r.pendingKey === transfer.key)
+  return row ? detailsIdOf(row) : null
 }
 
 export type DetailsRef =

@@ -1,10 +1,4 @@
-import {
-  operationIdOf,
-  type Operation,
-  type OperationStage,
-  type OperationStatus,
-  type SwapFailureReason,
-} from '@/api/operations'
+import { operationIdOf, type Operation, type OperationStage, type OperationStatus } from '@/api/operations'
 import type {
   Activity,
   ActivityStatus,
@@ -30,7 +24,6 @@ export type SwapView = OperationFields &
     type: 'swap'
     estimate: string
     received?: string
-    reason?: SwapFailureReason
   }
 
 export type EarnView = OperationFields &
@@ -66,7 +59,6 @@ export const toOperationView = (activity: Activity, operation?: Operation): Oper
       estimate: operation?.to_amount_estimate ?? activity.toAmount,
       received:
         operation?.to_amount_actual ?? (activity.status === 'completed' ? activity.toAmount : undefined),
-      reason: operation?.reason ?? activity.reason,
     }
   }
   return {

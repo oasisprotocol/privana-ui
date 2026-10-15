@@ -49,6 +49,7 @@ describe('chainRowsWithPending', () => {
   it('marks the withdrawal row a pending withdrawal came from', () => {
     const rows = chainRowsWithPending([entry(1, { amount: '9' }), entry(2)], [pendingWithdrawal(40)])
     expect(pendingIndexes(rows)).toEqual([2])
+    expect(rows[1]).toMatchObject({ pendingKey: 'withdraw:40' })
     expect(statusOf(rows[1])).toBe('in-progress')
     expect(statusOf(rows[0])).toBe('completed')
   })

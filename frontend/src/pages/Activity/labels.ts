@@ -16,22 +16,22 @@ type MoveKind = 'deposit' | 'withdraw' | 'earnDeposit' | 'earnWithdraw'
 const MOVES: Record<MoveKind, Record<ActivityStatus, RowCopy>> = {
   deposit: {
     completed: { title: 'Deposited to vault', subtitle: 'Added to Available' },
-    'in-progress': { title: 'Depositing to vault', subtitle: 'Adding to Available…' },
+    'in-progress': { title: 'Depositing to vault', subtitle: 'Adding to Available.' },
     failed: { title: 'Deposit failed' },
   },
   withdraw: {
     completed: { title: 'Withdrawn', subtitle: 'Sent to external wallet' },
-    'in-progress': { title: 'Withdrawing', subtitle: 'Sending to external wallet…' },
+    'in-progress': { title: 'Withdrawing', subtitle: 'Sending to external wallet.' },
     failed: { title: 'Withdrawal failed' },
   },
   earnDeposit: {
     completed: { title: 'Moved to Earn', subtitle: 'Now earning' },
-    'in-progress': { title: 'Moving to Earn', subtitle: 'Moving into Earn…' },
+    'in-progress': { title: 'Moving to Earn', subtitle: 'Moving into Earn.' },
     failed: { title: 'Move to Earn failed' },
   },
   earnWithdraw: {
     completed: { title: 'Moved to Available', subtitle: 'Back from Earn' },
-    'in-progress': { title: 'Moving to Available', subtitle: 'Returning to Available…' },
+    'in-progress': { title: 'Moving to Available', subtitle: 'Returning to Available.' },
     failed: { title: 'Move to Available failed' },
   },
 }
@@ -44,7 +44,7 @@ export function swapCopy(status: ActivityStatus, toSymbol: string): RowCopy {
     case 'completed':
       return { title: `Swapped${asset}`, subtitle: 'No public trace' }
     case 'in-progress':
-      return { title: `Swapping${asset}`, subtitle: 'Swapping privately…' }
+      return { title: `Swapping${asset}`, subtitle: 'Swapping privately.' }
     case 'failed':
       return { title: 'Swap failed' }
   }

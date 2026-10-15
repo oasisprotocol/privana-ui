@@ -87,13 +87,13 @@ describe('OperationDetails: swap', () => {
     expect(screen.getByText(/You can safely leave this screen/)).toBeInTheDocument()
   })
 
-  it('shows the full error and its reason when the swap failed', () => {
+  it('shows the full error when the swap failed', () => {
     const error = 'This swap could not be completed. Contact Privana support with swap ID op-1.'
     operations = [op({ status: 'failed', error, reason: 'needs_support' })]
     render(<OperationDetails activity={swap({ status: 'failed', error })} />)
 
-    expect(screen.getByText(error)).toBeInTheDocument()
-    expect(screen.getByText('Reason: needs_support')).toBeInTheDocument()
+    expect(screen.getByText(error)).toHaveClass('text-destructive')
+    expect(screen.queryByText(/Reason/)).not.toBeInTheDocument()
     expect(rowValue('Quoted')).toHaveTextContent('≈ 0.0004 ETH')
     expect(screen.queryByText('Rate')).not.toBeInTheDocument()
   })

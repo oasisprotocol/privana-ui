@@ -59,6 +59,6 @@ describe('SwapActivityCard', () => {
   it('reads in the present while the swap runs', () => {
     renderCard(swap('0xhype-usdc', 'USDC', 'in-progress'))
     expect(screen.getByText('Swapping for USDC')).toBeInTheDocument()
-    expect(screen.getByText('Swapping privately…')).toBeInTheDocument()
+    expect(screen.getByText('Swapping privately.')).toBeInTheDocument()
   })
 })

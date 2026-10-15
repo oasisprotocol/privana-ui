@@ -108,7 +108,6 @@ const DepositFeatures = ({ bestApyBps }: { bestApyBps: number | null }) => (
 
 export const DashboardHome = () => {
   const [depositTab, setDepositTab] = useState<'crypto' | 'credit-card' | null>(null)
-  const openDeposit = () => setDepositTab('crypto')
   const [withdrawOpen, setWithdrawOpen] = useState(false)
   const {
     isLoading,
@@ -166,14 +165,14 @@ export const DashboardHome = () => {
             <div className="flex flex-col md:hidden">
               <span className="text-sm font-medium text-muted-foreground leading-5">Account value</span>
               <BalanceAmount value={totalFiatValue ?? 0} className="mt-2 animate-fade-in" />
-              <PendingTransferBanners onOpenDeposit={openDeposit} className="mt-4" />
+              <PendingTransferBanners rows={activityRows} className="mt-4" />
             </div>
 
             <SurfaceCard className="p-6 w-full md:mx-auto md:max-w-xl md:rounded-3xl md:p-8">
               <div className="mb-6 hidden md:block">
                 <div className="text-sm font-medium text-muted-foreground">Account value</div>
                 <BalanceAmount value={totalFiatValue ?? 0} className="mt-2 text-4xl animate-fade-in" />
-                <PendingTransferBanners onOpenDeposit={openDeposit} className="mt-5" />
+                <PendingTransferBanners rows={activityRows} className="mt-5" />
               </div>
               <h2 className="text-2xl font-semibold tracking-tight text-foreground">
                 Add funds to get started
@@ -228,7 +227,7 @@ export const DashboardHome = () => {
                 ) : (
                   <BalanceAmount value={totalFiatValue} className="mt-2 text-6xl animate-fade-in" />
                 )}
-                <PendingTransferBanners onOpenDeposit={openDeposit} className="mt-5" />
+                <PendingTransferBanners rows={activityRows} className="mt-5" />
                 <div className="mt-6">
                   <PrivanaVaultCard
                     available={availableFiatValue}
@@ -275,7 +274,7 @@ export const DashboardHome = () => {
                 ) : (
                   <BalanceAmount value={totalFiatValue} className="mt-2 animate-fade-in" />
                 )}
-                <PendingTransferBanners onOpenDeposit={openDeposit} className="mt-4" />
+                <PendingTransferBanners rows={activityRows} className="mt-4" />
               </div>
 
               {chartLoading || isDesktop ? (

@@ -45,7 +45,7 @@ export const ActivityDetails = () => {
   if (row) content = <Details row={row} progress={progress} />
   else if (flow) content = <PendingDepositDetails progress={flow} />
   else if (ref && isError) content = <ActivityUnavailable onRetry={refetch} />
-  else if (ref && isLoading) content = <Skeleton className="mt-6 h-24 w-full" />
+  else if (ref && isLoading) content = <Skeleton className="mt-6 h-90 w-full" />
   else {
     content = (
       <div className="flex flex-col items-center py-16 text-center">

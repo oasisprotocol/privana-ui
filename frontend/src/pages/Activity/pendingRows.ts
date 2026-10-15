@@ -18,26 +18,29 @@ export function chainRowsWithPending(
   // History has no withdrawal index, so token, amount and recipient identify the
   // request, newest first. Two identical pending withdrawals are both pending anyway.
   const newestFirst = [...entries].sort((a, b) => b.timestamp - a.timestamp || b.index - a.index)
-  const pendingIndexes = new Set<number>()
+  const pendingKeys = new Map<number, string>()
   for (const t of transfers) {
     if (t.kind !== 'withdraw') continue
     const match = newestFirst.find(
       e =>
         e.kind === 'withdraw' &&
-        !pendingIndexes.has(e.index) &&
+        !pendingKeys.has(e.index) &&
         sameId(e.tokenId, t.tokenId) &&
         e.amount === t.amount &&
         sameId(e.counterparty, t.to),
     )
-    if (match) pendingIndexes.add(match.index)
+    if (match) pendingKeys.set(match.index, t.key)
   }
 
-  const rows: HistoryRow[] = entries.map(row => ({
-    source: 'chain',
-    timestamp: row.timestamp,
-    row,
-    ...(pendingIndexes.has(row.index) && { pending: true }),
-  }))
+  const rows: HistoryRow[] = entries.map(row => {
+    const pendingKey = pendingKeys.get(row.index)
+    return {
+      source: 'chain',
+      timestamp: row.timestamp,
+      row,
+      ...(pendingKey && { pending: true, pendingKey }),
+    }
+  })
 
   for (const t of transfers) {
     if (t.kind !== 'deposit') continue

@@ -7,15 +7,7 @@ import { cn } from '@/lib/utils'
 import { formatRate } from '@/pages/Swap/quoteHelpers'
 import { activityIcon } from './activityVisuals'
 import { progressLine } from './details'
-import {
-  AmountValue,
-  DetailsCard,
-  DetailsHero,
-  DetailsRow,
-  ErrorBox,
-  HeroAmount,
-  IdValue,
-} from './DetailsParts'
+import { AmountValue, DetailsCard, DetailsHero, DetailsRow, HeroAmount, IdValue } from './DetailsParts'
 import { EarnStageList } from './EarnStageList'
 import { earnStageSteps } from './earnStages'
 import { moveCopy, swapCopy } from './labels'
@@ -81,8 +73,8 @@ const SwapDetails = ({ swap }: { swap: SwapView }) => {
           )
         }
         statusLine={statusLine(status, swapCopy(status, toToken.symbol).subtitle)}
+        error={status === 'failed' ? error : undefined}
       />
-      {status === 'failed' && error && <ErrorBox message={error} reason={swap.reason} />}
       <DetailsCard>
         <DetailsRow label="You paid">
           <AmountValue amount={fromAmount} token={fromToken} chain={chains.from} />
@@ -116,8 +108,8 @@ const EarnDetails = ({ earn }: { earn: EarnView }) => {
         status={status}
         amount={<HeroAmount amount={amount} token={token} />}
         statusLine={statusLine(status, moveCopy(kind, status).subtitle)}
+        error={status === 'failed' ? error : undefined}
       />
-      {status === 'failed' && error && <ErrorBox message={error} />}
       <DetailsCard>
         <DetailsRow label="Amount">
           <AmountValue amount={amount} token={token} chain={chain} />
