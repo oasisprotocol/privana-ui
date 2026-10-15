@@ -1,5 +1,5 @@
 import type { SwapActivity } from '@/contexts/ActivityProvider/context'
-import { swapCopy } from './labels'
+import { amountText, swapCopy } from './labels'
 import { useSwapChains } from './useSwapChains'
 import { activityIcon } from './activityVisuals'
 import { ActivityCard, ActivityIcon, ActivityRowBody, SwapAmounts } from './ActivityCardParts'
@@ -7,15 +7,20 @@ import { ActivityCard, ActivityIcon, ActivityRowBody, SwapAmounts } from './Acti
 type SwapActivityCardProps = {
   activity: SwapActivity
   divider?: boolean
+  href?: string
 }
 
-export const SwapActivityCard = ({ activity, divider }: SwapActivityCardProps) => {
+export const SwapActivityCard = ({ activity, divider, href }: SwapActivityCardProps) => {
   const { status, fromToken, toToken, fromAmount, toAmount, error } = activity
   const chains = useSwapChains(fromToken.id, toToken.id)
   const { title, subtitle } = swapCopy(status, toToken.symbol)
 
   return (
-    <ActivityCard divider={divider}>
+    <ActivityCard
+      divider={divider}
+      href={href}
+      label={`${title}, ${amountText(fromAmount, fromToken)} to ${amountText(toAmount, toToken)}`}
+    >
       <ActivityRowBody
         icon={<ActivityIcon Icon={activityIcon('swap')} status={status} />}
         title={title}

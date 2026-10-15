@@ -2,7 +2,7 @@ import { usePrivanaContext } from '@oasisprotocol/privana-sdk'
 import { shortenAddress } from '@/lib/utils'
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip'
 import type { DisplayEntry } from './historyMapping'
-import { historyRowCopy, swapCopy } from './labels'
+import { amountText, historyRowCopy, swapCopy } from './labels'
 import { useSwapChains } from './useSwapChains'
 import { activityIcon } from './activityVisuals'
 import { ActivityAmount, ActivityCard, ActivityIcon, ActivityRowBody, SwapAmounts } from './ActivityCardParts'
@@ -13,9 +13,10 @@ type Props = {
   /** A withdrawal not yet paid out, or a deposit not yet credited. */
   pending?: boolean
   divider?: boolean
+  href?: string
 }
 
-export const ChainActivityCard = ({ row, pending, divider }: Props) => {
+export const ChainActivityCard = ({ row, pending, divider, href }: Props) => {
   const { getTokenById } = usePrivanaContext()
   const token = row.tokenId ? getTokenById(row.tokenId) : undefined
   const toToken = row.toTokenId ? getTokenById(row.toTokenId) : undefined
@@ -28,7 +29,11 @@ export const ChainActivityCard = ({ row, pending, divider }: Props) => {
   if (row.kind === 'swap' && token && row.amount && toToken && row.toAmount) {
     const { title, subtitle } = swapCopy('completed', toToken.symbol)
     return (
-      <ActivityCard divider={divider}>
+      <ActivityCard
+        divider={divider}
+        href={href}
+        label={`${title}, ${amountText(row.amount, token)} to ${amountText(row.toAmount, toToken)}`}
+      >
         <ActivityRowBody
           icon={icon}
           title={title}
@@ -50,7 +55,11 @@ export const ChainActivityCard = ({ row, pending, divider }: Props) => {
 
   const { title, subtitle } = historyRowCopy(row, pending ? 'in-progress' : 'completed')
   return (
-    <ActivityCard divider={divider}>
+    <ActivityCard
+      divider={divider}
+      href={href}
+      label={token && row.amount ? `${title}, ${amountText(row.amount, token)}` : title}
+    >
       <ActivityRowBody
         icon={icon}
         title={title}
@@ -58,7 +67,7 @@ export const ChainActivityCard = ({ row, pending, divider }: Props) => {
           !pending && row.kind === 'withdraw' && row.counterparty ? (
             <Tooltip>
               <TooltipTrigger asChild>
-                <span tabIndex={0} className="cursor-help">
+                <span tabIndex={0} className="relative z-10 cursor-help">
                   {subtitle}: {shortenAddress(row.counterparty)}
                 </span>
               </TooltipTrigger>

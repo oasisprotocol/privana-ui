@@ -2,6 +2,7 @@ import { useMemo } from 'react'
 import type { DepositQuoteResponse, EarnPool } from '@/api/earn'
 import type { TokenInfo } from '@/api/swap'
 import { Skeleton } from '@/components/ui/skeleton'
+import { BackHeader } from '@/components/BackHeader'
 import { QuoteCountdown } from '@/components/QuoteCountdown'
 import { formatFiat } from '@/lib/tokens'
 import { apyBpsToFraction } from '@/lib/apy'
@@ -13,7 +14,6 @@ import {
   ReviewConfirmButton,
   ReviewDetails,
   ReviewDisclaimer,
-  ReviewHeader,
   type ReviewDetailRow,
 } from './ReviewParts'
 
@@ -85,7 +85,7 @@ export const ReviewStep = ({
 
   return (
     <div className="flex flex-col gap-4 w-full max-w-110 mx-auto">
-      <ReviewHeader title="Review transaction" onBack={onBack} disabled={loading} />
+      <BackHeader title="Review transaction" onBack={onBack} disabled={loading} />
 
       <ReviewAmountCard
         eyebrow="You're moving"

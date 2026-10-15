@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest'
 import type { DepositProgress, TokenConfig, WithdrawalInfo } from '@oasisprotocol/privana-sdk'
-import { buildPendingTransfers } from './usePendingTransfers'
+import { buildPendingTransfers, pendingDepositKey, pendingDepositTxHash } from './usePendingTransfers'
 
 const USDC: TokenConfig = {
   id: '0xusdc',
@@ -59,5 +59,12 @@ describe('buildPendingTransfers', () => {
     expect(buildPendingTransfers(null, [withdrawal(1)], () => undefined)).toMatchObject([
       { kind: 'withdraw', token: undefined },
     ])
+  })
+})
+
+describe('pendingDepositKey', () => {
+  it('round-trips the source transaction and ignores other keys', () => {
+    expect(pendingDepositTxHash(pendingDepositKey('0xabc'))).toBe('0xabc')
+    expect(pendingDepositTxHash('withdraw:9')).toBeNull()
   })
 })

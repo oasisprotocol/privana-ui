@@ -1,8 +1,10 @@
 import { describe, expect, it, vi } from 'vitest'
 import { render, screen } from '@testing-library/react'
-import userEvent from '@testing-library/user-event'
 import { MemoryRouter } from 'react-router'
+import type { HistoryEntry } from '@oasisprotocol/privana-sdk'
+import type { MergedRow } from '@/hooks/use-merged-activity'
 import type { PendingTransfer } from '@/hooks/usePendingTransfers'
+import type { ClassifiedHistoryEntry } from '@/pages/Activity/historyMapping'
 import { PendingTransferBanners } from './PendingTransferBanners'
 
 const transfers: PendingTransfer[] = [
@@ -26,26 +28,55 @@ const transfers: PendingTransfer[] = [
     to: '0x2',
   },
 ]
-vi.mock('@/hooks/usePendingTransfers', () => ({ usePendingTransfers: () => transfers }))
+vi.mock('@/hooks/usePendingTransfers', async importOriginal => ({
+  ...(await importOriginal<typeof import('@/hooks/usePendingTransfers')>()),
+  usePendingTransfers: () => transfers,
+}))
+
+const pendingWithdrawalRow: MergedRow = {
+  source: 'chain',
+  timestamp: 1,
+  pending: true,
+  pendingKey: 'withdraw:7',
+  row: {
+    source: 'chain',
+    kind: 'withdraw',
+    index: 31,
+    timestamp: 1,
+    tokenId: '0xusdc',
+    amount: '2500000',
+    counterparty: '0x2',
+    pool: undefined,
+    entry: { kind: 'withdraw', timestamp: 1 } as HistoryEntry,
+  } satisfies ClassifiedHistoryEntry,
+}
+
+const renderBanners = (rows: MergedRow[]) =>
+  render(
+    <MemoryRouter>
+      <PendingTransferBanners rows={rows} />
+    </MemoryRouter>,
+  )
 
 describe('PendingTransferBanners', () => {
-  it('reopens the deposit modal from the deposit banner', async () => {
-    const onOpenDeposit = vi.fn()
-    render(
-      <MemoryRouter>
-        <PendingTransferBanners onOpenDeposit={onOpenDeposit} />
-      </MemoryRouter>,
+  it('links a deposit banner to its details', () => {
+    renderBanners([])
+    expect(screen.getByRole('link', { name: /Deposit detected/ })).toHaveAttribute(
+      'href',
+      '/activity/dep-0xabc',
     )
-    await userEvent.click(screen.getByRole('button', { name: /Deposit detected/ }))
-    expect(onOpenDeposit).toHaveBeenCalledTimes(1)
   })
 
-  it('links a withdrawal banner to Activity', () => {
-    render(
-      <MemoryRouter>
-        <PendingTransferBanners onOpenDeposit={vi.fn()} />
-      </MemoryRouter>,
+  it('links a withdrawal banner to its history entry', () => {
+    renderBanners([pendingWithdrawalRow])
+    expect(screen.getByRole('link', { name: /Withdrawal in progress/ })).toHaveAttribute(
+      'href',
+      '/activity/h-31',
     )
+  })
+
+  it('links a withdrawal banner to Activity until its history entry loads', () => {
+    renderBanners([])
     expect(screen.getByRole('link', { name: /Withdrawal in progress/ })).toHaveAttribute('href', '/activity')
   })
 })

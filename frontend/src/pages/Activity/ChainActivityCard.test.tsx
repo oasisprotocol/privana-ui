@@ -57,7 +57,7 @@ describe('ChainActivityCard withdraw row', () => {
   it('reads in progress, with the blinking dot, until it pays out', () => {
     renderCard(true)
     expect(screen.getByText('Withdrawing')).toBeInTheDocument()
-    expect(screen.getByText('Sending to external wallet…')).toBeInTheDocument()
+    expect(screen.getByText('Sending to external wallet.')).toBeInTheDocument()
     expect(screen.getByRole('img', { name: 'In progress' })).toBeInTheDocument()
     expect(screen.queryByRole('progressbar')).not.toBeInTheDocument()
   })

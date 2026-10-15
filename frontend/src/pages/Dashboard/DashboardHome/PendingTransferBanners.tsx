@@ -1,8 +1,10 @@
 import { ChevronRight, LoaderCircle } from 'lucide-react'
 import { Link } from 'react-router'
+import type { MergedRow } from '@/hooks/use-merged-activity'
 import { cn } from '@/lib/utils'
-import { activityPath } from '@/paths'
+import { activityDetailsPath, activityPath } from '@/paths'
 import { usePendingTransfers, type PendingTransfer } from '@/hooks/usePendingTransfers'
+import { pendingTransferDetailsId } from '@/pages/Activity/details'
 import { pendingTransferCopy } from './pendingTransferCopy'
 
 const BANNER_CLASS =
@@ -25,28 +27,31 @@ const BannerContent = ({ transfer }: { transfer: PendingTransfer }) => {
 }
 
 export const PendingTransferBanners = ({
-  onOpenDeposit,
+  rows,
   className,
 }: {
-  /** Reopens the deposit modal, which follows the deposit in flight. */
-  onOpenDeposit: () => void
+  /** Activity rows, to find a pending withdrawal's history entry. */
+  rows: readonly MergedRow[]
   className?: string
 }) => {
   const transfers = usePendingTransfers()
   if (transfers.length === 0) return null
   return (
     <div className={cn('flex flex-col gap-2', className)}>
-      {transfers.map(transfer =>
-        transfer.kind === 'deposit' ? (
-          <button key={transfer.key} type="button" onClick={onOpenDeposit} className={BANNER_CLASS}>
-            <BannerContent transfer={transfer} />
-          </button>
-        ) : (
-          <Link key={transfer.key} to={activityPath()} viewTransition className={BANNER_CLASS}>
+      {transfers.map(transfer => {
+        // Activity until the withdrawal's history entry has loaded.
+        const detailsId = pendingTransferDetailsId(transfer, rows)
+        return (
+          <Link
+            key={transfer.key}
+            to={detailsId ? activityDetailsPath(detailsId) : activityPath()}
+            viewTransition
+            className={BANNER_CLASS}
+          >
             <BannerContent transfer={transfer} />
           </Link>
-        ),
-      )}
+        )
+      })}
     </div>
   )
 }

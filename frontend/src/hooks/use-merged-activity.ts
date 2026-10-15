@@ -18,7 +18,13 @@ import { chainRowsWithPending } from '@/pages/Activity/pendingRows'
 import { usePendingTransfers } from './usePendingTransfers'
 
 export type MergedRow =
-  | { source: 'chain'; timestamp: number; row: ClassifiedHistoryEntry; pending?: true }
+  | {
+      source: 'chain'
+      timestamp: number
+      row: ClassifiedHistoryEntry
+      pending?: true
+      pendingKey?: string
+    }
   /** A deposit on its way, until history lists it. */
   | { source: 'pending'; timestamp: number; key: string; row: DisplayEntry }
   | { source: 'local'; timestamp: number; activity: Activity }

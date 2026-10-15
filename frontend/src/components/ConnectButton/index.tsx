@@ -6,7 +6,6 @@ import {
   ArrowUpFromLine,
   ChevronDown,
   ChevronRight,
-  Copy,
   History,
   LogOut,
   Moon,
@@ -17,6 +16,7 @@ import { DepositModal, WithdrawModal } from '@oasisprotocol/privana-sdk'
 import { Button } from '../ui/button'
 import { DropdownMenu, DropdownMenuContent, DropdownMenuTrigger } from '../ui/dropdown-menu'
 import { AccountAvatar } from '../AccountAvatar'
+import { CopyButton } from '../CopyButton'
 import { trimLongString } from '../../utils/trimLongString'
 import { sapphire, sapphireTestnet, base, mainnet, hyperEvm, baseSepolia, sepolia } from 'viem/chains'
 import { wagmiConfig, type AppChainId } from '@/wagmi-config'
@@ -133,14 +133,11 @@ export const ConnectButton: FC = () => {
                   {chainBadge.label}
                 </span>
               )}
-              <button
-                type="button"
-                aria-label="Copy wallet address"
-                onClick={() => void navigator.clipboard.writeText(address)}
-                className="ml-auto inline-flex h-7 w-7 shrink-0 items-center justify-center rounded-md text-muted-foreground hover:bg-background hover:text-foreground"
-              >
-                <Copy className="h-3.5 w-3.5" />
-              </button>
+              <CopyButton
+                value={address}
+                label="Copy wallet address"
+                className="ml-auto hover:bg-background"
+              />
             </div>
             {isEmbeddedWallet && <EmbeddedWalletEmail />}
             {isEmbeddedWallet && <ExportEmbeddedWallet />}

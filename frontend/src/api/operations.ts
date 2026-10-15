@@ -64,7 +64,7 @@ export function getOperations(jwt: string, limit = OPERATIONS_PAGE_SIZE, before?
   return request<OperationsResponse>(`/v1/operations?${search}`, undefined, jwt)
 }
 
-const serverIdOf = (a: Activity): string | undefined =>
+export const operationIdOf = (a: Activity): string | undefined =>
   a.type === 'swap' ? a.swapId : a.direction === 'deposit' ? a.depositId : a.withdrawId
 
 // The server row for a local entry: by operation id, or — when the submit
@@ -73,7 +73,7 @@ const serverIdOf = (a: Activity): string | undefined =>
 // earn request leaves its nonce unspent for the next one, so the nonce alone
 // is not unique and the newest row with the full identity wins.
 export function serverOperationFor(a: Activity, operations: readonly Operation[]): Operation | undefined {
-  const sid = serverIdOf(a)
+  const sid = operationIdOf(a)
   if (sid != null) {
     const byId = operations.find(o => o.operation_id === sid)
     if (byId) return byId

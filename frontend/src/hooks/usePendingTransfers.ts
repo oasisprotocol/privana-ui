@@ -31,6 +31,14 @@ export type PendingTransfer =
       to: string
     }
 
+const PENDING_DEPOSIT_PREFIX = 'deposit:'
+
+export const pendingDepositKey = (txHash: string): string => `${PENDING_DEPOSIT_PREFIX}${txHash}`
+
+/** The source transaction of a pending deposit's key; null for any other key. */
+export const pendingDepositTxHash = (key: string): string | null =>
+  key.startsWith(PENDING_DEPOSIT_PREFIX) ? key.slice(PENDING_DEPOSIT_PREFIX.length) : null
+
 export function buildPendingTransfers(
   progress: DepositProgress | null,
   withdrawals: readonly WithdrawalInfo[],
@@ -40,7 +48,7 @@ export function buildPendingTransfers(
   if (progress && (progress.stage === 'confirming' || progress.stage === 'crediting')) {
     pending.push({
       kind: 'deposit',
-      key: `deposit:${progress.txHash}`,
+      key: pendingDepositKey(progress.txHash),
       amount: progress.amount,
       tokenId: progress.tokenId,
       token: progress.tokenId ? getTokenById(progress.tokenId) : undefined,
