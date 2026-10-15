@@ -123,6 +123,15 @@ describe('ActivityDetails: a deposit on its way', () => {
     expect(screen.getByText(/taking longer than usual/)).toBeInTheDocument()
   })
 
+  it('keeps the deposit on screen between its credit and the history refetch', () => {
+    progress = { ...sent, stage: 'credited', depositId: '0xd1' }
+    merged = { ...merged, rows: [] }
+    renderAt('/activity/dep-0xabc')
+    expect(screen.getByRole('heading', { name: 'Depositing to vault' })).toBeInTheDocument()
+    expect(screen.getByText('Step 2/2 · Adding your deposit to Available')).toBeInTheDocument()
+    expect(screen.queryByText("We couldn't find that transaction.")).not.toBeInTheDocument()
+  })
+
   it('moves to the history entry once credited', () => {
     progress = { ...sent, stage: 'credited', depositId: '0xd1' }
     const credited: MergedRow = {

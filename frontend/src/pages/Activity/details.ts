@@ -1,10 +1,10 @@
 import type { DepositProgress } from '@oasisprotocol/privana-sdk'
 import type { MergedRow } from '@/hooks/use-merged-activity'
+import { pendingDepositKey, pendingDepositTxHash } from '@/hooks/usePendingTransfers'
 import { operationIdOf } from '@/api/operations'
 import { sameId } from '@/lib/utils'
+import { statusOf } from './filters'
 import { historyRowCopy, moveCopy, swapCopy } from './labels'
-
-const PENDING_DEPOSIT_KEY = 'deposit:'
 
 export const detailsIdOf = (row: MergedRow): string | null => {
   if (row.source === 'chain') return `h-${row.row.index}`
@@ -13,7 +13,8 @@ export const detailsIdOf = (row: MergedRow): string | null => {
     return operationId ? `op-${operationId}` : null
   }
   // A deposit on its way, by its source transaction, until it is credited.
-  return row.key.startsWith(PENDING_DEPOSIT_KEY) ? `dep-${row.key.slice(PENDING_DEPOSIT_KEY.length)}` : null
+  const txHash = pendingDepositTxHash(row.key)
+  return txHash ? `dep-${txHash}` : null
 }
 
 export type DetailsRef =
@@ -39,9 +40,7 @@ export const findDetailsRow = (
   if (ref.source === 'history') {
     return rows.find(row => row.source === 'chain' && row.row.index === ref.index)
   }
-  const pending = rows.find(
-    row => row.source === 'pending' && row.key === `${PENDING_DEPOSIT_KEY}${ref.txHash}`,
-  )
+  const pending = rows.find(row => row.source === 'pending' && row.key === pendingDepositKey(ref.txHash))
   if (pending) return pending
   const depositId = sameId(progress?.txHash, ref.txHash) ? progress?.depositId : undefined
   return rows.find(row => row.source === 'chain' && sameId(row.row.entry.deposit_id, depositId))
@@ -53,8 +52,7 @@ export const detailsTitle = (row: MergedRow): string => {
     if (a.type === 'swap') return swapCopy(a.status, a.toToken.symbol).title
     return moveCopy(a.direction === 'deposit' ? 'earnDeposit' : 'earnWithdraw', a.status).title
   }
-  const pending = row.source === 'pending' || row.pending
-  return historyRowCopy(row.row, pending ? 'in-progress' : 'completed').title
+  return historyRowCopy(row.row, statusOf(row)).title
 }
 
 const IN_PROGRESS_NOTE = 'This can take a few minutes. You can safely leave this screen.'

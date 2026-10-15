@@ -10,6 +10,7 @@ import { DESKTOP_CARD } from '@/lib/surface'
 import { cn, sameId } from '@/lib/utils'
 import { activityDetailsPath, activityPath } from '@/paths'
 import { detailsIdOf, detailsTitle, findDetailsRow, parseDetailsId } from './details'
+import { statusOf } from './filters'
 import { HistoryDetails } from './HistoryDetails'
 import { moveCopy } from './labels'
 import { OperationDetails } from './OperationDetails'
@@ -18,7 +19,7 @@ import { PendingDepositDetails } from './PendingDepositDetails'
 const Details = ({ row, progress }: { row: MergedRow; progress: DepositProgress | null }) => {
   if (row.source === 'local') return <OperationDetails activity={row.activity} />
   if (row.source === 'pending' && progress) return <PendingDepositDetails progress={progress} />
-  return <HistoryDetails row={row.row} pending={row.source === 'pending' || row.pending} />
+  return <HistoryDetails row={row.row} pending={statusOf(row) === 'in-progress'} />
 }
 
 export const ActivityDetails = () => {
@@ -35,18 +36,14 @@ export const ActivityDetails = () => {
   const creditedId = ref?.source === 'deposit' && row?.source === 'chain' ? detailsIdOf(row) : null
   if (creditedId) return <Navigate replace to={activityDetailsPath(creditedId)} />
 
-  const stalled =
-    ref?.source === 'deposit' &&
-    !row &&
-    progress &&
-    sameId(progress.txHash, ref.txHash) &&
-    (progress.stage === 'failed' || progress.stage === 'timeout')
-      ? progress
-      : null
+  // The deposit flow still knows this deposit after its pending row is gone: it failed, timed out,
+  // or was credited before the history refetch lists it.
+  const flow =
+    ref?.source === 'deposit' && !row && progress && sameId(progress.txHash, ref.txHash) ? progress : null
 
   let content: ReactNode
   if (row) content = <Details row={row} progress={progress} />
-  else if (stalled) content = <PendingDepositDetails progress={stalled} />
+  else if (flow) content = <PendingDepositDetails progress={flow} />
   else if (ref && isError) content = <ActivityUnavailable onRetry={refetch} />
   else if (ref && isLoading) content = <Skeleton className="mt-6 h-24 w-full" />
   else {
@@ -63,7 +60,7 @@ export const ActivityDetails = () => {
   return (
     <div className={cn('mx-auto flex w-full max-w-lg flex-col', DESKTOP_CARD)}>
       <BackHeader
-        title={row ? detailsTitle(row) : stalled ? moveCopy('deposit', 'in-progress').title : 'Transaction'}
+        title={row ? detailsTitle(row) : flow ? moveCopy('deposit', 'in-progress').title : 'Transaction'}
         onBack={goBack}
       />
       {content}

@@ -1,12 +1,6 @@
-import {
-  isInFlight,
-  operationIdOf,
-  useOperations,
-  type Operation,
-  type OperationStatus,
-} from '@/api/operations'
+import { isInFlight, operationIdOf, useOperations, type OperationStatus } from '@/api/operations'
 import { getProtocolLabel } from '@/config/protocols'
-import type { Activity, EarnActivity, SwapActivity } from '@/contexts/ActivityProvider/context'
+import type { Activity, ActivityStatus } from '@/contexts/ActivityProvider/context'
 import { SurfaceCard } from '@/components/SurfaceCard'
 import { formatDateTime } from '@/lib/dates'
 import { cn } from '@/lib/utils'
@@ -25,6 +19,7 @@ import {
 import { EarnStageList } from './EarnStageList'
 import { earnStageSteps } from './earnStages'
 import { moveCopy, swapCopy } from './labels'
+import { toOperationView, type EarnView, type OperationView, type SwapView } from './operationView'
 import { useSwapChains } from './useSwapChains'
 
 const OPERATION_STATUS_LABEL: Record<OperationStatus, string> = {
@@ -39,47 +34,39 @@ const OPERATION_STATUS_LABEL: Record<OperationStatus, string> = {
   refunded: 'Refunded',
 }
 
-const statusLine = (activity: Activity, inProgressSubtitle?: string) =>
-  activity.status === 'in-progress' ? progressLine(inProgressSubtitle) : undefined
+const statusLine = (status: ActivityStatus, inProgressSubtitle?: string) =>
+  status === 'in-progress' ? progressLine(inProgressSubtitle) : undefined
 
-const OperationRows = ({ activity, operation }: { activity: Activity; operation?: Operation }) => {
-  const operationId = operationIdOf(activity)
-  const txHash = operation?.tx_hash ?? activity.txHash
-  const created = operation?.created_at ?? Math.floor(activity.createdAt / 1000)
-  return (
-    <>
-      {operation && operation.status !== 'completed' && operation.status !== 'failed' && (
-        <DetailsRow label="Status">
-          <span className={cn(isInFlight(operation.status) && 'motion-safe:animate-pulse')}>
-            {OPERATION_STATUS_LABEL[operation.status] ?? operation.status}
-          </span>
-        </DetailsRow>
-      )}
-      <DetailsRow label="Created">{formatDateTime(created)}</DetailsRow>
-      {operation && operation.updated_at !== operation.created_at && (
-        <DetailsRow label="Last updated">{formatDateTime(operation.updated_at)}</DetailsRow>
-      )}
-      {operationId && (
-        <DetailsRow label="Operation ID">
-          <IdValue value={operationId} copyLabel="Copy operation ID" />
-        </DetailsRow>
-      )}
-      {txHash && (
-        <DetailsRow label="Transaction hash">
-          <IdValue value={txHash} copyLabel="Copy transaction hash" />
-        </DetailsRow>
-      )}
-    </>
-  )
-}
+const OperationRows = ({ view }: { view: OperationView }) => (
+  <>
+    {view.serviceStatus && (
+      <DetailsRow label="Status">
+        <span className={cn(isInFlight(view.serviceStatus) && 'motion-safe:animate-pulse')}>
+          {OPERATION_STATUS_LABEL[view.serviceStatus] ?? view.serviceStatus}
+        </span>
+      </DetailsRow>
+    )}
+    <DetailsRow label="Created">{formatDateTime(view.createdAt)}</DetailsRow>
+    {view.updatedAt !== undefined && (
+      <DetailsRow label="Last updated">{formatDateTime(view.updatedAt)}</DetailsRow>
+    )}
+    {view.operationId && (
+      <DetailsRow label="Operation ID">
+        <IdValue value={view.operationId} copyLabel="Copy operation ID" />
+      </DetailsRow>
+    )}
+    {view.txHash && (
+      <DetailsRow label="Transaction hash">
+        <IdValue value={view.txHash} copyLabel="Copy transaction hash" />
+      </DetailsRow>
+    )}
+  </>
+)
 
-const SwapDetails = ({ activity, operation }: { activity: SwapActivity; operation?: Operation }) => {
-  const { status, fromToken, toToken, fromAmount } = activity
+const SwapDetails = ({ swap }: { swap: SwapView }) => {
+  const { status, fromToken, toToken, fromAmount, estimate, received, error } = swap
   const chains = useSwapChains(fromToken.id, toToken.id)
-  const estimate = operation?.to_amount_estimate ?? activity.toAmount
-  const received = operation?.to_amount_actual ?? (status === 'completed' ? activity.toAmount : undefined)
   const rate = formatRate({ amount: fromAmount, ...fromToken }, { amount: received ?? estimate, ...toToken })
-  const error = operation?.error ?? activity.error
 
   return (
     <>
@@ -93,11 +80,9 @@ const SwapDetails = ({ activity, operation }: { activity: SwapActivity; operatio
             <HeroAmount amount={received ?? estimate} token={toToken} estimate={!received} />
           )
         }
-        statusLine={statusLine(activity, swapCopy(status, toToken.symbol).subtitle)}
+        statusLine={statusLine(status, swapCopy(status, toToken.symbol).subtitle)}
       />
-      {status === 'failed' && error && (
-        <ErrorBox message={error} reason={operation?.reason ?? activity.reason} />
-      )}
+      {status === 'failed' && error && <ErrorBox message={error} reason={swap.reason} />}
       <DetailsCard>
         <DetailsRow label="You paid">
           <AmountValue amount={fromAmount} token={fromToken} chain={chains.from} />
@@ -113,18 +98,16 @@ const SwapDetails = ({ activity, operation }: { activity: SwapActivity; operatio
         )}
         {status !== 'failed' && rate && <DetailsRow label="Rate">{received ? rate : `≈ ${rate}`}</DetailsRow>}
         <DetailsRow label="Type">Swap</DetailsRow>
-        <OperationRows activity={activity} operation={operation} />
+        <OperationRows view={swap} />
       </DetailsCard>
     </>
   )
 }
 
-const EarnDetails = ({ activity, operation }: { activity: EarnActivity; operation?: Operation }) => {
-  const { status, direction, token, amount, protocol } = activity
+const EarnDetails = ({ earn }: { earn: EarnView }) => {
+  const { status, direction, token, amount, protocol, stages, error } = earn
   const kind = direction === 'deposit' ? 'earnDeposit' : 'earnWithdraw'
   const { from: chain } = useSwapChains(token.id, undefined)
-  const stages = operation?.stages ?? activity.stages ?? []
-  const error = operation?.error ?? activity.error
 
   return (
     <>
@@ -132,7 +115,7 @@ const EarnDetails = ({ activity, operation }: { activity: EarnActivity; operatio
         Icon={activityIcon(kind)}
         status={status}
         amount={<HeroAmount amount={amount} token={token} />}
-        statusLine={statusLine(activity, moveCopy(kind, status).subtitle)}
+        statusLine={statusLine(status, moveCopy(kind, status).subtitle)}
       />
       {status === 'failed' && error && <ErrorBox message={error} />}
       <DetailsCard>
@@ -141,7 +124,7 @@ const EarnDetails = ({ activity, operation }: { activity: EarnActivity; operatio
         </DetailsRow>
         {protocol && <DetailsRow label="Venue">{getProtocolLabel(protocol)}</DetailsRow>}
         <DetailsRow label="Type">{moveCopy(kind, 'completed').title}</DetailsRow>
-        <OperationRows activity={activity} operation={operation} />
+        <OperationRows view={earn} />
       </DetailsCard>
       {status === 'in-progress' && stages.length > 0 && (
         <SurfaceCard className="mt-4 p-4">
@@ -156,11 +139,10 @@ const EarnDetails = ({ activity, operation }: { activity: EarnActivity; operatio
 export const OperationDetails = ({ activity }: { activity: Activity }) => {
   const operationId = operationIdOf(activity)
   const { data } = useOperations()
-  const operation = data?.operations.find(o => o.operation_id === operationId)
-
-  return activity.type === 'swap' ? (
-    <SwapDetails activity={activity} operation={operation} />
-  ) : (
-    <EarnDetails activity={activity} operation={operation} />
+  const view = toOperationView(
+    activity,
+    data?.operations.find(o => o.operation_id === operationId),
   )
+
+  return view.type === 'swap' ? <SwapDetails swap={view} /> : <EarnDetails earn={view} />
 }

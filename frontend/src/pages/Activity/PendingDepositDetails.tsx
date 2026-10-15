@@ -5,12 +5,17 @@ import { activityIcon } from './activityVisuals'
 import { AmountValue, DetailsCard, DetailsHero, DetailsRow, HeroAmount, IdValue } from './DetailsParts'
 import { moveCopy } from './labels'
 
-const STAGE_LINE: Partial<Record<DepositProgress['stage'], string>> = {
+const CREDITING_LINE = 'Step 2/2 · Adding your deposit to Available'
+
+const STAGE_LINE: Record<DepositProgress['stage'], string> = {
   confirming: 'Step 1/2 · Confirming your deposit on-chain',
-  crediting: 'Step 2/2 · Adding your deposit to Available',
+  crediting: CREDITING_LINE,
+  // Credited, until the history refetch lists it and the page moves to that entry.
+  credited: CREDITING_LINE,
   timeout: 'This is taking longer than usual. It will be added to Available once confirmed.',
+  // The SDK reports a reverted transfer and a failed verification alike.
   failed:
-    "We couldn't confirm this deposit yet. Your funds have left your wallet and may still be added to Available.",
+    "We couldn't confirm this deposit. If the transaction below failed, your funds stayed in your wallet. Otherwise they will be added to Available.",
 }
 
 /** A deposit on its way: what the SDK's deposit flow knows before history lists it. */

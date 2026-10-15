@@ -48,9 +48,12 @@ describe('PendingDepositDetails', () => {
     expect(screen.getByRole('button', { name: 'Copy deposit ID' })).toBeInTheDocument()
   })
 
-  it('says a deposit it could not confirm may still arrive', () => {
+  it('says where funds are for a deposit it could not confirm, reverted or not', () => {
     render(<PendingDepositDetails progress={progress({ stage: 'failed' })} />)
-    expect(screen.getByText(/may still be added to Available/)).toBeInTheDocument()
+    expect(
+      screen.getByText(/If the transaction below failed, your funds stayed in your wallet/),
+    ).toBeInTheDocument()
+    expect(screen.getByText(/Otherwise they will be added to Available/)).toBeInTheDocument()
     expect(screen.getByText('In progress')).toBeInTheDocument()
   })
 })
