@@ -3541,27 +3541,27 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@turnkey/api-key-stamper@npm:0.6.17":
-  version: 0.6.17
-  resolution: "@turnkey/api-key-stamper@npm:0.6.17"
+"@turnkey/api-key-stamper@npm:0.6.18":
+  version: 0.6.18
+  resolution: "@turnkey/api-key-stamper@npm:0.6.18"
   dependencies:
     "@noble/curves": "npm:^1.3.0"
-    "@turnkey/crypto": "npm:2.13.2"
+    "@turnkey/crypto": "npm:2.13.3"
     "@turnkey/encoding": "npm:0.6.0"
     sha256-uint8array: "npm:^0.10.7"
-  checksum: 10c0/5a6ea06ed6cefcb5d0e92e9dd77acba702fc80718bf9ee910bba3e9eab5202657495ea6d8cb0cef7963272b200d8464c580b530dbef043c53ee1fc0edcd45cf5
+  checksum: 10c0/6ba53fcb3a1e219c68823a1a3a097342979e4549c65c8f3ace488484b594442c6630e6d1b044539ca8c7f6ee8df7f560b7b28384da1db8f126529451a6af8f73
   languageName: node
   linkType: hard
 
-"@turnkey/core@npm:2.12.0":
-  version: 2.12.0
-  resolution: "@turnkey/core@npm:2.12.0"
+"@turnkey/core@npm:2.13.0":
+  version: 2.13.0
+  resolution: "@turnkey/core@npm:2.13.0"
   dependencies:
-    "@turnkey/api-key-stamper": "npm:0.6.17"
-    "@turnkey/crypto": "npm:2.13.2"
+    "@turnkey/api-key-stamper": "npm:0.6.18"
+    "@turnkey/crypto": "npm:2.13.3"
     "@turnkey/encoding": "npm:0.6.0"
-    "@turnkey/http": "npm:6.6.0"
-    "@turnkey/sdk-types": "npm:1.10.0"
+    "@turnkey/http": "npm:6.7.0"
+    "@turnkey/sdk-types": "npm:1.11.0"
     "@turnkey/webauthn-stamper": "npm:0.6.0"
     "@wallet-standard/app": "npm:^1.1.0"
     "@wallet-standard/base": "npm:^1.1.0"
@@ -3574,7 +3574,7 @@ __metadata:
     viem: "npm:^2.33.1"
   peerDependencies:
     "@react-native-async-storage/async-storage": ^2.2.0
-    "@turnkey/react-native-passkey-stamper": 1.2.26
+    "@turnkey/react-native-passkey-stamper": 1.2.27
     react-native-keychain: ^8.1.0 || ^9.2.2 || ^10.0.0
   peerDependenciesMeta:
     "@react-native-async-storage/async-storage":
@@ -3583,23 +3583,23 @@ __metadata:
       optional: true
     react-native-keychain:
       optional: true
-  checksum: 10c0/44037565dcd99325fa754e5b6ffea89f5de73dd743f1b8ce9342ea518a3de5c6812382f9a6417220d15de0de7ce757a35604d93bf69036d17d53af09b054fe6e
+  checksum: 10c0/b5501a54033ebb6ea528ef83b6df514397f415061c2162c534fc7e10e920bd06a5f994c6bf10c6a7ae022964660c18e44d8122737e5e3d900f889fdce64cb9a3
   languageName: node
   linkType: hard
 
-"@turnkey/crypto@npm:2.13.2":
-  version: 2.13.2
-  resolution: "@turnkey/crypto@npm:2.13.2"
+"@turnkey/crypto@npm:2.13.3":
+  version: 2.13.3
+  resolution: "@turnkey/crypto@npm:2.13.3"
   dependencies:
     "@noble/ciphers": "npm:1.3.0"
     "@noble/curves": "npm:1.9.0"
     "@noble/hashes": "npm:1.8.0"
     "@peculiar/x509": "npm:1.12.3"
     "@turnkey/encoding": "npm:0.6.0"
-    "@turnkey/sdk-types": "npm:1.10.0"
+    "@turnkey/sdk-types": "npm:1.11.0"
     borsh: "npm:2.0.0"
     cbor-js: "npm:0.1.0"
-  checksum: 10c0/307900382a32a073def60fe31bc3a0198a4c71b0973be9c6480ea9f25c8f042c068398ed5a78062f4291f6a08932694908b65b54288dcf85a7c18a31e8c496e6
+  checksum: 10c0/c9434ad109ffb42ec736ee549dd2626b6bc0ed5520031fd0545981398b7158c29ce0c1c0cdfe059808b6333adf1ec8436f91d82c9687f1ee810e02b0ccf492c1
   languageName: node
   linkType: hard
 
@@ -3613,15 +3613,15 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@turnkey/http@npm:6.6.0":
-  version: 6.6.0
-  resolution: "@turnkey/http@npm:6.6.0"
+"@turnkey/http@npm:6.7.0":
+  version: 6.7.0
+  resolution: "@turnkey/http@npm:6.7.0"
   dependencies:
-    "@turnkey/api-key-stamper": "npm:0.6.17"
+    "@turnkey/api-key-stamper": "npm:0.6.18"
     "@turnkey/encoding": "npm:0.6.0"
     "@turnkey/webauthn-stamper": "npm:0.6.0"
     cross-fetch: "npm:^3.1.5"
-  checksum: 10c0/110b2c48c85e01717815bc183dcdb9fef34459e86cff79482b046f07468b0b2830b41aa49ad03020869bb8ceebf96c259cc074c44b8adfd7ca506611f1a4d4fc
+  checksum: 10c0/c1deee72a14ac7c5cea65ddcabdaeef2c5db824e7736b56e0f0c5fc261e8df3a477137fcc822b1fc2d60f26b6cd7519b993f50185c744ddfadf1c5ba9d7961b4
   languageName: node
   linkType: hard
 
@@ -3632,19 +3632,19 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@turnkey/indexed-db-stamper@npm:1.3.11":
-  version: 1.3.11
-  resolution: "@turnkey/indexed-db-stamper@npm:1.3.11"
+"@turnkey/indexed-db-stamper@npm:1.3.12":
+  version: 1.3.12
+  resolution: "@turnkey/indexed-db-stamper@npm:1.3.12"
   dependencies:
     "@turnkey/encoding": "npm:0.6.0"
-    "@turnkey/sdk-types": "npm:1.10.0"
-  checksum: 10c0/dcf123bbd04e724f67901669c0c014163925e3a4cffe587cac7f6a6f56ca742dcb6a1bf0ec94287816fae6f1530011e5f90640a44e5857f52aa4912344f7c9b1
+    "@turnkey/sdk-types": "npm:1.11.0"
+  checksum: 10c0/8cfeb829a780cf34471ffe5d2ffaa49e5abba0bbe6396ee804c5f2597e55c24d34fde707a45a67674e870e7820b745f3602fb4f0a16d716c0967184212c2f18a
   languageName: node
   linkType: hard
 
-"@turnkey/react-wallet-kit@npm:^2.5.1":
-  version: 2.5.1
-  resolution: "@turnkey/react-wallet-kit@npm:2.5.1"
+"@turnkey/react-wallet-kit@npm:^2.6.0":
+  version: 2.6.0
+  resolution: "@turnkey/react-wallet-kit@npm:2.6.0"
   dependencies:
     "@fortawesome/fontawesome-svg-core": "npm:^6.7.2"
     "@fortawesome/free-brands-svg-icons": "npm:^6.7.2"
@@ -3654,9 +3654,9 @@ __metadata:
     "@lottiefiles/react-lottie-player": "npm:^3.6.0"
     "@marsidev/react-turnstile": "npm:^1.4.2"
     "@noble/hashes": "npm:^1.8.0"
-    "@turnkey/core": "npm:2.12.0"
+    "@turnkey/core": "npm:2.13.0"
     "@turnkey/iframe-stamper": "npm:^2.11.1"
-    "@turnkey/sdk-types": "npm:1.10.0"
+    "@turnkey/sdk-types": "npm:1.11.0"
     buffer: "npm:^6.0.3"
     clsx: "npm:^2.1.1"
     libphonenumber-js: "npm:^1.11.14"
@@ -3669,81 +3669,81 @@ __metadata:
   peerDependenciesMeta:
     "@types/react":
       optional: true
-  checksum: 10c0/c11f763f6e88275179ceec0d5648c41cbe05d4dc865eb9b318be34b51151f8e9c4bea26366684000f0f1eae2d8526ae9ba8ca5152f067db3e4a7626a89782898
+  checksum: 10c0/95349a5014caaa8c1447a6064d143709ccf5b64303f8e3be4b16e4a16e9da65379afe35de78fb44f63d35a184cb5144d3eb605ef91aa19fd5e3d45592bcd188d
   languageName: node
   linkType: hard
 
-"@turnkey/sdk-browser@npm:8.6.0":
-  version: 8.6.0
-  resolution: "@turnkey/sdk-browser@npm:8.6.0"
+"@turnkey/sdk-browser@npm:8.7.0":
+  version: 8.7.0
+  resolution: "@turnkey/sdk-browser@npm:8.7.0"
   dependencies:
-    "@turnkey/api-key-stamper": "npm:0.6.17"
-    "@turnkey/crypto": "npm:2.13.2"
+    "@turnkey/api-key-stamper": "npm:0.6.18"
+    "@turnkey/crypto": "npm:2.13.3"
     "@turnkey/encoding": "npm:0.6.0"
-    "@turnkey/http": "npm:6.6.0"
+    "@turnkey/http": "npm:6.7.0"
     "@turnkey/iframe-stamper": "npm:2.11.1"
-    "@turnkey/indexed-db-stamper": "npm:1.3.11"
-    "@turnkey/sdk-types": "npm:1.10.0"
-    "@turnkey/wallet-stamper": "npm:1.1.29"
+    "@turnkey/indexed-db-stamper": "npm:1.3.12"
+    "@turnkey/sdk-types": "npm:1.11.0"
+    "@turnkey/wallet-stamper": "npm:1.1.30"
     "@turnkey/webauthn-stamper": "npm:0.6.0"
     buffer: "npm:^6.0.3"
     cross-fetch: "npm:^3.1.5"
     hpke-js: "npm:^1.6.5"
-  checksum: 10c0/278da6bc225a2cc661c761076fa7c16eab15e8232e6e0ca922a25aebf4b6367ed3a01e4195d8ddeb741b9fdef887e4a9146a69c4635960c37e3735192698b271
+  checksum: 10c0/372588eef0130613075a3eba8aead9b24137fa9735f4fc110088020621e6fc8f0b9517717f0bc12712fd029e6873b9c173fac38cd407f827ff7e11d59d2540c6
   languageName: node
   linkType: hard
 
-"@turnkey/sdk-server@npm:8.6.0":
-  version: 8.6.0
-  resolution: "@turnkey/sdk-server@npm:8.6.0"
+"@turnkey/sdk-server@npm:8.7.0":
+  version: 8.7.0
+  resolution: "@turnkey/sdk-server@npm:8.7.0"
   dependencies:
-    "@turnkey/api-key-stamper": "npm:0.6.17"
-    "@turnkey/crypto": "npm:2.13.2"
-    "@turnkey/http": "npm:6.6.0"
-    "@turnkey/sdk-types": "npm:1.10.0"
-    "@turnkey/wallet-stamper": "npm:1.1.29"
+    "@turnkey/api-key-stamper": "npm:0.6.18"
+    "@turnkey/crypto": "npm:2.13.3"
+    "@turnkey/http": "npm:6.7.0"
+    "@turnkey/sdk-types": "npm:1.11.0"
+    "@turnkey/wallet-stamper": "npm:1.1.30"
     buffer: "npm:^6.0.3"
     cross-fetch: "npm:^3.1.5"
-  checksum: 10c0/2c15763668489b2ac23080536327ed6f4847d421d7b0d9282f64327f8cf0b07b24acba8140ffd77e8d104bb46fcc8217dd5114d69bb0ea37a0ad5c7b3917c109
+  checksum: 10c0/3283f6e376ada262b9456c0cb8c79f43f1264a110fcaa7b1e64753203e2848c6a99895223b1071574ef29b309b0df6f6ab22aec97f98a12ec9de0d59fb535ed1
   languageName: node
   linkType: hard
 
-"@turnkey/sdk-types@npm:1.10.0":
-  version: 1.10.0
-  resolution: "@turnkey/sdk-types@npm:1.10.0"
-  checksum: 10c0/e38cedf7741394dc9c200b416b93aa3ebf3f3d3523af6fa969c15bb880ada4b28004207cf0a58d8fa373c4614481db4d0f27bea78fa38990ba007d6c3184cf6d
+"@turnkey/sdk-types@npm:1.11.0":
+  version: 1.11.0
+  resolution: "@turnkey/sdk-types@npm:1.11.0"
+  checksum: 10c0/75556cef0058de0ea98ad733ad35462260d65233e5bb9f6761f40bcf9a7b43d00da5c0b3d64651ccec99570d7e5692ade6aec76c49a7a21f6ea362a78bf49539
   languageName: node
   linkType: hard
 
-"@turnkey/viem@npm:^0.14.43":
-  version: 0.14.43
-  resolution: "@turnkey/viem@npm:0.14.43"
+"@turnkey/viem@npm:^0.14.46":
+  version: 0.14.46
+  resolution: "@turnkey/viem@npm:0.14.46"
   dependencies:
     "@noble/curves": "npm:1.8.0"
     "@openzeppelin/contracts": "npm:^5.0.2"
-    "@turnkey/api-key-stamper": "npm:0.6.17"
-    "@turnkey/core": "npm:2.12.0"
-    "@turnkey/http": "npm:6.6.0"
-    "@turnkey/sdk-browser": "npm:8.6.0"
-    "@turnkey/sdk-server": "npm:8.6.0"
+    "@turnkey/api-key-stamper": "npm:0.6.18"
+    "@turnkey/core": "npm:2.13.0"
+    "@turnkey/http": "npm:6.7.0"
+    "@turnkey/sdk-browser": "npm:8.7.0"
+    "@turnkey/sdk-server": "npm:8.7.0"
     cross-fetch: "npm:^4.0.0"
   peerDependencies:
     viem: ^1.16.6 || ^2.24.2
-  checksum: 10c0/5f18e86adadb76821fce081869d18c489be325346a75e444c3d561228397bcd828fd7bfa70d9e605c0f034dcd250cbcfd04ebf13c9eb51ab5edc7df157977679
+  checksum: 10c0/ddc955b3fa032f1aca52bec5b4b1532e445571f2800b6fce4214c0ec0bc8986fa3a4f775d8e36582a21196a246ba08795552566ae0f74b0cd674b836b44e6397
   languageName: node
   linkType: hard
 
-"@turnkey/wallet-stamper@npm:1.1.29":
-  version: 1.1.29
-  resolution: "@turnkey/wallet-stamper@npm:1.1.29"
+"@turnkey/wallet-stamper@npm:1.1.30":
+  version: 1.1.30
+  resolution: "@turnkey/wallet-stamper@npm:1.1.30"
   dependencies:
-    "@turnkey/crypto": "npm:2.13.2"
+    "@turnkey/crypto": "npm:2.13.3"
     "@turnkey/encoding": "npm:0.6.0"
     viem: "npm:^2.21.35"
   dependenciesMeta:
     viem:
       optional: true
-  checksum: 10c0/ee5a54b809b898f2a10af6893da7bdffb2775912a4fd7f72405a37deb10b5711f6a42399acbb38e63808ae78f98afc078fe11dc2a2f44cf82af54c1e8361cb56
+  checksum: 10c0/0481ebb21df9a8d52d08219e29c7f37c9a9c1d877148673b5f6d53b2faeb04d77ab0149dfa373f344a84d3d661e0ca6033d34a6fa8f86c4231d4f9e7b8665325
   languageName: node
   linkType: hard
 
@@ -6877,9 +6877,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"ox@npm:0.14.45":
-  version: 0.14.45
-  resolution: "ox@npm:0.14.45"
+"ox@npm:0.14.56":
+  version: 0.14.56
+  resolution: "ox@npm:0.14.56"
   dependencies:
     "@adraffy/ens-normalize": "npm:^1.11.0"
     "@noble/ciphers": "npm:^1.3.0"
@@ -6894,7 +6894,7 @@ __metadata:
   peerDependenciesMeta:
     typescript:
       optional: true
-  checksum: 10c0/d1d23e3b85a14d94ec0d608626c08e3dc1852fd90d22486827f1fbe300005958e004ac0db14a8168b2147001c493ff2eb344368513ee8fc82489e45b9115577a
+  checksum: 10c0/052738eea522f85e34e09833705be11cfcd5f1e2bab5e6df5da2851b91d3325f4daad8e5caa8e3f074ba77ed7aac5cdaffc90ca19c44a2989c1fc289c571acb4
   languageName: node
   linkType: hard
 
@@ -7113,8 +7113,8 @@ __metadata:
     "@testing-library/jest-dom": "npm:^7.0.1"
     "@testing-library/react": "npm:^16.3.3"
     "@testing-library/user-event": "npm:^14.6.7"
-    "@turnkey/react-wallet-kit": "npm:^2.5.1"
-    "@turnkey/viem": "npm:^0.14.43"
+    "@turnkey/react-wallet-kit": "npm:^2.6.0"
+    "@turnkey/viem": "npm:^0.14.46"
     "@types/node": "npm:^26.6.2"
     "@types/react": "npm:^19.3.0"
     "@types/react-dom": "npm:^19.3.0"
@@ -7144,7 +7144,7 @@ __metadata:
     tw-animate-css: "npm:^1.4.0"
     typescript: "npm:^6.0.3"
     typescript-eslint: "npm:^8.71.2"
-    viem: "npm:^2.56.9"
+    viem: "npm:^2.57.7"
     vite: "npm:^8.3.4"
     vitest: "npm:^5.0.3"
     wagmi: "npm:^3.7.7"
@@ -8249,9 +8249,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"viem@npm:^2.56.9":
-  version: 2.56.9
-  resolution: "viem@npm:2.56.9"
+"viem@npm:^2.57.7":
+  version: 2.57.7
+  resolution: "viem@npm:2.57.7"
   dependencies:
     "@noble/curves": "npm:1.9.1"
     "@noble/hashes": "npm:1.8.0"
@@ -8259,14 +8259,14 @@ __metadata:
     "@scure/bip39": "npm:1.6.0"
     abitype: "npm:1.2.3"
     isows: "npm:1.0.7"
-    ox: "npm:0.14.45"
+    ox: "npm:0.14.56"
     ws: "npm:8.21.0"
   peerDependencies:
     typescript: ">=5.0.4"
   peerDependenciesMeta:
     typescript:
       optional: true
-  checksum: 10c0/cd84385c248c2cbe928df63777db7cd3ecb58a45fbec1a5255d9e2125a5b97f3b3cbea1c9fce1b11ecb5c5ff38de1c53ba19c6b1ed6551185f68d1b1ac4032a2
+  checksum: 10c0/c66460c8b44b4ff300146a039cdd92d70c159c0c31754029e436ea5d081a449b060bfd106fa802c39794b290fb72519e2c499159f0a1bbf23acb5f241a94a148
   languageName: node
   linkType: hard
 
