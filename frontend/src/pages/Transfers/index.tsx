@@ -1,9 +1,21 @@
+import { useMemo } from 'react'
+import { Link } from 'react-router'
 import { Plus } from 'lucide-react'
 import { useConnection } from 'wagmi'
+import { useEarnPools } from '@/api/earn'
+import { ActivityList } from '@/components/ActivityList'
 import { CopyButton } from '@/components/CopyButton'
 import { SurfaceCard } from '@/components/SurfaceCard'
 import { Button } from '@/components/ui/button'
 import { Skeleton } from '@/components/ui/skeleton'
+import { appForAddress } from '@/config/apps'
+import { type MergedRow, useMergedActivity } from '@/hooks/use-merged-activity'
+import { activityPath } from '@/paths'
+
+const MAX_TRANSFERS = 5
+
+const isUserTransfer = (row: MergedRow): boolean =>
+  row.source === 'chain' && row.row.kind === 'transfer' && !appForAddress(row.row.counterparty)
 
 const AddressCard = () => {
   const { address } = useConnection()
@@ -34,6 +46,40 @@ const AddressCard = () => {
   )
 }
 
+const RecentTransfers = () => {
+  const { rows, isLoading, isError, refetch } = useMergedActivity()
+  const { data: pools } = useEarnPools()
+  const transfers = useMemo(() => (pools ? rows.filter(isUserTransfer) : []), [rows, pools])
+
+  return (
+    <section className="flex flex-col gap-3">
+      <div className="flex items-center justify-between gap-4">
+        <h2 className="text-lg font-semibold tracking-tight text-foreground">Recent transfers</h2>
+        <Link
+          to={activityPath()}
+          viewTransition
+          className="text-sm font-medium text-foreground hover:underline"
+        >
+          See all in Activity
+        </Link>
+      </div>
+      <ActivityList
+        rows={transfers}
+        isLoading={isLoading || !pools}
+        isError={isError}
+        onRetry={refetch}
+        max={MAX_TRANSFERS}
+        emptyState={
+          <SurfaceCard className="flex flex-col gap-1 p-6 text-center">
+            <p className="text-sm font-medium text-foreground">No internal transfers yet</p>
+            <p className="text-sm text-muted-foreground">Transfers you send or receive will appear here.</p>
+          </SurfaceCard>
+        }
+      />
+    </section>
+  )
+}
+
 export const Transfers = () => (
   <div className="mx-auto flex w-full max-w-200 flex-col gap-8">
     <header className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
@@ -50,5 +96,7 @@ export const Transfers = () => (
     </header>
 
     <AddressCard />
+
+    <RecentTransfers />
   </div>
 )
