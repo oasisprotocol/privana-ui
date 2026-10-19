@@ -11,7 +11,8 @@ import { EarnWithdraw } from './pages/Earn/EarnWithdraw'
 import { Activity } from './pages/Activity'
 import { ActivityDetails } from './pages/Activity/ActivityDetails'
 import { Vault } from './pages/Vault'
-import { activityPath, earnPath, homePath, dashboardPath, tradePath, vaultPath } from './paths'
+import { Transfers } from './pages/Transfers'
+import { activityPath, earnPath, homePath, dashboardPath, tradePath, transfersPath, vaultPath } from './paths'
 
 export const router = createBrowserRouter([
   {
@@ -68,6 +69,16 @@ export const router = createBrowserRouter([
           {
             path: 'withdraw/:poolId',
             element: <EarnWithdraw />,
+          },
+        ],
+      },
+      {
+        path: transfersPath(),
+        element: <ProtectedLayout />,
+        children: [
+          {
+            index: true,
+            element: <Transfers />,
           },
         ],
       },

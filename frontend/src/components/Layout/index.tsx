@@ -8,7 +8,7 @@ import Logo from '../../assets/logo.svg'
 import { MenuItem } from './menu-item'
 import { MobileBottomNav } from './MobileBottomNav'
 import { Separator } from '../ui/separator'
-import { activityPath, earnPath, homePath, dashboardPath, tradePath } from '@/paths'
+import { activityPath, earnPath, homePath, dashboardPath, tradePath, transfersPath } from '@/paths'
 
 type FooterLink = { label: string; href: string }
 
@@ -87,6 +87,7 @@ export const Layout = ({ children }: LayoutProps) => {
               <MenuItem to={dashboardPath()} label="Portfolio" />
               <MenuItem to={earnPath()} label="Earn" />
               <MenuItem to={tradePath()} label="Swap" />
+              <MenuItem to={transfersPath()} label="Transfers" />
               <MenuItem to={activityPath()} label="Activity" />
             </div>
           )}
