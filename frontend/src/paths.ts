@@ -14,6 +14,8 @@ export const vaultPath = () => '/vault'
 
 export const receivePath = () => '/receive'
 
+export const transferPath = () => '/transfer'
+
 export const activityPath = () => '/activity'
 export const activityDetailsPath = (id: string) => `/activity/${id}`
 
