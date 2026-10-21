@@ -29,6 +29,7 @@ export const RecipientField = ({ value, onChange }: RecipientFieldProps) => {
           onChange={e => onChange(e.target.value)}
           placeholder="Paste the recipient's address"
           aria-label="Recipient address"
+          autoComplete="off"
           spellCheck={false}
           autoCorrect="off"
           autoCapitalize="off"

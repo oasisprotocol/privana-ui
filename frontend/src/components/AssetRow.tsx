@@ -14,7 +14,7 @@ const tokenLabel = (token: TokenInfo) => token.token_symbol ?? token.token_type_
 type AssetRowProps = {
   tokens: TokenInfo[]
   token: TokenInfo | undefined
-  disabledId: string
+  disabledId?: string
   onTokenChange: (id: string) => void
   amount: string
   onAmountChange?: (v: string) => void

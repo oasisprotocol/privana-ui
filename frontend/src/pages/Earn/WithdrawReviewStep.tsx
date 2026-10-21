@@ -1,15 +1,11 @@
+import { Clock } from 'lucide-react'
 import type { EarnBalance, EarnPool } from '@/api/earn'
 import type { TokenInfo } from '@/api/swap'
 import { Skeleton } from '@/components/ui/skeleton'
 import { BackHeader } from '@/components/BackHeader'
+import { Notice } from '@/components/Notice'
 import { getProtocolLabel, withdrawNoticeFor } from '@/config/protocols'
-import {
-  ReviewAmountCard,
-  ReviewConfirmButton,
-  ReviewDetails,
-  ReviewDisclaimer,
-  ReviewNotice,
-} from './ReviewParts'
+import { ReviewAmountCard, ReviewConfirmButton, ReviewDetails, ReviewDisclaimer } from './ReviewParts'
 
 type WithdrawReviewStepProps = {
   pool: EarnPool | undefined
@@ -75,7 +71,7 @@ export const WithdrawReviewStep = ({
         ]}
       />
 
-      {withdrawNotice && <ReviewNotice>{withdrawNotice}</ReviewNotice>}
+      {withdrawNotice && <Notice icon={Clock}>{withdrawNotice}</Notice>}
 
       <ReviewDisclaimer>
         These funds stop earning and return to your Available balance as {tokenSymbol}. From there you can

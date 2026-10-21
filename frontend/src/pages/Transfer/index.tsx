@@ -1,19 +1,19 @@
 import { useMemo, useState } from 'react'
-import { useLocation, useNavigate } from 'react-router'
 import { EyeOff } from 'lucide-react'
 import { useTokens } from '@/api/swap'
 import { AssetRow } from '@/components/AssetRow'
 import { BackHeader } from '@/components/BackHeader'
+import { Notice } from '@/components/Notice'
 import { Button } from '@/components/ui/button'
 import { ALLOWED_TOKEN_IDS } from '@/config/tokens'
+import { useGoBack } from '@/hooks/use-go-back'
 import { DESKTOP_CARD } from '@/lib/surface'
 import { cn } from '@/lib/utils'
 import { dashboardPath } from '@/paths'
 import { RecipientField } from './RecipientField'
 
 export const Transfer = () => {
-  const navigate = useNavigate()
-  const location = useLocation()
+  const goBack = useGoBack(dashboardPath())
   const { data } = useTokens()
   const [recipient, setRecipient] = useState('')
   const [tokenId, setTokenId] = useState('')
@@ -23,8 +23,6 @@ export const Transfer = () => {
     [data],
   )
   const token = tokens.find(t => t.token_id === tokenId)
-
-  const goBack = () => (location.key === 'default' ? navigate(dashboardPath()) : navigate(-1))
 
   return (
     <div className={cn('mx-auto flex w-full max-w-lg flex-col', DESKTOP_CARD)}>
@@ -36,7 +34,6 @@ export const Transfer = () => {
           <AssetRow
             tokens={tokens}
             token={token}
-            disabledId=""
             onTokenChange={id => {
               setTokenId(id)
               setAmount('')
@@ -45,13 +42,10 @@ export const Transfer = () => {
             onAmountChange={setAmount}
           />
         </div>
-        <div className="flex gap-3 rounded-xl border border-amber-200 bg-amber-50 px-4 py-3 dark:border-amber-500/30 dark:bg-amber-500/10">
-          <EyeOff className="mt-0.5 size-4 shrink-0 text-amber-500" />
-          <p className="text-xs text-foreground">
-            <span className="font-semibold">Private, not anonymous.</span> It settles inside Privana — nothing
-            on Base or Ethereum.
-          </p>
-        </div>
+        <Notice icon={EyeOff}>
+          <span className="font-semibold">Private, not anonymous.</span> It settles inside Privana — nothing
+          on Base or Ethereum.
+        </Notice>
       </div>
       <Button size="lg" className="mt-6 h-14 w-full text-base" disabled>
         Review
