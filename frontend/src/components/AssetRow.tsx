@@ -64,7 +64,7 @@ export const AssetRow = ({
 
   return (
     <div className="flex flex-col gap-2">
-      <div className="flex items-center gap-2 w-full h-[58px] rounded-full border border-input bg-white dark:bg-card pl-2 pr-1">
+      <div className="flex items-center gap-2 w-full h-[60px] rounded-full border border-input bg-white dark:bg-card px-4 transition-[color,box-shadow] focus-within:border-ring focus-within:ring-[3px] focus-within:ring-ring/50">
         <TokenSelectDialog
           tokens={tokens}
           value={token?.token_id}
@@ -72,32 +72,39 @@ export const AssetRow = ({
           disabledId={disabledId}
           disabled={disabled}
           trigger={
-            <Button
+            <button
               type="button"
-              variant="outline"
               disabled={disabled}
-              className="h-[42px] rounded-full px-3 gap-2 text-sm font-semibold shrink-0 [&_svg:not([class*='size-'])]:size-6"
+              className="inline-flex shrink-0 items-center gap-2 rounded-full text-xl font-semibold leading-none outline-none focus-visible:ring-[3px] focus-visible:ring-ring/50 disabled:opacity-50"
             >
               {token?.token_symbol && (
-                <span className="shrink-0 size-6 overflow-hidden rounded-full">
-                  {getTokenIcon(token.token_symbol, 24)}
+                <span className="shrink-0 size-7 overflow-hidden rounded-full">
+                  {getTokenIcon(token.token_symbol, 28)}
                 </span>
               )}
-              <span className="truncate text-left">{token ? tokenLabel(token) : 'Select'}</span>
-              <ChevronDown className="size-4 shrink-0 opacity-50" />
-            </Button>
+              <span className="flex flex-col items-start leading-none">
+                <span>{token ? tokenLabel(token) : 'Select'}</span>
+                {token?.chain_name && (
+                  <span className="mt-0.5 text-[0.7rem] font-medium text-muted-foreground">
+                    {token.chain_name}
+                  </span>
+                )}
+              </span>
+              <ChevronDown className="size-5 shrink-0 text-muted-foreground" />
+            </button>
           }
         />
         <div className="relative flex-1 min-w-0">
           <Input
             className={cn(
-              'h-[58px] w-full rounded-r-full border-0 bg-transparent dark:bg-transparent px-3 text-right text-xl font-semibold text-foreground shadow-none focus-visible:ring-0 md:text-xl',
+              'h-full w-full border-0 bg-transparent dark:bg-transparent px-0 text-right text-[1.6rem] font-semibold leading-none tabular-nums text-foreground shadow-none focus-visible:ring-0 md:text-[1.6rem]',
+              amountError && 'text-destructive',
               refreshing ? 'motion-safe:animate-pulse motion-reduce:opacity-50' : loading && 'opacity-50',
-              loading && !amount && 'pr-10',
+              loading && !amount && 'pr-8',
             )}
             type="text"
             inputMode="decimal"
-            placeholder={loading ? '' : '0'}
+            placeholder={loading ? '' : '0.00'}
             value={amount}
             readOnly={readOnly}
             disabled={disabled}
@@ -108,13 +115,13 @@ export const AssetRow = ({
             }}
           />
           {loading && !amount && (
-            <div className="absolute right-2.5 top-1/2 -translate-y-1/2">
+            <div className="absolute right-0 top-1/2 -translate-y-1/2">
               <div className="size-3.5 animate-spin rounded-full border-2 border-muted-foreground border-t-transparent" />
             </div>
           )}
         </div>
       </div>
-      <div className="min-h-6 text-xs font-medium text-muted-foreground flex gap-2 items-center justify-between px-0.5">
+      <div className="min-h-6 text-sm text-muted-foreground flex gap-2 items-center justify-between px-0.5">
         <span>
           {fiatValue != null && (
             <span className="inline-block animate-fade-in">{`≈ ${formatFiat(fiatValue)}`}</span>
@@ -129,7 +136,7 @@ export const AssetRow = ({
               size="xs"
               onClick={onMax}
               disabled={disabled}
-              className="h-auto rounded-full px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide dark:bg-[#2d3139] dark:text-foreground dark:hover:bg-[#2d3139]/80"
+              className="h-auto rounded-full px-2.5 py-1 text-xs font-semibold uppercase tracking-wide dark:bg-[#2d3139] dark:text-foreground dark:hover:bg-[#2d3139]/80"
             >
               Max
             </Button>
