@@ -1,5 +1,6 @@
 import { useMemo, useState } from 'react'
 import { EyeOff } from 'lucide-react'
+import { useConnection } from 'wagmi'
 import { useTokens } from '@/api/swap'
 import { AssetRow } from '@/components/AssetRow'
 import { BackHeader } from '@/components/BackHeader'
@@ -11,9 +12,13 @@ import { DESKTOP_CARD } from '@/lib/surface'
 import { cn } from '@/lib/utils'
 import { dashboardPath } from '@/paths'
 import { RecipientField } from './RecipientField'
+import { recipientError } from './recipient'
+import { useSystemAddresses } from './useSystemAddresses'
 
 export const Transfer = () => {
   const goBack = useGoBack(dashboardPath())
+  const { address } = useConnection()
+  const systemAddresses = useSystemAddresses()
   const { data } = useTokens()
   const [recipient, setRecipient] = useState('')
   const [tokenId, setTokenId] = useState('')
@@ -23,12 +28,13 @@ export const Transfer = () => {
     [data],
   )
   const token = tokens.find(t => t.token_id === tokenId)
+  const toError = recipient.trim() ? recipientError(recipient.trim(), address, systemAddresses) : null
 
   return (
     <div className={cn('mx-auto flex w-full max-w-lg flex-col', DESKTOP_CARD)}>
       <BackHeader title="Send" onBack={goBack} />
       <div className="mt-5 flex flex-col gap-6">
-        <RecipientField value={recipient} onChange={setRecipient} />
+        <RecipientField value={recipient} onChange={setRecipient} error={toError} />
         <div className="flex flex-col gap-2">
           <p className="text-base font-semibold text-foreground">Amount</p>
           <AssetRow
