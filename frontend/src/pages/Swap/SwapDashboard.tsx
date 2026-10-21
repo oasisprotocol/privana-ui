@@ -14,7 +14,7 @@ import { amountFiat, amountInputError, exceedsAmount, parseAmount } from '@/lib/
 import { useRefreshBalanceCaches } from '@/hooks/use-reset-balance-caches'
 import { DESKTOP_CARD } from '@/lib/surface'
 import { useResolvedActivity } from '@/hooks/use-merged-activity'
-import { AssetRow } from './AssetRow'
+import { AssetRow } from '@/components/AssetRow'
 import { QuoteInfo } from './QuoteInfo'
 import { ReviewStep } from './ReviewStep'
 import { SwapSettings } from './SwapSettings'
