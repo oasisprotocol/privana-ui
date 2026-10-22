@@ -141,6 +141,7 @@ export const Transfer = () => {
           symbol={token?.token_symbol ?? ''}
           fiatValue={fiatValue}
           onBack={() => setStep('form')}
+          onConfirm={() => {}}
         />
       </div>
     )
