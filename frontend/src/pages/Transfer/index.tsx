@@ -1,15 +1,19 @@
 import { type ReactNode, useEffect, useMemo, useState } from 'react'
+import { useNavigate } from 'react-router'
 import { EyeOff } from 'lucide-react'
 import {
+  AccountingApiError,
   DepositModal,
+  NetworkError,
   maxAmount,
   sortTokensByBalance,
   useBalance,
   useBatchBalances,
   usePrivanaContext,
+  useTransfer,
 } from '@oasisprotocol/privana-sdk'
 import { useConnection } from 'wagmi'
-import { useOperations } from '@/api/operations'
+import { type Operation, useOperations } from '@/api/operations'
 import { useTokenPrices } from '@/api/prices'
 import { useTokens } from '@/api/swap'
 import { AssetRow } from '@/components/AssetRow'
@@ -19,24 +23,41 @@ import { Button } from '@/components/ui/button'
 import { Skeleton } from '@/components/ui/skeleton'
 import { ALLOWED_TOKEN_IDS } from '@/config/tokens'
 import { useGoBack } from '@/hooks/use-go-back'
+import { useResetBalanceCaches } from '@/hooks/use-reset-balance-caches'
+import { extractErrorMessage } from '@/lib/errors'
 import { DESKTOP_CARD } from '@/lib/surface'
-import { amountFiat, amountInputError, exceedsAmount, isPositiveAmount } from '@/lib/tokens'
+import { amountFiat, amountInputError, exceedsAmount, isPositiveAmount, parseAmount } from '@/lib/tokens'
 import { cn } from '@/lib/utils'
-import { dashboardPath } from '@/paths'
+import { describeFailure } from '@/pages/Activity/failureCopy'
+import { activityPath, dashboardPath } from '@/paths'
 import { RecipientField } from './RecipientField'
 import { ReviewStep } from './ReviewStep'
+import { SentStep } from './SentStep'
 import { recipientError } from './recipient'
 import { useSystemAddresses } from './useSystemAddresses'
 
+const IN_FLIGHT_MESSAGE = 'Wait for your swap or Earn deposit to finish.'
+
+const holdsNonce = (operations: readonly Operation[] | undefined) =>
+  (operations ?? []).some(op => op.operation_type !== 'earn_withdraw' && op.status === 'scheduled')
+
+const transferFailure = (err: unknown): string => {
+  if (err instanceof NetworkError || (err instanceof AccountingApiError && err.statusCode >= 500)) {
+    return "We couldn't confirm the transfer. Check your activity before trying again."
+  }
+  if (err instanceof AccountingApiError) return describeFailure(err.detail ?? err.message)
+  return extractErrorMessage(err, 'Transfer failed')
+}
+
 export const Transfer = () => {
   const goBack = useGoBack(dashboardPath())
+  const navigate = useNavigate()
   const { address } = useConnection()
   const { addresses: systemAddresses, ready: systemAddressesReady } = useSystemAddresses()
+  const { transfer } = useTransfer()
+  const resetBalanceCaches = useResetBalanceCaches()
   const { data: operationsData, refetch: refetchOperations } = useOperations()
-  // Swaps and Earn deposits sign the same transfer nonce; a scheduled one hasn't spent it yet.
-  const nonceBusy = (operationsData?.operations ?? []).some(
-    op => op.operation_type !== 'earn_withdraw' && op.status === 'scheduled',
-  )
+  const nonceBusy = holdsNonce(operationsData?.operations)
   useEffect(() => {
     if (!nonceBusy) return
     const timer = setInterval(() => void refetchOperations(), 10_000)
@@ -51,6 +72,9 @@ export const Transfer = () => {
     isError: balancesError,
   } = useBatchBalances({ tokenIds: balanceTokenIds })
   const [step, setStep] = useState<'form' | 'review'>('form')
+  const [sending, setSending] = useState(false)
+  const [sendError, setSendError] = useState<string | null>(null)
+  const [sent, setSent] = useState<{ recipient: string; amount: string; symbol: string } | null>(null)
   const [depositOpen, setDepositOpen] = useState(false)
   const [recipient, setRecipient] = useState('')
   const [tokenId, setTokenId] = useState('')
@@ -94,6 +118,28 @@ export const Transfer = () => {
     !amountError &&
     !nonceBusy
 
+  const send = async () => {
+    const raw = parseAmount(amount, decimals)
+    if (!token || raw == null) return
+    setSending(true)
+    setSendError(null)
+    try {
+      const { data: latest } = await refetchOperations()
+      if (holdsNonce(latest?.operations)) return
+      await transfer({
+        toAddress: recipient.trim() as `0x${string}`,
+        tokenId: token.token_id as `0x${string}`,
+        amount: raw,
+      })
+      setSent({ recipient: recipient.trim(), amount, symbol: token.token_symbol ?? '' })
+      resetBalanceCaches()
+    } catch (err) {
+      setSendError(transferFailure(err))
+    } finally {
+      setSending(false)
+    }
+  }
+
   let amountField: ReactNode
   if (tokensError) {
     amountField = <p className="text-sm text-destructive">Failed to load tokens: {tokensError.message}</p>
@@ -135,6 +181,18 @@ export const Transfer = () => {
     )
   }
 
+  if (sent) {
+    return (
+      <div className={cn('mx-auto flex w-full max-w-lg flex-col', DESKTOP_CARD)}>
+        <SentStep
+          {...sent}
+          onViewActivity={() => navigate(activityPath())}
+          onDone={() => navigate(dashboardPath())}
+        />
+      </div>
+    )
+  }
+
   if (step === 'review') {
     return (
       <div className={cn('mx-auto flex w-full max-w-lg flex-col', DESKTOP_CARD)}>
@@ -143,8 +201,14 @@ export const Transfer = () => {
           amount={amount}
           symbol={token?.token_symbol ?? ''}
           fiatValue={fiatValue}
-          onBack={() => setStep('form')}
-          onConfirm={() => {}}
+          sending={sending}
+          error={sendError}
+          blockedReason={nonceBusy ? IN_FLIGHT_MESSAGE : amountError}
+          onBack={() => {
+            setSendError(null)
+            setStep('form')
+          }}
+          onConfirm={() => void send()}
         />
       </div>
     )
@@ -165,11 +229,7 @@ export const Transfer = () => {
         </Notice>
       </div>
       <div className="mt-6 flex flex-col gap-3">
-        {nonceBusy && (
-          <p className="text-center text-sm text-muted-foreground">
-            Wait for your swap or Earn deposit to finish.
-          </p>
-        )}
+        {nonceBusy && <p className="text-center text-sm text-muted-foreground">{IN_FLIGHT_MESSAGE}</p>}
         <Button
           size="lg"
           className="h-14 w-full text-base"
