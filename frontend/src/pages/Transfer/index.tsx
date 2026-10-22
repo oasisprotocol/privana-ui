@@ -24,6 +24,7 @@ import { amountFiat, amountInputError, exceedsAmount, isPositiveAmount } from '@
 import { cn } from '@/lib/utils'
 import { dashboardPath } from '@/paths'
 import { RecipientField } from './RecipientField'
+import { ReviewStep } from './ReviewStep'
 import { recipientError } from './recipient'
 import { useSystemAddresses } from './useSystemAddresses'
 
@@ -137,7 +138,13 @@ export const Transfer = () => {
   if (step === 'review') {
     return (
       <div className={cn('mx-auto flex w-full max-w-lg flex-col', DESKTOP_CARD)}>
-        <BackHeader title="Review" onBack={() => setStep('form')} />
+        <ReviewStep
+          recipient={recipient.trim()}
+          amount={amount}
+          symbol={token?.token_symbol ?? ''}
+          fiatValue={fiatValue}
+          onBack={() => setStep('form')}
+        />
       </div>
     )
   }
