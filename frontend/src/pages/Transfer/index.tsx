@@ -32,7 +32,7 @@ import { describeFailure } from '@/pages/Activity/failureCopy'
 import { activityPath, dashboardPath } from '@/paths'
 import { RecipientField } from './RecipientField'
 import { ReviewStep } from './ReviewStep'
-import { SentStep } from './SentStep'
+import { ResultStep } from './ResultStep'
 import { recipientError } from './recipient'
 import { useSystemAddresses } from './useSystemAddresses'
 
@@ -42,13 +42,14 @@ const IN_FLIGHT_MESSAGE = 'Wait for your swap or Earn deposit to finish.'
 const holdsNonce = (operations: readonly Operation[] | undefined) =>
   (operations ?? []).some(op => op.operation_type !== 'earn_withdraw' && op.status === 'scheduled')
 
-const transferFailure = (err: unknown): string => {
-  if (err instanceof NetworkError || (err instanceof AccountingApiError && err.statusCode >= 500)) {
-    return "We couldn't confirm the transfer. Check your activity before trying again."
-  }
-  if (err instanceof AccountingApiError) return describeFailure(err.detail ?? err.message)
-  return extractErrorMessage(err, 'Transfer failed')
-}
+// A timeout or a 5xx leaves the outcome unknown: the transfer may still have gone through.
+const isUnknownOutcome = (err: unknown) =>
+  err instanceof NetworkError || (err instanceof AccountingApiError && err.statusCode >= 500)
+
+const transferFailure = (err: unknown): string =>
+  err instanceof AccountingApiError
+    ? describeFailure(err.detail ?? err.message)
+    : extractErrorMessage(err, 'Transfer failed')
 
 export const Transfer = () => {
   const goBack = useGoBack(dashboardPath())
@@ -70,7 +71,12 @@ export const Transfer = () => {
   const [step, setStep] = useState<'form' | 'review'>('form')
   const [sending, setSending] = useState(false)
   const [sendError, setSendError] = useState<string | null>(null)
-  const [sent, setSent] = useState<{ recipient: string; amount: string; symbol: string } | null>(null)
+  const [result, setResult] = useState<{
+    status: 'sent' | 'unknown'
+    recipient: string
+    amount: string
+    symbol: string
+  } | null>(null)
   const [depositOpen, setDepositOpen] = useState(false)
   const [recipient, setRecipient] = useState('')
   const [tokenId, setTokenId] = useState('')
@@ -94,6 +100,7 @@ export const Transfer = () => {
   if (!token && tokens[0]) {
     setTokenId(tokens[0].token_id)
     setAmount('')
+    setStep('form')
   }
   const selectedId = token?.token_id
   const decimals = token?.token_decimals
@@ -119,20 +126,26 @@ export const Transfer = () => {
   const send = async () => {
     const raw = parseAmount(amount, decimals)
     if (!token || raw == null) return
+    const sent = { recipient: recipient.trim(), amount, symbol: token.token_symbol ?? '' }
     setSending(true)
     setSendError(null)
     try {
       const { data: latest } = await refetchOperations()
       if (holdsNonce(latest?.operations)) return
       await transfer({
-        toAddress: recipient.trim() as `0x${string}`,
+        toAddress: sent.recipient as `0x${string}`,
         tokenId: token.token_id as `0x${string}`,
         amount: raw,
       })
-      setSent({ recipient: recipient.trim(), amount, symbol: token.token_symbol ?? '' })
+      setResult({ status: 'sent', ...sent })
       resetBalanceCaches()
     } catch (err) {
-      setSendError(transferFailure(err))
+      if (isUnknownOutcome(err)) {
+        setResult({ status: 'unknown', ...sent })
+        resetBalanceCaches()
+      } else {
+        setSendError(transferFailure(err))
+      }
     } finally {
       setSending(false)
     }
@@ -179,11 +192,11 @@ export const Transfer = () => {
     )
   }
 
-  if (sent) {
+  if (result) {
     return (
       <div className={cn('mx-auto flex w-full max-w-lg flex-col', DESKTOP_CARD)}>
-        <SentStep
-          {...sent}
+        <ResultStep
+          {...result}
           onViewActivity={() => navigate(activityPath())}
           onDone={() => navigate(dashboardPath())}
         />
