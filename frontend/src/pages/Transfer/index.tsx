@@ -14,7 +14,7 @@ import { ALLOWED_TOKEN_IDS } from '@/config/tokens'
 import { useGoBack } from '@/hooks/use-go-back'
 import { useFunds } from '@/hooks/useFunds'
 import { DESKTOP_CARD } from '@/lib/surface'
-import { amountFiat, amountInputError, exceedsAmount } from '@/lib/tokens'
+import { amountFiat, amountInputError, exceedsAmount, isPositiveAmount } from '@/lib/tokens'
 import { cn } from '@/lib/utils'
 import { dashboardPath } from '@/paths'
 import { RecipientField } from './RecipientField'
@@ -24,7 +24,7 @@ import { useSystemAddresses } from './useSystemAddresses'
 export const Transfer = () => {
   const goBack = useGoBack(dashboardPath())
   const { address } = useConnection()
-  const systemAddresses = useSystemAddresses()
+  const { addresses: systemAddresses, ready: systemAddressesReady } = useSystemAddresses()
   const { data: operationsData, refetch: refetchOperations } = useOperations()
   // Swaps and Earn deposits sign the same transfer nonce; a scheduled one hasn't spent it yet.
   const nonceBusy = (operationsData?.operations ?? []).some(
@@ -37,6 +37,7 @@ export const Transfer = () => {
   }, [nonceBusy, refetchOperations])
   const { data, isLoading: tokensLoading, error: tokensError } = useTokens()
   const { availableTokenIds, isLoading: fundsLoading, isError: fundsError } = useFunds()
+  const [step, setStep] = useState<'form' | 'review'>('form')
   const [depositOpen, setDepositOpen] = useState(false)
   const [recipient, setRecipient] = useState('')
   const [tokenId, setTokenId] = useState('')
@@ -59,6 +60,15 @@ export const Transfer = () => {
   const notEnough = !balance.isLoading && exceedsAmount(amount, decimals, BigInt(balance.balanceWei || '0'))
   const amountError = amountInputError(amount, decimals) ?? (notEnough ? 'Not enough in Available' : null)
   const fiatValue = selectedId ? amountFiat(amount, decimals, prices?.[selectedId]) : undefined
+  const canReview =
+    !!recipient.trim() &&
+    !toError &&
+    systemAddressesReady &&
+    !!token &&
+    !balance.isLoading &&
+    isPositiveAmount(amount, decimals) &&
+    !amountError &&
+    !nonceBusy
 
   let amountField: ReactNode
   if (tokensError) {
@@ -101,6 +111,14 @@ export const Transfer = () => {
     )
   }
 
+  if (step === 'review') {
+    return (
+      <div className={cn('mx-auto flex w-full max-w-lg flex-col', DESKTOP_CARD)}>
+        <BackHeader title="Review" onBack={() => setStep('form')} />
+      </div>
+    )
+  }
+
   return (
     <div className={cn('mx-auto flex w-full max-w-lg flex-col', DESKTOP_CARD)}>
       <BackHeader title="Send" onBack={goBack} />
@@ -121,7 +139,12 @@ export const Transfer = () => {
             Wait for your swap or Earn deposit to finish.
           </p>
         )}
-        <Button size="lg" className="h-14 w-full text-base" disabled>
+        <Button
+          size="lg"
+          className="h-14 w-full text-base"
+          disabled={!canReview}
+          onClick={() => setStep('review')}
+        >
           Review
         </Button>
       </div>
