@@ -15,7 +15,7 @@ import {
   ReviewDetails,
   ReviewDisclaimer,
   type ReviewDetailRow,
-} from './ReviewParts'
+} from '@/components/ReviewParts'
 
 type ReviewStepProps = {
   pool: EarnPool | undefined
