@@ -9,16 +9,29 @@ type ReviewStepProps = {
   amount: string
   symbol: string
   fiatValue: number | undefined
+  sending: boolean
+  error: string | null
+  blockedReason: string | null
   onBack: () => void
   onConfirm: () => void
 }
 
-export const ReviewStep = ({ recipient, amount, symbol, fiatValue, onBack, onConfirm }: ReviewStepProps) => {
+export const ReviewStep = ({
+  recipient,
+  amount,
+  symbol,
+  fiatValue,
+  sending,
+  error,
+  blockedReason,
+  onBack,
+  onConfirm,
+}: ReviewStepProps) => {
   const [checked, setChecked] = useState(false)
 
   return (
     <div className="flex flex-col gap-4">
-      <BackHeader title="Review" onBack={onBack} />
+      <BackHeader title="Review" onBack={onBack} disabled={sending} />
 
       <ReviewAmountCard
         eyebrow="You're sending"
@@ -61,7 +74,16 @@ export const ReviewStep = ({ recipient, amount, symbol, fiatValue, onBack, onCon
         </span>
       </label>
 
-      <ReviewConfirmButton label="Sign & send" onConfirm={onConfirm} disabled={!checked} />
+      {error && <p className="text-center text-sm text-destructive">{error}</p>}
+      {blockedReason && <p className="text-center text-sm text-muted-foreground">{blockedReason}</p>}
+
+      <ReviewConfirmButton
+        label="Sign & send"
+        loadingLabel="Signing…"
+        onConfirm={onConfirm}
+        loading={sending}
+        disabled={!checked || sending || !!blockedReason}
+      />
     </div>
   )
 }
