@@ -69,12 +69,15 @@ export const Transfer = () => {
       t => available.get(t.token_id),
     )
   }, [data, balances])
-  const token = tokens.find(t => t.token_id === tokenId) ?? tokens[0]
+  const token = tokens.find(t => t.token_id === tokenId)
+  if (!token && tokens[0]) {
+    setTokenId(tokens[0].token_id)
+    setAmount('')
+  }
   const selectedId = token?.token_id
   const decimals = token?.token_decimals
   const balance = useBalance({ tokenId: selectedId as `0x${string}` | undefined, enabled: !!selectedId })
-  const priceTokenIds = useMemo(() => (selectedId ? [selectedId] : []), [selectedId])
-  const { data: prices } = useTokenPrices(priceTokenIds)
+  const { data: prices } = useTokenPrices(selectedId ? [selectedId] : [])
 
   const toError = recipient.trim() ? recipientError(recipient.trim(), address, systemAddresses) : null
   const notEnough = !balance.isLoading && exceedsAmount(amount, decimals, BigInt(balance.balanceWei || '0'))
