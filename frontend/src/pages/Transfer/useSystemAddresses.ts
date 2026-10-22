@@ -4,11 +4,11 @@ import { useEarnPools } from '@/api/earn'
 import { SWAP_LP_ADDRESS } from '@/config/swap'
 import { SERVICE_CONTRACTS } from '@/config/systemAddresses'
 
-export function useSystemAddresses(): string[] {
+export function useSystemAddresses(): { addresses: string[]; ready: boolean } {
   const { networkConfig } = usePrivanaContext()
   const { data: poolsData } = useEarnPools()
 
-  return useMemo(
+  const addresses = useMemo(
     () =>
       [
         networkConfig.accountingContract,
@@ -20,4 +20,7 @@ export function useSystemAddresses(): string[] {
         .map(address => address.toLowerCase()),
     [networkConfig.accountingContract, poolsData],
   )
+
+  // Pool addresses arrive with the pools request; until then the list is incomplete.
+  return { addresses, ready: !!poolsData }
 }
