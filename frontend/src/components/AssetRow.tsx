@@ -26,6 +26,7 @@ type AssetRowProps = {
   amountError?: string | null
   fiatValue?: number
   balanceLabel?: string
+  balanceTitle?: string
   onMax?: () => void
 }
 
@@ -44,15 +45,16 @@ export const AssetRow = ({
   amountError,
   fiatValue,
   balanceLabel,
+  balanceTitle = 'Balance',
   onMax,
 }: AssetRowProps) => {
   const renderBalance = () => {
     if (!token || !balance) return null
     if (balance.loading) return <Skeleton className="h-4 w-32" />
-    if (token.token_decimals == null) return <span>Balance: -</span>
+    if (token.token_decimals == null) return <span>{balanceTitle}: -</span>
     return (
       <span>
-        Balance:{' '}
+        {balanceTitle}:{' '}
         <TokenAmount
           amount={balance.wei || '0'}
           token={{ symbol: token.token_symbol ?? '', decimals: token.token_decimals }}
