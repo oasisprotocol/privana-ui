@@ -12,7 +12,17 @@ import { Activity } from './pages/Activity'
 import { ActivityDetails } from './pages/Activity/ActivityDetails'
 import { Vault } from './pages/Vault'
 import { Receive } from './pages/Receive'
-import { activityPath, earnPath, homePath, dashboardPath, receivePath, tradePath, vaultPath } from './paths'
+import { Transfer } from './pages/Transfer'
+import {
+  activityPath,
+  earnPath,
+  homePath,
+  dashboardPath,
+  receivePath,
+  transferPath,
+  tradePath,
+  vaultPath,
+} from './paths'
 
 export const router = createBrowserRouter([
   {
@@ -103,6 +113,16 @@ export const router = createBrowserRouter([
           {
             index: true,
             element: <Receive />,
+          },
+        ],
+      },
+      {
+        path: transferPath(),
+        element: <ProtectedLayout />,
+        children: [
+          {
+            index: true,
+            element: <Transfer />,
           },
         ],
       },

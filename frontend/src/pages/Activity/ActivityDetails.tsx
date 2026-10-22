@@ -1,10 +1,11 @@
 import type { ReactNode } from 'react'
-import { Link, Navigate, useLocation, useNavigate, useParams } from 'react-router'
+import { Link, Navigate, useParams } from 'react-router'
 import { useDeposit, type DepositProgress } from '@oasisprotocol/privana-sdk'
 import { Button } from '@/components/ui/button'
 import { Skeleton } from '@/components/ui/skeleton'
 import { ActivityUnavailable } from '@/components/ActivityList'
 import { BackHeader } from '@/components/BackHeader'
+import { useGoBack } from '@/hooks/use-go-back'
 import { useMergedActivity, type MergedRow } from '@/hooks/use-merged-activity'
 import { DESKTOP_CARD } from '@/lib/surface'
 import { cn, sameId } from '@/lib/utils'
@@ -24,14 +25,11 @@ const Details = ({ row, progress }: { row: MergedRow; progress: DepositProgress 
 
 export const ActivityDetails = () => {
   const { id = '' } = useParams()
-  const navigate = useNavigate()
-  const location = useLocation()
+  const goBack = useGoBack(activityPath())
   const ref = parseDetailsId(id)
   const { rows, isLoading, isError, refetch } = useMergedActivity()
   const { progress } = useDeposit()
   const row = ref ? findDetailsRow(rows, ref, progress) : undefined
-
-  const goBack = () => (location.key === 'default' ? navigate(activityPath()) : navigate(-1))
 
   const creditedId = ref?.source === 'deposit' && row?.source === 'chain' ? detailsIdOf(row) : null
   if (creditedId) return <Navigate replace to={activityDetailsPath(creditedId)} />

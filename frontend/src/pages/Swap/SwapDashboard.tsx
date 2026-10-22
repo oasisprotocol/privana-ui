@@ -14,7 +14,7 @@ import { amountFiat, amountInputError, exceedsAmount, parseAmount } from '@/lib/
 import { useRefreshBalanceCaches } from '@/hooks/use-reset-balance-caches'
 import { DESKTOP_CARD } from '@/lib/surface'
 import { useResolvedActivity } from '@/hooks/use-merged-activity'
-import { AssetRow } from './AssetRow'
+import { AssetRow } from '@/components/AssetRow'
 import { QuoteInfo } from './QuoteInfo'
 import { ReviewStep } from './ReviewStep'
 import { SwapSettings } from './SwapSettings'
@@ -259,7 +259,7 @@ export const SwapDashboard = () => {
       {step === 0 && data && (
         <div className="mt-6 flex flex-col gap-4">
           <div className="flex flex-col gap-2">
-            <p className="text-sm font-semibold text-foreground">You pay</p>
+            <p className="text-base font-semibold text-foreground">You pay</p>
             <AssetRow
               tokens={tokens}
               token={fromToken}
@@ -299,7 +299,7 @@ export const SwapDashboard = () => {
           </div>
 
           <div className="flex flex-col gap-2">
-            <p className="text-sm font-semibold text-foreground">You receive</p>
+            <p className="text-base font-semibold text-foreground">You receive</p>
             <AssetRow
               tokens={tokens}
               token={toToken}

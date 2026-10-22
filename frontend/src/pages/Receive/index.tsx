@@ -1,20 +1,17 @@
-import { useLocation, useNavigate } from 'react-router'
 import { ArrowDownLeft, Check, Copy } from 'lucide-react'
 import { useConnection } from 'wagmi'
 import { BackHeader } from '@/components/BackHeader'
 import { Button } from '@/components/ui/button'
 import { useCopyToClipboard } from '@/hooks/use-copy-to-clipboard'
+import { useGoBack } from '@/hooks/use-go-back'
 import { DESKTOP_CARD } from '@/lib/surface'
 import { cn } from '@/lib/utils'
 import { dashboardPath } from '@/paths'
 
 export const Receive = () => {
   const { address } = useConnection()
-  const navigate = useNavigate()
-  const location = useLocation()
+  const goBack = useGoBack(dashboardPath())
   const { copied, copy } = useCopyToClipboard()
-
-  const goBack = () => (location.key === 'default' ? navigate(dashboardPath()) : navigate(-1))
 
   return (
     <div className={cn('mx-auto flex w-full max-w-lg flex-col', DESKTOP_CARD)}>
