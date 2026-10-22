@@ -1,5 +1,5 @@
 import { Check, Clipboard, X } from 'lucide-react'
-import { cn } from '@/lib/utils'
+import { cn, sameId } from '@/lib/utils'
 
 const RECENT_RECIPIENTS = [
   '0x7b3e9f21c6a84d05e2f17b9c3d8a0e45f6c1b2d3',
@@ -55,7 +55,7 @@ export const RecipientField = ({ value, onChange }: RecipientFieldProps) => {
           </button>
         )}
       </div>
-      {RECENT_RECIPIENTS.includes(recipient) && (
+      {RECENT_RECIPIENTS.some(address => sameId(address, recipient)) && (
         <p className="mt-1.5 text-xs text-muted-foreground">Recent recipient</p>
       )}
       <div className="mt-3">
@@ -68,13 +68,13 @@ export const RecipientField = ({ value, onChange }: RecipientFieldProps) => {
               onClick={() => onChange(address)}
               className={cn(
                 'flex w-full items-center gap-3 px-4 py-3 text-left transition-colors hover:bg-muted',
-                recipient === address && 'bg-muted',
+                sameId(recipient, address) && 'bg-muted',
               )}
             >
               <span className="min-w-0 flex-1 break-all font-mono text-xs leading-snug text-foreground">
                 {address}
               </span>
-              {recipient === address && <Check className="size-4 shrink-0 text-chart-positive" />}
+              {sameId(recipient, address) && <Check className="size-4 shrink-0 text-chart-positive" />}
             </button>
           ))}
         </div>
