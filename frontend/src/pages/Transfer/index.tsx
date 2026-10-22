@@ -1,6 +1,13 @@
 import { type ReactNode, useEffect, useMemo, useState } from 'react'
 import { EyeOff } from 'lucide-react'
-import { DepositModal, maxAmount, useBalance } from '@oasisprotocol/privana-sdk'
+import {
+  DepositModal,
+  maxAmount,
+  sortTokensByBalance,
+  useBalance,
+  useBatchBalances,
+  usePrivanaContext,
+} from '@oasisprotocol/privana-sdk'
 import { useConnection } from 'wagmi'
 import { useOperations } from '@/api/operations'
 import { useTokenPrices } from '@/api/prices'
@@ -12,7 +19,6 @@ import { Button } from '@/components/ui/button'
 import { Skeleton } from '@/components/ui/skeleton'
 import { ALLOWED_TOKEN_IDS } from '@/config/tokens'
 import { useGoBack } from '@/hooks/use-go-back'
-import { useFunds } from '@/hooks/useFunds'
 import { DESKTOP_CARD } from '@/lib/surface'
 import { amountFiat, amountInputError, exceedsAmount, isPositiveAmount } from '@/lib/tokens'
 import { cn } from '@/lib/utils'
@@ -36,19 +42,33 @@ export const Transfer = () => {
     return () => clearInterval(timer)
   }, [nonceBusy, refetchOperations])
   const { data, isLoading: tokensLoading, error: tokensError } = useTokens()
-  const { availableTokenIds, isLoading: fundsLoading, isError: fundsError } = useFunds()
+  const { enabledTokens } = usePrivanaContext()
+  const balanceTokenIds = useMemo(() => enabledTokens.map(t => t.id), [enabledTokens])
+  const {
+    balances,
+    isLoading: balancesLoading,
+    isError: balancesError,
+  } = useBatchBalances({ tokenIds: balanceTokenIds })
   const [step, setStep] = useState<'form' | 'review'>('form')
   const [depositOpen, setDepositOpen] = useState(false)
   const [recipient, setRecipient] = useState('')
   const [tokenId, setTokenId] = useState('')
   const [amount, setAmount] = useState('')
-  const tokens = useMemo(
-    () =>
-      (data?.tokens ?? []).filter(
-        t => (ALLOWED_TOKEN_IDS as string[]).includes(t.token_id) && availableTokenIds.has(t.token_id),
-      ),
-    [data, availableTokenIds],
-  )
+  const tokens = useMemo(() => {
+    const available = new Map<string, bigint>(balances.map(b => [b.token_id, BigInt(b.balance || '0')]))
+    const held = (data?.tokens ?? []).filter(
+      t => (ALLOWED_TOKEN_IDS as string[]).includes(t.token_id) && (available.get(t.token_id) ?? 0n) > 0n,
+    )
+    // Same order as the token picker (SDK TokenSelectList), so the default is its top entry.
+    return sortTokensByBalance(
+      held.map(t => ({
+        ...t,
+        name: t.token_name ?? t.token_symbol ?? t.token_type_name,
+        decimals: t.token_decimals ?? 0,
+      })),
+      t => available.get(t.token_id),
+    )
+  }, [data, balances])
   const token = tokens.find(t => t.token_id === tokenId) ?? tokens[0]
   const selectedId = token?.token_id
   const decimals = token?.token_decimals
@@ -73,9 +93,9 @@ export const Transfer = () => {
   let amountField: ReactNode
   if (tokensError) {
     amountField = <p className="text-sm text-destructive">Failed to load tokens: {tokensError.message}</p>
-  } else if (fundsError) {
+  } else if (balancesError) {
     amountField = <p className="text-sm text-destructive">Failed to load your balances.</p>
-  } else if (tokensLoading || fundsLoading) {
+  } else if (tokensLoading || balancesLoading) {
     amountField = <Skeleton className="h-[60px] w-full rounded-full" />
   } else if (tokens.length === 0) {
     amountField = (
