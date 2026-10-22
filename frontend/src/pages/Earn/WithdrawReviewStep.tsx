@@ -5,7 +5,12 @@ import { Skeleton } from '@/components/ui/skeleton'
 import { BackHeader } from '@/components/BackHeader'
 import { Notice } from '@/components/Notice'
 import { getProtocolLabel, withdrawNoticeFor } from '@/config/protocols'
-import { ReviewAmountCard, ReviewConfirmButton, ReviewDetails, ReviewDisclaimer } from './ReviewParts'
+import {
+  ReviewAmountCard,
+  ReviewConfirmButton,
+  ReviewDetails,
+  ReviewDisclaimer,
+} from '@/components/ReviewParts'
 
 type WithdrawReviewStepProps = {
   pool: EarnPool | undefined
