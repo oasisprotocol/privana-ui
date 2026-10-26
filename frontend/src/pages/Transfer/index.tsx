@@ -4,13 +4,11 @@ import { EyeOff } from 'lucide-react'
 import {
   AccountingApiError,
   DepositModal,
-  NetworkError,
   maxAmount,
   sortTokensByBalance,
   useBalance,
   useBatchBalances,
   usePrivanaContext,
-  useTransfer,
 } from '@oasisprotocol/privana-sdk'
 import { useConnection } from 'wagmi'
 import { type Operation, useOperations } from '@/api/operations'
@@ -34,6 +32,7 @@ import { RecipientField } from './RecipientField'
 import { ReviewStep } from './ReviewStep'
 import { ResultStep } from './ResultStep'
 import { recipientError } from './recipient'
+import { useSubmitTransfer } from './useSubmitTransfer'
 import { useSystemAddresses } from './useSystemAddresses'
 
 const IN_FLIGHT_MESSAGE = 'Wait for your swap or Earn deposit to finish.'
@@ -42,11 +41,6 @@ const OPERATIONS_ERROR_MESSAGE = "Couldn't check for a pending swap or Earn depo
 // Swaps and Earn deposits sign the same transfer nonce; a scheduled one hasn't spent it yet.
 const holdsNonce = (operations: readonly Operation[] | undefined) =>
   (operations ?? []).some(op => op.operation_type !== 'earn_withdraw' && op.status === 'scheduled')
-
-// A timeout, a 409 or a 5xx leaves the outcome unknown: the transfer may still have gone through.
-const isUnknownOutcome = (err: unknown) =>
-  err instanceof NetworkError ||
-  (err instanceof AccountingApiError && (err.statusCode === 409 || err.statusCode >= 500))
 
 const transferFailure = (err: unknown): string =>
   err instanceof AccountingApiError
@@ -58,7 +52,7 @@ export const Transfer = () => {
   const navigate = useNavigate()
   const { address } = useConnection()
   const { addresses: systemAddresses, ready: systemAddressesReady } = useSystemAddresses()
-  const { transfer } = useTransfer()
+  const submitTransfer = useSubmitTransfer()
   const resetBalanceCaches = useResetBalanceCaches()
   const { data: operationsData, isError: operationsError, refetch: refetchOperations } = useOperations()
   const nonceBusy = holdsNonce(operationsData?.operations)
@@ -138,20 +132,15 @@ export const Transfer = () => {
         return
       }
       if (holdsNonce(latest?.operations)) return
-      await transfer({
+      const status = await submitTransfer({
         toAddress: sent.recipient as `0x${string}`,
         tokenId: token.token_id as `0x${string}`,
         amount: raw,
       })
-      setResult({ status: 'sent', ...sent })
+      setResult({ status, ...sent })
       resetBalanceCaches()
     } catch (err) {
-      if (isUnknownOutcome(err)) {
-        setResult({ status: 'unknown', ...sent })
-        resetBalanceCaches()
-      } else {
-        setSendError(transferFailure(err))
-      }
+      setSendError(transferFailure(err))
     } finally {
       setSending(false)
     }
