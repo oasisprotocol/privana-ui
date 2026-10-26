@@ -6,7 +6,7 @@ import { SERVICE_CONTRACTS } from '@/config/systemAddresses'
 
 export function useSystemAddresses(): { addresses: string[]; ready: boolean } {
   const { networkConfig } = usePrivanaContext()
-  const { data: poolsData } = useEarnPools()
+  const { data: poolsData, isError: poolsError } = useEarnPools()
 
   const addresses = useMemo(
     () =>
@@ -21,6 +21,6 @@ export function useSystemAddresses(): { addresses: string[]; ready: boolean } {
     [networkConfig.accountingContract, poolsData],
   )
 
-  // Pool addresses arrive with the pools request; until then the list is incomplete.
-  return { addresses, ready: !!poolsData }
+  // Pool addresses arrive with the pools request; if it fails, the fixed addresses still apply.
+  return { addresses, ready: !!poolsData || poolsError }
 }
