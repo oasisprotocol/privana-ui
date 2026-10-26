@@ -6,6 +6,11 @@ describe('describeFailure', () => {
     const expected = 'Another operation was still pending — check your activity before retrying'
     expect(describeFailure('Transaction reverted: InvalidNonce')).toBe(expected)
     expect(describeFailure('Invalid input nonce')).toBe(expected)
+    expect(
+      describeFailure(
+        'Transfer nonce mismatch: got 5, expected 6. The nonce may already have been used by another request.',
+      ),
+    ).toBe(expected)
   })
 
   it("leaves services' generic nonce wording alone — it may be the service's own nonce", () => {

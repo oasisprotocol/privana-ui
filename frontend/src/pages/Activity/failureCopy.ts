@@ -1,6 +1,6 @@
 const KNOWN_FAILURES: ReadonlyArray<[RegExp, string]> = [
   [
-    /InvalidNonce|invalid input nonce/i,
+    /InvalidNonce|invalid input nonce|nonce mismatch/i,
     'Another operation was still pending — check your activity before retrying',
   ],
   [/InsufficientBalance/, 'Balance was too low when the operation executed'],

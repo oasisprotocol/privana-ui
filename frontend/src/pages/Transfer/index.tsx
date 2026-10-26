@@ -1,6 +1,8 @@
 import { type ReactNode, useMemo, useState } from 'react'
+import { useNavigate } from 'react-router'
 import { EyeOff } from 'lucide-react'
 import {
+  AccountingApiError,
   DepositModal,
   maxAmount,
   sortTokensByBalance,
@@ -9,7 +11,7 @@ import {
   usePrivanaContext,
 } from '@oasisprotocol/privana-sdk'
 import { useConnection } from 'wagmi'
-import { useOperations } from '@/api/operations'
+import { type Operation, useOperations } from '@/api/operations'
 import { useTokenPrices } from '@/api/prices'
 import { useTokens } from '@/api/swap'
 import { AssetRow } from '@/components/AssetRow'
@@ -19,23 +21,41 @@ import { Button } from '@/components/ui/button'
 import { Skeleton } from '@/components/ui/skeleton'
 import { ALLOWED_TOKEN_IDS } from '@/config/tokens'
 import { useGoBack } from '@/hooks/use-go-back'
+import { useResetBalanceCaches } from '@/hooks/use-reset-balance-caches'
+import { extractErrorMessage } from '@/lib/errors'
 import { DESKTOP_CARD } from '@/lib/surface'
-import { amountFiat, amountInputError, exceedsAmount, isPositiveAmount } from '@/lib/tokens'
+import { amountFiat, amountInputError, exceedsAmount, isPositiveAmount, parseAmount } from '@/lib/tokens'
 import { cn } from '@/lib/utils'
-import { dashboardPath } from '@/paths'
+import { describeFailure } from '@/pages/Activity/failureCopy'
+import { activityPath, dashboardPath } from '@/paths'
 import { RecipientField } from './RecipientField'
+import { ReviewStep } from './ReviewStep'
+import { ResultStep } from './ResultStep'
 import { recipientError } from './recipient'
+import { useSubmitTransfer } from './useSubmitTransfer'
 import { useSystemAddresses } from './useSystemAddresses'
+
+const IN_FLIGHT_MESSAGE = 'Wait for your swap or Earn deposit to finish.'
+const OPERATIONS_ERROR_MESSAGE = "Couldn't check for a pending swap or Earn deposit."
+
+// Swaps and Earn deposits sign the same transfer nonce; a scheduled one hasn't spent it yet.
+const holdsNonce = (operations: readonly Operation[] | undefined) =>
+  (operations ?? []).some(op => op.operation_type !== 'earn_withdraw' && op.status === 'scheduled')
+
+const transferFailure = (err: unknown): string =>
+  err instanceof AccountingApiError
+    ? describeFailure(err.detail ?? err.message)
+    : extractErrorMessage(err, 'Transfer failed')
 
 export const Transfer = () => {
   const goBack = useGoBack(dashboardPath())
+  const navigate = useNavigate()
   const { address } = useConnection()
   const { addresses: systemAddresses, ready: systemAddressesReady } = useSystemAddresses()
+  const submitTransfer = useSubmitTransfer()
+  const resetBalanceCaches = useResetBalanceCaches()
   const { data: operationsData, isError: operationsError, refetch: refetchOperations } = useOperations()
-  // Swaps and Earn deposits sign the same transfer nonce; a scheduled one hasn't spent it yet.
-  const nonceBusy = (operationsData?.operations ?? []).some(
-    op => op.operation_type !== 'earn_withdraw' && op.status === 'scheduled',
-  )
+  const nonceBusy = holdsNonce(operationsData?.operations)
   const { data, isLoading: tokensLoading, error: tokensError } = useTokens()
   const { enabledTokens, tokensStatus } = usePrivanaContext()
   const balanceTokenIds = useMemo(() => enabledTokens.map(t => t.id), [enabledTokens])
@@ -45,6 +65,14 @@ export const Transfer = () => {
     isError: balancesError,
   } = useBatchBalances({ tokenIds: balanceTokenIds })
   const [step, setStep] = useState<'form' | 'review'>('form')
+  const [sending, setSending] = useState(false)
+  const [sendError, setSendError] = useState<string | null>(null)
+  const [result, setResult] = useState<{
+    status: 'sent' | 'unknown'
+    recipient: string
+    amount: string
+    symbol: string
+  } | null>(null)
   const [depositOpen, setDepositOpen] = useState(false)
   const [recipient, setRecipient] = useState('')
   const [tokenId, setTokenId] = useState('')
@@ -68,6 +96,7 @@ export const Transfer = () => {
   if (!token && tokens[0]) {
     setTokenId(tokens[0].token_id)
     setAmount('')
+    setStep('form')
   }
   const selectedId = token?.token_id
   const decimals = token?.token_decimals
@@ -89,6 +118,33 @@ export const Transfer = () => {
     !!operationsData &&
     !operationsError &&
     !nonceBusy
+
+  const send = async () => {
+    const raw = parseAmount(amount, decimals)
+    if (!token || raw == null) return
+    const sent = { recipient: recipient.trim(), amount, symbol: token.token_symbol ?? '' }
+    setSending(true)
+    setSendError(null)
+    try {
+      const { data: latest, isError } = await refetchOperations()
+      if (isError) {
+        setSendError(OPERATIONS_ERROR_MESSAGE)
+        return
+      }
+      if (holdsNonce(latest?.operations)) return
+      const status = await submitTransfer({
+        toAddress: sent.recipient as `0x${string}`,
+        tokenId: token.token_id as `0x${string}`,
+        amount: raw,
+      })
+      setResult({ status, ...sent })
+      resetBalanceCaches()
+    } catch (err) {
+      setSendError(transferFailure(err))
+    } finally {
+      setSending(false)
+    }
+  }
 
   let amountField: ReactNode
   if (tokensError) {
@@ -131,10 +187,35 @@ export const Transfer = () => {
     )
   }
 
+  if (result) {
+    return (
+      <div className={cn('mx-auto flex w-full max-w-lg flex-col', DESKTOP_CARD)}>
+        <ResultStep
+          {...result}
+          onViewActivity={() => navigate(activityPath())}
+          onDone={() => navigate(dashboardPath())}
+        />
+      </div>
+    )
+  }
+
   if (step === 'review') {
     return (
       <div className={cn('mx-auto flex w-full max-w-lg flex-col', DESKTOP_CARD)}>
-        <BackHeader title="Review" onBack={() => setStep('form')} />
+        <ReviewStep
+          recipient={recipient.trim()}
+          amount={amount}
+          symbol={token?.token_symbol ?? ''}
+          fiatValue={fiatValue}
+          sending={sending}
+          error={sendError}
+          blockedReason={nonceBusy ? IN_FLIGHT_MESSAGE : amountError}
+          onBack={() => {
+            setSendError(null)
+            setStep('form')
+          }}
+          onConfirm={() => void send()}
+        />
       </div>
     )
   }
@@ -156,19 +237,13 @@ export const Transfer = () => {
       <div className="mt-6 flex flex-col gap-3">
         {operationsError ? (
           <div className="flex flex-col items-center gap-2">
-            <p className="text-center text-sm text-destructive">
-              Couldn't check for a pending swap or Earn deposit.
-            </p>
+            <p className="text-center text-sm text-destructive">{OPERATIONS_ERROR_MESSAGE}</p>
             <Button type="button" variant="outline" size="sm" onClick={() => void refetchOperations()}>
               Try again
             </Button>
           </div>
         ) : (
-          nonceBusy && (
-            <p className="text-center text-sm text-muted-foreground">
-              Wait for your swap or Earn deposit to finish.
-            </p>
-          )
+          nonceBusy && <p className="text-center text-sm text-muted-foreground">{IN_FLIGHT_MESSAGE}</p>
         )}
         <Button
           size="lg"
