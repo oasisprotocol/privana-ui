@@ -31,7 +31,7 @@ export const Transfer = () => {
   const goBack = useGoBack(dashboardPath())
   const { address } = useConnection()
   const { addresses: systemAddresses, ready: systemAddressesReady } = useSystemAddresses()
-  const { data: operationsData } = useOperations()
+  const { data: operationsData, isError: operationsError, refetch: refetchOperations } = useOperations()
   // Swaps and Earn deposits sign the same transfer nonce; a scheduled one hasn't spent it yet.
   const nonceBusy = (operationsData?.operations ?? []).some(
     op => op.operation_type !== 'earn_withdraw' && op.status === 'scheduled',
@@ -86,6 +86,8 @@ export const Transfer = () => {
     !balance.isLoading &&
     isPositiveAmount(amount, decimals) &&
     !amountError &&
+    !!operationsData &&
+    !operationsError &&
     !nonceBusy
 
   let amountField: ReactNode
@@ -152,10 +154,21 @@ export const Transfer = () => {
         </Notice>
       </div>
       <div className="mt-6 flex flex-col gap-3">
-        {nonceBusy && (
-          <p className="text-center text-sm text-muted-foreground">
-            Wait for your swap or Earn deposit to finish.
-          </p>
+        {operationsError ? (
+          <div className="flex flex-col items-center gap-2">
+            <p className="text-center text-sm text-destructive">
+              Couldn't check for a pending swap or Earn deposit.
+            </p>
+            <Button type="button" variant="outline" size="sm" onClick={() => void refetchOperations()}>
+              Try again
+            </Button>
+          </div>
+        ) : (
+          nonceBusy && (
+            <p className="text-center text-sm text-muted-foreground">
+              Wait for your swap or Earn deposit to finish.
+            </p>
+          )
         )}
         <Button
           size="lg"
