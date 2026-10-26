@@ -37,7 +37,7 @@ export const Transfer = () => {
     op => op.operation_type !== 'earn_withdraw' && op.status === 'scheduled',
   )
   const { data, isLoading: tokensLoading, error: tokensError } = useTokens()
-  const { enabledTokens } = usePrivanaContext()
+  const { enabledTokens, tokensStatus } = usePrivanaContext()
   const balanceTokenIds = useMemo(() => enabledTokens.map(t => t.id), [enabledTokens])
   const {
     balances,
@@ -93,9 +93,9 @@ export const Transfer = () => {
   let amountField: ReactNode
   if (tokensError) {
     amountField = <p className="text-sm text-destructive">Failed to load tokens: {tokensError.message}</p>
-  } else if (balancesError) {
+  } else if (tokensStatus === 'error' || balancesError) {
     amountField = <p className="text-sm text-destructive">Failed to load your balances.</p>
-  } else if (tokensLoading || balancesLoading) {
+  } else if (tokensLoading || tokensStatus === 'loading' || balancesLoading) {
     amountField = <Skeleton className="h-[60px] w-full rounded-full" />
   } else if (tokens.length === 0) {
     amountField = (
