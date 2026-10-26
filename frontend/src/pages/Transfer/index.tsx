@@ -1,4 +1,4 @@
-import { type ReactNode, useEffect, useMemo, useState } from 'react'
+import { type ReactNode, useMemo, useState } from 'react'
 import { EyeOff } from 'lucide-react'
 import {
   DepositModal,
@@ -31,16 +31,11 @@ export const Transfer = () => {
   const goBack = useGoBack(dashboardPath())
   const { address } = useConnection()
   const { addresses: systemAddresses, ready: systemAddressesReady } = useSystemAddresses()
-  const { data: operationsData, refetch: refetchOperations } = useOperations()
+  const { data: operationsData } = useOperations()
   // Swaps and Earn deposits sign the same transfer nonce; a scheduled one hasn't spent it yet.
   const nonceBusy = (operationsData?.operations ?? []).some(
     op => op.operation_type !== 'earn_withdraw' && op.status === 'scheduled',
   )
-  useEffect(() => {
-    if (!nonceBusy) return
-    const timer = setInterval(() => void refetchOperations(), 10_000)
-    return () => clearInterval(timer)
-  }, [nonceBusy, refetchOperations])
   const { data, isLoading: tokensLoading, error: tokensError } = useTokens()
   const { enabledTokens } = usePrivanaContext()
   const balanceTokenIds = useMemo(() => enabledTokens.map(t => t.id), [enabledTokens])
