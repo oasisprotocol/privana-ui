@@ -42,9 +42,10 @@ const IN_FLIGHT_MESSAGE = 'Wait for your swap or Earn deposit to finish.'
 const holdsNonce = (operations: readonly Operation[] | undefined) =>
   (operations ?? []).some(op => op.operation_type !== 'earn_withdraw' && op.status === 'scheduled')
 
-// A timeout or a 5xx leaves the outcome unknown: the transfer may still have gone through.
+// A timeout, a 409 or a 5xx leaves the outcome unknown: the transfer may still have gone through.
 const isUnknownOutcome = (err: unknown) =>
-  err instanceof NetworkError || (err instanceof AccountingApiError && err.statusCode >= 500)
+  err instanceof NetworkError ||
+  (err instanceof AccountingApiError && (err.statusCode === 409 || err.statusCode >= 500))
 
 const transferFailure = (err: unknown): string =>
   err instanceof AccountingApiError
