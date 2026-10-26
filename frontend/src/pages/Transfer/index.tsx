@@ -37,6 +37,7 @@ import { recipientError } from './recipient'
 import { useSystemAddresses } from './useSystemAddresses'
 
 const IN_FLIGHT_MESSAGE = 'Wait for your swap or Earn deposit to finish.'
+const OPERATIONS_ERROR_MESSAGE = "Couldn't check for a pending swap or Earn deposit."
 
 // Swaps and Earn deposits sign the same transfer nonce; a scheduled one hasn't spent it yet.
 const holdsNonce = (operations: readonly Operation[] | undefined) =>
@@ -131,7 +132,11 @@ export const Transfer = () => {
     setSending(true)
     setSendError(null)
     try {
-      const { data: latest } = await refetchOperations()
+      const { data: latest, isError } = await refetchOperations()
+      if (isError) {
+        setSendError(OPERATIONS_ERROR_MESSAGE)
+        return
+      }
       if (holdsNonce(latest?.operations)) return
       await transfer({
         toAddress: sent.recipient as `0x${string}`,
@@ -243,9 +248,7 @@ export const Transfer = () => {
       <div className="mt-6 flex flex-col gap-3">
         {operationsError ? (
           <div className="flex flex-col items-center gap-2">
-            <p className="text-center text-sm text-destructive">
-              Couldn't check for a pending swap or Earn deposit.
-            </p>
+            <p className="text-center text-sm text-destructive">{OPERATIONS_ERROR_MESSAGE}</p>
             <Button type="button" variant="outline" size="sm" onClick={() => void refetchOperations()}>
               Try again
             </Button>
