@@ -6,13 +6,17 @@ const RECENT_RECIPIENTS = [
   '0x2d8f4a1c9e6b73058f1d2a4c6e8b0d3f5a7c9e1b',
 ]
 
+const ERROR_MIN_LENGTH = 6
+
 type RecipientFieldProps = {
   value: string
   onChange: (value: string) => void
+  error: string | null
 }
 
-export const RecipientField = ({ value, onChange }: RecipientFieldProps) => {
+export const RecipientField = ({ value, onChange, error }: RecipientFieldProps) => {
   const recipient = value.trim()
+  const shownError = recipient.length >= ERROR_MIN_LENGTH ? error : null
 
   const paste = () =>
     void navigator.clipboard.readText().then(
@@ -23,12 +27,20 @@ export const RecipientField = ({ value, onChange }: RecipientFieldProps) => {
   return (
     <div>
       <p className="text-base font-semibold text-foreground">To</p>
-      <div className="mt-2 flex h-12 items-center gap-2 rounded-full border border-input bg-white px-4 shadow-xs transition-[color,box-shadow] focus-within:border-ring focus-within:ring-[3px] focus-within:ring-ring/50 dark:bg-card">
+      <div
+        className={cn(
+          'mt-2 flex h-12 items-center gap-2 rounded-full border bg-white px-4 shadow-xs transition-[color,box-shadow] focus-within:ring-[3px] dark:bg-card',
+          shownError
+            ? 'border-destructive focus-within:ring-destructive/20'
+            : 'border-input focus-within:border-ring focus-within:ring-ring/50',
+        )}
+      >
         <input
           value={value}
           onChange={e => onChange(e.target.value)}
           placeholder="Paste the recipient's address"
           aria-label="Recipient address"
+          aria-invalid={!!shownError}
           autoComplete="off"
           spellCheck={false}
           autoCorrect="off"
@@ -55,8 +67,12 @@ export const RecipientField = ({ value, onChange }: RecipientFieldProps) => {
           </button>
         )}
       </div>
-      {RECENT_RECIPIENTS.some(address => sameId(address, recipient)) && (
-        <p className="mt-1.5 text-xs text-muted-foreground">Recent recipient</p>
+      {shownError ? (
+        <p className="mt-1.5 text-xs text-destructive">{shownError}</p>
+      ) : (
+        RECENT_RECIPIENTS.some(address => sameId(address, recipient)) && (
+          <p className="mt-1.5 text-xs text-muted-foreground">Recent recipient</p>
+        )
       )}
       <div className="mt-3">
         <p className="px-1 text-xs font-medium uppercase tracking-wide text-muted-foreground">Recents</p>
