@@ -4,6 +4,7 @@ import { DepositInlineModal } from '@oasisprotocol/privana-sdk'
 import { BackHeader } from '@/components/BackHeader'
 import { SuccessState } from '@/components/SuccessState'
 import { useGoBack } from '@/hooks/use-go-back'
+import { useLeaveBlock } from '@/hooks/use-leave-block'
 import { DESKTOP_CARD } from '@/lib/surface'
 import { cn } from '@/lib/utils'
 import { dashboardPath } from '@/paths'
@@ -13,10 +14,12 @@ export const Deposit = () => {
   const navigate = useNavigate()
   const [searchParams] = useSearchParams()
   const [done, setDone] = useState(false)
+  const [leaveBlocked, setLeaveBlocked] = useState(false)
+  useLeaveBlock(leaveBlocked)
 
   return (
     <div className={cn('mx-auto flex w-full max-w-lg flex-col', DESKTOP_CARD)}>
-      <BackHeader title="Deposit" onBack={goBack} />
+      <BackHeader title="Deposit" onBack={goBack} disabled={leaveBlocked} />
       {done ? (
         <SuccessState
           title="Deposit complete"
@@ -26,6 +29,7 @@ export const Deposit = () => {
       ) : (
         <DepositInlineModal
           hideTitle
+          onCloseBlockedChange={setLeaveBlocked}
           defaultTab={searchParams.get('tab') === 'card' ? 'credit-card' : 'crypto'}
           onDepositSuccess={() => setDone(true)}
           className="mt-5 w-full bg-transparent p-0 shadow-none"
