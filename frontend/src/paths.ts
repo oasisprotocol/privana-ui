@@ -16,6 +16,10 @@ export const receivePath = () => '/receive'
 
 export const transferPath = () => '/transfer'
 
+export const depositPath = (tab?: 'card') => (tab ? `/deposit?tab=${tab}` : '/deposit')
+
+export const withdrawPath = () => '/withdraw'
+
 export const activityPath = () => '/activity'
 export const activityDetailsPath = (id: string) => `/activity/${id}`
 
