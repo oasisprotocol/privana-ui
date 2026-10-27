@@ -16,11 +16,12 @@ export const Withdraw = () => {
   const resetBalanceCaches = useResetBalanceCaches()
   const [done, setDone] = useState(false)
   const [leaveBlocked, setLeaveBlocked] = useState(false)
-  useLeaveBlock(leaveBlocked)
+  const [stepBack, setStepBack] = useState<() => void>()
+  useLeaveBlock(leaveBlocked, stepBack)
 
   return (
     <div className={cn('mx-auto flex w-full max-w-lg flex-col', DESKTOP_CARD)}>
-      <BackHeader title="Withdraw" onBack={goBack} disabled={leaveBlocked} />
+      <BackHeader title="Withdraw" onBack={stepBack ?? goBack} disabled={leaveBlocked} />
       {done ? (
         <SuccessState
           title="Withdrawal complete"
@@ -29,13 +30,13 @@ export const Withdraw = () => {
         />
       ) : (
         <WithdrawInlineModal
-          hideTitle
+          onBackChange={back => setStepBack(() => back)}
           onCloseBlockedChange={setLeaveBlocked}
           onWithdrawSuccess={() => {
             resetBalanceCaches()
             setDone(true)
           }}
-          className="mt-5 w-full bg-transparent p-0 shadow-none"
+          className="mt-5"
         />
       )}
     </div>
