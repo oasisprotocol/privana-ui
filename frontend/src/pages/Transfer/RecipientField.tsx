@@ -1,10 +1,5 @@
-import { Check, Clipboard, X } from 'lucide-react'
-import { cn, sameId } from '@/lib/utils'
-
-const RECENT_RECIPIENTS = [
-  '0x7b3e9f21c6a84d05e2f17b9c3d8a0e45f6c1b2d3',
-  '0x2d8f4a1c9e6b73058f1d2a4c6e8b0d3f5a7c9e1b',
-]
+import { Clipboard, X } from 'lucide-react'
+import { cn } from '@/lib/utils'
 
 const ERROR_MIN_LENGTH = 6
 
@@ -67,34 +62,7 @@ export const RecipientField = ({ value, onChange, error }: RecipientFieldProps) 
           </button>
         )}
       </div>
-      {shownError ? (
-        <p className="mt-1.5 text-xs text-destructive">{shownError}</p>
-      ) : (
-        RECENT_RECIPIENTS.some(address => sameId(address, recipient)) && (
-          <p className="mt-1.5 text-xs text-muted-foreground">Recent recipient</p>
-        )
-      )}
-      <div className="mt-3">
-        <p className="px-1 text-xs font-medium uppercase tracking-wide text-muted-foreground">Recents</p>
-        <div className="mt-2 divide-y divide-border overflow-hidden rounded-2xl bg-white shadow-[var(--card-shadow)] dark:bg-card">
-          {RECENT_RECIPIENTS.map(address => (
-            <button
-              key={address}
-              type="button"
-              onClick={() => onChange(address)}
-              className={cn(
-                'flex w-full items-center gap-3 px-4 py-3 text-left transition-colors hover:bg-muted',
-                sameId(recipient, address) && 'bg-muted',
-              )}
-            >
-              <span className="min-w-0 flex-1 break-all font-mono text-xs leading-snug text-foreground">
-                {address}
-              </span>
-              {sameId(recipient, address) && <Check className="size-4 shrink-0 text-chart-positive" />}
-            </button>
-          ))}
-        </div>
-      </div>
+      {shownError && <p className="mt-1.5 text-xs text-destructive">{shownError}</p>}
       <p className="mt-2 text-xs text-muted-foreground">
         Their internal transfer address — the one they signed in with. Only transfers sent inside Privana
         reach it.

@@ -224,11 +224,11 @@ export const Transfer = () => {
     <div className={cn('mx-auto flex w-full max-w-lg flex-col', DESKTOP_CARD)}>
       <BackHeader title="Send" onBack={goBack} />
       <div className="mt-5 flex flex-col gap-6">
-        <RecipientField value={recipient} onChange={setRecipient} error={toError} />
         <div className="flex flex-col gap-2">
           <p className="text-base font-semibold text-foreground">Amount</p>
           {amountField}
         </div>
+        <RecipientField value={recipient} onChange={setRecipient} error={toError} />
         <Notice icon={EyeOff}>
           <span className="font-semibold">Private, not anonymous.</span> It settles inside Privana — nothing
           on Base or Ethereum.
