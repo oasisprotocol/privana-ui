@@ -277,30 +277,30 @@
 [data-privana],
 [data-privana].dark,
 .dark [data-privana] {
-  --fv-radius: var(--radius);
-  --fv-background: var(--background);
-  --fv-foreground: var(--foreground);
-  --fv-primary: var(--primary);
-  --fv-primary-foreground: var(--primary-foreground);
-  --fv-secondary: color-mix(in srgb, var(--secondary) 50%, var(--card));
-  --fv-secondary-foreground: var(--secondary-foreground);
-  --fv-card-foreground: var(--card-foreground);
-  --fv-popover: var(--popover);
-  --fv-popover-foreground: var(--popover-foreground);
-  --fv-muted-foreground: var(--muted-foreground);
-  --fv-accent: var(--accent);
-  --fv-accent-foreground: var(--accent-foreground);
-  --fv-border: var(--border);
-  --fv-destructive: var(--destructive);
-  --fv-card: var(--background);
-  --fv-muted: var(--card);
-  --fv-input: var(--background);
+  --privana-radius: var(--radius);
+  --privana-background: var(--background);
+  --privana-foreground: var(--foreground);
+  --privana-primary: var(--primary);
+  --privana-primary-foreground: var(--primary-foreground);
+  --privana-secondary: color-mix(in srgb, var(--secondary) 50%, var(--card));
+  --privana-secondary-foreground: var(--secondary-foreground);
+  --privana-card-foreground: var(--card-foreground);
+  --privana-popover: var(--popover);
+  --privana-popover-foreground: var(--popover-foreground);
+  --privana-muted-foreground: var(--muted-foreground);
+  --privana-accent: var(--accent);
+  --privana-accent-foreground: var(--accent-foreground);
+  --privana-border: var(--border);
+  --privana-destructive: var(--destructive);
+  --privana-card: var(--background);
+  --privana-muted: var(--card);
+  --privana-input: var(--background);
 }
 
 [data-privana].dark,
 .dark [data-privana] {
-  --fv-secondary: var(--muted);
-  --fv-input: #2d3139;
+  --privana-secondary: var(--muted);
+  --privana-input: #2d3139;
 }
 
 [data-privana][data-slot='dialog-overlay'] {
