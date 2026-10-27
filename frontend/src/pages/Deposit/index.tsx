@@ -15,11 +15,12 @@ export const Deposit = () => {
   const [searchParams] = useSearchParams()
   const [done, setDone] = useState(false)
   const [leaveBlocked, setLeaveBlocked] = useState(false)
-  useLeaveBlock(leaveBlocked)
+  const [stepBack, setStepBack] = useState<() => void>()
+  useLeaveBlock(leaveBlocked, stepBack)
 
   return (
     <div className={cn('mx-auto flex w-full max-w-lg flex-col', DESKTOP_CARD)}>
-      <BackHeader title="Deposit" onBack={goBack} disabled={leaveBlocked} />
+      <BackHeader title="Deposit" onBack={stepBack ?? goBack} disabled={leaveBlocked} />
       {done ? (
         <SuccessState
           title="Deposit complete"
@@ -28,11 +29,11 @@ export const Deposit = () => {
         />
       ) : (
         <DepositInlineModal
-          hideTitle
+          onBackChange={back => setStepBack(() => back)}
           onCloseBlockedChange={setLeaveBlocked}
           defaultTab={searchParams.get('tab') === 'card' ? 'credit-card' : 'crypto'}
           onDepositSuccess={() => setDone(true)}
-          className="mt-5 w-full bg-transparent p-0 shadow-none"
+          className="mt-5"
         />
       )}
     </div>
