@@ -32,3 +32,19 @@ test('signs out from the account menu', async ({ page }) => {
   )
   expect(staleKeys).toEqual([])
 })
+
+test('an ended session waits for the user to sign again', async ({ page }) => {
+  await installWallet(page, { sessionEnded: true })
+  await installApi(page, funded())
+  const logins: string[] = []
+  page.on('request', request => {
+    if (request.url().endsWith('/auth/login')) logins.push(request.url())
+  })
+  await page.goto('/')
+
+  await expect(page.getByText('Your session ended. Sign the message to continue.')).toBeVisible()
+  await page.getByRole('button', { name: 'Sign message' }).click()
+
+  await expect(page).toHaveURL(/\/dashboard$/)
+  expect(logins).toHaveLength(1)
+})

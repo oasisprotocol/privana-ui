@@ -32,6 +32,7 @@ export interface InstallWalletOptions {
    * drive the sign-in UI itself.
    */
   signedIn?: boolean
+  sessionEnded?: boolean
 }
 
 /**
@@ -40,7 +41,10 @@ export interface InstallWalletOptions {
  * connected-wallet restore path then bridges it into wagmi (TurnkeySync), and
  * the seeded SIWE record signs the session in without touching the UI.
  */
-export async function installWallet(page: Page, { signedIn = true }: InstallWalletOptions = {}) {
+export async function installWallet(
+  page: Page,
+  { signedIn = true, sessionEnded = false }: InstallWalletOptions = {},
+) {
   // Signing runs in Node (viem), reached from the page shim via this binding —
   // keeps the private key and crypto out of serialized page code.
   await page.exposeFunction('__e2eSignMessage', (message: `0x${string}`) =>
@@ -58,6 +62,7 @@ export async function installWallet(page: Page, { signedIn = true }: InstallWall
     })
     const now = Date.now()
     const day = 24 * 60 * 60 * 1000
+    const sessionEndsAt = sessionEnded ? now - 60_000 : now + day
     const siweKey = ['privana', 'siwe-auth', ACCOUNTING_API_URL.replace(/\/$/, ''), String(CHAIN_ID)].join(
       ':',
     )
@@ -71,9 +76,9 @@ export async function installWallet(page: Page, { signedIn = true }: InstallWall
         jwt_refresh_token: 'e2e-jwt-refresh',
         address: e2eAddress,
       },
-      accessTokenExpiresAt: now + day,
+      accessTokenExpiresAt: sessionEndsAt,
       refreshTokenExpiresAt: now + 7 * day,
-      siweTokenExpiresAt: now + day,
+      siweTokenExpiresAt: sessionEndsAt,
       updatedAt: now,
     })
   }

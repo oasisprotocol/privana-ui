@@ -1,4 +1,3 @@
-import { useEffect, useRef } from 'react'
 import { Navigate, useLocation } from 'react-router'
 import { useConnection } from 'wagmi'
 import { useSiweAuth } from '@oasisprotocol/privana-sdk'
@@ -21,26 +20,11 @@ import { dashboardPath } from '@/paths'
 //   - fully signed in     → redirect to the dashboard
 export const Home = () => {
   const { isConnected, status } = useConnection()
-  const { isAuthenticated, isLoading: isAuthLoading, error: authError, sessionExpired, login } = useSiweAuth()
+  const { isAuthenticated, error: authError, sessionExpired, login } = useSiweAuth()
   const isSignedIn = useIsSignedIn()
   const signInForm = useSignInForm()
   const signOut = useSignOut()
   const location = useLocation()
-
-  const autoLoginTried = useRef(false)
-  useEffect(() => {
-    // Not isConnected: wagmi reports it while still reconnecting, and a reconnect that then
-    // fails would leave that signature pending while the next connect signs again (same nonce).
-    if (status !== 'connected') {
-      autoLoginTried.current = false
-      return
-    }
-    // An ended session (expired, or ended in another tab) waits for the user to sign again.
-    if (!isAuthenticated && !isAuthLoading && !authError && !sessionExpired && !autoLoginTried.current) {
-      autoLoginTried.current = true
-      void login().catch(() => {})
-    }
-  }, [status, isAuthenticated, isAuthLoading, authError, sessionExpired, login])
 
   const authPending = isConnected && !isAuthenticated && !authError && !sessionExpired
   const showPendingEscape = useSlowSettlement(authPending ? 'in-progress' : 'completed')

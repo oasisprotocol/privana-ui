@@ -32,9 +32,11 @@ beforeEach(() => {
 })
 
 describe('Home with a connected wallet', () => {
-  it('signs in by itself while the session has not ended', () => {
+  it('leaves signing in to the SDK and shows it authenticating', () => {
     renderHome()
-    expect(login).toHaveBeenCalledTimes(1)
+    expect(login).not.toHaveBeenCalled()
+    expect(screen.getByText('Authenticating to Privana. Please confirm in your wallet.')).toBeInTheDocument()
+    expect(screen.queryByRole('button', { name: 'Sign message' })).not.toBeInTheDocument()
   })
 
   it('waits for the user once the session ended, and signs on request', async () => {
