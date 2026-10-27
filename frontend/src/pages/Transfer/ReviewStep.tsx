@@ -1,6 +1,7 @@
 import { useState } from 'react'
+import { Send } from 'lucide-react'
 import { BackHeader } from '@/components/BackHeader'
-import { ReviewAmountCard, ReviewConfirmButton, ReviewDetails } from '@/components/ReviewParts'
+import { ReviewConfirmButton, ReviewDetails } from '@/components/ReviewParts'
 import { formatFiat } from '@/lib/tokens'
 import { shortenAddress } from '@/lib/utils'
 
@@ -33,14 +34,17 @@ export const ReviewStep = ({
     <div className="flex flex-col gap-4">
       <BackHeader title="Review" onBack={onBack} disabled={sending} />
 
-      <ReviewAmountCard
-        eyebrow="You're sending"
-        amount={amount}
-        symbol={symbol}
-        subline={`to ${shortenAddress(recipient)}`}
-      />
+      <div className="flex flex-col items-center text-center">
+        <p className="text-3xl font-semibold tracking-tight tabular-nums text-foreground">
+          {amount} {symbol}
+        </p>
+        <p className="mt-2 text-sm text-muted-foreground">
+          to <span className="font-mono text-foreground">{shortenAddress(recipient)}</span>
+        </p>
+      </div>
 
       <ReviewDetails
+        compact
         rows={[
           {
             label: 'To',
@@ -70,7 +74,8 @@ export const ReviewStep = ({
           className="mt-0.5 size-4 shrink-0 accent-primary"
         />
         <span className="text-xs text-foreground">
-          I checked this address with the recipient. Transfers can't be undone.
+          I checked this address with the recipient and confirm I'm sending funds within Privana. Transfers
+          can't be undone.
         </span>
       </label>
 
@@ -80,6 +85,7 @@ export const ReviewStep = ({
       <ReviewConfirmButton
         label="Sign & send"
         loadingLabel="Signing…"
+        icon={Send}
         onConfirm={onConfirm}
         loading={sending}
         disabled={!checked || sending || !!blockedReason}
