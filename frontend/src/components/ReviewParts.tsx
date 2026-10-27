@@ -1,5 +1,5 @@
 import type { ReactNode } from 'react'
-import { ShieldCheck } from 'lucide-react'
+import { Loader2, type LucideIcon, ShieldCheck } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { SurfaceCard } from '@/components/SurfaceCard'
 import { Row } from '@/components/Row'
@@ -28,7 +28,15 @@ export const ReviewAmountCard = ({
 
 export type ReviewDetailRow = { label: string; value: ReactNode; muted?: boolean }
 
-export const ReviewDetails = ({ header, rows }: { header?: ReactNode; rows: ReviewDetailRow[] }) => (
+export const ReviewDetails = ({
+  header,
+  rows,
+  compact,
+}: {
+  header?: ReactNode
+  rows: ReviewDetailRow[]
+  compact?: boolean
+}) => (
   <SurfaceCard className="flex flex-col px-5">
     {header && <div className="border-b border-border py-4">{header}</div>}
     {rows.map((r, i) => (
@@ -38,7 +46,7 @@ export const ReviewDetails = ({ header, rows }: { header?: ReactNode; rows: Revi
         mutedValue={r.muted}
         label={r.label}
         value={r.value}
-        className={cn('py-3.5', i < rows.length - 1 && 'border-b border-border')}
+        className={cn(compact ? 'py-3' : 'py-3.5', i < rows.length - 1 && 'border-b border-border')}
       />
     ))}
   </SurfaceCard>
@@ -57,14 +65,17 @@ export const ReviewConfirmButton = ({
   loading,
   label,
   loadingLabel = 'Submitting...',
+  icon: Icon,
 }: {
   onConfirm: () => void
   disabled?: boolean
   loading?: boolean
   label: string
   loadingLabel?: string
+  icon?: LucideIcon
 }) => (
   <Button size="lg" className="h-12 w-full text-base" onClick={onConfirm} disabled={disabled}>
+    {Icon && (loading ? <Loader2 className="animate-spin" /> : <Icon />)}
     {loading ? loadingLabel : label}
   </Button>
 )
