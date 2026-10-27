@@ -2,15 +2,14 @@ import { Button } from '@/components/ui/button'
 import { Zap, ArrowLeftRight, TrendingUp, ChevronRight, ShieldCheck } from 'lucide-react'
 import { useMemo, useState, type ReactNode } from 'react'
 import { useConnection } from 'wagmi'
-import { DepositModal, WithdrawModal, useSiweAuth } from '@oasisprotocol/privana-sdk'
+import { useSiweAuth } from '@oasisprotocol/privana-sdk'
 import { Skeleton } from '@/components/ui/skeleton'
 import { SurfaceCard } from '@/components/SurfaceCard'
 import { formatApyBps, apyBpsToFraction } from '@/lib/apy'
 import { formatFiat } from '@/lib/tokens'
-import { earnPath, tradePath, vaultPath } from '@/paths'
+import { depositPath, earnPath, tradePath, vaultPath, withdrawPath } from '@/paths'
 import { Link } from 'react-router'
 import { useFunds } from '@/hooks/useFunds'
-import { useResetBalanceCaches } from '@/hooks/use-reset-balance-caches'
 import { endSeriesAt, usePortfolioChart, type ChartRange } from '@/api/portfolio'
 import { useMergedActivity } from '@/hooks/use-merged-activity'
 import { BalanceAmount } from '@/components/BalanceAmount'
@@ -107,8 +106,6 @@ const DepositFeatures = ({ bestApyBps }: { bestApyBps: number | null }) => (
 )
 
 export const DashboardHome = () => {
-  const [depositTab, setDepositTab] = useState<'crypto' | 'credit-card' | null>(null)
-  const [withdrawOpen, setWithdrawOpen] = useState(false)
   const {
     isLoading,
     hasFunds,
@@ -121,7 +118,6 @@ export const DashboardHome = () => {
     pricesError,
     isError: fundsError,
   } = useFunds()
-  const resetBalanceCaches = useResetBalanceCaches()
 
   // Hoisted out of LatestActivity so the history/operations fetch starts on mount in parallel with very slow balance reads.
   const {
@@ -195,20 +191,15 @@ export const DashboardHome = () => {
               )}
               <DepositFeatures bestApyBps={bestApyBps} />
               <div className="mt-6 flex flex-col gap-3">
-                <Button
-                  size="lg"
-                  className="h-14 px-8 text-base w-full"
-                  onClick={() => setDepositTab('crypto')}
-                >
-                  Deposit crypto
+                <Button asChild size="lg" className="h-14 px-8 text-base w-full">
+                  <Link to={depositPath()} viewTransition>
+                    Deposit crypto
+                  </Link>
                 </Button>
-                <Button
-                  variant="outline"
-                  size="lg"
-                  className="h-14 px-8 text-base w-full"
-                  onClick={() => setDepositTab('credit-card')}
-                >
-                  Buy with card
+                <Button asChild variant="outline" size="lg" className="h-14 px-8 text-base w-full">
+                  <Link to={depositPath('card')} viewTransition>
+                    Buy with card
+                  </Link>
                 </Button>
               </div>
             </SurfaceCard>
@@ -237,16 +228,15 @@ export const DashboardHome = () => {
                   />
                 </div>
                 <div className="mt-8 flex gap-3 sm:max-w-md">
-                  <Button size="lg" className="h-14 flex-1 text-base" onClick={() => setDepositTab('crypto')}>
-                    Deposit
+                  <Button asChild size="lg" className="h-14 flex-1 text-base">
+                    <Link to={depositPath()} viewTransition>
+                      Deposit
+                    </Link>
                   </Button>
-                  <Button
-                    size="lg"
-                    variant="outline"
-                    className="h-14 flex-1 text-base"
-                    onClick={() => setWithdrawOpen(true)}
-                  >
-                    Withdraw
+                  <Button asChild size="lg" variant="outline" className="h-14 flex-1 text-base">
+                    <Link to={withdrawPath()} viewTransition>
+                      Withdraw
+                    </Link>
                   </Button>
                 </div>
               </div>
@@ -296,16 +286,15 @@ export const DashboardHome = () => {
               />
 
               <div className="flex gap-3">
-                <Button size="lg" className="h-14 flex-1 text-base" onClick={() => setDepositTab('crypto')}>
-                  Deposit
+                <Button asChild size="lg" className="h-14 flex-1 text-base">
+                  <Link to={depositPath()} viewTransition>
+                    Deposit
+                  </Link>
                 </Button>
-                <Button
-                  size="lg"
-                  variant="outline"
-                  className="h-14 flex-1 text-base"
-                  onClick={() => setWithdrawOpen(true)}
-                >
-                  Withdraw
+                <Button asChild size="lg" variant="outline" className="h-14 flex-1 text-base">
+                  <Link to={withdrawPath()} viewTransition>
+                    Withdraw
+                  </Link>
                 </Button>
               </div>
             </div>
@@ -357,22 +346,6 @@ export const DashboardHome = () => {
           </div>
         )}
       </div>
-
-      <DepositModal
-        open={depositTab !== null}
-        onClose={() => setDepositTab(null)}
-        onDepositSuccess={() => setDepositTab(null)}
-        defaultTab={depositTab ?? 'crypto'}
-      />
-
-      <WithdrawModal
-        open={withdrawOpen}
-        onClose={() => setWithdrawOpen(false)}
-        onWithdrawSuccess={() => {
-          resetBalanceCaches()
-          setWithdrawOpen(false)
-        }}
-      />
     </>
   )
 }
