@@ -8,9 +8,10 @@ import { cn } from '@/lib/utils'
 import { ConnectButton } from '../ConnectButton'
 import Logo from '../../assets/logo.svg'
 import { MenuItem } from './menu-item'
+import { TransferMenu } from './transfer-menu'
 import { MobileBottomNav } from './MobileBottomNav'
 import { Separator } from '../ui/separator'
-import { activityPath, earnPath, homePath, dashboardPath, tradePath } from '@/paths'
+import { activityPath, homePath, dashboardPath, tradePath } from '@/paths'
 
 type FooterLink = { label: string; href: string }
 
@@ -77,7 +78,7 @@ export const Layout = ({ children }: LayoutProps) => {
 
   return (
     <div className="min-h-screen [background-image:var(--app-gradient)] text-foreground">
-      <div className="flex min-h-dvh w-full flex-col pb-20 md:pb-0">
+      <div className="flex min-h-dvh w-full flex-col pb-28 md:pb-0">
         <nav
           style={{ viewTransitionName: 'top-nav' }}
           className={cn(
@@ -88,17 +89,22 @@ export const Layout = ({ children }: LayoutProps) => {
           )}
         >
           <div className="mx-auto flex w-full max-w-5xl items-center justify-between">
-            <Link to={isSignedIn ? dashboardPath() : homePath()} viewTransition className="text-xl font-bold">
-              <img src={Logo} alt="Privana" className="h-6 min-w-25 dark:brightness-0 dark:invert" />
-            </Link>
-            {isSignedIn && (
-              <div className="hidden md:flex items-center gap-1">
-                <MenuItem to={dashboardPath()} label="Portfolio" />
-                <MenuItem to={earnPath()} label="Earn" />
-                <MenuItem to={tradePath()} label="Swap" />
-                <MenuItem to={activityPath()} label="Activity" />
-              </div>
-            )}
+            <div className="flex items-center gap-7">
+              <Link
+                to={isSignedIn ? dashboardPath() : homePath()}
+                viewTransition
+                className="text-xl font-bold"
+              >
+                <img src={Logo} alt="Privana" className="h-6 min-w-25 dark:brightness-0 dark:invert" />
+              </Link>
+              {isSignedIn && (
+                <div className="hidden md:flex items-center gap-1">
+                  <MenuItem to={tradePath()} label="Swap" />
+                  <TransferMenu />
+                  <MenuItem to={activityPath()} label="Activity" />
+                </div>
+              )}
+            </div>
 
             {isSignedIn && (
               <div className="flex items-center gap-4">
