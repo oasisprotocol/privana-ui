@@ -1,17 +1,12 @@
-import { ArrowDownLeft, ArrowUpRight, ChevronDown } from 'lucide-react'
+import { ChevronDown } from 'lucide-react'
 import { Link, useLocation } from 'react-router'
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '../ui/dropdown-menu'
 import { cn } from '@/lib/utils'
-import { receivePath, transferPath } from '@/paths'
-
-const ITEMS = [
-  { to: transferPath(), label: 'Send', description: 'To another Privana account', Icon: ArrowUpRight },
-  { to: receivePath(), label: 'Receive', description: 'From another Privana account', Icon: ArrowDownLeft },
-]
+import { TRANSFER_ITEMS } from './transfer-items'
 
 export const TransferMenu = () => {
   const { pathname } = useLocation()
-  const active = ITEMS.some(item => pathname.startsWith(item.to))
+  const active = TRANSFER_ITEMS.some(item => pathname.startsWith(item.to))
 
   return (
     <DropdownMenu>
@@ -25,7 +20,7 @@ export const TransferMenu = () => {
         <ChevronDown className="size-4 transition-transform group-data-[state=open]:rotate-180" />
       </DropdownMenuTrigger>
       <DropdownMenuContent align="start" sideOffset={8} className="w-72 rounded-2xl p-2">
-        {ITEMS.map(({ to, label, description, Icon }) => (
+        {TRANSFER_ITEMS.map(({ to, label, description, Icon }) => (
           <DropdownMenuItem
             key={to}
             asChild

@@ -78,7 +78,7 @@ export const Layout = ({ children }: LayoutProps) => {
 
   return (
     <div className="min-h-screen [background-image:var(--app-gradient)] text-foreground">
-      <div className="flex min-h-dvh w-full flex-col pb-20 md:pb-0">
+      <div className="flex min-h-dvh w-full flex-col pb-28 md:pb-0">
         <nav
           style={{ viewTransitionName: 'top-nav' }}
           className={cn(
