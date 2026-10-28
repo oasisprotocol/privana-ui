@@ -3,17 +3,19 @@ import { Link } from 'react-router'
 import { ChevronRight, LockOpen } from 'lucide-react'
 import { formatUnits } from 'viem'
 import { useLockedFunds, usePrivanaContext } from '@oasisprotocol/privana-sdk'
+import { BackHeader } from '@/components/BackHeader'
 import { SurfaceCard } from '@/components/SurfaceCard'
 import { BalanceAmount } from '@/components/BalanceAmount'
 import { BalanceBreakdown } from '@/components/BalanceBreakdown'
 import { Skeleton } from '@/components/ui/skeleton'
 import { useFunds } from '@/hooks/useFunds'
+import { useGoBack } from '@/hooks/use-go-back'
 import { useMergedActivity } from '@/hooks/use-merged-activity'
 import { useTokenPrices } from '@/api/prices'
 import { appForAddress } from '@/config/apps'
 import { formatFiat } from '@/lib/tokens'
 import { cn, shortenAddress } from '@/lib/utils'
-import { earnPath, appsPath, activityPath } from '@/paths'
+import { earnPath, appsPath, activityPath, dashboardPath } from '@/paths'
 import { ActivityList } from '@/components/ActivityList'
 import { HISTORY_FETCH_LIMIT, MAX_ROWS } from '@/pages/Dashboard/DashboardHome/latestActivity.constants'
 
@@ -72,6 +74,7 @@ const VaultRow = ({
 )
 
 export const Vault = () => {
+  const goBack = useGoBack(dashboardPath())
   const {
     availableFiatValue,
     earningFiatValue,
@@ -146,8 +149,8 @@ export const Vault = () => {
   return (
     <div className="mx-auto flex w-full flex-col gap-8">
       <header>
-        <h1 className="text-3xl font-semibold tracking-tight text-foreground">Vault</h1>
-        <p className="mt-2 text-sm text-muted-foreground">
+        <BackHeader title="Vault" onBack={goBack} />
+        <p className="mt-2 text-center text-sm text-muted-foreground">
           Where your money is - what&apos;s available, what&apos;s in use, and every move in and out.
         </p>
       </header>
