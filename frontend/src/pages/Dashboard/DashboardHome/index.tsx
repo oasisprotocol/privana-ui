@@ -90,7 +90,7 @@ const DepositFeatures = ({ bestApyBps }: { bestApyBps: number | null }) => (
       title="Earn Daily"
       pill={
         bestApyBps != null ? (
-          <span className="inline-flex items-center gap-1 rounded-full bg-chart-positive px-2 py-0.5 text-xs font-semibold text-white">
+          <span className="inline-flex items-center gap-1 rounded-full bg-chart-positive px-2 py-0.5 text-xs font-semibold text-chart-positive-foreground">
             <TrendingUp className="h-3 w-3" />
             {formatApyBps(bestApyBps)} APY
           </span>
@@ -186,7 +186,7 @@ export const DashboardHome = () => {
                   <p className="text-sm text-foreground">
                     At <span className="font-semibold">{formatApyBps(bestApyBps)} APY</span>, every $1,000
                     earns about{' '}
-                    <span className="font-semibold text-chart-positive">
+                    <span className="font-semibold text-chart-positive-text">
                       {formatFiat(1000 * apyBpsToFraction(bestApyBps))}
                     </span>{' '}
                     a year.

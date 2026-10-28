@@ -40,7 +40,7 @@ const HoldingRow = ({
       <p className="text-sm font-semibold tabular-nums text-foreground">
         {fiat != null ? formatFiat(fiat) : '-'}
       </p>
-      {badge && <p className="text-xs text-chart-positive">{badge}</p>}
+      {badge && <p className="text-xs text-chart-positive-text">{badge}</p>}
     </div>
     <ChevronRight className="size-4 shrink-0 text-muted-foreground" />
   </Link>

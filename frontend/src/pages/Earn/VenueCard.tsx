@@ -32,14 +32,19 @@ type VenueCardProps = Venue & {
 
 const ApyPill = ({ apyBps, className }: { apyBps: number; className?: string }) => (
   <span
-    className={`inline-flex items-center rounded-full bg-chart-positive/15 px-2 py-0.5 text-xs font-semibold text-chart-positive ${className ?? ''}`}
+    className={`inline-flex items-center rounded-full bg-chart-positive/10 px-2 py-0.5 text-xs font-semibold text-chart-positive-text ${className ?? ''}`}
   >
     {formatApyBps(apyBps)} APY
   </span>
 )
 
 const EarnedAmount = ({ earned }: { earned: TokenAmount }) => (
-  <AmountText amount={earned.amount} token={earned} withSymbol className="font-medium text-chart-positive" />
+  <AmountText
+    amount={earned.amount}
+    token={earned}
+    withSymbol
+    className="font-medium text-chart-positive-text"
+  />
 )
 
 export const VenueCard = ({

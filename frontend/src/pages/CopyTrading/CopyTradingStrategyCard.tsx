@@ -67,7 +67,9 @@ export const CopyTradingStrategyCard: FC<CopyTradingStrategyInfo> = ({
               <span className="text-xl font-medium text-foreground">{name}</span>
               <p className="text-base font-medium">
                 <span className="text-muted-foreground">{totalValue} </span>
-                <span className={isPositive ? 'text-chart-positive' : 'text-chart-negative'}>{change}</span>
+                <span className={isPositive ? 'text-chart-positive-text' : 'text-chart-negative'}>
+                  {change}
+                </span>
               </p>
             </div>
 

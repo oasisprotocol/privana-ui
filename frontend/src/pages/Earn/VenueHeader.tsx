@@ -24,7 +24,7 @@ export const VenueHeader = ({ strategyKey, asset, chain, apyBps }: VenueHeaderPr
         {asset} · {chain}
       </p>
     </div>
-    <span className="inline-flex shrink-0 items-center rounded-full bg-chart-positive/15 px-2.5 py-1 text-xs font-semibold text-chart-positive">
+    <span className="inline-flex shrink-0 items-center rounded-full bg-chart-positive/10 px-2.5 py-1 text-xs font-semibold text-chart-positive-text">
       {formatApyBps(apyBps)} APY
     </span>
   </div>
