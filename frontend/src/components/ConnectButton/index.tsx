@@ -1,18 +1,6 @@
 import { type FC, useState } from 'react'
 import { useConnection, useChainId, useSwitchChain } from 'wagmi'
-import { Link } from 'react-router'
-import {
-  ArrowDownToLine,
-  ArrowUpFromLine,
-  ChevronDown,
-  ChevronRight,
-  History,
-  LogOut,
-  Moon,
-  Sun,
-  Wallet,
-} from 'lucide-react'
-import { DepositModal, WithdrawModal } from '@oasisprotocol/privana-sdk'
+import { ChevronDown, LogOut, Moon, Sun, Wallet } from 'lucide-react'
 import { Button } from '../ui/button'
 import { DropdownMenu, DropdownMenuContent, DropdownMenuTrigger } from '../ui/dropdown-menu'
 import { AccountAvatar } from '../AccountAvatar'
@@ -22,16 +10,14 @@ import { sapphire, sapphireTestnet, base, mainnet, hyperEvm, baseSepolia, sepoli
 import { wagmiConfig, type AppChainId } from '@/wagmi-config'
 import { TURNKEY_CONNECTOR_ID } from '@/wallet/turnkeyConnector'
 import { useTurnkeyWalletIntent } from '@/wallet/turnkeyIntent'
-import { useResetBalanceCaches } from '@/hooks/use-reset-balance-caches'
 import { useSignOut } from '@/hooks/useSignOut'
-import { activityPath } from '@/paths'
 import { cn } from '@/lib/utils'
 import { setThemePreference, useResolvedTheme } from '@/lib/theme'
 import { extractErrorMessage } from '@/lib/errors'
 import { ExportEmbeddedWallet } from './ExportEmbeddedWallet'
 import { TurnkeyLogoutItem } from './TurnkeyLogoutItem'
 import { EmbeddedWalletEmail } from './EmbeddedWalletEmail'
-import { WALLET_CARD_ROW, WALLET_MENU_ROW } from './walletMenuRow'
+import { WALLET_MENU_ROW } from './walletMenuRow'
 
 const SUPPORTED_CHAIN_IDS = wagmiConfig.chains.map(c => c.id)
 
@@ -58,14 +44,8 @@ export const ConnectButton: FC = () => {
   const walletIntent = useTurnkeyWalletIntent()
   const isEmbeddedWallet = isTurnkeyActive && walletIntent === 'embedded'
   const resolvedTheme = useResolvedTheme()
-  const resetBalanceCaches = useResetBalanceCaches()
 
   const [menuOpen, setMenuOpen] = useState(false)
-  const [activeModal, setActiveModal] = useState<'deposit' | 'withdraw' | null>(null)
-  const openModal = (modal: 'deposit' | 'withdraw') => {
-    setMenuOpen(false)
-    setActiveModal(modal)
-  }
 
   // Connected (external) wallets: full sign-out (bridge teardown + wagmi
   // disconnect + SIWE logout, which also clears any sticky auth error).
@@ -141,29 +121,6 @@ export const ConnectButton: FC = () => {
             </div>
             {isEmbeddedWallet && <EmbeddedWalletEmail />}
             {isEmbeddedWallet && <ExportEmbeddedWallet />}
-
-            <div className="my-3 border-t border-border/70" />
-
-            <div className="grid grid-cols-2 gap-2">
-              <Button className="gap-2" onClick={() => openModal('deposit')}>
-                <ArrowDownToLine className="size-4" />
-                Deposit
-              </Button>
-              <Button variant="outline" className="gap-2" onClick={() => openModal('withdraw')}>
-                <ArrowUpFromLine className="size-4" />
-                Withdraw
-              </Button>
-            </div>
-
-            <Link
-              to={activityPath()}
-              onClick={() => setMenuOpen(false)}
-              className={cn(WALLET_CARD_ROW, 'mt-2')}
-            >
-              <History className="size-4 text-muted-foreground" />
-              Vault activity
-              <ChevronRight className="ml-auto size-4 text-muted-foreground" />
-            </Link>
           </div>
 
           <div className="mt-2 flex items-center justify-between gap-2 rounded-xl bg-muted px-3 py-2">
@@ -204,20 +161,6 @@ export const ConnectButton: FC = () => {
           </div>
         </DropdownMenuContent>
       </DropdownMenu>
-
-      <DepositModal
-        open={activeModal === 'deposit'}
-        onClose={() => setActiveModal(null)}
-        onDepositSuccess={() => setActiveModal(null)}
-      />
-      <WithdrawModal
-        open={activeModal === 'withdraw'}
-        onClose={() => setActiveModal(null)}
-        onWithdrawSuccess={() => {
-          resetBalanceCaches()
-          setActiveModal(null)
-        }}
-      />
     </div>
   )
 }
