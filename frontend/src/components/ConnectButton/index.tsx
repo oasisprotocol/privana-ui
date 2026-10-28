@@ -1,18 +1,6 @@
 import { type FC, useState } from 'react'
 import { useConnection, useChainId, useSwitchChain } from 'wagmi'
-import { Link } from 'react-router'
-import {
-  ArrowDownToLine,
-  ArrowUpFromLine,
-  ChevronDown,
-  ChevronRight,
-  History,
-  LogOut,
-  Moon,
-  Sun,
-  Wallet,
-} from 'lucide-react'
-import { DepositModal, WithdrawModal } from '@oasisprotocol/privana-sdk'
+import { ChevronDown, LogOut, Moon, Sun, Wallet } from 'lucide-react'
 import { Button } from '../ui/button'
 import { DropdownMenu, DropdownMenuContent, DropdownMenuTrigger } from '../ui/dropdown-menu'
 import { AccountAvatar } from '../AccountAvatar'
@@ -22,16 +10,14 @@ import { sapphire, sapphireTestnet, base, mainnet, hyperEvm, baseSepolia, sepoli
 import { wagmiConfig, type AppChainId } from '@/wagmi-config'
 import { TURNKEY_CONNECTOR_ID } from '@/wallet/turnkeyConnector'
 import { useTurnkeyWalletIntent } from '@/wallet/turnkeyIntent'
-import { useResetBalanceCaches } from '@/hooks/use-reset-balance-caches'
 import { useSignOut } from '@/hooks/useSignOut'
-import { activityPath } from '@/paths'
 import { cn } from '@/lib/utils'
 import { setThemePreference, useResolvedTheme } from '@/lib/theme'
 import { extractErrorMessage } from '@/lib/errors'
 import { ExportEmbeddedWallet } from './ExportEmbeddedWallet'
 import { TurnkeyLogoutItem } from './TurnkeyLogoutItem'
 import { EmbeddedWalletEmail } from './EmbeddedWalletEmail'
-import { WALLET_CARD_ROW, WALLET_MENU_ROW } from './walletMenuRow'
+import { WALLET_SIGN_OUT_BUTTON } from './walletMenuRow'
 
 const SUPPORTED_CHAIN_IDS = wagmiConfig.chains.map(c => c.id)
 
@@ -58,14 +44,8 @@ export const ConnectButton: FC = () => {
   const walletIntent = useTurnkeyWalletIntent()
   const isEmbeddedWallet = isTurnkeyActive && walletIntent === 'embedded'
   const resolvedTheme = useResolvedTheme()
-  const resetBalanceCaches = useResetBalanceCaches()
 
   const [menuOpen, setMenuOpen] = useState(false)
-  const [activeModal, setActiveModal] = useState<'deposit' | 'withdraw' | null>(null)
-  const openModal = (modal: 'deposit' | 'withdraw') => {
-    setMenuOpen(false)
-    setActiveModal(modal)
-  }
 
   // Connected (external) wallets: full sign-out (bridge teardown + wagmi
   // disconnect + SIWE logout, which also clears any sticky auth error).
@@ -112,61 +92,32 @@ export const ConnectButton: FC = () => {
         <DropdownMenuContent
           align="end"
           sideOffset={8}
-          className="w-72 rounded-2xl p-3 dark:bg-card dark:border-[#31363f]"
+          className="w-100 max-w-[calc(100vw-2rem)] rounded-2xl bg-muted p-3 dark:border-[#31363f]"
         >
-          <div className="rounded-xl bg-muted p-3">
-            <span className="text-[11px] uppercase tracking-wide text-muted-foreground">Wallet</span>
-            <div className="mt-1 flex items-center gap-2">
+          <div className="rounded-xl bg-white dark:bg-card shadow-[var(--card-shadow)] p-3">
+            {chainBadge && (
+              <span className="inline-flex items-center gap-1.5 rounded-full bg-muted px-2 py-0.5 text-[11px] font-medium text-foreground">
+                <span aria-hidden className="h-2 w-2 rounded-full" style={{ background: chainBadge.color }} />
+                {chainBadge.label}
+              </span>
+            )}
+            <div className={cn('flex items-center gap-2', chainBadge && 'mt-2')}>
               <div className="md:hidden">
                 <AccountAvatar address={address} diameter={24} />
               </div>
-              <span className="truncate font-mono text-base font-semibold text-foreground">
+              <span className="truncate font-mono text-base font-semibold text-foreground md:hidden">
                 {trimLongString(address)}
               </span>
-              {chainBadge && (
-                <span className="inline-flex shrink-0 items-center gap-1.5 rounded-full bg-background px-2 py-0.5 text-[11px] font-medium text-foreground">
-                  <span
-                    aria-hidden
-                    className="h-2 w-2 rounded-full"
-                    style={{ background: chainBadge.color }}
-                  />
-                  {chainBadge.label}
-                </span>
-              )}
-              <CopyButton
-                value={address}
-                label="Copy wallet address"
-                className="ml-auto hover:bg-background"
-              />
+              <span className="hidden min-w-0 flex-1 break-all font-mono text-sm font-semibold leading-snug text-foreground md:block">
+                {address}
+              </span>
+              <CopyButton value={address} label="Copy wallet address" className="ml-auto" />
             </div>
             {isEmbeddedWallet && <EmbeddedWalletEmail />}
             {isEmbeddedWallet && <ExportEmbeddedWallet />}
-
-            <div className="my-3 border-t border-border/70" />
-
-            <div className="grid grid-cols-2 gap-2">
-              <Button className="gap-2" onClick={() => openModal('deposit')}>
-                <ArrowDownToLine className="size-4" />
-                Deposit
-              </Button>
-              <Button variant="outline" className="gap-2" onClick={() => openModal('withdraw')}>
-                <ArrowUpFromLine className="size-4" />
-                Withdraw
-              </Button>
-            </div>
-
-            <Link
-              to={activityPath()}
-              onClick={() => setMenuOpen(false)}
-              className={cn(WALLET_CARD_ROW, 'mt-2')}
-            >
-              <History className="size-4 text-muted-foreground" />
-              Vault activity
-              <ChevronRight className="ml-auto size-4 text-muted-foreground" />
-            </Link>
           </div>
 
-          <div className="mt-2 flex items-center justify-between gap-2 rounded-xl bg-muted px-3 py-2">
+          <div className="mt-2 flex items-center justify-between gap-2 rounded-xl bg-white dark:bg-card shadow-[var(--card-shadow)] px-3 py-2">
             <span className="text-sm font-medium text-foreground">Appearance</span>
             <div className="inline-flex items-center gap-0.5 text-xs font-medium">
               {(['light', 'dark'] as const).map(mode => {
@@ -179,9 +130,7 @@ export const ConnectButton: FC = () => {
                     onClick={() => setThemePreference(mode)}
                     className={cn(
                       'inline-flex items-center gap-1 rounded-full px-2.5 py-1 transition-colors',
-                      active
-                        ? 'bg-background dark:bg-card text-foreground shadow-sm dark:shadow-[var(--card-shadow)]'
-                        : 'text-muted-foreground',
+                      active ? 'bg-muted text-foreground shadow-sm' : 'text-muted-foreground',
                     )}
                   >
                     <Icon className="size-3.5" />
@@ -196,28 +145,14 @@ export const ConnectButton: FC = () => {
             {isEmbeddedWallet ? (
               <TurnkeyLogoutItem />
             ) : (
-              <button type="button" className={WALLET_MENU_ROW} onClick={handleSignOut}>
-                <LogOut className="size-4" />
-                Sign out
+              <button type="button" className={WALLET_SIGN_OUT_BUTTON} onClick={handleSignOut}>
+                <span className="flex-1 text-left">Sign out</span>
+                <LogOut className="size-4 shrink-0" />
               </button>
             )}
           </div>
         </DropdownMenuContent>
       </DropdownMenu>
-
-      <DepositModal
-        open={activeModal === 'deposit'}
-        onClose={() => setActiveModal(null)}
-        onDepositSuccess={() => setActiveModal(null)}
-      />
-      <WithdrawModal
-        open={activeModal === 'withdraw'}
-        onClose={() => setActiveModal(null)}
-        onWithdrawSuccess={() => {
-          resetBalanceCaches()
-          setActiveModal(null)
-        }}
-      />
     </div>
   )
 }

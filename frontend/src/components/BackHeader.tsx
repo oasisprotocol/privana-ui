@@ -19,6 +19,6 @@ export const BackHeader = ({
     >
       <ChevronLeft className="size-5" />
     </button>
-    <h2 className="text-xl font-semibold text-foreground">{title}</h2>
+    <h1 className="text-xl font-semibold text-foreground">{title}</h1>
   </div>
 )

@@ -9,6 +9,6 @@ type ApyValueProps = {
 
 export const ApyValue = ({ bps, signed, className }: ApyValueProps) => {
   if (bps == null) return <span className={className}>-</span>
-  const tone = bps > 0 ? 'text-chart-positive' : bps < 0 ? 'text-destructive' : 'text-foreground'
+  const tone = bps > 0 ? 'text-chart-positive-text' : bps < 0 ? 'text-destructive' : 'text-foreground'
   return <span className={cn(tone, className)}>{formatApyBps(bps, { signed })}</span>
 }

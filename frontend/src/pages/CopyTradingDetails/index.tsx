@@ -67,7 +67,7 @@ export const CopyTradingDetails = () => {
                       {strategy.name}
                     </h3>
                     <h2 className="text-3xl font-medium text-card-foreground">{strategy.totalValue}</h2>
-                    <span className="text-lg font-semibold text-chart-positive">{strategy.change}</span>
+                    <span className="text-lg font-semibold text-chart-positive-text">{strategy.change}</span>
                   </div>
                 </div>
               </div>

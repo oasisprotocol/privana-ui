@@ -1,12 +1,14 @@
 import { useMemo, useState } from 'react'
 import { Search, SlidersHorizontal } from 'lucide-react'
 import { usePrivanaContext } from '@oasisprotocol/privana-sdk'
-import { PageHeading } from '@/components/PageHeading'
+import { BackHeader } from '@/components/BackHeader'
 import { Button } from '@/components/ui/button'
 import { ActivityGroups, ActivitySkeleton, ActivityUnavailable } from '@/components/ActivityList'
 import { Input } from '@/components/ui/input'
 import { ToggleGroup, ToggleGroupItem } from '@/components/ui/toggle-group'
+import { useGoBack } from '@/hooks/use-go-back'
 import { useMergedActivity } from '@/hooks/use-merged-activity'
+import { dashboardPath } from '@/paths'
 import { ActivityFilterSheet } from './ActivityFilterSheet'
 import { applyFilters, type ActivityFilters, type FilterType } from './filters'
 import { useActivityFilters } from './useActivityFilters'
@@ -17,6 +19,7 @@ const TABS = [
   { id: 'withdrawals', label: 'Withdrawals' },
   { id: 'earn', label: 'Earn' },
   { id: 'swap', label: 'Swap' },
+  { id: 'transfers', label: 'Transfers' },
 ] as const
 
 type TabId = (typeof TABS)[number]['id']
@@ -27,6 +30,7 @@ const TYPE_FOR_TAB: Record<TabId, FilterType> = {
   withdrawals: 'withdraw',
   earn: 'earn',
   swap: 'swap',
+  transfers: 'transfer',
 }
 
 const TAB_FOR_TYPE: Record<FilterType, TabId> = {
@@ -39,7 +43,7 @@ const TAB_FOR_TYPE: Record<FilterType, TabId> = {
   earnWithdraw: 'earn',
   lock: 'all',
   reclaim: 'all',
-  transfer: 'all',
+  transfer: 'transfers',
 }
 
 const TAB_REFLECTED_TYPES: ReadonlySet<FilterType> = new Set([
@@ -50,7 +54,30 @@ const TAB_REFLECTED_TYPES: ReadonlySet<FilterType> = new Set([
   'earnDeposit',
   'earnWithdraw',
   'swap',
+  'transfer',
 ])
+
+const EMPTY: Record<TabId, { title: string; hint: string }> = {
+  all: {
+    title: 'No vault activity yet',
+    hint: 'Deposits, swaps, transfers and withdrawals will show up here.',
+  },
+  deposits: { title: 'No deposits yet', hint: 'Funds you add to your vault will show up here.' },
+  withdrawals: { title: 'No withdrawals yet', hint: 'Funds you take out of your vault will show up here.' },
+  earn: { title: 'No Earn activity yet', hint: 'Moves in and out of Earn will show up here.' },
+  swap: { title: 'No swaps yet', hint: 'Tokens you exchange will show up here.' },
+  transfers: {
+    title: 'No transfers yet',
+    hint: 'Payments to and from other Privana accounts will show up here.',
+  },
+}
+
+const EmptyActivity = ({ title, hint }: { title: string; hint: string }) => (
+  <div className="py-10 text-center">
+    <p className="text-sm font-medium text-foreground">{title}</p>
+    <p className="mt-1 text-sm text-muted-foreground">{hint}</p>
+  </div>
+)
 
 // The search box and filter button are hidden until the redesigned Activity is completed.
 const SHOW_FILTER_CONTROLS = false
@@ -67,6 +94,7 @@ const activeFilterCount = (f: ActivityFilters): number => {
 }
 
 export const Activity = () => {
+  const goBack = useGoBack(dashboardPath())
   const [filters, setFilters] = useActivityFilters()
   const [filterOpen, setFilterOpen] = useState(false)
 
@@ -87,15 +115,13 @@ export const Activity = () => {
 
   return (
     <>
-      <PageHeading
-        title="Vault activity"
-        description={
-          isEmpty
-            ? 'Nothing to show yet. Your swaps, deposits, withdrawals, and earnings will appear here.'
-            : "Where your money is - what's available, what's in use, and every move in and out."
-        }
-        className="max-w-200"
-      />
+      <div className="w-full max-w-200 mx-auto">
+        <BackHeader title="Vault activity" onBack={goBack} />
+        <p className="mt-2 text-center text-sm text-muted-foreground">
+          Your Vault ledger - deposits, swaps, transfers and withdrawals.
+        </p>
+        {isEmpty && <EmptyActivity {...EMPTY.all} />}
+      </div>
 
       {isError && (
         <div className="w-full max-w-200 mx-auto mt-8">
@@ -136,7 +162,7 @@ export const Activity = () => {
             aria-label="Activity filter"
             value={activeTab}
             onValueChange={(id: TabId | '') => setFilters({ ...filters, type: TYPE_FOR_TAB[id || 'all'] })}
-            className="max-w-full overflow-x-auto py-2 -my-2 scrollbar-none [&::-webkit-scrollbar]:hidden"
+            className="max-w-full overflow-x-auto py-2 -my-2 scrollbar-none md:self-center [&::-webkit-scrollbar]:hidden"
           >
             {TABS.map(tab => (
               <ToggleGroupItem
@@ -154,7 +180,11 @@ export const Activity = () => {
           ) : isLoading ? (
             <ActivitySkeleton rows={5} />
           ) : (
-            <p className="text-base text-muted-foreground">No matching activity</p>
+            <EmptyActivity
+              {...(filterCount > 0
+                ? { title: 'No matching activity', hint: 'Try clearing a filter.' }
+                : EMPTY[activeTab])}
+            />
           )}
         </div>
       )}

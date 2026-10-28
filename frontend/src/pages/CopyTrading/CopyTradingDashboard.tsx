@@ -21,7 +21,7 @@ export const CopyTradingDashboard = () => {
                   <div>
                     <h3 className="text-xl font-semibold text-tertiary-foreground uppercase">Copy Trading</h3>
                     <span className="flex text-3xl font-medium text-card-foreground">$0.00</span>
-                    <span className="text-lg font-semibold text-chart-positive">+$0.00 (+0%)</span>
+                    <span className="text-lg font-semibold text-chart-positive-text">+$0.00 (+0%)</span>
                   </div>
                   <Button size="lg" onClick={() => navigate(copyTradingCreatePath())}>
                     Create new strategy

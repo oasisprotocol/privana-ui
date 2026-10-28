@@ -3,6 +3,8 @@ import { ArrowUpRight } from 'lucide-react'
 import { Link } from 'react-router'
 import { useConnection } from 'wagmi'
 import { useIsSignedIn } from '@/hooks/useIsSignedIn'
+import { useScrolled } from '@/hooks/use-scrolled'
+import { cn } from '@/lib/utils'
 import { ConnectButton } from '../ConnectButton'
 import Logo from '../../assets/logo.svg'
 import { MenuItem } from './menu-item'
@@ -71,31 +73,39 @@ export const Layout = ({ children }: LayoutProps) => {
   if (signedInNow && !everSignedIn) setEverSignedIn(true)
   else if (!isConnected && everSignedIn) setEverSignedIn(false)
   const isSignedIn = signedInNow || (isConnected && everSignedIn)
+  const scrolled = useScrolled()
 
   return (
     <div className="min-h-screen [background-image:var(--app-gradient)] text-foreground">
       <div className="flex min-h-dvh w-full flex-col pb-20 md:pb-0">
         <nav
           style={{ viewTransitionName: 'top-nav' }}
-          className="relative md:sticky md:top-0 z-40 flex items-center justify-between px-6 py-3.5 backdrop-blur bg-[#fafafa]/85 dark:bg-background/85 border-b border-border/70 dark:border-[rgba(49,54,63,0.7)]"
+          className={cn(
+            'relative md:sticky md:top-0 z-40 px-6 py-3.5 md:px-8 md:py-6 border-b transition-colors duration-200',
+            scrolled
+              ? 'backdrop-blur bg-[#fafafa]/85 dark:bg-background/85 border-border/70 dark:border-[rgba(49,54,63,0.7)]'
+              : 'border-transparent bg-transparent',
+          )}
         >
-          <Link to={isSignedIn ? dashboardPath() : homePath()} viewTransition className="text-xl font-bold">
-            <img src={Logo} alt="Privana" className="h-6 min-w-25 dark:brightness-0 dark:invert" />
-          </Link>
-          {isSignedIn && (
-            <div className="hidden md:flex items-center gap-1">
-              <MenuItem to={dashboardPath()} label="Portfolio" />
-              <MenuItem to={earnPath()} label="Earn" />
-              <MenuItem to={tradePath()} label="Swap" />
-              <MenuItem to={activityPath()} label="Activity" />
-            </div>
-          )}
+          <div className="mx-auto flex w-full max-w-5xl items-center justify-between">
+            <Link to={isSignedIn ? dashboardPath() : homePath()} viewTransition className="text-xl font-bold">
+              <img src={Logo} alt="Privana" className="h-6 min-w-25 dark:brightness-0 dark:invert" />
+            </Link>
+            {isSignedIn && (
+              <div className="hidden md:flex items-center gap-1">
+                <MenuItem to={dashboardPath()} label="Portfolio" />
+                <MenuItem to={earnPath()} label="Earn" />
+                <MenuItem to={tradePath()} label="Swap" />
+                <MenuItem to={activityPath()} label="Activity" />
+              </div>
+            )}
 
-          {isSignedIn && (
-            <div className="flex items-center gap-4">
-              <ConnectButton />
-            </div>
-          )}
+            {isSignedIn && (
+              <div className="flex items-center gap-4">
+                <ConnectButton />
+              </div>
+            )}
+          </div>
         </nav>
 
         <div className="flex-1 px-6 py-12 md:px-8 md:py-10">

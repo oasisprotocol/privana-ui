@@ -23,7 +23,7 @@ const TokenValue = ({
   <span
     className={cn(
       'inline-flex items-center gap-1 font-medium tabular-nums',
-      positive ? 'text-chart-positive' : 'text-foreground',
+      positive ? 'text-chart-positive-text' : 'text-foreground',
     )}
   >
     {positive ? '+' : ''}
@@ -74,7 +74,7 @@ export const EarnBalance = ({
         <div className="flex items-center justify-between">
           <span className="text-sm font-medium leading-5 text-muted-foreground">Earn balance</span>
           {!loading && isEarning && bestApyBps != null && (
-            <span className="inline-flex items-center gap-1 rounded-full bg-chart-positive px-2.5 py-1 text-xs font-semibold text-white">
+            <span className="inline-flex items-center gap-1 rounded-full bg-chart-positive px-2.5 py-1 text-xs font-semibold text-chart-positive-foreground">
               {formatApyBps(bestApyBps)} APY
             </span>
           )}
@@ -94,7 +94,7 @@ export const EarnBalance = ({
           <span
             className={cn(
               'mt-2 text-sm font-medium',
-              changeBadge.negative ? 'text-destructive' : 'text-chart-positive',
+              changeBadge.negative ? 'text-destructive' : 'text-chart-positive-text',
             )}
           >
             {changeBadge.text} <span className="text-muted-foreground">24h</span>
