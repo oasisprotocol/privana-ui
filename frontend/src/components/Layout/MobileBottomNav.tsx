@@ -1,6 +1,7 @@
-import { useEffect, useState } from 'react'
+import { useEffect } from 'react'
 import { Link } from 'react-router'
 import { ArrowDownUp, ArrowLeftRight } from 'lucide-react'
+import { useMenuOpen } from '@/hooks/use-menu-open'
 import { cn } from '@/lib/utils'
 import { tradePath } from '@/paths'
 import { TRANSFER_ITEMS } from './transfer-items'
@@ -9,7 +10,7 @@ const DARK_BUTTON =
   'flex flex-1 items-center justify-center gap-2 rounded-full px-6 py-4 text-base font-medium text-white transition-transform active:scale-95 bg-[linear-gradient(180deg,hsl(220_12%_24%),hsl(220_15%_14%))] dark:bg-[linear-gradient(180deg,hsl(220_11%_30%),hsl(220_13%_19%))]'
 
 export const MobileBottomNav = () => {
-  const [transferOpen, setTransferOpen] = useState(false)
+  const [transferOpen, setTransferOpen] = useMenuOpen()
 
   useEffect(() => {
     if (!transferOpen) return
@@ -18,7 +19,7 @@ export const MobileBottomNav = () => {
     }
     document.addEventListener('keydown', closeOnEscape)
     return () => document.removeEventListener('keydown', closeOnEscape)
-  }, [transferOpen])
+  }, [transferOpen, setTransferOpen])
 
   return (
     <>

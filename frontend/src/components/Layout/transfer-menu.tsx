@@ -1,15 +1,17 @@
 import { ChevronDown } from 'lucide-react'
 import { Link, useLocation } from 'react-router'
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '../ui/dropdown-menu'
+import { useMenuOpen } from '@/hooks/use-menu-open'
 import { cn } from '@/lib/utils'
 import { TRANSFER_ITEMS } from './transfer-items'
 
 export const TransferMenu = () => {
   const { pathname } = useLocation()
   const active = TRANSFER_ITEMS.some(item => pathname.startsWith(item.to))
+  const [open, setOpen] = useMenuOpen()
 
   return (
-    <DropdownMenu>
+    <DropdownMenu open={open} onOpenChange={setOpen}>
       <DropdownMenuTrigger
         className={cn(
           'group inline-flex cursor-pointer items-center gap-1.5 px-3.5 py-2 text-sm font-medium transition-colors data-[state=open]:text-foreground',
