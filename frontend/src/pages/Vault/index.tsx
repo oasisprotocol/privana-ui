@@ -146,6 +146,9 @@ export const Vault = () => {
     return parts.length ? `${parts.join('. ')}.` : null
   }, [ready, availableFiatValue, earningFiatValue, lockedFiatValue])
 
+  const showEarn = (earningFiatValue ?? 0) > 0
+  const hasSideColumn = apps.length > 0 || showEarn
+
   return (
     <div className="mx-auto flex w-full flex-col gap-8">
       <header>
@@ -178,8 +181,8 @@ export const Vault = () => {
         )}
       </SurfaceCard>
 
-      <div className="grid gap-8 lg:grid-cols-2 lg:items-start">
-        <div className="flex flex-col gap-8">
+      <div className={cn('grid gap-8', hasSideColumn && 'lg:grid-cols-2 lg:items-start')}>
+        <div className={cn('flex flex-col gap-8', !hasSideColumn && 'hidden')}>
           {apps.length > 0 && (
             <section className="flex flex-col gap-3">
               <SectionHeading title="In use by connected app" />
@@ -200,7 +203,7 @@ export const Vault = () => {
             </section>
           )}
 
-          {(earningFiatValue ?? 0) > 0 && (
+          {showEarn && (
             <section className="flex flex-col gap-3">
               <SectionHeading title="Earn" />
               <SurfaceCard className="overflow-hidden">
