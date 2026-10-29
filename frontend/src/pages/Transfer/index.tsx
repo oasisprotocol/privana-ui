@@ -33,6 +33,7 @@ import { ReviewStep } from './ReviewStep'
 import { ResultStep } from './ResultStep'
 import { recipientError } from './recipient'
 import { useSubmitTransfer } from './useSubmitTransfer'
+import { useRecentRecipients } from './useRecentRecipients'
 import { useSystemAddresses } from './useSystemAddresses'
 
 const IN_FLIGHT_MESSAGE = 'Wait for your swap or Earn deposit to finish.'
@@ -52,6 +53,7 @@ export const Transfer = () => {
   const navigate = useNavigate()
   const { address } = useConnection()
   const { addresses: systemAddresses, ready: systemAddressesReady } = useSystemAddresses()
+  const { recents, isLoading: recentsLoading } = useRecentRecipients()
   const submitTransfer = useSubmitTransfer()
   const resetBalanceCaches = useResetBalanceCaches()
   const { data: operationsData, isError: operationsError, refetch: refetchOperations } = useOperations()
@@ -228,7 +230,13 @@ export const Transfer = () => {
           <p className="text-base font-semibold text-foreground">Amount</p>
           {amountField}
         </div>
-        <RecipientField value={recipient} onChange={setRecipient} error={toError} />
+        <RecipientField
+          value={recipient}
+          onChange={setRecipient}
+          error={toError}
+          recents={recents}
+          recentsLoading={recentsLoading}
+        />
         <Notice icon={EyeOff}>
           <span className="font-semibold">Private, not anonymous.</span> It settles inside Privana — nothing
           on Base or Ethereum.

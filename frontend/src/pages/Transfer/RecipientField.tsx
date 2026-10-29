@@ -1,5 +1,6 @@
-import { Clipboard, X } from 'lucide-react'
-import { cn } from '@/lib/utils'
+import { Check, Clipboard, X } from 'lucide-react'
+import { Skeleton } from '@/components/ui/skeleton'
+import { cn, sameId } from '@/lib/utils'
 
 const ERROR_MIN_LENGTH = 6
 
@@ -7,9 +8,11 @@ type RecipientFieldProps = {
   value: string
   onChange: (value: string) => void
   error: string | null
+  recents: string[]
+  recentsLoading: boolean
 }
 
-export const RecipientField = ({ value, onChange, error }: RecipientFieldProps) => {
+export const RecipientField = ({ value, onChange, error, recents, recentsLoading }: RecipientFieldProps) => {
   const recipient = value.trim()
   const shownError = recipient.length >= ERROR_MIN_LENGTH ? error : null
 
@@ -62,7 +65,49 @@ export const RecipientField = ({ value, onChange, error }: RecipientFieldProps) 
           </button>
         )}
       </div>
-      {shownError && <p className="mt-1.5 text-xs text-destructive">{shownError}</p>}
+      {shownError ? (
+        <p className="mt-1.5 text-xs text-destructive">{shownError}</p>
+      ) : (
+        recents.some(address => sameId(address, recipient)) && (
+          <p className="mt-1.5 text-xs text-muted-foreground">Recent recipient</p>
+        )
+      )}
+      {(recentsLoading || recents.length > 0) && (
+        <div className="mt-3">
+          <p className="px-1 text-xs font-medium uppercase tracking-wide text-muted-foreground">Recents</p>
+          {/* About 5 rows, then the list scrolls. */}
+          <div
+            aria-busy={recentsLoading}
+            className="mt-2 max-h-[13rem] divide-y divide-border overflow-y-auto rounded-2xl bg-white shadow-[var(--card-shadow)] dark:bg-card"
+          >
+            {recentsLoading
+              ? Array.from({ length: 3 }, (_, i) => (
+                  <div key={i} className="px-4 py-3">
+                    <Skeleton className="h-4 w-4/5" />
+                  </div>
+                ))
+              : recents.map(address => {
+                  const selected = sameId(recipient, address)
+                  return (
+                    <button
+                      key={address}
+                      type="button"
+                      onClick={() => onChange(address)}
+                      className={cn(
+                        'flex w-full items-center gap-3 px-4 py-3 text-left transition-colors hover:bg-muted',
+                        selected && 'bg-muted',
+                      )}
+                    >
+                      <span className="min-w-0 flex-1 break-all font-mono text-xs leading-snug text-foreground">
+                        {address}
+                      </span>
+                      {selected && <Check className="size-4 shrink-0 text-chart-positive-text" />}
+                    </button>
+                  )
+                })}
+          </div>
+        </div>
+      )}
       <p className="mt-2 text-xs text-muted-foreground">
         Their internal transfer address — the one they signed in with. Only transfers sent inside Privana
         reach it.
