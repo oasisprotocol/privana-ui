@@ -40,4 +40,6 @@ test('earn positions are left out of the account value', async ({ page }) => {
 
   await expect(page.getByText('$2,750.00').filter({ visible: true }).first()).toBeVisible()
   await expect(page.getByText('$2,950.50')).toHaveCount(0)
+  await expect(page.getByText('$200.50')).toHaveCount(0)
+  await expect(page.getByText('Earning')).toHaveCount(0)
 })
