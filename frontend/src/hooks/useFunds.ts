@@ -22,7 +22,7 @@ export interface Funds {
   isLoading: boolean
   /** A balances, locks, or earn read failed: the buckets cannot be trusted, show dashes. */
   isError: boolean
-  /** Whether the user has funds in any bucket (available, locked, earn, pending withdrawal). */
+  /** Whether the user has funds in any bucket (available, locked, pending withdrawal; earn with `includeEarn`). */
   hasFunds: boolean
   /** Whether the user has idle (available, not-yet-invested) balance to put to work. */
   hasAvailableBalance: boolean
@@ -52,7 +52,7 @@ export interface Funds {
 // Owns everything about "where the user's money is": fetching the buckets,
 // the loading gate, the funded check, and the fiat totals. Shared by the
 // dashboard and earn pages so the bucket logic lives in one place.
-// Earn is off in the app for now: only the earn page opts in for now, so the slow
+// Earn is off in the app for now: only the earn page opts in, so the slow
 // earn balance read doesn't hold up the dashboard.
 export function useFunds({ includeEarn = false }: { includeEarn?: boolean } = {}): Funds {
   const { enabledTokens, tokensStatus, getTokenById } = usePrivanaContext()
