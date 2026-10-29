@@ -15,6 +15,8 @@ test('empty account shows the onboarding card', async ({ page }) => {
   await expect(page.getByRole('button', { name: 'Buy with card' })).toBeVisible()
   await expect(page.getByText('$0.00').filter({ visible: true }).first()).toBeVisible()
   await expect(page.getByText('Put your deposit to work')).toHaveCount(0)
+  await expect(page.getByText('Swap privately')).toBeVisible()
+  await expect(page.getByText(/APY|Earn daily/i)).toHaveCount(0)
 })
 
 test('funded account shows the account value and vault breakdown', async ({ page }) => {
@@ -28,6 +30,8 @@ test('funded account shows the account value and vault breakdown', async ({ page
   await expect(page.getByRole('button', { name: 'Withdraw', exact: true }).first()).toBeVisible()
   await expect(page.getByText('Add funds to get started')).toHaveCount(0)
   await expect(page.getByText('Put your deposit to work')).toBeVisible()
+  await expect(page.getByRole('link', { name: 'Swap privately' })).toBeVisible()
+  await expect(page.getByText(/APY|Earn daily/i)).toHaveCount(0)
 })
 
 test('earn positions are left out of the account value', async ({ page }) => {

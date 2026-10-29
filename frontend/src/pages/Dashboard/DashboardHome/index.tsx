@@ -1,13 +1,12 @@
 import { Button } from '@/components/ui/button'
-import { Zap, ArrowLeftRight, TrendingUp, ChevronRight, ShieldCheck } from 'lucide-react'
+import { ArrowLeftRight, ChevronRight, ShieldCheck } from 'lucide-react'
 import { useMemo, useState, type ReactNode } from 'react'
 import { useConnection } from 'wagmi'
 import { DepositModal, WithdrawModal, useSiweAuth } from '@oasisprotocol/privana-sdk'
 import { Skeleton } from '@/components/ui/skeleton'
 import { SurfaceCard } from '@/components/SurfaceCard'
-import { formatApyBps, apyBpsToFraction } from '@/lib/apy'
 import { formatFiat } from '@/lib/tokens'
-import { earnPath, tradePath, vaultPath } from '@/paths'
+import { tradePath, vaultPath } from '@/paths'
 import { Link } from 'react-router'
 import { useFunds } from '@/hooks/useFunds'
 import { useResetBalanceCaches } from '@/hooks/use-reset-balance-caches'
@@ -52,12 +51,10 @@ const PrivanaVaultCard = ({
 const FeatureRow = ({
   icon,
   title,
-  pill,
   description,
 }: {
   icon: ReactNode
   title: string
-  pill?: ReactNode
   description: string
 }) => (
   <div className="flex items-start gap-3">
@@ -65,30 +62,14 @@ const FeatureRow = ({
       {icon}
     </div>
     <div>
-      <div className="flex items-center gap-2">
-        <p className="text-sm font-medium text-foreground">{title}</p>
-        {pill}
-      </div>
+      <p className="text-sm font-medium text-foreground">{title}</p>
       <p className="text-xs text-muted-foreground">{description}</p>
     </div>
   </div>
 )
 
-const DepositFeatures = ({ bestApyBps }: { bestApyBps: number | null }) => (
+const DepositFeatures = () => (
   <div className="mt-6 flex flex-col gap-3">
-    <FeatureRow
-      icon={<Zap className="h-4 w-4" />}
-      title="Earn Daily"
-      pill={
-        bestApyBps != null ? (
-          <span className="inline-flex items-center gap-1 rounded-full bg-chart-positive px-2 py-0.5 text-xs font-semibold text-chart-positive-foreground">
-            <TrendingUp className="h-3 w-3" />
-            {formatApyBps(bestApyBps)} APY
-          </span>
-        ) : undefined
-      }
-      description="Interest accrues every day and compounds automatically."
-    />
     <FeatureRow
       icon={<ArrowLeftRight className="h-4 w-4" />}
       title="Swap privately"
@@ -107,7 +88,6 @@ export const DashboardHome = () => {
     availableFiatValue,
     lockedFiatValue,
     totalFiatValue,
-    bestApyBps,
     pricesError,
     isError: fundsError,
   } = useFunds()
@@ -138,9 +118,6 @@ export const DashboardHome = () => {
   const { isAuthenticated } = useSiweAuth()
   const bootPhase = useBootPhase(isLoading, `${address?.toLowerCase() ?? ''}:${isAuthenticated}`)
 
-  // Rough "earn about $X / month" estimate: available × annual APY ÷ 12 months.
-  const monthlyEarnEstimate = ((availableFiatValue ?? 0) * apyBpsToFraction(bestApyBps ?? 0)) / 12
-
   const isDesktop = useIsDesktop()
 
   return (
@@ -170,20 +147,7 @@ export const DashboardHome = () => {
               <p className="mt-2 text-sm text-muted-foreground">
                 Deposit ETH, HYPE or USDC to start using Privana.
               </p>
-              {bestApyBps != null && (
-                <div className="mt-4 flex items-start gap-3 rounded-xl bg-chart-positive/10 px-4 py-3">
-                  <TrendingUp className="mt-0.5 h-4 w-4 shrink-0 text-chart-positive" />
-                  <p className="text-sm text-foreground">
-                    At <span className="font-semibold">{formatApyBps(bestApyBps)} APY</span>, every $1,000
-                    earns about{' '}
-                    <span className="font-semibold text-chart-positive-text">
-                      {formatFiat(1000 * apyBpsToFraction(bestApyBps))}
-                    </span>{' '}
-                    a year.
-                  </p>
-                </div>
-              )}
-              <DepositFeatures bestApyBps={bestApyBps} />
+              <DepositFeatures />
               <div className="mt-6 flex flex-col gap-3">
                 <Button
                   size="lg"
@@ -312,18 +276,11 @@ export const DashboardHome = () => {
                       <span className="font-medium text-foreground">
                         {formatFiat(availableFiatValue ?? 0)}
                       </span>{' '}
-                      is ready. Earn about{' '}
-                      <span className="font-medium text-foreground">{formatFiat(monthlyEarnEstimate)}</span> /
-                      month, or swap it privately.
+                      is ready. Swap it privately.
                     </p>
-                    <DepositFeatures bestApyBps={bestApyBps} />
+                    <DepositFeatures />
                   </div>
                   <div className="space-y-3">
-                    <Button asChild size="lg" className="h-14 px-8 text-base w-full">
-                      <Link to={earnPath()} viewTransition>
-                        Earn daily
-                      </Link>
-                    </Button>
                     <Button asChild variant="outline" size="lg" className="h-14 px-8 text-base w-full">
                       <Link to={tradePath()} viewTransition>
                         Swap privately
