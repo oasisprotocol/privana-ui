@@ -5618,7 +5618,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"happy-dom@npm:^21.0.0":
+"happy-dom@npm:^21.0.4":
   version: 21.0.4
   resolution: "happy-dom@npm:21.0.4"
   dependencies:
@@ -7192,7 +7192,7 @@ __metadata:
     eslint-plugin-react-hooks: "npm:^7.1.1"
     eslint-plugin-react-refresh: "npm:^0.5.7"
     globals: "npm:^17.13.0"
-    happy-dom: "npm:^21.0.0"
+    happy-dom: "npm:^21.0.4"
     lucide-react: "npm:^1.64.0"
     markdownlint-cli: "npm:^0.50.0"
     playwright-core: "npm:^1.64.1"
