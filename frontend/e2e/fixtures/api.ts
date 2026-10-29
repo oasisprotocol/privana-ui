@@ -2,6 +2,7 @@ import type { Page, Route } from '@playwright/test'
 import type {
   BalanceResponse,
   BatchBalancesResponse,
+  HistoryEntry,
   HistoryResponse,
   JwtLogoutResponse,
   LockedFundsResponse,
@@ -58,6 +59,7 @@ export const USDC_POOL: EarnPool = {
 export interface StubState {
   balances: Partial<Record<string, string>>
   earnPositions: EarnBalance[]
+  history: HistoryEntry[]
   pools: EarnPool[]
   prices: Record<string, number>
 }
@@ -67,6 +69,7 @@ const DEFAULT_PRICES = { [USDC_TOKEN_ID]: 1, [ETH_TOKEN_ID]: 2500 }
 export const emptyAccount = (): StubState => ({
   balances: {},
   earnPositions: [],
+  history: [],
   pools: [USDC_POOL],
   prices: DEFAULT_PRICES,
 })
@@ -217,7 +220,7 @@ export async function installApi(page: Page, state: StubState) {
     json(route, { user_address: e2eAddress, pending_withdrawals: [] } satisfies PendingWithdrawalsResponse),
   )
   await page.route(`${ACCOUNTING_API_URL}/v1/accounting/history**`, route =>
-    json(route, { history: [], total: 0 } satisfies HistoryResponse),
+    json(route, { history: state.history, total: state.history.length } satisfies HistoryResponse),
   )
 
   // --- Services API ---
