@@ -179,7 +179,7 @@ export function useApyHistory(poolId: string, days = 30) {
   })
 }
 
-export function useEarnBalance() {
+export function useEarnBalance({ enabled = true }: { enabled?: boolean } = {}) {
   const { session, accessToken } = useSiweAuth()
   // Key the cache off the authenticated address so the queryKey and queryFn
   // always agree on which identity the request is for. Using wagmi's address
@@ -202,7 +202,7 @@ export function useEarnBalance() {
   return useQuery({
     queryKey: earnKeys.balance(address ?? ''),
     queryFn: () => getEarnBalance(jwt!),
-    enabled: !!address && !!jwt,
+    enabled: enabled && !!address && !!jwt,
     staleTime: 30_000,
   })
 }

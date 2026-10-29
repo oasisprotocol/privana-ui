@@ -25,7 +25,7 @@ export const EarnDashboard = () => {
     availableTokenIds,
     hasAvailableBalance,
     isLoading: fundsLoading,
-  } = useFunds()
+  } = useFunds({ includeEarn: true })
   const {
     strategies: activePositions,
     projectedMonthly,
