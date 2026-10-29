@@ -26,12 +26,10 @@ import { useIsDesktop } from '@/hooks/use-media-query'
 
 const PrivanaVaultCard = ({
   available,
-  earning,
   locked,
   error,
 }: {
   available: number | undefined
-  earning: number | undefined
   locked: number | undefined
   error: boolean
 }) => (
@@ -47,14 +45,7 @@ const PrivanaVaultCard = ({
       </span>
     </Link>
 
-    <BalanceBreakdown
-      available={available}
-      earning={earning}
-      locked={locked}
-      error={error}
-      size="sm"
-      className="mt-3"
-    />
+    <BalanceBreakdown available={available} locked={locked} error={error} size="sm" className="mt-3" />
   </div>
 )
 
@@ -114,7 +105,6 @@ export const DashboardHome = () => {
     hasFunds,
     hasAvailableBalance,
     availableFiatValue,
-    earningFiatValue,
     lockedFiatValue,
     totalFiatValue,
     bestApyBps,
@@ -231,7 +221,6 @@ export const DashboardHome = () => {
                 <div className="mt-6">
                   <PrivanaVaultCard
                     available={availableFiatValue}
-                    earning={earningFiatValue}
                     locked={lockedFiatValue}
                     error={pricesError || fundsError}
                   />
@@ -290,7 +279,6 @@ export const DashboardHome = () => {
 
               <PrivanaVaultCard
                 available={availableFiatValue}
-                earning={earningFiatValue}
                 locked={lockedFiatValue}
                 error={pricesError || fundsError}
               />

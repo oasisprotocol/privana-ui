@@ -167,7 +167,6 @@ export const Vault = () => {
 
         <BalanceBreakdown
           available={availableFiatValue}
-          earning={earningFiatValue}
           locked={lockedFiatValue}
           error={pricesError || fundsError}
           size="md"
