@@ -70,7 +70,7 @@ const VaultRow = ({
 export const Vault = () => {
   const goBack = useGoBack(dashboardPath())
   const { availableFiatValue, lockedFiatValue, totalFiatValue, pricesError, isError: fundsError } = useFunds()
-  const { locks } = useLockedFunds()
+  const { locks, isLoading: locksLoading } = useLockedFunds()
   const { enabledTokens, getTokenById } = usePrivanaContext()
   const tokenIds = useMemo(() => enabledTokens.map(t => t.id), [enabledTokens])
   const { data: prices } = useTokenPrices(tokenIds)
@@ -156,46 +156,50 @@ export const Vault = () => {
         )}
       </SurfaceCard>
 
-      <div className={cn('grid gap-8', apps.length > 0 && 'lg:grid-cols-2 lg:items-start')}>
-        {apps.length > 0 && (
-          <section className="flex flex-col gap-3">
-            <SectionHeading title="In use by connected app" />
-            <SurfaceCard className="overflow-hidden">
-              {apps.map((app, i) => (
-                <div key={app.address} className={cn(i > 0 && 'border-t border-border')}>
-                  <VaultRow
-                    to={appsPath()}
-                    color={app.color}
-                    initial={app.name.charAt(0).toUpperCase()}
-                    name={app.name}
-                    subtitle={app.subtitle}
-                    amount={app.fiat}
-                  />
-                </div>
-              ))}
-            </SurfaceCard>
-          </section>
-        )}
+      {locksLoading || activityLoading ? (
+        <Skeleton className="h-80 w-full rounded-2xl" />
+      ) : (
+        <div className={cn('grid gap-8', apps.length > 0 && 'lg:grid-cols-2 lg:items-start')}>
+          {apps.length > 0 && (
+            <section className="flex flex-col gap-3">
+              <SectionHeading title="In use by connected app" />
+              <SurfaceCard className="overflow-hidden">
+                {apps.map((app, i) => (
+                  <div key={app.address} className={cn(i > 0 && 'border-t border-border')}>
+                    <VaultRow
+                      to={appsPath()}
+                      color={app.color}
+                      initial={app.name.charAt(0).toUpperCase()}
+                      name={app.name}
+                      subtitle={app.subtitle}
+                      amount={app.fiat}
+                    />
+                  </div>
+                ))}
+              </SurfaceCard>
+            </section>
+          )}
 
-        <section className="flex flex-col gap-3">
-          <SectionHeading title="Vault activity" />
-          <ActivityList
-            rows={activityRows}
-            isLoading={activityLoading}
-            isError={activityError}
-            onRetry={refetchActivity}
-            max={MAX_ROWS}
-            emptyState={<p className="text-sm text-muted-foreground">No vault activity yet.</p>}
-          />
-          <Link
-            to={activityPath()}
-            viewTransition
-            className="self-center text-sm font-medium text-foreground hover:underline"
-          >
-            See all activities
-          </Link>
-        </section>
-      </div>
+          <section className="flex flex-col gap-3">
+            <SectionHeading title="Vault activity" />
+            <ActivityList
+              rows={activityRows}
+              isLoading={activityLoading}
+              isError={activityError}
+              onRetry={refetchActivity}
+              max={MAX_ROWS}
+              emptyState={<p className="text-sm text-muted-foreground">No vault activity yet.</p>}
+            />
+            <Link
+              to={activityPath()}
+              viewTransition
+              className="self-center text-sm font-medium text-foreground hover:underline"
+            >
+              See all activities
+            </Link>
+          </section>
+        </div>
+      )}
     </div>
   )
 }
