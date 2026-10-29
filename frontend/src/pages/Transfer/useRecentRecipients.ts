@@ -7,40 +7,30 @@ import { HISTORY_PAGE_SIZE, useLatestHistory } from '@/hooks/use-merged-activity
 import { recipientError } from './recipient'
 import { useSystemAddresses } from './useSystemAddresses'
 
-export type RecentRecipient = {
-  address: Address
-  tokenId: string
-  amount: string
-  timestamp: number
-}
-
 export const recentRecipients = (
   entries: readonly HistoryEntry[],
   ownAddress: string | undefined,
   systemAddresses: readonly string[],
-): RecentRecipient[] => {
-  const seen = new Set<string>()
-  const recents: RecentRecipient[] = []
+): Address[] => {
+  const recents = new Set<Address>()
   for (const entry of [...entries].reverse()) {
-    const { counterparty, token_id, amount } = entry
-    if (entry.kind !== 'transferBalanceOut' || !counterparty || !token_id || !amount) continue
+    const { counterparty } = entry
+    if (entry.kind !== 'transferBalanceOut' || !counterparty) continue
     if (recipientError(counterparty, ownAddress, systemAddresses)) continue
-    const lower = counterparty.toLowerCase()
-    if (seen.has(lower)) continue
-    seen.add(lower)
-    recents.push({ address: getAddress(counterparty), tokenId: token_id, amount, timestamp: entry.timestamp })
+    recents.add(getAddress(counterparty))
   }
-  return recents
+  return [...recents]
 }
 
-export function useRecentRecipients(): RecentRecipient[] {
+export function useRecentRecipients(): { recents: Address[]; isLoading: boolean } {
   const { address } = useConnection()
   const { addresses: systemAddresses } = useSystemAddresses()
-  const { data: poolsData } = useEarnPools()
-  const { entries } = useLatestHistory(HISTORY_PAGE_SIZE)
+  const { data: poolsData, isLoading: poolsLoading } = useEarnPools()
+  const { entries, isLoading: historyLoading } = useLatestHistory(HISTORY_PAGE_SIZE)
 
-  return useMemo(
+  const recents = useMemo(
     () => (poolsData ? recentRecipients(entries, address, systemAddresses) : []),
     [poolsData, entries, address, systemAddresses],
   )
+  return { recents, isLoading: poolsLoading || historyLoading }
 }
