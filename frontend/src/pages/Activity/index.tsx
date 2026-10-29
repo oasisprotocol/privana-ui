@@ -164,7 +164,8 @@ export const Activity = () => {
             onValueChange={(id: TabId | '') => setFilters({ ...filters, type: TYPE_FOR_TAB[id || 'all'] })}
             className="max-w-full overflow-x-auto py-2 -my-2 scrollbar-none md:self-center [&::-webkit-scrollbar]:hidden"
           >
-            {TABS.map(tab => (
+            {/* Earn is paused (#294): its pill is hidden, the filter itself stays. */}
+            {TABS.filter(tab => tab.id !== 'earn').map(tab => (
               <ToggleGroupItem
                 key={tab.id}
                 value={tab.id}
