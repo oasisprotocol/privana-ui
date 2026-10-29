@@ -1,6 +1,6 @@
 import { useMemo, useState } from 'react'
 import { Link } from 'react-router'
-import { ChevronRight, LockOpen } from 'lucide-react'
+import { ChevronRight } from 'lucide-react'
 import { formatUnits } from 'viem'
 import { useLockedFunds, usePrivanaContext } from '@oasisprotocol/privana-sdk'
 import { BackHeader } from '@/components/BackHeader'
@@ -15,7 +15,7 @@ import { useTokenPrices } from '@/api/prices'
 import { appForAddress } from '@/config/apps'
 import { formatFiat } from '@/lib/tokens'
 import { cn, shortenAddress } from '@/lib/utils'
-import { earnPath, appsPath, activityPath, dashboardPath } from '@/paths'
+import { appsPath, activityPath, dashboardPath } from '@/paths'
 import { ActivityList } from '@/components/ActivityList'
 import { HISTORY_FETCH_LIMIT, MAX_ROWS } from '@/pages/Dashboard/DashboardHome/latestActivity.constants'
 
@@ -35,15 +35,13 @@ const VaultRow = ({
   to,
   color,
   initial,
-  logoUrl,
   name,
   subtitle,
   amount,
 }: {
   to: string
-  color?: string
-  initial?: string
-  logoUrl?: string
+  color: string
+  initial: string
   name: string
   subtitle: React.ReactNode
   amount: number
@@ -53,17 +51,13 @@ const VaultRow = ({
     viewTransition
     className="flex items-center gap-3 px-4 py-3.5 transition-colors hover:bg-secondary/40"
   >
-    {logoUrl ? (
-      <img src={logoUrl} alt="" className="size-9 shrink-0 rounded-lg" />
-    ) : (
-      <span
-        aria-hidden
-        className="flex size-9 shrink-0 items-center justify-center rounded-lg text-sm font-semibold text-white"
-        style={{ background: color }}
-      >
-        {initial}
-      </span>
-    )}
+    <span
+      aria-hidden
+      className="flex size-9 shrink-0 items-center justify-center rounded-lg text-sm font-semibold text-white"
+      style={{ background: color }}
+    >
+      {initial}
+    </span>
     <div className="min-w-0 flex-1">
       <p className="truncate text-sm font-semibold text-foreground">{name}</p>
       <p className="truncate text-xs text-muted-foreground">{subtitle}</p>
@@ -75,14 +69,7 @@ const VaultRow = ({
 
 export const Vault = () => {
   const goBack = useGoBack(dashboardPath())
-  const {
-    availableFiatValue,
-    earningFiatValue,
-    lockedFiatValue,
-    totalFiatValue,
-    pricesError,
-    isError: fundsError,
-  } = useFunds()
+  const { availableFiatValue, lockedFiatValue, totalFiatValue, pricesError, isError: fundsError } = useFunds()
   const { locks } = useLockedFunds()
   const { enabledTokens, getTokenById } = usePrivanaContext()
   const tokenIds = useMemo(() => enabledTokens.map(t => t.id), [enabledTokens])
@@ -95,11 +82,7 @@ export const Vault = () => {
   } = useMergedActivity(HISTORY_FETCH_LIMIT)
   const [nowSeconds] = useState(() => Math.floor(Date.now() / 1000))
 
-  const ready =
-    !pricesError &&
-    availableFiatValue !== undefined &&
-    earningFiatValue !== undefined &&
-    lockedFiatValue !== undefined
+  const ready = !pricesError && availableFiatValue !== undefined && lockedFiatValue !== undefined
 
   const apps = useMemo(() => {
     const fiatOf = (tokenId: string, amount: string): number => {
@@ -135,19 +118,11 @@ export const Vault = () => {
     if ((availableFiatValue ?? 0) > 0) {
       parts.push(`${formatFiat(availableFiatValue ?? 0)} is yours to withdraw now`)
     }
-    const working = (earningFiatValue ?? 0) + (lockedFiatValue ?? 0)
-    if (working > 0) {
-      const sub: string[] = []
-      if ((earningFiatValue ?? 0) > 0) sub.push(`${formatFiat(earningFiatValue ?? 0)} earning yield`)
-      if ((lockedFiatValue ?? 0) > 0)
-        sub.push(`${formatFiat(lockedFiatValue ?? 0)} committed to connected apps`)
-      parts.push(`${formatFiat(working)} is put to work — ${sub.join(', and ')}`)
+    if ((lockedFiatValue ?? 0) > 0) {
+      parts.push(`${formatFiat(lockedFiatValue ?? 0)} is committed to connected apps`)
     }
     return parts.length ? `${parts.join('. ')}.` : null
-  }, [ready, availableFiatValue, earningFiatValue, lockedFiatValue])
-
-  const showEarn = (earningFiatValue ?? 0) > 0
-  const hasSideColumn = apps.length > 0 || showEarn
+  }, [ready, availableFiatValue, lockedFiatValue])
 
   return (
     <div className="mx-auto flex w-full flex-col gap-8">
@@ -181,48 +156,26 @@ export const Vault = () => {
         )}
       </SurfaceCard>
 
-      <div className={cn('grid gap-8', hasSideColumn && 'lg:grid-cols-2 lg:items-start')}>
-        <div className={cn('flex flex-col gap-8', !hasSideColumn && 'hidden')}>
-          {apps.length > 0 && (
-            <section className="flex flex-col gap-3">
-              <SectionHeading title="In use by connected app" />
-              <SurfaceCard className="overflow-hidden">
-                {apps.map((app, i) => (
-                  <div key={app.address} className={cn(i > 0 && 'border-t border-border')}>
-                    <VaultRow
-                      to={appsPath()}
-                      color={app.color}
-                      initial={app.name.charAt(0).toUpperCase()}
-                      name={app.name}
-                      subtitle={app.subtitle}
-                      amount={app.fiat}
-                    />
-                  </div>
-                ))}
-              </SurfaceCard>
-            </section>
-          )}
-
-          {showEarn && (
-            <section className="flex flex-col gap-3">
-              <SectionHeading title="Earn" />
-              <SurfaceCard className="overflow-hidden">
-                <VaultRow
-                  to={earnPath()}
-                  logoUrl="/app-privana.png"
-                  name="Privana Earn"
-                  subtitle={
-                    <span className="inline-flex items-center gap-1">
-                      <LockOpen className="size-3 shrink-0" />
-                      No lock · withdraw anytime
-                    </span>
-                  }
-                  amount={earningFiatValue ?? 0}
-                />
-              </SurfaceCard>
-            </section>
-          )}
-        </div>
+      <div className={cn('grid gap-8', apps.length > 0 && 'lg:grid-cols-2 lg:items-start')}>
+        {apps.length > 0 && (
+          <section className="flex flex-col gap-3">
+            <SectionHeading title="In use by connected app" />
+            <SurfaceCard className="overflow-hidden">
+              {apps.map((app, i) => (
+                <div key={app.address} className={cn(i > 0 && 'border-t border-border')}>
+                  <VaultRow
+                    to={appsPath()}
+                    color={app.color}
+                    initial={app.name.charAt(0).toUpperCase()}
+                    name={app.name}
+                    subtitle={app.subtitle}
+                    amount={app.fiat}
+                  />
+                </div>
+              ))}
+            </SurfaceCard>
+          </section>
+        )}
 
         <section className="flex flex-col gap-3">
           <SectionHeading title="Vault activity" />
