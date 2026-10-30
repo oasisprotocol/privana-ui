@@ -22,14 +22,14 @@ export interface Funds {
   isLoading: boolean
   /** A balances, locks, or earn read failed: the buckets cannot be trusted, show dashes. */
   isError: boolean
-  /** Whether the user has funds in any bucket (available, locked, earn, pending withdrawal). */
+  /** Whether the user has funds in any bucket (available, locked, pending withdrawal; earn with `includeEarn`). */
   hasFunds: boolean
   /** Whether the user has idle (available, not-yet-invested) balance to put to work. */
   hasAvailableBalance: boolean
   /** Token ids with a positive available (idle) balance. Use for per-token gating. */
   availableTokenIds: Set<string>
   availableFiatValue: number | undefined
-  /** Fiat value held in earn positions. */
+  /** Fiat value held in earn positions; 0 unless `includeEarn`. */
   earningFiatValue: number | undefined
   /**
    * Yield-only 24h change across earn positions: fiat delta and percent
@@ -52,12 +52,17 @@ export interface Funds {
 // Owns everything about "where the user's money is": fetching the buckets,
 // the loading gate, the funded check, and the fiat totals. Shared by the
 // dashboard and earn pages so the bucket logic lives in one place.
-export function useFunds(): Funds {
+// Earn is off in the app for now: only the earn page opts in, so the slow
+// earn balance read doesn't hold up the dashboard.
+export function useFunds({ includeEarn = false }: { includeEarn?: boolean } = {}): Funds {
   const { enabledTokens, tokensStatus, getTokenById } = usePrivanaContext()
   const tokenIds = useMemo(() => enabledTokens.map(t => t.id), [enabledTokens])
   const { balances, isLoading: balancesLoading, isError: balancesError } = useBatchBalances({ tokenIds })
   const { locks, totalLocked, isLoading: locksLoading, isError: locksError } = useLockedFunds()
-  const { data: earnBalance, isLoading: earnLoading, isError: earnError } = useEarnBalance()
+  const earn = useEarnBalance({ enabled: includeEarn })
+  const earnBalance = includeEarn ? earn.data : undefined
+  const earnLoading = includeEarn && earn.isLoading
+  const earnError = includeEarn && earn.isError
   const { hasPendingWithdrawals, isLoading: pendingWithdrawalsLoading } = usePendingWithdrawals()
   const { data: prices, isError: pricesError } = useTokenPrices(tokenIds)
   const { data: poolsData } = useEarnPools()

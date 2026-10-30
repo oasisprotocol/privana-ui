@@ -6,10 +6,7 @@ import { SurfaceCard } from '@/components/SurfaceCard'
 import { TokenAmount } from '@/components/TokenAmount'
 import { useHoldings } from '@/hooks/useHoldings'
 import { formatFiat } from '@/lib/tokens'
-import { formatApyBps } from '@/lib/apy'
-import { earnPath, tradePath } from '@/paths'
-import { ProtocolIcon } from '@/pages/Earn/ProtocolLabel'
-import { getProtocolLabel } from '@/config/protocols'
+import { tradePath } from '@/paths'
 
 const HoldingRow = ({
   to,
@@ -17,14 +14,12 @@ const HoldingRow = ({
   name,
   subtitle,
   fiat,
-  badge,
 }: {
   to: string
   icon: ReactNode
   name: string
   subtitle: ReactNode
   fiat: number | undefined
-  badge?: string
 }) => (
   <Link
     to={to}
@@ -40,16 +35,15 @@ const HoldingRow = ({
       <p className="text-sm font-semibold tabular-nums text-foreground">
         {fiat != null ? formatFiat(fiat) : '-'}
       </p>
-      {badge && <p className="text-xs text-chart-positive-text">{badge}</p>}
     </div>
     <ChevronRight className="size-4 shrink-0 text-muted-foreground" />
   </Link>
 )
 
 export const HoldingsSection = () => {
-  const { tokenHoldings, earnHoldings } = useHoldings()
+  const { tokenHoldings } = useHoldings()
 
-  if (tokenHoldings.length === 0 && earnHoldings.length === 0) return null
+  if (tokenHoldings.length === 0) return null
 
   return (
     <div className="flex flex-col gap-4">
@@ -67,25 +61,6 @@ export const HoldingsSection = () => {
             name={holding.name}
             subtitle={<TokenAmount amount={holding.amount} token={holding} withSymbol />}
             fiat={holding.fiat}
-          />
-        ))}
-        {earnHoldings.map(holding => (
-          <HoldingRow
-            key={holding.poolId}
-            to={earnPath()}
-            icon={
-              <span className="flex size-9 shrink-0 items-center justify-center overflow-hidden rounded-[10px]">
-                <ProtocolIcon strategy={holding.strategy ?? ''} size={36} />
-              </span>
-            }
-            name={holding.strategy ? getProtocolLabel(holding.strategy) : 'Earn'}
-            subtitle={
-              holding.apyBps != null
-                ? `${holding.symbol ?? ''} · ${formatApyBps(holding.apyBps)} APY`
-                : (holding.symbol ?? '')
-            }
-            fiat={holding.fiat}
-            badge="Earning"
           />
         ))}
       </SurfaceCard>
