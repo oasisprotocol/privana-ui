@@ -29,13 +29,14 @@ test('active position shows earning figures and the 24h yield badge', async ({ p
   await expect(page.getByRole('link', { name: 'Remove funds' })).toBeVisible()
 })
 
-test('start earning without a balance opens the deposit modal', async ({ page }) => {
+test('start earning without a balance opens the deposit page', async ({ page }) => {
   await installWallet(page)
   await installApi(page, emptyAccount())
   await page.goto('/earn')
 
   await page.getByRole('button', { name: 'Start earning' }).click()
-  await expect(page.getByRole('heading', { name: 'Choose the deposit method' })).toBeVisible()
+  await expect(page).toHaveURL(/\/deposit$/)
+  await expect(page.getByRole('heading', { name: 'Deposit', level: 1 })).toBeVisible()
   await expect(page.getByRole('button', { name: 'Connected wallet' })).toBeVisible()
   await expect(page.getByRole('button', { name: 'External Wallet' })).toBeVisible()
 })

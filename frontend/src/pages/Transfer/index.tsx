@@ -3,7 +3,6 @@ import { useNavigate } from 'react-router'
 import { EyeOff } from 'lucide-react'
 import {
   AccountingApiError,
-  DepositModal,
   maxAmount,
   sortTokensByBalance,
   useBalance,
@@ -27,7 +26,7 @@ import { DESKTOP_CARD } from '@/lib/surface'
 import { amountFiat, amountInputError, exceedsAmount, isPositiveAmount, parseAmount } from '@/lib/tokens'
 import { cn } from '@/lib/utils'
 import { describeFailure } from '@/pages/Activity/failureCopy'
-import { activityPath, dashboardPath } from '@/paths'
+import { activityPath, dashboardPath, depositPath } from '@/paths'
 import { RecipientField } from './RecipientField'
 import { ReviewStep } from './ReviewStep'
 import { ResultStep } from './ResultStep'
@@ -73,7 +72,6 @@ export const Transfer = () => {
     amount: string
     symbol: string
   } | null>(null)
-  const [depositOpen, setDepositOpen] = useState(false)
   const [recipient, setRecipient] = useState('')
   const [tokenId, setTokenId] = useState('')
   const [amount, setAmount] = useState('')
@@ -157,7 +155,7 @@ export const Transfer = () => {
     amountField = (
       <div className="flex flex-col items-center gap-3 rounded-2xl bg-muted p-5 text-center">
         <p className="text-sm text-muted-foreground">Deposit funds to send.</p>
-        <Button variant="outline" onClick={() => setDepositOpen(true)}>
+        <Button variant="outline" onClick={() => navigate(depositPath())}>
           Deposit
         </Button>
       </div>
@@ -254,11 +252,6 @@ export const Transfer = () => {
           Review
         </Button>
       </div>
-      <DepositModal
-        open={depositOpen}
-        onClose={() => setDepositOpen(false)}
-        onDepositSuccess={() => setDepositOpen(false)}
-      />
     </div>
   )
 }
