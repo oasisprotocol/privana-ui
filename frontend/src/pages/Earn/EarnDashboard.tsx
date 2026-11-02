@@ -1,11 +1,12 @@
 import { useMemo, useState } from 'react'
-import { DepositModal } from '@oasisprotocol/privana-sdk'
+import { useNavigate } from 'react-router'
 import { Skeleton } from '@/components/ui/skeleton'
 import { useEarnPools } from '@/api/earn'
 import { useTokens } from '@/api/swap'
 import { PageHeading } from '@/components/PageHeading'
 import { useFunds } from '@/hooks/useFunds'
 import { SWAPPABLE_TOKEN_IDS } from '@/config/tokens'
+import { depositPath } from '@/paths'
 import { useActiveStrategies } from './useActiveStrategies'
 import { EarnBalance } from './EarnBalance'
 import { VenueCard, type Venue } from './VenueCard'
@@ -34,7 +35,7 @@ export const EarnDashboard = () => {
     isError: positionsError,
   } = useActiveStrategies()
   const isLoading = poolsLoading || tokensLoading || positionsLoading || positionsError
-  const [depositOpen, setDepositOpen] = useState(false)
+  const navigate = useNavigate()
   const [getTokenFor, setGetTokenFor] = useState<Venue | null>(null)
 
   const venues = useMemo<Venue[]>(() => {
@@ -107,7 +108,7 @@ export const EarnDashboard = () => {
                   onRequestDeposit={() =>
                     hasAvailableBalance && (SWAPPABLE_TOKEN_IDS as string[]).includes(v.tokenId)
                       ? setGetTokenFor(v)
-                      : setDepositOpen(true)
+                      : navigate(depositPath())
                   }
                 />
               ))
@@ -122,11 +123,6 @@ export const EarnDashboard = () => {
         tokenId={getTokenFor?.tokenId ?? ''}
         asset={getTokenFor?.asset ?? ''}
         chain={getTokenFor?.chain ?? ''}
-      />
-      <DepositModal
-        open={depositOpen}
-        onClose={() => setDepositOpen(false)}
-        onDepositSuccess={() => setDepositOpen(false)}
       />
     </>
   )

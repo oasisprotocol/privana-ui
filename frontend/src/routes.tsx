@@ -13,8 +13,11 @@ import { ActivityDetails } from './pages/Activity/ActivityDetails'
 import { Vault } from './pages/Vault'
 import { Receive } from './pages/Receive'
 import { Transfer } from './pages/Transfer'
+import { Deposit } from './pages/Deposit'
+import { Withdraw } from './pages/Withdraw'
 import {
   activityPath,
+  depositPath,
   earnPath,
   homePath,
   dashboardPath,
@@ -22,6 +25,7 @@ import {
   transferPath,
   tradePath,
   vaultPath,
+  withdrawPath,
 } from './paths'
 
 export const router = createBrowserRouter([
@@ -123,6 +127,26 @@ export const router = createBrowserRouter([
           {
             index: true,
             element: <Transfer />,
+          },
+        ],
+      },
+      {
+        path: depositPath(),
+        element: <ProtectedLayout />,
+        children: [
+          {
+            index: true,
+            element: <Deposit />,
+          },
+        ],
+      },
+      {
+        path: withdrawPath(),
+        element: <ProtectedLayout />,
+        children: [
+          {
+            index: true,
+            element: <Withdraw />,
           },
         ],
       },
