@@ -102,7 +102,10 @@ export const DashboardHome = () => {
   const chartData = useMemo(
     () =>
       endSeriesAt(
-        portfolioPoints.map(p => ({ date: String(p.timestamp), value: Number(p.total_usd) })),
+        portfolioPoints.map(p => ({
+          date: String(p.timestamp),
+          value: Number(p.available_usd) + Number(p.locked_usd),
+        })),
         totalFiatValue,
       ),
     [portfolioPoints, totalFiatValue],
