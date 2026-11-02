@@ -6,8 +6,8 @@ import { useTokenPrices } from '@/api/prices'
 import { Skeleton } from '@/components/ui/skeleton'
 import { maxAmount, useBalance } from '@oasisprotocol/privana-sdk'
 import { useConnection } from 'wagmi'
-import { ArrowLeft, ArrowUpDown, EyeOff } from 'lucide-react'
-import { activityPath } from '@/paths'
+import { ArrowUpDown, EyeOff } from 'lucide-react'
+import { activityPath, dashboardPath } from '@/paths'
 import { SWAPPABLE_TOKEN_IDS } from '@/config/tokens'
 import { cn } from '@/lib/utils'
 import { amountFiat, amountInputError, exceedsAmount, parseAmount } from '@/lib/tokens'
@@ -15,6 +15,8 @@ import { useRefreshBalanceCaches } from '@/hooks/use-reset-balance-caches'
 import { DESKTOP_CARD } from '@/lib/surface'
 import { useResolvedActivity } from '@/hooks/use-merged-activity'
 import { AssetRow } from '@/components/AssetRow'
+import { BackHeader } from '@/components/BackHeader'
+import { useGoBack } from '@/hooks/use-go-back'
 import { QuoteInfo } from './QuoteInfo'
 import { ReviewStep } from './ReviewStep'
 import { SwapSettings } from './SwapSettings'
@@ -26,6 +28,7 @@ import { useQuoteSummary } from './useQuoteSummary'
 import { useSigningClient } from '@/hooks/use-signing-client'
 
 export const SwapDashboard = () => {
+  const goBack = useGoBack(dashboardPath())
   const [step, setStep] = useState(0)
   const { data, isLoading, error } = useTokens()
   const { address } = useConnection()
@@ -183,30 +186,15 @@ export const SwapDashboard = () => {
   return (
     <div className={cn('mx-auto flex w-full max-w-lg flex-col', DESKTOP_CARD)}>
       {step === 0 && (
-        <div className="flex items-start justify-between gap-4">
-          <div className="flex flex-col gap-1">
-            <h1 className="text-foreground text-3xl font-semibold tracking-tight leading-9">Swap</h1>
-            <p className="text-muted-foreground text-sm font-normal leading-5">
-              Choose the asset you want to swap.
-            </p>
-          </div>
-          <SwapSettings slippageInput={slippageInput} onSlippageInputChange={setSlippageInput} />
-        </div>
+        <BackHeader
+          title="Swap"
+          onBack={goBack}
+          action={<SwapSettings slippageInput={slippageInput} onSlippageInputChange={setSlippageInput} />}
+        />
       )}
       {step === 1 && (
         <div>
-          <div className="flex items-center justify-between">
-            <button
-              type="button"
-              onClick={handleBack}
-              aria-label="Back"
-              className="flex h-8 w-8 items-center justify-center rounded-full text-muted-foreground hover:bg-muted"
-            >
-              <ArrowLeft className="h-5 w-5" />
-            </button>
-            <h1 className="text-foreground text-xl font-semibold tracking-tight">Review swap</h1>
-            <div className="w-8" />
-          </div>
+          <BackHeader title="Review swap" onBack={handleBack} />
           <p className="mt-4 text-sm text-muted-foreground">Confirm before executing.</p>
         </div>
       )}
@@ -334,8 +322,8 @@ export const SwapDashboard = () => {
             </Button>
           </div>
 
-          <div className="flex items-center justify-center gap-2 px-0.5 text-xs font-medium text-muted-foreground">
-            <EyeOff className="size-4 shrink-0" />
+          <div className="flex items-center justify-center gap-1.5 px-0.5 text-xs text-muted-foreground">
+            <EyeOff className="size-3 shrink-0" />
             <span>Private execution — no public trace</span>
           </div>
         </div>
