@@ -44,7 +44,7 @@ export interface UseMergedActivityResult {
 
 // Shows the newest HISTORY_PAGE_SIZE entries; older ones aren't reachable yet.
 // TODO: paginate once users routinely exceed this window.
-const HISTORY_PAGE_SIZE = 100
+export const HISTORY_PAGE_SIZE = 100
 
 const mapStatus = (s: Operation['status']): ActivityStatus =>
   s === 'completed' ? 'completed' : isSettledFailure(s) ? 'failed' : 'in-progress'
@@ -137,7 +137,7 @@ interface LatestHistoryResult {
 // page -1 holds a single row. Past one page we always pull the page behind it too
 // and keep the newest `limit` of the pair, plus the one entry before them so
 // classifyHistory can spot a swap the window cut through.
-function useLatestHistory(limit: number): LatestHistoryResult {
+export function useLatestHistory(limit: number): LatestHistoryResult {
   const newest = useHistory({ offset: -1, limit })
   const total = newest.total
   const needsPrior = total > limit

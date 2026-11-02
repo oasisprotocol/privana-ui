@@ -2,6 +2,7 @@ import { useMemo } from 'react'
 import { usePrivanaContext } from '@oasisprotocol/privana-sdk'
 import { useEarnPools } from '@/api/earn'
 import { SWAP_LP_ADDRESS } from '@/config/swap'
+import { RETIRED_ADDRESSES } from '@/config/systemAddresses'
 
 export function useSystemAddresses(): { addresses: string[]; ready: boolean } {
   const { networkConfig } = usePrivanaContext()
@@ -15,6 +16,7 @@ export function useSystemAddresses(): { addresses: string[]; ready: boolean } {
         import.meta.env.VITE_SWAP_MANAGER_CONTRACT_ADDRESS,
         import.meta.env.VITE_EARN_MANAGER_CONTRACT_ADDRESS,
         ...(poolsData?.pools ?? []).map(pool => pool.pool_address),
+        ...RETIRED_ADDRESSES,
       ]
         .filter(Boolean)
         .map(address => address.toLowerCase()),
