@@ -26,9 +26,9 @@ test('sign-in page has no WCAG violations', async ({ page }) => {
 
 test('dashboard has no WCAG violations', async ({ page }) => {
   await installWallet(page)
-  await installApi(page, fundedWithEarn())
+  await installApi(page, funded())
   await page.goto('/dashboard')
-  await expect(page.getByText('$2,950.50').filter({ visible: true }).first()).toBeVisible()
+  await expect(page.getByText('$2,750.00').filter({ visible: true }).first()).toBeVisible()
 
   expect(summarize(await scan(page))).toEqual([])
 })

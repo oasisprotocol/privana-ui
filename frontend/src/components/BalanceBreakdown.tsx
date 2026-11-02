@@ -1,32 +1,29 @@
 import { cn } from '@/lib/utils'
 import { formatFiat } from '@/lib/tokens'
 
-type BalanceSegmentKey = 'available' | 'earning' | 'locked'
+type BalanceSegmentKey = 'available' | 'locked'
 
 const SEGMENTS: { key: BalanceSegmentKey; label: string; className: string }[] = [
   { key: 'available', label: 'Available', className: 'bg-primary' },
-  { key: 'earning', label: 'Earning', className: 'bg-chart-positive' },
   { key: 'locked', label: 'In use', className: 'bg-violet-600' },
 ]
 
 export const BalanceBreakdown = ({
   available,
-  earning,
   locked,
   error,
   size = 'sm',
   className,
 }: {
   available: number | undefined
-  earning: number | undefined
   locked: number | undefined
   error: boolean
   size?: 'sm' | 'md'
   className?: string
 }) => {
-  const values: Record<BalanceSegmentKey, number | undefined> = { available, earning, locked }
-  const ready = !error && available !== undefined && earning !== undefined && locked !== undefined
-  const total = (available ?? 0) + (earning ?? 0) + (locked ?? 0)
+  const values: Record<BalanceSegmentKey, number | undefined> = { available, locked }
+  const ready = !error && available !== undefined && locked !== undefined
+  const total = (available ?? 0) + (locked ?? 0)
   const md = size === 'md'
 
   return (
