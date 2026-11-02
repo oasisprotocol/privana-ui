@@ -74,7 +74,7 @@ export const EarnBalance = ({
         <div className="flex items-center justify-between">
           <span className="text-sm font-medium leading-5 text-muted-foreground">Earn balance</span>
           {!loading && isEarning && bestApyBps != null && (
-            <span className="inline-flex items-center gap-1 rounded-full bg-chart-positive px-2.5 py-1 text-xs font-semibold text-chart-positive-foreground">
+            <span className="inline-flex items-center gap-1 rounded-full bg-success px-2.5 py-1 text-xs font-semibold text-success-foreground">
               {formatApyBps(bestApyBps)} APY
             </span>
           )}

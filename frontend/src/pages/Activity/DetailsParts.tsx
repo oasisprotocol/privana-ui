@@ -10,7 +10,7 @@ import type { ActivityStatus, ActivityTokenInfo } from '@/contexts/ActivityProvi
 import { trimLongString } from '@/utils/trimLongString'
 
 const STATUS_BADGE: Record<ActivityStatus, { label: string; className: string }> = {
-  completed: { label: 'Completed', className: 'bg-chart-positive text-chart-positive-foreground' },
+  completed: { label: 'Completed', className: 'bg-success text-success-foreground' },
   'in-progress': { label: 'In progress', className: 'bg-primary/25 text-foreground' },
   failed: { label: 'Failed', className: 'bg-destructive text-destructive-foreground' },
 }

@@ -3,7 +3,7 @@ import { useLocation } from 'react-router'
 import { WithdrawInlineModal } from '@oasisprotocol/privana-sdk'
 import { BackHeader } from '@/components/BackHeader'
 import { SuccessState } from '@/components/SuccessState'
-import { useGoBack } from '@/hooks/use-go-back'
+import { useGoToParent } from '@/hooks/use-go-to-parent'
 import { useLeaveBlock } from '@/hooks/use-leave-block'
 import { useResetBalanceCaches } from '@/hooks/use-reset-balance-caches'
 import { DESKTOP_CARD } from '@/lib/surface'
@@ -18,7 +18,7 @@ export const Withdraw = () => {
 }
 
 const WithdrawFlow = () => {
-  const goBack = useGoBack(dashboardPath())
+  const goToParent = useGoToParent(dashboardPath())
   const resetBalanceCaches = useResetBalanceCaches()
   const [done, setDone] = useState(false)
   const [leaveBlocked, setLeaveBlocked] = useState(false)
@@ -27,7 +27,7 @@ const WithdrawFlow = () => {
 
   return (
     <div className={cn('mx-auto flex w-full max-w-lg flex-col', DESKTOP_CARD)}>
-      {!done && <BackHeader title="Withdraw" onBack={stepBack ?? goBack} disabled={leaveBlocked} />}
+      {!done && <BackHeader title="Withdraw" onBack={stepBack ?? goToParent} disabled={leaveBlocked} />}
       {done ? (
         <SuccessState title="Withdrawal complete" message="Funds should appear in your wallet shortly." />
       ) : (

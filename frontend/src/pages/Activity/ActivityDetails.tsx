@@ -5,7 +5,7 @@ import { Button } from '@/components/ui/button'
 import { Skeleton } from '@/components/ui/skeleton'
 import { ActivityUnavailable } from '@/components/ActivityList'
 import { BackHeader } from '@/components/BackHeader'
-import { useGoBack } from '@/hooks/use-go-back'
+import { useGoToParent } from '@/hooks/use-go-to-parent'
 import { useMergedActivity, type MergedRow } from '@/hooks/use-merged-activity'
 import { DESKTOP_CARD } from '@/lib/surface'
 import { cn, sameId } from '@/lib/utils'
@@ -25,7 +25,7 @@ const Details = ({ row, progress }: { row: MergedRow; progress: DepositProgress 
 
 export const ActivityDetails = () => {
   const { id = '' } = useParams()
-  const goBack = useGoBack(activityPath())
+  const goToParent = useGoToParent(activityPath())
   const ref = parseDetailsId(id)
   const { rows, isLoading, isError, refetch } = useMergedActivity()
   const { progress } = useDeposit()
@@ -59,7 +59,7 @@ export const ActivityDetails = () => {
     <div className={cn('mx-auto flex w-full max-w-lg flex-col', DESKTOP_CARD)}>
       <BackHeader
         title={row ? detailsTitle(row) : flow ? moveCopy('deposit', 'in-progress').title : 'Transaction'}
-        onBack={goBack}
+        onBack={goToParent}
       />
       {content}
     </div>

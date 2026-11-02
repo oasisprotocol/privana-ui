@@ -9,7 +9,7 @@ import { BalanceAmount } from '@/components/BalanceAmount'
 import { BalanceBreakdown } from '@/components/BalanceBreakdown'
 import { Skeleton } from '@/components/ui/skeleton'
 import { useFunds } from '@/hooks/useFunds'
-import { useGoBack } from '@/hooks/use-go-back'
+import { useGoToParent } from '@/hooks/use-go-to-parent'
 import { useMergedActivity } from '@/hooks/use-merged-activity'
 import { useTokenPrices } from '@/api/prices'
 import { appForAddress } from '@/config/apps'
@@ -68,7 +68,7 @@ const VaultRow = ({
 )
 
 export const Vault = () => {
-  const goBack = useGoBack(dashboardPath())
+  const goToParent = useGoToParent(dashboardPath())
   const { availableFiatValue, lockedFiatValue, totalFiatValue, pricesError, isError: fundsError } = useFunds()
   const { locks, isLoading: locksLoading } = useLockedFunds()
   const { enabledTokens, getTokenById } = usePrivanaContext()
@@ -127,7 +127,7 @@ export const Vault = () => {
   return (
     <div className="mx-auto flex w-full flex-col gap-8">
       <header>
-        <BackHeader title="Vault" onBack={goBack} />
+        <BackHeader title="Vault" onBack={goToParent} />
         <p className="mt-2 text-center text-sm text-muted-foreground">
           Where your money is - what&apos;s available, what&apos;s in use, and every move in and out.
         </p>
