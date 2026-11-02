@@ -40,7 +40,8 @@
   --color-chart-4: var(--chart-4);
   --color-chart-5: var(--chart-5);
   --color-chart-positive: var(--chart-positive);
-  --color-chart-positive-foreground: var(--chart-positive-foreground);
+  --color-success: var(--success);
+  --color-success-foreground: var(--success-foreground);
   --color-chart-positive-text: var(--chart-positive-text);
   --color-chart-negative: var(--chart-negative);
 
@@ -148,7 +149,9 @@
   --chart-4: #8b5cf6;
   --chart-5: #f59e0b;
   --chart-positive: #21c45d;
-  --chart-positive-foreground: #ffffff;
+  /* The design's green, darkened so white text on it passes 4.5:1 contrast. */
+  --success: #178740;
+  --success-foreground: #ffffff;
   --chart-positive-text: #15803d;
   --chart-negative: #ef4444;
   /* Raised card surface shadow — single source for SurfaceCard and the swap cards. */
@@ -192,7 +195,8 @@
   --chart-4: #8b5cf6;
   --chart-5: #f59e0b;
   --chart-positive: #21c45d;
-  --chart-positive-foreground: #ffffff;
+  --success: #178740;
+  --success-foreground: #ffffff;
   --chart-positive-text: #21c45d;
   --chart-negative: #ef4444;
   --card-shadow:
