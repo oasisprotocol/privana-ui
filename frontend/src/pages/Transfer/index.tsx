@@ -19,7 +19,7 @@ import { Notice } from '@/components/Notice'
 import { Button } from '@/components/ui/button'
 import { Skeleton } from '@/components/ui/skeleton'
 import { ALLOWED_TOKEN_IDS } from '@/config/tokens'
-import { useGoBack } from '@/hooks/use-go-back'
+import { useGoToParent } from '@/hooks/use-go-to-parent'
 import { useResetBalanceCaches } from '@/hooks/use-reset-balance-caches'
 import { extractErrorMessage } from '@/lib/errors'
 import { DESKTOP_CARD } from '@/lib/surface'
@@ -48,7 +48,7 @@ const transferFailure = (err: unknown): string =>
     : extractErrorMessage(err, 'Transfer failed')
 
 export const Transfer = () => {
-  const goBack = useGoBack(dashboardPath())
+  const goToParent = useGoToParent(dashboardPath())
   const navigate = useNavigate()
   const { address } = useConnection()
   const { addresses: systemAddresses, ready: systemAddressesReady } = useSystemAddresses()
@@ -222,7 +222,7 @@ export const Transfer = () => {
 
   return (
     <div className={cn('mx-auto flex w-full max-w-lg flex-col', DESKTOP_CARD)}>
-      <BackHeader title="Send" onBack={goBack} />
+      <BackHeader title="Send" onBack={goToParent} />
       <div className="mt-5 flex flex-col gap-6">
         <div className="flex flex-col gap-2">
           <p className="text-base font-semibold text-foreground">Amount</p>

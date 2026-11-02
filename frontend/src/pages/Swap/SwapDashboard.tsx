@@ -16,7 +16,7 @@ import { DESKTOP_CARD } from '@/lib/surface'
 import { useResolvedActivity } from '@/hooks/use-merged-activity'
 import { AssetRow } from '@/components/AssetRow'
 import { BackHeader } from '@/components/BackHeader'
-import { useGoBack } from '@/hooks/use-go-back'
+import { useGoToParent } from '@/hooks/use-go-to-parent'
 import { QuoteInfo } from './QuoteInfo'
 import { ReviewStep } from './ReviewStep'
 import { SwapSettings } from './SwapSettings'
@@ -28,7 +28,7 @@ import { useQuoteSummary } from './useQuoteSummary'
 import { useSigningClient } from '@/hooks/use-signing-client'
 
 export const SwapDashboard = () => {
-  const goBack = useGoBack(dashboardPath())
+  const goToParent = useGoToParent(dashboardPath())
   const [step, setStep] = useState(0)
   const { data, isLoading, error } = useTokens()
   const { address } = useConnection()
@@ -188,7 +188,7 @@ export const SwapDashboard = () => {
       {step === 0 && (
         <BackHeader
           title="Swap"
-          onBack={goBack}
+          onBack={goToParent}
           action={<SwapSettings slippageInput={slippageInput} onSlippageInputChange={setSlippageInput} />}
         />
       )}

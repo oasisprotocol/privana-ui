@@ -3,19 +3,19 @@ import { useConnection } from 'wagmi'
 import { BackHeader } from '@/components/BackHeader'
 import { Button } from '@/components/ui/button'
 import { useCopyToClipboard } from '@/hooks/use-copy-to-clipboard'
-import { useGoBack } from '@/hooks/use-go-back'
+import { useGoToParent } from '@/hooks/use-go-to-parent'
 import { DESKTOP_CARD } from '@/lib/surface'
 import { cn } from '@/lib/utils'
 import { dashboardPath } from '@/paths'
 
 export const Receive = () => {
   const { address } = useConnection()
-  const goBack = useGoBack(dashboardPath())
+  const goToParent = useGoToParent(dashboardPath())
   const { copied, copy } = useCopyToClipboard()
 
   return (
     <div className={cn('mx-auto flex w-full max-w-lg flex-col', DESKTOP_CARD)}>
-      <BackHeader title="Receive" onBack={goBack} />
+      <BackHeader title="Receive" onBack={goToParent} />
       <div className="flex flex-col items-center py-10 text-center">
         <span className="flex size-16 items-center justify-center rounded-2xl bg-secondary text-foreground">
           <ArrowDownLeft className="size-7" />

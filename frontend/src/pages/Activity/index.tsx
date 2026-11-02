@@ -6,7 +6,7 @@ import { Button } from '@/components/ui/button'
 import { ActivityGroups, ActivitySkeleton, ActivityUnavailable } from '@/components/ActivityList'
 import { Input } from '@/components/ui/input'
 import { ToggleGroup, ToggleGroupItem } from '@/components/ui/toggle-group'
-import { useGoBack } from '@/hooks/use-go-back'
+import { useGoToParent } from '@/hooks/use-go-to-parent'
 import { useMergedActivity } from '@/hooks/use-merged-activity'
 import { dashboardPath } from '@/paths'
 import { ActivityFilterSheet } from './ActivityFilterSheet'
@@ -94,7 +94,7 @@ const activeFilterCount = (f: ActivityFilters): number => {
 }
 
 export const Activity = () => {
-  const goBack = useGoBack(dashboardPath())
+  const goToParent = useGoToParent(dashboardPath())
   const [filters, setFilters] = useActivityFilters()
   const [filterOpen, setFilterOpen] = useState(false)
 
@@ -116,7 +116,7 @@ export const Activity = () => {
   return (
     <>
       <div className="w-full">
-        <BackHeader title="Vault activity" onBack={goBack} />
+        <BackHeader title="Vault activity" onBack={goToParent} />
         <p className="mt-2 text-center text-sm text-muted-foreground">
           Your Vault ledger - deposits, swaps, transfers and withdrawals.
         </p>
