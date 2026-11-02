@@ -1,3 +1,5 @@
+import { RETIRED_SWAP_LP_ADDRESSES } from './systemAddresses'
+
 // Optional: missing only degrades Activity labeling (swap entries fall back to "Transfer")
 const raw = import.meta.env.VITE_SWAP_LP_ADDRESS
 if (raw && !/^0x[a-fA-F0-9]{40}$/.test(raw)) {
@@ -9,5 +11,7 @@ if (!raw && import.meta.env.PROD) {
 
 export const SWAP_LP_ADDRESS: string = raw?.toLowerCase() ?? ''
 
+const SWAP_LP_ADDRESSES = [SWAP_LP_ADDRESS, ...RETIRED_SWAP_LP_ADDRESSES].filter(Boolean)
+
 export const isSwapLpAddress = (address: string | null | undefined): boolean =>
-  !!SWAP_LP_ADDRESS && !!address && address.toLowerCase() === SWAP_LP_ADDRESS
+  !!address && SWAP_LP_ADDRESSES.includes(address.toLowerCase())
