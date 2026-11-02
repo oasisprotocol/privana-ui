@@ -148,7 +148,7 @@
   --chart-4: #8b5cf6;
   --chart-5: #f59e0b;
   --chart-positive: #21c45d;
-  --chart-positive-foreground: #052e16;
+  --chart-positive-foreground: #ffffff;
   --chart-positive-text: #15803d;
   --chart-negative: #ef4444;
   /* Raised card surface shadow — single source for SurfaceCard and the swap cards. */
@@ -192,7 +192,7 @@
   --chart-4: #8b5cf6;
   --chart-5: #f59e0b;
   --chart-positive: #21c45d;
-  --chart-positive-foreground: #052e16;
+  --chart-positive-foreground: #ffffff;
   --chart-positive-text: #21c45d;
   --chart-negative: #ef4444;
   --card-shadow:
