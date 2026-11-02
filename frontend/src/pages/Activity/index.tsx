@@ -115,7 +115,7 @@ export const Activity = () => {
 
   return (
     <>
-      <div className="w-full max-w-200 mx-auto">
+      <div className="w-full">
         <BackHeader title="Vault activity" onBack={goBack} />
         <p className="mt-2 text-center text-sm text-muted-foreground">
           Your Vault ledger - deposits, swaps, transfers and withdrawals.
@@ -124,13 +124,13 @@ export const Activity = () => {
       </div>
 
       {isError && (
-        <div className="w-full max-w-200 mx-auto mt-8">
+        <div className="w-full mt-8">
           <ActivityUnavailable onRetry={refetch} />
         </div>
       )}
 
       {!isEmpty && !isError && (
-        <div className="flex flex-col gap-4 w-full max-w-200 mx-auto mt-8">
+        <div className="flex flex-col gap-4 w-full mt-8">
           {SHOW_FILTER_CONTROLS && (
             <div className="flex items-center gap-2">
               <div className="relative flex-1">
