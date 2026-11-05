@@ -22,7 +22,3 @@ export const withdrawPath = () => '/withdraw'
 
 export const activityPath = () => '/activity'
 export const activityDetailsPath = (id: string) => `/activity/${id}`
-
-export const copyTradingPath = () => '/copy-trading'
-export const copyTradingCreatePath = () => '/copy-trading/create'
-export const copyTradingStrategyPath = (id: string) => `/copy-trading/${id}`
