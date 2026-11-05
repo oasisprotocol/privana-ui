@@ -109,7 +109,7 @@ export const PortfolioChart = ({ data, decorative }: { data: PortfolioPoint[]; d
           </linearGradient>
         </defs>
         <XAxis dataKey="date" hide />
-        <YAxis hide />
+        <YAxis hide domain={['dataMin', 'dataMax']} padding={{ top: 5, bottom: 5 }} />
         <ChartTooltip
           cursor={false}
           allowEscapeViewBox={{ x: false, y: true }}
