@@ -2,7 +2,6 @@ import { type ReactNode, useMemo, useState } from 'react'
 import { useNavigate } from 'react-router'
 import { EyeOff } from 'lucide-react'
 import {
-  AccountingApiError,
   maxAmount,
   sortTokensByBalance,
   useBalance,
@@ -21,13 +20,12 @@ import { Skeleton } from '@/components/ui/skeleton'
 import { ALLOWED_TOKEN_IDS } from '@/config/tokens'
 import { useGoToParent } from '@/hooks/use-go-to-parent'
 import { useResetBalanceCaches } from '@/hooks/use-reset-balance-caches'
-import { extractErrorMessage } from '@/lib/errors'
 import { DESKTOP_CARD } from '@/lib/surface'
 import { amountFiat, amountInputError, exceedsAmount, isPositiveAmount, parseAmount } from '@/lib/tokens'
 import { cn } from '@/lib/utils'
-import { describeFailure } from '@/pages/Activity/failureCopy'
 import { activityPath, dashboardPath, depositPath } from '@/paths'
 import { RecipientField } from './RecipientField'
+import { transferFailure } from './transferFailure'
 import { ReviewStep } from './ReviewStep'
 import { ResultStep } from './ResultStep'
 import { recipientError } from './recipient'
@@ -41,11 +39,6 @@ const OPERATIONS_ERROR_MESSAGE = "Couldn't check for a pending swap or Earn depo
 // Swaps and Earn deposits sign the same transfer nonce; a scheduled one hasn't spent it yet.
 const holdsNonce = (operations: readonly Operation[] | undefined) =>
   (operations ?? []).some(op => op.operation_type !== 'earn_withdraw' && op.status === 'scheduled')
-
-const transferFailure = (err: unknown): string =>
-  err instanceof AccountingApiError
-    ? describeFailure(err.detail ?? err.message)
-    : extractErrorMessage(err, 'Transfer failed')
 
 export const Transfer = () => {
   const goToParent = useGoToParent(dashboardPath())
