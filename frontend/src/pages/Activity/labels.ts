@@ -65,7 +65,7 @@ const SWAP_STEPS: Partial<Record<SwapStep, string>> = {
   'refund:redeposit': 'Depositing your funds back',
   'refund:crediting': 'Waiting for the refund to be credited',
   'refund:payout': 'Returning your funds',
-}
+} satisfies Record<Exclude<SwapStep, 'parked' | 'no_funds_moved'>, string>
 
 export const swapStepLabel = (step: SwapStep | null | undefined): string | undefined =>
   step ? SWAP_STEPS[step] : undefined

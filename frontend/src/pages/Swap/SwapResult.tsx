@@ -52,7 +52,11 @@ export const SwapResult = ({ activity, onDone, onViewActivity }: SwapResultProps
       <div className="mt-6 flex flex-col items-center justify-center py-10 text-center">
         <Loader2 className="h-12 w-12 animate-spin text-muted-foreground" />
         <h1 className="mt-6 text-2xl font-semibold tracking-tight">Swapping…</h1>
-        {stepLabel && <p className="mt-2 text-sm text-muted-foreground">{stepLabel}</p>}
+        {stepLabel && (
+          <p role="status" className="mt-2 text-sm text-muted-foreground">
+            {stepLabel}
+          </p>
+        )}
         <p className="mt-2 inline-flex items-center gap-2 text-sm text-muted-foreground">
           <AmountText amount={fromAmount || '0'} token={fromToken} withSymbol />
           <ArrowRight className="h-3.5 w-3.5" />

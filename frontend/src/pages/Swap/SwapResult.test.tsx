@@ -49,6 +49,6 @@ describe('SwapResult', () => {
 
   it('says what a swap in progress is doing', () => {
     renderResult(swap({ status: 'in-progress', step: 'refund:payout' }))
-    expect(screen.getByText('Returning your funds')).toBeInTheDocument()
+    expect(screen.getByRole('status')).toHaveTextContent('Returning your funds')
   })
 })

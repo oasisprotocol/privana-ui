@@ -61,4 +61,10 @@ describe('SwapActivityCard', () => {
     expect(screen.getByText('Swapping for USDC')).toBeInTheDocument()
     expect(screen.getByText('Swapping privately')).toBeInTheDocument()
   })
+
+  it('says what step the swap is at', () => {
+    renderCard({ ...swap('0xhype-usdc', 'USDC', 'in-progress'), step: 'execute:bridging' })
+    expect(screen.getByText('Swapping for USDC')).toBeInTheDocument()
+    expect(screen.getByText('Bridging')).toBeInTheDocument()
+  })
 })

@@ -77,13 +77,13 @@ describe('OperationDetails: swap', () => {
   })
 
   it('marks the payout of a swap in progress as an estimate', () => {
-    operations = [op({ status: 'executing' })]
+    operations = [op({ status: 'executing', step: 'execute:bridging' })]
     render(<OperationDetails activity={swap({ status: 'in-progress' })} />)
 
     expect(rowValue('You receive')).toHaveTextContent('≈ 0.0004 ETH')
     expect(rowValue('Status')).toHaveTextContent('Executing')
     expect(screen.getByText('Executing')).toHaveClass('motion-safe:animate-pulse')
-    expect(screen.getByText(/You can safely leave this screen/)).toBeInTheDocument()
+    expect(screen.getByText(/^Bridging\. This can take a few minutes/)).toBeInTheDocument()
   })
 
   it('shows the full error when the swap failed', () => {
