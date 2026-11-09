@@ -9,7 +9,7 @@ import type {
 type OperationFields = {
   status: ActivityStatus
   operationId?: string
-  /** The services' own status, only while it says more than the badge. */
+  /** The services' own status, once they list the operation. */
   serviceStatus?: OperationStatus
   /** Seconds. */
   createdAt: number
@@ -39,10 +39,7 @@ export const toOperationView = (activity: Activity, operation?: Operation): Oper
   const fields: OperationFields = {
     status: activity.status,
     operationId: operationIdOf(activity),
-    serviceStatus:
-      operation && operation.status !== 'completed' && operation.status !== 'failed'
-        ? operation.status
-        : undefined,
+    serviceStatus: operation?.status,
     createdAt: operation?.created_at ?? Math.floor(activity.createdAt / 1000),
     updatedAt: operation && operation.updated_at !== operation.created_at ? operation.updated_at : undefined,
     txHash: operation?.tx_hash ?? activity.txHash,
