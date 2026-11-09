@@ -1,4 +1,5 @@
 import { formatTokenAmount, type TokenMeta } from '@oasisprotocol/privana-sdk'
+import type { SwapStep } from '@/api/operations'
 import { appNameForAddress } from '@/config/apps'
 import type { ActivityStatus } from '@/contexts/ActivityProvider/context'
 import type { ClassifiedHistoryEntry, DisplayKind } from './historyMapping'
@@ -16,22 +17,22 @@ type MoveKind = 'deposit' | 'withdraw' | 'earnDeposit' | 'earnWithdraw'
 const MOVES: Record<MoveKind, Record<ActivityStatus, RowCopy>> = {
   deposit: {
     completed: { title: 'Deposited to vault', subtitle: 'Added to Available' },
-    'in-progress': { title: 'Depositing to vault', subtitle: 'Adding to Available.' },
+    'in-progress': { title: 'Depositing to vault', subtitle: 'Adding to Available' },
     failed: { title: 'Deposit failed' },
   },
   withdraw: {
     completed: { title: 'Withdrawn', subtitle: 'Sent to external wallet' },
-    'in-progress': { title: 'Withdrawing', subtitle: 'Sending to external wallet.' },
+    'in-progress': { title: 'Withdrawing', subtitle: 'Sending to external wallet' },
     failed: { title: 'Withdrawal failed' },
   },
   earnDeposit: {
     completed: { title: 'Moved to Earn', subtitle: 'Now earning' },
-    'in-progress': { title: 'Moving to Earn', subtitle: 'Moving into Earn.' },
+    'in-progress': { title: 'Moving to Earn', subtitle: 'Moving into Earn' },
     failed: { title: 'Move to Earn failed' },
   },
   earnWithdraw: {
     completed: { title: 'Moved to Available', subtitle: 'Back from Earn' },
-    'in-progress': { title: 'Moving to Available', subtitle: 'Returning to Available.' },
+    'in-progress': { title: 'Moving to Available', subtitle: 'Returning to Available' },
     failed: { title: 'Move to Available failed' },
   },
 }
@@ -44,11 +45,30 @@ export function swapCopy(status: ActivityStatus, toSymbol: string): RowCopy {
     case 'completed':
       return { title: `Swapped${asset}`, subtitle: 'No public trace' }
     case 'in-progress':
-      return { title: `Swapping${asset}`, subtitle: 'Swapping privately.' }
+      return { title: `Swapping${asset}`, subtitle: 'Swapping privately' }
     case 'failed':
       return { title: 'Swap failed' }
   }
 }
+
+const SWAP_STEPS: Partial<Record<SwapStep, string>> = {
+  'internal_swap:pricing': 'Pricing your swap',
+  'internal_swap:sent': 'Swapping privately',
+  'input:sent': 'Preparing your private swap',
+  'withdraw:sent': 'Moving your funds for the swap',
+  'execute:funding': 'Waiting for funds to arrive',
+  'execute:sent': 'Swapping privately',
+  'execute:bridging': 'Bridging',
+  'deposit:sent': 'Depositing to your vault',
+  'deposit:crediting': 'Waiting for the deposit to be credited',
+  'credit:sent': 'Crediting your vault',
+  'refund:redeposit': 'Depositing your funds back',
+  'refund:crediting': 'Waiting for the refund to be credited',
+  'refund:payout': 'Returning your funds',
+}
+
+export const swapStepLabel = (step: SwapStep | null | undefined): string | undefined =>
+  step ? SWAP_STEPS[step] : undefined
 
 // History only lists what already happened, so these rows are always completed.
 const HISTORY_ONLY: Record<Exclude<DisplayKind, MoveKind | 'swap'>, RowCopy> = {

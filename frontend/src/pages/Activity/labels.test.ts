@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest'
 import type { ClassifiedHistoryEntry } from './historyMapping'
-import { historyRowCopy, moveCopy, swapCopy } from './labels'
+import type { SwapStep } from '@/api/operations'
+import { historyRowCopy, moveCopy, swapCopy, swapStepLabel } from './labels'
 
 describe('moveCopy', () => {
   it.each(['deposit', 'withdraw', 'earnDeposit', 'earnWithdraw'] as const)(
@@ -8,7 +9,7 @@ describe('moveCopy', () => {
     kind => {
       expect(moveCopy(kind, 'completed').title).not.toMatch(/ing\b|failed/)
       expect(moveCopy(kind, 'in-progress').title).toMatch(/ing\b/)
-      expect(moveCopy(kind, 'in-progress').subtitle).toMatch(/\.$/)
+      expect(moveCopy(kind, 'in-progress').subtitle).not.toMatch(/\.$/)
       // The failure reason fills the line under a failed row.
       expect(moveCopy(kind, 'failed')).toEqual({ title: expect.stringMatching(/ failed$/) })
     },
@@ -24,6 +25,21 @@ describe('swapCopy', () => {
 
   it('drops the asset when its symbol is unknown', () => {
     expect(swapCopy('completed', '').title).toBe('Swapped')
+  })
+})
+
+describe('swapStepLabel', () => {
+  it('describes what a swap in progress is doing', () => {
+    expect(swapStepLabel('execute:funding')).toBe('Waiting for funds to arrive')
+    expect(swapStepLabel('execute:bridging')).toBe('Bridging')
+    expect(swapStepLabel('refund:payout')).toBe('Returning your funds')
+  })
+
+  it('has no line for a failed, missing or unknown step', () => {
+    expect(swapStepLabel('parked')).toBeUndefined()
+    expect(swapStepLabel('no_funds_moved')).toBeUndefined()
+    expect(swapStepLabel(null)).toBeUndefined()
+    expect(swapStepLabel('later:step' as SwapStep)).toBeUndefined()
   })
 })
 
