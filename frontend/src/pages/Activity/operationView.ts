@@ -20,7 +20,7 @@ type OperationFields = {
 }
 
 export type SwapView = OperationFields &
-  Pick<SwapActivity, 'fromToken' | 'toToken' | 'fromAmount'> & {
+  Pick<SwapActivity, 'fromToken' | 'toToken' | 'fromAmount' | 'step'> & {
     type: 'swap'
     estimate: string
     received?: string
@@ -56,6 +56,7 @@ export const toOperationView = (activity: Activity, operation?: Operation): Oper
       fromToken: activity.fromToken,
       toToken: activity.toToken,
       fromAmount: activity.fromAmount,
+      step: operation?.step ?? activity.step,
       estimate: operation?.to_amount_estimate ?? activity.toAmount,
       received:
         operation?.to_amount_actual ?? (activity.status === 'completed' ? activity.toAmount : undefined),

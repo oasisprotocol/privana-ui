@@ -70,6 +70,7 @@ export function resolveActivity(a: Activity, operations: readonly Operation[]): 
       swapId: op.operation_id,
       toAmount: op.to_amount_actual ?? a.toAmount,
       reason: op.reason ?? undefined,
+      step: op.step ?? undefined,
     }
   }
   return {
@@ -102,6 +103,7 @@ export function mapOperationToActivity(
       txHash: op.tx_hash ?? undefined,
       error: errorOf(op),
       reason: op.reason ?? undefined,
+      step: op.step ?? undefined,
     }
   }
 

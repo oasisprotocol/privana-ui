@@ -39,13 +39,13 @@ const MOVES: Record<MoveKind, Record<ActivityStatus, RowCopy>> = {
 
 export const moveCopy = (kind: MoveKind, status: ActivityStatus): RowCopy => MOVES[kind][status]
 
-export function swapCopy(status: ActivityStatus, toSymbol: string): RowCopy {
+export function swapCopy(status: ActivityStatus, toSymbol: string, step?: SwapStep): RowCopy {
   const asset = toSymbol ? ` for ${toSymbol}` : ''
   switch (status) {
     case 'completed':
       return { title: `Swapped${asset}`, subtitle: 'No public trace' }
     case 'in-progress':
-      return { title: `Swapping${asset}`, subtitle: 'Swapping privately' }
+      return { title: `Swapping${asset}`, subtitle: swapStepLabel(step) ?? 'Swapping privately' }
     case 'failed':
       return { title: 'Swap failed' }
   }

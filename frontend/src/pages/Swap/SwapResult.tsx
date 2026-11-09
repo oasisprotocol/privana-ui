@@ -8,6 +8,7 @@ import { TokenAmount as AmountText } from '@/components/TokenAmount'
 import { cn } from '@/lib/utils'
 import { useSlowSettlement } from '@/hooks/useSlowSettlement'
 import type { ActivityTokenInfo, SwapActivity } from '@/contexts/ActivityProvider/context'
+import { swapStepLabel } from '@/pages/Activity/labels'
 import { formatRate } from './quoteHelpers'
 
 const TokenAmount = ({
@@ -40,16 +41,18 @@ type SwapResultProps = {
 }
 
 export const SwapResult = ({ activity, onDone, onViewActivity }: SwapResultProps) => {
-  const { fromToken, toToken, fromAmount, toAmount, feeFiat, status, error, swapId } = activity
+  const { fromToken, toToken, fromAmount, toAmount, feeFiat, status, error, swapId, step } = activity
   const rate = formatRate({ amount: fromAmount, ...fromToken }, { amount: toAmount, ...toToken })
 
   const slow = useSlowSettlement(status)
 
   if (status === 'in-progress') {
+    const stepLabel = swapStepLabel(step)
     return (
       <div className="mt-6 flex flex-col items-center justify-center py-10 text-center">
         <Loader2 className="h-12 w-12 animate-spin text-muted-foreground" />
         <h1 className="mt-6 text-2xl font-semibold tracking-tight">Swapping…</h1>
+        {stepLabel && <p className="mt-2 text-sm text-muted-foreground">{stepLabel}</p>}
         <p className="mt-2 inline-flex items-center gap-2 text-sm text-muted-foreground">
           <AmountText amount={fromAmount || '0'} token={fromToken} withSymbol />
           <ArrowRight className="h-3.5 w-3.5" />

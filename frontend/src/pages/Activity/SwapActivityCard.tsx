@@ -13,7 +13,7 @@ type SwapActivityCardProps = {
 export const SwapActivityCard = ({ activity, divider, href }: SwapActivityCardProps) => {
   const { status, fromToken, toToken, fromAmount, toAmount, error } = activity
   const chains = useSwapChains(fromToken.id, toToken.id)
-  const { title, subtitle } = swapCopy(status, toToken.symbol)
+  const { title, subtitle } = swapCopy(status, toToken.symbol, activity.step)
 
   return (
     <ActivityCard

@@ -56,7 +56,7 @@ const OperationRows = ({ view }: { view: OperationView }) => (
 )
 
 const SwapDetails = ({ swap }: { swap: SwapView }) => {
-  const { status, fromToken, toToken, fromAmount, estimate, received, error } = swap
+  const { status, fromToken, toToken, fromAmount, estimate, received, error, step } = swap
   const chains = useSwapChains(fromToken.id, toToken.id)
   const rate = formatRate({ amount: fromAmount, ...fromToken }, { amount: received ?? estimate, ...toToken })
 
@@ -72,7 +72,7 @@ const SwapDetails = ({ swap }: { swap: SwapView }) => {
             <HeroAmount amount={received ?? estimate} token={toToken} estimate={!received} />
           )
         }
-        statusLine={statusLine(status, swapCopy(status, toToken.symbol).subtitle)}
+        statusLine={statusLine(status, swapCopy(status, toToken.symbol, step).subtitle)}
         error={status === 'failed' ? error : undefined}
       />
       <DetailsCard>

@@ -46,4 +46,9 @@ describe('SwapResult', () => {
     renderResult(swap({ status: 'in-progress' }))
     expect(screen.getByText('≈', { exact: false })).toHaveTextContent('≈ 1.99 USDT')
   })
+
+  it('says what a swap in progress is doing', () => {
+    renderResult(swap({ status: 'in-progress', step: 'refund:payout' }))
+    expect(screen.getByText('Returning your funds')).toBeInTheDocument()
+  })
 })

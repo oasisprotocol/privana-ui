@@ -26,6 +26,14 @@ describe('swapCopy', () => {
   it('drops the asset when its symbol is unknown', () => {
     expect(swapCopy('completed', '').title).toBe('Swapped')
   })
+
+  it('says what a swap in progress is doing, keeping the title', () => {
+    expect(swapCopy('in-progress', 'ETH', 'execute:bridging')).toEqual({
+      title: 'Swapping for ETH',
+      subtitle: 'Bridging',
+    })
+    expect(swapCopy('in-progress', 'ETH').subtitle).toBe('Swapping privately')
+  })
 })
 
 describe('swapStepLabel', () => {
