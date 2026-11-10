@@ -8,7 +8,7 @@ import { TokenAmount as AmountText } from '@/components/TokenAmount'
 import { cn } from '@/lib/utils'
 import { useSlowSettlement } from '@/hooks/useSlowSettlement'
 import type { ActivityTokenInfo, SwapActivity } from '@/contexts/ActivityProvider/context'
-import { swapStepLabel } from '@/pages/Activity/labels'
+import { swapStepLabel } from '@/lib/swapSteps'
 import { formatRate } from './quoteHelpers'
 
 const TokenAmount = ({

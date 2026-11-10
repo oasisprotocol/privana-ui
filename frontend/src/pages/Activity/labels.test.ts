@@ -1,7 +1,6 @@
 import { describe, expect, it } from 'vitest'
 import type { ClassifiedHistoryEntry } from './historyMapping'
-import type { SwapStep } from '@/api/operations'
-import { historyRowCopy, moveCopy, swapCopy, swapStepLabel } from './labels'
+import { historyRowCopy, moveCopy, swapCopy } from './labels'
 
 describe('moveCopy', () => {
   it.each(['deposit', 'withdraw', 'earnDeposit', 'earnWithdraw'] as const)(
@@ -35,22 +34,6 @@ describe('swapCopy', () => {
     expect(swapCopy('in-progress', 'ETH').subtitle).toBe('Swapping privately')
   })
 })
-
-describe('swapStepLabel', () => {
-  it('describes what a swap in progress is doing', () => {
-    expect(swapStepLabel('execute:funding')).toBe('Waiting for funds to arrive')
-    expect(swapStepLabel('execute:bridging')).toBe('Bridging')
-    expect(swapStepLabel('refund:payout')).toBe('Returning your funds')
-  })
-
-  it('has no line for a failed, missing or unknown step', () => {
-    expect(swapStepLabel('parked')).toBeUndefined()
-    expect(swapStepLabel('no_funds_moved')).toBeUndefined()
-    expect(swapStepLabel(null)).toBeUndefined()
-    expect(swapStepLabel('later:step' as SwapStep)).toBeUndefined()
-  })
-})
-
 describe('historyRowCopy', () => {
   const row = (kind: ClassifiedHistoryEntry['kind'], entryKind = 'deposit') =>
     ({ kind, counterparty: null, entry: { kind: entryKind } }) as unknown as ClassifiedHistoryEntry
