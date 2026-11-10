@@ -12,6 +12,23 @@ export type OperationType = 'swap' | 'earn_deposit' | 'earn_withdraw'
 // Why a swap did not complete. needs_support: its funds were not returned
 // automatically, and `error` tells the user to contact support.
 export type SwapFailureReason = 'refunded' | 'no_funds_moved' | 'needs_support'
+// Where a swap is. parked and no_funds_moved mark a failed swap, whose `reason` explains it.
+export type SwapStep =
+  | 'internal_swap:pricing'
+  | 'internal_swap:sent'
+  | 'input:sent'
+  | 'withdraw:sent'
+  | 'execute:funding'
+  | 'execute:sent'
+  | 'execute:bridging'
+  | 'deposit:sent'
+  | 'deposit:crediting'
+  | 'credit:sent'
+  | 'refund:redeposit'
+  | 'refund:crediting'
+  | 'refund:payout'
+  | 'parked'
+  | 'no_funds_moved'
 export { isInFlight, isSettledFailure, type OperationStatus } from './operation-status'
 import type { OperationStatus } from './operation-status'
 
@@ -34,6 +51,8 @@ export interface Operation {
   error: string | null
   // Swap-only fields
   reason?: SwapFailureReason | null
+  /** Null while scheduled. Absent on older services. */
+  step?: SwapStep | null
   quote_id: string | null
   from_token_id: string | null
   to_token_id: string | null

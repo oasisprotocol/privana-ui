@@ -69,4 +69,5 @@ export const detailsTitle = (row: MergedRow): string => {
 
 const IN_PROGRESS_NOTE = 'This can take a few minutes. You can safely leave this screen.'
 
-export const progressLine = (subtitle?: string): string => `${subtitle ?? ''} ${IN_PROGRESS_NOTE}`.trim()
+export const progressLine = (subtitle?: string): string =>
+  subtitle ? `${subtitle}. ${IN_PROGRESS_NOTE}` : IN_PROGRESS_NOTE

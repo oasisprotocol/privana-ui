@@ -70,21 +70,20 @@ describe('OperationDetails: swap', () => {
     expect(rowValue('You paid')).toHaveTextContent('1.00 USDC · Base')
     expect(rowValue('You received')).toHaveTextContent('0.00039 ETH · Base')
     expect(rowValue('Rate')).toHaveTextContent('1 USDC = 0.00039 ETH')
-    // The badge already says it; the Status row is for finer states.
-    expect(screen.queryByText('Status')).not.toBeInTheDocument()
+    expect(rowValue('Status')).toHaveTextContent('Completed')
     expect(screen.getByText('Last updated')).toBeInTheDocument()
     expect(screen.getByRole('button', { name: 'Copy operation ID' })).toBeInTheDocument()
     expect(screen.getByRole('button', { name: 'Copy transaction hash' })).toBeInTheDocument()
   })
 
   it('marks the payout of a swap in progress as an estimate', () => {
-    operations = [op({ status: 'executing' })]
+    operations = [op({ status: 'executing', step: 'execute:bridging' })]
     render(<OperationDetails activity={swap({ status: 'in-progress' })} />)
 
     expect(rowValue('You receive')).toHaveTextContent('≈ 0.0004 ETH')
     expect(rowValue('Status')).toHaveTextContent('Executing')
     expect(screen.getByText('Executing')).toHaveClass('motion-safe:animate-pulse')
-    expect(screen.getByText(/You can safely leave this screen/)).toBeInTheDocument()
+    expect(screen.getByText(/^Bridging\. This can take a few minutes/)).toBeInTheDocument()
   })
 
   it('shows the full error when the swap failed', () => {
@@ -94,6 +93,7 @@ describe('OperationDetails: swap', () => {
 
     expect(screen.getByText(error)).toHaveClass('text-destructive')
     expect(screen.queryByText(/Reason/)).not.toBeInTheDocument()
+    expect(rowValue('Status')).toHaveTextContent('Failed')
     expect(rowValue('Quoted')).toHaveTextContent('≈ 0.0004 ETH')
     expect(screen.queryByText('Rate')).not.toBeInTheDocument()
   })

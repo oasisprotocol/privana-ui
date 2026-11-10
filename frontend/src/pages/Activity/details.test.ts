@@ -4,7 +4,13 @@ import type { MergedRow } from '@/hooks/use-merged-activity'
 import type { SwapActivity } from '@/contexts/ActivityProvider/context'
 import type { ClassifiedHistoryEntry } from './historyMapping'
 import type { PendingTransfer } from '@/hooks/usePendingTransfers'
-import { detailsIdOf, findDetailsRow, parseDetailsId, pendingTransferDetailsId } from './details'
+import {
+  detailsIdOf,
+  findDetailsRow,
+  parseDetailsId,
+  pendingTransferDetailsId,
+  progressLine,
+} from './details'
 
 const USDC = { id: '0x1', symbol: 'USDC', decimals: 6 }
 
@@ -138,5 +144,14 @@ describe('pendingTransferDetailsId', () => {
     const row = { ...chainRow(4), pending: true as const, pendingKey: 'withdraw:7' }
     expect(pendingTransferDetailsId(withdrawal, [chainRow(3), row])).toBe('h-4')
     expect(pendingTransferDetailsId(withdrawal, [chainRow(3)])).toBeNull()
+  })
+})
+
+describe('progressLine', () => {
+  it('ends the row subtitle with a period before the note', () => {
+    expect(progressLine('Bridging')).toBe(
+      'Bridging. This can take a few minutes. You can safely leave this screen.',
+    )
+    expect(progressLine()).toBe('This can take a few minutes. You can safely leave this screen.')
   })
 })

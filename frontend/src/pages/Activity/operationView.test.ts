@@ -83,12 +83,12 @@ describe('toOperationView', () => {
     expect(toOperationView(earn, op({ stages: [] }))).toMatchObject({ stages: [] })
   })
 
-  it('leaves out a services status the badge already shows, and an unchanged update time', () => {
+  it('keeps the services status once settled, and leaves out an unchanged update time', () => {
     const view = toOperationView(
       { ...swap, status: 'completed' },
       op({ status: 'completed', updated_at: 990 }),
     )
-    expect(view.serviceStatus).toBeUndefined()
+    expect(view.serviceStatus).toBe('completed')
     expect(view.updatedAt).toBeUndefined()
     expect(view).toMatchObject({ received: '400' })
   })
