@@ -13,9 +13,10 @@ vi.mock('@oasisprotocol/privana-sdk', async importOriginal => ({
 }))
 
 let operations: Operation[] = []
+let fetching = false
 vi.mock('@/api/operations', async importOriginal => ({
   ...(await importOriginal<typeof import('@/api/operations')>()),
-  useOperations: () => ({ data: { operations, next_cursor: null } }),
+  useOperations: () => ({ data: { operations, next_cursor: null }, isFetching: fetching }),
 }))
 
 const USDC = { id: '0x1', symbol: 'USDC', decimals: 6 }
@@ -60,6 +61,7 @@ const rowValue = (label: string) => screen.getByText(label).nextElementSibling
 
 beforeEach(() => {
   operations = []
+  fetching = false
 })
 
 describe('OperationDetails: swap', () => {
@@ -75,6 +77,12 @@ describe('OperationDetails: swap', () => {
     expect(screen.getByText('Last updated')).toBeInTheDocument()
     expect(screen.getByRole('button', { name: 'Copy operation ID' })).toBeInTheDocument()
     expect(screen.getByRole('button', { name: 'Copy transaction hash' })).toBeInTheDocument()
+  })
+
+  it('holds the status row while the services row is being fetched', () => {
+    fetching = true
+    render(<OperationDetails activity={swap({ status: 'in-progress' })} />)
+    expect(rowValue('Status')?.querySelector('[data-slot="skeleton"]')).toBeInTheDocument()
   })
 
   it('marks the payout of a swap in progress as an estimate', () => {

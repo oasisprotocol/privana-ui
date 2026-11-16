@@ -3,6 +3,7 @@ import { isInFlight, operationIdOf, useOperations, type OperationStatus } from '
 import { getProtocolLabel } from '@/config/protocols'
 import type { Activity, ActivityStatus } from '@/contexts/ActivityProvider/context'
 import { SurfaceCard } from '@/components/SurfaceCard'
+import { Skeleton } from '@/components/ui/skeleton'
 import { formatDateTime } from '@/lib/dates'
 import { cn } from '@/lib/utils'
 import { formatRate } from '@/pages/Swap/quoteHelpers'
@@ -30,14 +31,21 @@ const OPERATION_STATUS_LABEL: Record<OperationStatus, string> = {
 const statusLine = (status: ActivityStatus, inProgressSubtitle?: string) =>
   status === 'in-progress' ? progressLine(inProgressSubtitle) : undefined
 
-const OperationRows = ({ view }: { view: OperationView }) => (
+// statusLoading: the services' row is still being fetched, so its status is not known yet.
+const OperationRows = ({ view, statusLoading }: { view: OperationView; statusLoading: boolean }) => (
   <>
-    {view.serviceStatus && (
+    {view.serviceStatus ? (
       <DetailsRow label="Status">
         <span className={cn(isInFlight(view.serviceStatus) && 'motion-safe:animate-pulse')}>
           {OPERATION_STATUS_LABEL[view.serviceStatus] ?? view.serviceStatus}
         </span>
       </DetailsRow>
+    ) : (
+      statusLoading && (
+        <DetailsRow label="Status">
+          <Skeleton className="h-4 w-20" />
+        </DetailsRow>
+      )
     )}
     <DetailsRow label="Created">{formatDateTime(view.createdAt)}</DetailsRow>
     {view.updatedAt !== undefined && (
@@ -56,7 +64,7 @@ const OperationRows = ({ view }: { view: OperationView }) => (
   </>
 )
 
-const SwapDetails = ({ swap }: { swap: SwapView }) => {
+const SwapDetails = ({ swap, statusLoading }: { swap: SwapView; statusLoading: boolean }) => {
   const { status, fromToken, toToken, fromAmount, estimate, received, error, step } = swap
   const chains = useSwapChains(fromToken.id, toToken.id)
   const rate = formatRate({ amount: fromAmount, ...fromToken }, { amount: received ?? estimate, ...toToken })
@@ -97,13 +105,13 @@ const SwapDetails = ({ swap }: { swap: SwapView }) => {
             Private execution — no public trace
           </span>
         </DetailsRow>
-        <OperationRows view={swap} />
+        <OperationRows view={swap} statusLoading={statusLoading} />
       </DetailsCard>
     </>
   )
 }
 
-const EarnDetails = ({ earn }: { earn: EarnView }) => {
+const EarnDetails = ({ earn, statusLoading }: { earn: EarnView; statusLoading: boolean }) => {
   const { status, direction, token, amount, protocol, stages, error } = earn
   const kind = direction === 'deposit' ? 'earnDeposit' : 'earnWithdraw'
   const { from: chain } = useSwapChains(token.id, undefined)
@@ -123,7 +131,7 @@ const EarnDetails = ({ earn }: { earn: EarnView }) => {
         </DetailsRow>
         {protocol && <DetailsRow label="Venue">{getProtocolLabel(protocol)}</DetailsRow>}
         <DetailsRow label="Type">{moveCopy(kind, 'completed').title}</DetailsRow>
-        <OperationRows view={earn} />
+        <OperationRows view={earn} statusLoading={statusLoading} />
       </DetailsCard>
       {status === 'in-progress' && stages.length > 0 && (
         <SurfaceCard className="mt-4 p-4">
@@ -137,11 +145,14 @@ const EarnDetails = ({ earn }: { earn: EarnView }) => {
 
 export const OperationDetails = ({ activity }: { activity: Activity }) => {
   const operationId = operationIdOf(activity)
-  const { data } = useOperations()
-  const view = toOperationView(
-    activity,
-    data?.operations.find(o => o.operation_id === operationId),
-  )
+  const { data, isFetching } = useOperations()
+  const operation = data?.operations.find(o => o.operation_id === operationId)
+  const view = toOperationView(activity, operation)
+  const statusLoading = !operation && isFetching
 
-  return view.type === 'swap' ? <SwapDetails swap={view} /> : <EarnDetails earn={view} />
+  return view.type === 'swap' ? (
+    <SwapDetails swap={view} statusLoading={statusLoading} />
+  ) : (
+    <EarnDetails earn={view} statusLoading={statusLoading} />
+  )
 }
