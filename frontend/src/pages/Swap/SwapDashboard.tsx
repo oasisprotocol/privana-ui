@@ -144,7 +144,7 @@ export const SwapDashboard = () => {
 
   const handleSwap = async () => {
     if (!canSwap || !quoteData || !walletClient || !address || !fromToken || !toToken) return
-    const id = await runSwap({
+    const submitted = await runSwap({
       quote: quoteData,
       walletClient,
       address,
@@ -152,8 +152,8 @@ export const SwapDashboard = () => {
       toToken,
       feeFiat: summary.totalFeeFiat,
     })
-    if (id) {
-      setSwapActivityId(id)
+    if (submitted) {
+      setSwapActivityId(submitted.activityId)
       setStep(2)
     }
   }
