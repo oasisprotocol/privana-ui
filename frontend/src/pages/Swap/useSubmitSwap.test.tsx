@@ -62,7 +62,7 @@ describe('useSubmitSwap', () => {
     const onSuccess = vi.fn()
     const { submitted } = await submit({ onSuccess })
 
-    expect(submitted).toEqual({ activityId: addedId(), operationId: 'srv-1' })
+    expect(submitted).toEqual({ operationId: 'srv-1' })
     expect(activity.updateActivity).toHaveBeenCalledWith(addedId(), {
       swapId: 'srv-1',
       txHash: undefined,
@@ -99,7 +99,7 @@ describe('useSubmitSwap', () => {
     vi.mocked(executeSwap).mockRejectedValue(new TypeError('Failed to fetch'))
     const { result, submitted } = await submit()
 
-    expect(submitted).toEqual({ activityId: addedId() })
+    expect(submitted).toEqual({})
     expect(activity.removeActivity).not.toHaveBeenCalled()
     expect(activity.updateActivity).not.toHaveBeenCalled()
     expect(result.current.error).toBeNull()

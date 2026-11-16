@@ -7,13 +7,12 @@ import { Skeleton } from '@/components/ui/skeleton'
 import { maxAmount, useBalance } from '@oasisprotocol/privana-sdk'
 import { useConnection } from 'wagmi'
 import { ArrowUpDown, EyeOff } from 'lucide-react'
-import { activityPath, dashboardPath } from '@/paths'
+import { activityDetailsPath, activityPath, dashboardPath } from '@/paths'
 import { SWAPPABLE_TOKEN_IDS } from '@/config/tokens'
 import { cn } from '@/lib/utils'
 import { amountFiat, amountInputError, exceedsAmount, parseAmount } from '@/lib/tokens'
 import { useRefreshBalanceCaches } from '@/hooks/use-reset-balance-caches'
 import { DESKTOP_CARD } from '@/lib/surface'
-import { useResolvedActivity } from '@/hooks/use-merged-activity'
 import { AssetRow } from '@/components/AssetRow'
 import { BackHeader } from '@/components/BackHeader'
 import { useGoToParent } from '@/hooks/use-go-to-parent'
@@ -21,7 +20,6 @@ import { QuoteInfo } from './QuoteInfo'
 import { ReviewStep } from './ReviewStep'
 import { SwapSettings } from './SwapSettings'
 import { parseSlippagePercent, slippageLabel } from './slippage'
-import { SwapResult } from './SwapResult'
 import { useSwapQuote } from './useSwapQuote'
 import { useSubmitSwap } from './useSubmitSwap'
 import { useQuoteSummary } from './useQuoteSummary'
@@ -44,7 +42,6 @@ export const SwapDashboard = () => {
   const [fromAmount, setFromAmount] = useState('')
   const [slippageInput, setSlippageInput] = useState('')
   const slippagePercent = parseSlippagePercent(slippageInput)
-  const [swapActivityId, setSwapActivityId] = useState<string | null>(null)
   const tokens = useMemo(
     () => (data?.tokens ?? []).filter(t => (SWAPPABLE_TOKEN_IDS as string[]).includes(t.token_id)),
     [data],
@@ -123,19 +120,13 @@ export const SwapDashboard = () => {
   const canSwap =
     !!quoteData && !quoteLoading && !!walletClient && !!address && !insufficientFunds && quoteMatchesInput
 
-  const resolvedActivity = useResolvedActivity(swapActivityId)
-  const swapActivity = resolvedActivity?.type === 'swap' ? resolvedActivity : undefined
-
-  // Reset the flow when the connected account changes. ActivityProvider drops its
-  // list per-address, so a swap tracked for the previous account would no longer
-  // be found and the result step would render a blank card.
+  // Reset the flow when the connected account changes: the quote belongs to the previous one.
   const prevAddressRef = useRef(address)
   useEffect(() => {
     if (prevAddressRef.current === address) return
     prevAddressRef.current = address
     resetSubmit()
     resetQuote()
-    setSwapActivityId(null)
     setFromTokenId('')
     setToTokenId('')
     setFromAmount('')
@@ -153,23 +144,12 @@ export const SwapDashboard = () => {
       feeFiat: summary.totalFeeFiat,
     })
     if (submitted) {
-      setSwapActivityId(submitted.activityId)
-      setStep(2)
+      navigate(submitted.operationId ? activityDetailsPath(`op-${submitted.operationId}`) : activityPath())
     }
   }
 
   const handleBack = () => {
     resetSubmit()
-    setStep(0)
-  }
-
-  const handleDone = () => {
-    resetSubmit()
-    resetQuote()
-    setSwapActivityId(null)
-    setFromTokenId('')
-    setToTokenId('')
-    setFromAmount('')
     setStep(0)
   }
 
@@ -197,14 +177,6 @@ export const SwapDashboard = () => {
           <BackHeader title="Review swap" onBack={handleBack} />
           <p className="mt-4 text-sm text-muted-foreground">Confirm before executing.</p>
         </div>
-      )}
-
-      {step === 2 && swapActivity && (
-        <SwapResult
-          activity={swapActivity}
-          onDone={handleDone}
-          onViewActivity={() => navigate(activityPath())}
-        />
       )}
 
       {step === 1 && data && (

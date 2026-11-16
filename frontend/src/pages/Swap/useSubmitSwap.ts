@@ -28,7 +28,7 @@ export type SubmitSwapParams = {
   feeFiat?: number
 }
 
-export type SubmittedSwap = { activityId: string; operationId?: string }
+export type SubmittedSwap = { operationId?: string }
 
 export const useSubmitSwap = ({ onSuccess, onRefused }: Params = {}) => {
   const { addActivity, updateActivity, removeActivity } = useActivity()
@@ -94,7 +94,7 @@ export const useSubmitSwap = ({ onSuccess, onRefused }: Params = {}) => {
       })
       void queryClient.invalidateQueries({ queryKey: operationsKeys.all })
       onSuccess?.()
-      return { activityId: id, operationId: swap.swap_id }
+      return { operationId: swap.swap_id }
     } catch (err) {
       if (id === undefined) {
         setError(extractErrorMessage(err, 'Swap failed'))
@@ -112,7 +112,7 @@ export const useSubmitSwap = ({ onSuccess, onRefused }: Params = {}) => {
         return null
       }
       void queryClient.invalidateQueries({ queryKey: operationsKeys.all })
-      return { activityId: id }
+      return {}
     } finally {
       setLoading(false)
     }
