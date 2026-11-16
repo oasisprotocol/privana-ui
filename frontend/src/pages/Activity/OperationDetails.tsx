@@ -1,3 +1,4 @@
+import { EyeOff } from 'lucide-react'
 import { isInFlight, operationIdOf, useOperations, type OperationStatus } from '@/api/operations'
 import { getProtocolLabel } from '@/config/protocols'
 import type { Activity, ActivityStatus } from '@/contexts/ActivityProvider/context'
@@ -90,6 +91,12 @@ const SwapDetails = ({ swap }: { swap: SwapView }) => {
         )}
         {status !== 'failed' && rate && <DetailsRow label="Rate">{received ? rate : `≈ ${rate}`}</DetailsRow>}
         <DetailsRow label="Type">Swap</DetailsRow>
+        <DetailsRow label="Privacy">
+          <span className="inline-flex items-center gap-1.5">
+            <EyeOff className="size-3.5 shrink-0" />
+            Private execution — no public trace
+          </span>
+        </DetailsRow>
         <OperationRows view={swap} />
       </DetailsCard>
     </>

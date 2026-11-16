@@ -70,6 +70,7 @@ describe('OperationDetails: swap', () => {
     expect(rowValue('You paid')).toHaveTextContent('1.00 USDC · Base')
     expect(rowValue('You received')).toHaveTextContent('0.00039 ETH · Base')
     expect(rowValue('Rate')).toHaveTextContent('1 USDC = 0.00039 ETH')
+    expect(rowValue('Privacy')).toHaveTextContent('Private execution — no public trace')
     expect(rowValue('Status')).toHaveTextContent('Completed')
     expect(screen.getByText('Last updated')).toBeInTheDocument()
     expect(screen.getByRole('button', { name: 'Copy operation ID' })).toBeInTheDocument()
