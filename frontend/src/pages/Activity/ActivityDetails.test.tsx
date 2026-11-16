@@ -1,5 +1,6 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { render, screen } from '@testing-library/react'
+import userEvent from '@testing-library/user-event'
 import { MemoryRouter, Route, Routes } from 'react-router'
 import { TooltipProvider } from '@/components/ui/tooltip'
 import type { DepositProgress, HistoryEntry } from '@oasisprotocol/privana-sdk'
@@ -68,6 +69,23 @@ describe('ActivityDetails', () => {
     expect(screen.getByRole('heading', { name: 'Swapped for ETH' })).toBeInTheDocument()
     expect(screen.getByText(/Oct 12, 2026, 11:17\sAM/)).toBeInTheDocument()
     expect(screen.getByRole('button', { name: 'Copy operation ID' })).toBeInTheDocument()
+  })
+
+  it('goes back to where the flow that opened it says', async () => {
+    render(
+      <TooltipProvider>
+        <MemoryRouter
+          initialEntries={[{ pathname: `/activity/op-${OPERATION_ID}`, state: { parent: '/dashboard' } }]}
+        >
+          <Routes>
+            <Route path="/activity/:id" element={<ActivityDetails />} />
+            <Route path="/dashboard" element={<p>Dashboard</p>} />
+          </Routes>
+        </MemoryRouter>
+      </TooltipProvider>,
+    )
+    await userEvent.click(screen.getByRole('button', { name: 'Back' }))
+    expect(screen.getByText('Dashboard')).toBeInTheDocument()
   })
 
   it('says so when the transaction is not loaded', () => {

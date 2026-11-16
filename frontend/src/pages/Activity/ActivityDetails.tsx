@@ -1,5 +1,5 @@
 import type { ReactNode } from 'react'
-import { Link, Navigate, useParams } from 'react-router'
+import { Link, Navigate, useLocation, useParams } from 'react-router'
 import { useDeposit, type DepositProgress } from '@oasisprotocol/privana-sdk'
 import { Button } from '@/components/ui/button'
 import { Skeleton } from '@/components/ui/skeleton'
@@ -25,7 +25,8 @@ const Details = ({ row, progress }: { row: MergedRow; progress: DepositProgress 
 
 export const ActivityDetails = () => {
   const { id = '' } = useParams()
-  const goToParent = useGoToParent(activityPath())
+  const { state } = useLocation()
+  const goToParent = useGoToParent((state as { parent?: string } | null)?.parent ?? activityPath())
   const ref = parseDetailsId(id)
   const { rows, isLoading, isError, refetch } = useMergedActivity()
   const { progress } = useDeposit()

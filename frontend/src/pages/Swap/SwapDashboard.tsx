@@ -144,7 +144,9 @@ export const SwapDashboard = () => {
       feeFiat: summary.totalFeeFiat,
     })
     if (submitted) {
-      navigate(submitted.operationId ? activityDetailsPath(`op-${submitted.operationId}`) : activityPath())
+      navigate(submitted.operationId ? activityDetailsPath(`op-${submitted.operationId}`) : activityPath(), {
+        state: { parent: dashboardPath() },
+      })
     }
   }
 
