@@ -19,8 +19,8 @@ describe('dayLabel', () => {
     expect(dayLabel(at(8, 26), NOW)).toBe('Saturday')
   })
 
-  it('falls back to the date, with the year only when it differs', () => {
-    expect(dayLabel(at(8, 25), NOW)).toBe('Sep 25')
+  it('falls back to the date with the year', () => {
+    expect(dayLabel(at(8, 25), NOW)).toBe('Sep 25, 2026')
     expect(dayLabel(at(11, 31, 10, 2025), NOW)).toBe('Dec 31, 2025')
   })
 
@@ -36,7 +36,7 @@ describe('groupRowsByDay', () => {
     expect(groups.map(g => [g.label, g.rows.length])).toEqual([
       ['Today', 2],
       ['Yesterday', 1],
-      ['Sep 20', 1],
+      ['Sep 20, 2026', 1],
     ])
     expect(groups[0].rows).toEqual(rows.slice(0, 2))
   })
