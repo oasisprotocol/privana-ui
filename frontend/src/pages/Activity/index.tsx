@@ -18,7 +18,7 @@ const TABS = [
   { id: 'deposits', label: 'Deposits' },
   { id: 'withdrawals', label: 'Withdrawals' },
   { id: 'earn', label: 'Earn' },
-  { id: 'swap', label: 'Swap' },
+  { id: 'swap', label: 'Swaps' },
   { id: 'transfers', label: 'Transfers' },
 ] as const
 
