@@ -75,7 +75,7 @@ export const ConnectButton: FC = () => {
         <DropdownMenuTrigger asChild>
           <button
             type="button"
-            aria-label="Account menu"
+            aria-label={`Account menu, ${trimLongString(address)}`}
             className={cn(
               'inline-flex h-10 w-10 items-center justify-center rounded-full text-foreground transition-colors hover:bg-muted cursor-pointer',
               'md:h-auto md:w-auto md:gap-2 md:border md:border-border md:dark:border-[#31363f] md:bg-background md:dark:bg-card md:py-1.5 md:pl-1.5 md:pr-3 md:text-sm md:font-medium md:shadow-xs md:hover:bg-secondary/60',
