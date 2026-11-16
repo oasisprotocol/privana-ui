@@ -1,6 +1,6 @@
 import { ArrowRight, type LucideIcon } from 'lucide-react'
 import type { ReactNode } from 'react'
-import { Link } from 'react-router'
+import { Link, useLocation } from 'react-router'
 import { getTokenIcon } from '@oasisprotocol/privana-sdk'
 import { cn } from '@/lib/utils'
 import { TokenAmount } from '@/components/TokenAmount'
@@ -30,6 +30,18 @@ type ActivityCardProps = {
   label?: string
 }
 
+const DetailsLink = ({ href, label }: { href: string; label?: string }) => {
+  const { pathname, search } = useLocation()
+  return (
+    <Link
+      to={href}
+      state={{ parent: pathname + search }}
+      aria-label={label}
+      className="absolute inset-0 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-ring"
+    />
+  )
+}
+
 export const ActivityCard = ({ children, divider, href, label }: ActivityCardProps) => (
   <div
     className={cn(
@@ -38,13 +50,7 @@ export const ActivityCard = ({ children, divider, href, label }: ActivityCardPro
       href && 'relative',
     )}
   >
-    {href && (
-      <Link
-        to={href}
-        aria-label={label}
-        className="absolute inset-0 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-ring"
-      />
-    )}
+    {href && <DetailsLink href={href} label={label} />}
     {children}
   </div>
 )

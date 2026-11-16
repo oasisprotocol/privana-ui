@@ -33,7 +33,7 @@ export const ActivityDetails = () => {
   const row = ref ? findDetailsRow(rows, ref, progress) : undefined
 
   const creditedId = ref?.source === 'deposit' && row?.source === 'chain' ? detailsIdOf(row) : null
-  if (creditedId) return <Navigate replace to={activityDetailsPath(creditedId)} />
+  if (creditedId) return <Navigate replace to={activityDetailsPath(creditedId)} state={state} />
 
   // The deposit flow still knows this deposit after its pending row is gone: it failed, timed out,
   // or was credited before the history refetch lists it.

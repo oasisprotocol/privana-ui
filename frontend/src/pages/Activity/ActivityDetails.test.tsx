@@ -192,6 +192,22 @@ describe('ActivityRow', () => {
     )
   })
 
+  it('returns to the page the row was opened from', async () => {
+    render(
+      <TooltipProvider>
+        <MemoryRouter initialEntries={['/dashboard']}>
+          <Routes>
+            <Route path="/dashboard" element={<ActivityRow row={swap} />} />
+            <Route path="/activity/:id" element={<ActivityDetails />} />
+          </Routes>
+        </MemoryRouter>
+      </TooltipProvider>,
+    )
+    await userEvent.click(screen.getByRole('link', { name: /^Swapped for ETH/ }))
+    await userEvent.click(screen.getByRole('button', { name: 'Back' }))
+    expect(screen.getByRole('link', { name: /^Swapped for ETH/ })).toBeInTheDocument()
+  })
+
   it('has no link before the server has named the operation', () => {
     renderRow({ ...swap, activity: { ...swap.activity, swapId: undefined } } as MergedRow)
     expect(screen.queryByRole('link')).not.toBeInTheDocument()

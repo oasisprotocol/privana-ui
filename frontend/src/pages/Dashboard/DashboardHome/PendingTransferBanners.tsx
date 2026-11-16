@@ -2,7 +2,7 @@ import { ChevronRight, LoaderCircle } from 'lucide-react'
 import { Link } from 'react-router'
 import type { MergedRow } from '@/hooks/use-merged-activity'
 import { cn } from '@/lib/utils'
-import { activityDetailsPath, activityPath } from '@/paths'
+import { activityDetailsPath, activityPath, dashboardPath } from '@/paths'
 import { usePendingTransfers, type PendingTransfer } from '@/hooks/usePendingTransfers'
 import { pendingTransferDetailsId } from '@/pages/Activity/details'
 import { pendingTransferCopy } from './pendingTransferCopy'
@@ -45,6 +45,7 @@ export const PendingTransferBanners = ({
           <Link
             key={transfer.key}
             to={detailsId ? activityDetailsPath(detailsId) : activityPath()}
+            state={{ parent: dashboardPath() }}
             viewTransition
             className={BANNER_CLASS}
           >
