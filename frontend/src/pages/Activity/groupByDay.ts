@@ -10,11 +10,7 @@ export function dayLabel(timestampSeconds: number, now = Date.now()): string {
   if (days <= 0) return 'Today'
   if (days === 1) return 'Yesterday'
   if (days < 7) return date.toLocaleDateString('en-US', { weekday: 'long' })
-  return date.toLocaleDateString('en-US', {
-    month: 'short',
-    day: 'numeric',
-    year: date.getFullYear() === new Date(now).getFullYear() ? undefined : 'numeric',
-  })
+  return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })
 }
 
 export type DayGroup = { key: string; label: string; rows: MergedRow[] }
