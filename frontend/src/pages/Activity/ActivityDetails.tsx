@@ -1,10 +1,12 @@
 import type { ReactNode } from 'react'
-import { Link, Navigate, useParams } from 'react-router'
+import { Link, Navigate, useLocation, useParams } from 'react-router'
 import { useDeposit, type DepositProgress } from '@oasisprotocol/privana-sdk'
+import { operationIdOf } from '@/api/operations'
 import { Button } from '@/components/ui/button'
 import { Skeleton } from '@/components/ui/skeleton'
 import { ActivityUnavailable } from '@/components/ActivityList'
 import { BackHeader } from '@/components/BackHeader'
+import { useActivity } from '@/contexts/ActivityProvider/useActivity'
 import { useGoToParent } from '@/hooks/use-go-to-parent'
 import { useMergedActivity, type MergedRow } from '@/hooks/use-merged-activity'
 import { DESKTOP_CARD } from '@/lib/surface'
@@ -25,14 +27,21 @@ const Details = ({ row, progress }: { row: MergedRow; progress: DepositProgress 
 
 export const ActivityDetails = () => {
   const { id = '' } = useParams()
-  const goToParent = useGoToParent(activityPath())
+  const { state } = useLocation()
+  const goToParent = useGoToParent((state as { parent?: string } | null)?.parent ?? activityPath())
   const ref = parseDetailsId(id)
   const { rows, isLoading, isError, refetch } = useMergedActivity()
   const { progress } = useDeposit()
-  const row = ref ? findDetailsRow(rows, ref, progress) : undefined
+  const { activities } = useActivity()
+  // A swap just submitted is known locally before every activity source has loaded.
+  const local =
+    ref?.source === 'operation' ? activities.find(a => operationIdOf(a) === ref.operationId) : undefined
+  const row: MergedRow | undefined =
+    (ref ? findDetailsRow(rows, ref, progress) : undefined) ??
+    (local && { source: 'local', timestamp: Math.floor(local.createdAt / 1000), activity: local })
 
   const creditedId = ref?.source === 'deposit' && row?.source === 'chain' ? detailsIdOf(row) : null
-  if (creditedId) return <Navigate replace to={activityDetailsPath(creditedId)} />
+  if (creditedId) return <Navigate replace to={activityDetailsPath(creditedId)} state={state} />
 
   // The deposit flow still knows this deposit after its pending row is gone: it failed, timed out,
   // or was credited before the history refetch lists it.

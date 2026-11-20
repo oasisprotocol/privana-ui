@@ -1,5 +1,5 @@
 import { describe, expect, it, vi, beforeEach } from 'vitest'
-import { act, renderHook, waitFor } from '@testing-library/react'
+import { act, renderHook } from '@testing-library/react'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import type { ReactNode } from 'react'
 import type { WalletClient } from 'viem'
@@ -40,41 +40,68 @@ const wrapper = ({ children }: { children: ReactNode }) => (
 
 beforeEach(() => vi.clearAllMocks())
 
+const addedId = () => vi.mocked(activity.addActivity).mock.calls[0][0].id
+
+const submit = async (options: Parameters<typeof useSubmitSwap>[0] = {}) => {
+  const { result } = renderHook(() => useSubmitSwap(options), { wrapper })
+  let submitted: Awaited<ReturnType<typeof result.current.execute>> = null
+  await act(async () => {
+    submitted = await result.current.execute(params)
+  })
+  return { result, submitted }
+}
+
 describe('useSubmitSwap', () => {
+  it('resolves with the operation id once the swap is scheduled', async () => {
+    vi.mocked(executeSwap).mockResolvedValue({
+      swap_id: 'srv-1',
+      status: 'scheduled',
+      message: '',
+      tx_hash: null,
+    })
+    const onSuccess = vi.fn()
+    const { submitted } = await submit({ onSuccess })
+
+    expect(submitted).toEqual({ operationId: 'srv-1' })
+    expect(activity.updateActivity).toHaveBeenCalledWith(addedId(), {
+      swapId: 'srv-1',
+      txHash: undefined,
+      status: 'in-progress',
+    })
+    expect(onSuccess).toHaveBeenCalledTimes(1)
+  })
+
   it('drops the optimistic entry and returns to review when the backend refuses with 409', async () => {
     vi.mocked(executeSwap).mockRejectedValue(new ApiError(409, 'A previous operation is still pending'))
     const onRefused = vi.fn()
-    const { result } = renderHook(() => useSubmitSwap({ onRefused }), { wrapper })
+    const { result, submitted } = await submit({ onRefused })
 
-    let id: string | null = null
-    await act(async () => {
-      id = await result.current.execute(params)
-    })
-
-    expect(id).not.toBeNull()
-    await waitFor(() => expect(activity.removeActivity).toHaveBeenCalledWith(id))
+    expect(submitted).toBeNull()
+    expect(activity.removeActivity).toHaveBeenCalledWith(addedId())
     expect(activity.updateActivity).not.toHaveBeenCalled()
     expect(onRefused).toHaveBeenCalledTimes(1)
     expect(result.current.error).toBe(OPERATION_PENDING_MESSAGE)
   })
 
-  it('still records any other 4xx as a failed swap', async () => {
+  it('drops the entry and stays on review for any other 4xx', async () => {
     vi.mocked(executeSwap).mockRejectedValue(new ApiError(400, 'Quote has expired'))
     const onRefused = vi.fn()
-    const { result } = renderHook(() => useSubmitSwap({ onRefused }), { wrapper })
+    const { result, submitted } = await submit({ onRefused })
 
-    let id: string | null = null
-    await act(async () => {
-      id = await result.current.execute(params)
-    })
-
-    await waitFor(() =>
-      expect(activity.updateActivity).toHaveBeenCalledWith(id, {
-        status: 'failed',
-        error: 'Quote has expired',
-      }),
-    )
-    expect(activity.removeActivity).not.toHaveBeenCalled()
+    expect(submitted).toBeNull()
+    expect(activity.removeActivity).toHaveBeenCalledWith(addedId())
+    expect(activity.updateActivity).not.toHaveBeenCalled()
     expect(onRefused).not.toHaveBeenCalled()
+    expect(result.current.error).toBe('Quote has expired')
+  })
+
+  it('keeps the entry in progress when the outcome is unknown', async () => {
+    vi.mocked(executeSwap).mockRejectedValue(new TypeError('Failed to fetch'))
+    const { result, submitted } = await submit()
+
+    expect(submitted).toEqual({})
+    expect(activity.removeActivity).not.toHaveBeenCalled()
+    expect(activity.updateActivity).not.toHaveBeenCalled()
+    expect(result.current.error).toBeNull()
   })
 })

@@ -28,16 +28,14 @@ export type SubmitSwapParams = {
   feeFiat?: number
 }
 
+export type SubmittedSwap = { operationId?: string }
+
 export const useSubmitSwap = ({ onSuccess, onRefused }: Params = {}) => {
   const { addActivity, updateActivity, removeActivity } = useActivity()
   const queryClient = useQueryClient()
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
-
-  // Resolves to the created activity's id (so the caller can track its live
-  // status for the swapping/result screens) or null if signing failed / was
-  // rejected before an activity was created.
-  const execute = async (params: SubmitSwapParams): Promise<string | null> => {
+  const execute = async (params: SubmitSwapParams): Promise<SubmittedSwap | null> => {
     const { quote, walletClient, address, fromToken, toToken, feeFiat } = params
     if (fromToken.token_decimals == null || toToken.token_decimals == null) {
       setError('Missing token decimals')
@@ -45,6 +43,7 @@ export const useSubmitSwap = ({ onSuccess, onRefused }: Params = {}) => {
     }
     setLoading(true)
     setError(null)
+    let id: string | undefined
     try {
       const signature = await signTransferMessage({
         walletClient,
@@ -58,7 +57,7 @@ export const useSubmitSwap = ({ onSuccess, onRefused }: Params = {}) => {
         },
       })
 
-      const id = crypto.randomUUID()
+      id = crypto.randomUUID()
       addActivity({
         id,
         type: 'swap',
@@ -79,56 +78,43 @@ export const useSubmitSwap = ({ onSuccess, onRefused }: Params = {}) => {
         toAmount: quote.to_amount_estimate,
         feeFiat,
       })
-      setLoading(false)
 
-      // Fire-and-forget: backend settlement may take seconds. Caller navigates
-      // away once this returns true; the result flows back to the activity
-      // entry via updateActivity.
-      executeSwap({
+      const swap = await executeSwap({
         quote_id: quote.quote_id,
         user_address: address,
         input_nonce: quote.transfer_nonce,
         input_signature: signature,
       })
-        .then(swap => {
-          const status: ActivityStatus =
-            swap.status === 'completed' || swap.status === 'failed' ? swap.status : 'in-progress'
-          updateActivity(id, {
-            swapId: swap.swap_id,
-            txHash: swap.tx_hash ?? undefined,
-            status,
-          })
-          void queryClient.invalidateQueries({ queryKey: operationsKeys.all })
-          onSuccess?.()
-        })
-        .catch(err => {
-          // Only a 4xx proves the swap was rejected. On a timeout/network
-          // error/5xx the backend may still settle it (it holds requests
-          // through a serialized settlement queue), so the entry stays
-          // in-progress and the operations feed resolves it by quoteId —
-          // marking it failed here fabricates a failure for a swap that
-          // usually succeeded.
-          if (isNonceRefusal(err)) {
-            removeActivity(id)
-            setError(nonceRefusalMessage(err))
-            onRefused?.()
-            return
-          }
-          if (isDefinitiveRejection(err)) {
-            updateActivity(id, {
-              status: 'failed',
-              error: extractErrorMessage(err, 'Swap failed'),
-            })
-            return
-          }
-          void queryClient.invalidateQueries({ queryKey: operationsKeys.all })
-        })
-
-      return id
+      const status: ActivityStatus =
+        swap.status === 'completed' || swap.status === 'failed' ? swap.status : 'in-progress'
+      updateActivity(id, {
+        swapId: swap.swap_id,
+        txHash: swap.tx_hash ?? undefined,
+        status,
+      })
+      void queryClient.invalidateQueries({ queryKey: operationsKeys.all })
+      onSuccess?.()
+      return { operationId: swap.swap_id }
     } catch (err) {
-      setError(extractErrorMessage(err, 'Swap failed'))
+      if (id === undefined) {
+        setError(extractErrorMessage(err, 'Swap failed'))
+        return null
+      }
+      if (isNonceRefusal(err)) {
+        removeActivity(id)
+        setError(nonceRefusalMessage(err))
+        onRefused?.()
+        return null
+      }
+      if (isDefinitiveRejection(err)) {
+        removeActivity(id)
+        setError(extractErrorMessage(err, 'Swap failed'))
+        return null
+      }
+      void queryClient.invalidateQueries({ queryKey: operationsKeys.all })
+      return {}
+    } finally {
       setLoading(false)
-      return null
     }
   }
 

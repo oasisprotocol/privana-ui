@@ -1,8 +1,10 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { render, screen } from '@testing-library/react'
+import userEvent from '@testing-library/user-event'
 import { MemoryRouter, Route, Routes } from 'react-router'
 import { TooltipProvider } from '@/components/ui/tooltip'
 import type { DepositProgress, HistoryEntry } from '@oasisprotocol/privana-sdk'
+import type { Activity } from '@/contexts/ActivityProvider/context'
 import type { MergedRow, UseMergedActivityResult } from '@/hooks/use-merged-activity'
 import type { ClassifiedHistoryEntry } from './historyMapping'
 import { ActivityDetails } from './ActivityDetails'
@@ -19,6 +21,9 @@ vi.mock('@/api/operations', async importOriginal => ({
   ...(await importOriginal<typeof import('@/api/operations')>()),
   useOperations: () => ({ data: undefined }),
 }))
+
+let activities: Activity[] = []
+vi.mock('@/contexts/ActivityProvider/useActivity', () => ({ useActivity: () => ({ activities }) }))
 
 let merged: UseMergedActivityResult
 vi.mock('@/hooks/use-merged-activity', async importOriginal => ({
@@ -60,6 +65,7 @@ const renderAt = (path: string) =>
 beforeEach(() => {
   merged = { rows: [swap], isLoading: false, isError: false, refetch: vi.fn() }
   progress = null
+  activities = []
 })
 
 describe('ActivityDetails', () => {
@@ -68,6 +74,30 @@ describe('ActivityDetails', () => {
     expect(screen.getByRole('heading', { name: 'Swapped for ETH' })).toBeInTheDocument()
     expect(screen.getByText(/Oct 12, 2026, 11:17\sAM/)).toBeInTheDocument()
     expect(screen.getByRole('button', { name: 'Copy operation ID' })).toBeInTheDocument()
+  })
+
+  it('goes back to where the flow that opened it says', async () => {
+    render(
+      <TooltipProvider>
+        <MemoryRouter
+          initialEntries={[{ pathname: `/activity/op-${OPERATION_ID}`, state: { parent: '/dashboard' } }]}
+        >
+          <Routes>
+            <Route path="/activity/:id" element={<ActivityDetails />} />
+            <Route path="/dashboard" element={<p>Dashboard</p>} />
+          </Routes>
+        </MemoryRouter>
+      </TooltipProvider>,
+    )
+    await userEvent.click(screen.getByRole('button', { name: 'Back' }))
+    expect(screen.getByText('Dashboard')).toBeInTheDocument()
+  })
+
+  it('shows a swap known locally while the activity sources are still loading', () => {
+    merged = { rows: [], isLoading: true, isError: false, refetch: vi.fn() }
+    activities = [swap.activity]
+    renderAt(`/activity/op-${OPERATION_ID}`)
+    expect(screen.getByRole('heading', { name: 'Swapped for ETH' })).toBeInTheDocument()
   })
 
   it('says so when the transaction is not loaded', () => {
@@ -172,6 +202,22 @@ describe('ActivityRow', () => {
       'href',
       `/activity/op-${OPERATION_ID}`,
     )
+  })
+
+  it('returns to the page the row was opened from', async () => {
+    render(
+      <TooltipProvider>
+        <MemoryRouter initialEntries={['/dashboard']}>
+          <Routes>
+            <Route path="/dashboard" element={<ActivityRow row={swap} />} />
+            <Route path="/activity/:id" element={<ActivityDetails />} />
+          </Routes>
+        </MemoryRouter>
+      </TooltipProvider>,
+    )
+    await userEvent.click(screen.getByRole('link', { name: /^Swapped for ETH/ }))
+    await userEvent.click(screen.getByRole('button', { name: 'Back' }))
+    expect(screen.getByRole('link', { name: /^Swapped for ETH/ })).toBeInTheDocument()
   })
 
   it('has no link before the server has named the operation', () => {
