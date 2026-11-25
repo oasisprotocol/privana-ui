@@ -61,7 +61,7 @@ const renderBanners = (rows: MergedRow[]) =>
 describe('PendingTransferBanners', () => {
   it('links a deposit banner to its details', () => {
     renderBanners([])
-    expect(screen.getByRole('link', { name: /Deposit detected/ })).toHaveAttribute(
+    expect(screen.getByRole('link', { name: /Deposit in progress/ })).toHaveAttribute(
       'href',
       '/activity/dep-0xabc',
     )

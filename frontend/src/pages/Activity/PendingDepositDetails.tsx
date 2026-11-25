@@ -6,10 +6,10 @@ import { activityIcon } from './activityVisuals'
 import { AmountValue, DetailsCard, DetailsHero, DetailsRow, HeroAmount, IdValue } from './DetailsParts'
 import { moveCopy } from './labels'
 
-const CREDITING_LINE = 'Step 2/2 · Adding your deposit to Available'
+const CREDITING_LINE = 'Adding to Available'
 
 const STAGE_LINE: Record<DepositProgress['stage'], string> = {
-  confirming: 'Step 1/2 · Confirming your deposit on-chain',
+  confirming: 'Confirming your transfer on-chain',
   crediting: CREDITING_LINE,
   // Credited, until the history refetch lists it and the page moves to that entry.
   credited: CREDITING_LINE,
@@ -34,7 +34,7 @@ export const PendingDepositDetails = ({ progress }: { progress: DepositProgress 
         amount={token ? <HeroAmount amount={amount} token={token} /> : null}
         statusLine={
           progress.stage === 'crediting' && progress.finality
-            ? `Step 2/2 · ${confirmationsText(progress.finality)} · Adding your deposit to Available`
+            ? `${CREDITING_LINE} · ${confirmationsText(progress.finality)}`
             : STAGE_LINE[progress.stage]
         }
       />
