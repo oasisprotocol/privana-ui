@@ -1,14 +1,15 @@
 import { ExternalLink } from 'lucide-react'
 import { getExplorerLabel, usePrivanaContext, type DepositProgress } from '@oasisprotocol/privana-sdk'
+import { confirmationsText } from '@/hooks/usePendingTransfers'
 import { formatDateTime } from '@/lib/dates'
 import { activityIcon } from './activityVisuals'
 import { AmountValue, DetailsCard, DetailsHero, DetailsRow, HeroAmount, IdValue } from './DetailsParts'
 import { moveCopy } from './labels'
 
-const CREDITING_LINE = 'Step 2/2 · Adding your deposit to Available'
+const CREDITING_LINE = 'Adding to Available'
 
 const STAGE_LINE: Record<DepositProgress['stage'], string> = {
-  confirming: 'Step 1/2 · Confirming your deposit on-chain',
+  confirming: 'Confirming your transfer on-chain',
   crediting: CREDITING_LINE,
   // Credited, until the history refetch lists it and the page moves to that entry.
   credited: CREDITING_LINE,
@@ -31,7 +32,11 @@ export const PendingDepositDetails = ({ progress }: { progress: DepositProgress 
         Icon={activityIcon('deposit')}
         status="in-progress"
         amount={token ? <HeroAmount amount={amount} token={token} /> : null}
-        statusLine={STAGE_LINE[progress.stage]}
+        statusLine={
+          progress.stage === 'crediting' && progress.finality
+            ? `${CREDITING_LINE} · ${confirmationsText(progress.finality)}`
+            : STAGE_LINE[progress.stage]
+        }
       />
       <DetailsCard>
         {token && (

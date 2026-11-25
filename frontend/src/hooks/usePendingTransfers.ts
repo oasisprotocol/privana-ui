@@ -4,6 +4,7 @@ import {
   usePendingWithdrawals,
   usePrivanaContext,
   type Bytes32,
+  type DepositFinalityProgress,
   type DepositProgress,
   type TokenConfig,
   type WithdrawalInfo,
@@ -20,6 +21,7 @@ export type PendingTransfer =
       step: 1 | 2
       sentAt: number
       depositId: string | undefined
+      finality?: DepositFinalityProgress
     }
   | {
       kind: 'withdraw'
@@ -39,6 +41,9 @@ export const pendingDepositKey = (txHash: string): string => `${PENDING_DEPOSIT_
 export const pendingDepositTxHash = (key: string): string | null =>
   key.startsWith(PENDING_DEPOSIT_PREFIX) ? key.slice(PENDING_DEPOSIT_PREFIX.length) : null
 
+export const confirmationsText = ({ confirmations, required }: DepositFinalityProgress): string =>
+  `${Math.min(confirmations, required)}/${required} confirmations`
+
 export function buildPendingTransfers(
   progress: DepositProgress | null,
   withdrawals: readonly WithdrawalInfo[],
@@ -55,6 +60,7 @@ export function buildPendingTransfers(
       step: progress.stage === 'confirming' ? 1 : 2,
       sentAt: progress.sentAt,
       depositId: progress.depositId,
+      finality: progress.finality,
     })
   }
   for (const w of [...withdrawals].sort((a, b) => b.index - a.index)) {

@@ -112,7 +112,7 @@ describe('ActivityDetails: a deposit on its way', () => {
     merged = { ...merged, rows: [pendingRow] }
     renderAt('/activity/dep-0xabc')
     expect(screen.getByRole('heading', { name: 'Depositing to vault' })).toBeInTheDocument()
-    expect(screen.getByText('Step 1/2 · Confirming your deposit on-chain')).toBeInTheDocument()
+    expect(screen.getByText('Confirming your transfer on-chain')).toBeInTheDocument()
   })
 
   it('keeps a deposit whose verification stopped short, instead of losing it', () => {
@@ -128,7 +128,7 @@ describe('ActivityDetails: a deposit on its way', () => {
     merged = { ...merged, rows: [] }
     renderAt('/activity/dep-0xabc')
     expect(screen.getByRole('heading', { name: 'Depositing to vault' })).toBeInTheDocument()
-    expect(screen.getByText('Step 2/2 · Adding your deposit to Available')).toBeInTheDocument()
+    expect(screen.getByText('Adding to Available')).toBeInTheDocument()
     expect(screen.queryByText("We couldn't find that transaction.")).not.toBeInTheDocument()
   })
 

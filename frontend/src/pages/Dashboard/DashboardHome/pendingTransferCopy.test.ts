@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import type { TokenConfig } from '@oasisprotocol/privana-sdk'
+import type { DepositFinalityProgress, TokenConfig } from '@oasisprotocol/privana-sdk'
 import type { PendingTransfer } from '@/hooks/usePendingTransfers'
 import { pendingTransferCopy } from './pendingTransferCopy'
 
@@ -12,7 +12,11 @@ const USDC: TokenConfig = {
   chainId: 8453,
 }
 
-const deposit = (step: 1 | 2, token: TokenConfig | undefined): PendingTransfer => ({
+const deposit = (
+  step: 1 | 2,
+  token: TokenConfig | undefined,
+  finality?: DepositFinalityProgress,
+): PendingTransfer => ({
   kind: 'deposit',
   key: 'deposit:0xabc',
   amount: 10_000_000n,
@@ -21,6 +25,7 @@ const deposit = (step: 1 | 2, token: TokenConfig | undefined): PendingTransfer =
   step,
   sentAt: 0,
   depositId: undefined,
+  finality,
 })
 
 const withdrawal = (token: TokenConfig | undefined): PendingTransfer => ({
@@ -34,13 +39,20 @@ const withdrawal = (token: TokenConfig | undefined): PendingTransfer => ({
 })
 
 describe('pendingTransferCopy', () => {
-  it('describes each deposit step', () => {
+  it('describes each deposit step with the amount in the title', () => {
     expect(pendingTransferCopy(deposit(1, USDC))).toEqual({
-      title: 'Deposit detected',
-      detail: 'Step 1/2 · Confirming your 10.00 USDC deposit on-chain',
+      title: 'Depositing 10.00 USDC',
+      detail: 'Confirming your transfer on-chain',
     })
-    expect(pendingTransferCopy(deposit(2, USDC)).detail).toBe(
-      'Step 2/2 · Adding your 10.00 USDC to Available',
+    expect(pendingTransferCopy(deposit(2, USDC))).toEqual({
+      title: 'Depositing 10.00 USDC',
+      detail: 'Adding to Available',
+    })
+  })
+
+  it('counts the sweep confirmations while crediting', () => {
+    expect(pendingTransferCopy(deposit(2, USDC, { confirmations: 12, required: 250 })).detail).toBe(
+      'Adding to Available · 12/250 confirmations',
     )
   })
 
@@ -52,12 +64,7 @@ describe('pendingTransferCopy', () => {
   })
 
   it('reads naturally without the amount when the token is unknown', () => {
-    expect(pendingTransferCopy(deposit(1, undefined)).detail).toBe(
-      'Step 1/2 · Confirming your deposit on-chain',
-    )
-    expect(pendingTransferCopy(deposit(2, undefined)).detail).toBe(
-      'Step 2/2 · Adding your deposit to Available',
-    )
+    expect(pendingTransferCopy(deposit(1, undefined)).title).toBe('Deposit in progress')
     expect(pendingTransferCopy(withdrawal(undefined)).detail).toBe('Sending your funds on-chain')
   })
 })

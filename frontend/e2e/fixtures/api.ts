@@ -2,6 +2,7 @@ import type { Page, Route } from '@playwright/test'
 import type {
   BalanceResponse,
   BatchBalancesResponse,
+  DepositCheckResponse,
   HistoryEntry,
   HistoryResponse,
   JwtLogoutResponse,
@@ -221,6 +222,9 @@ export async function installApi(page: Page, state: StubState) {
   )
   await page.route(`${ACCOUNTING_API_URL}/v1/accounting/history**`, route =>
     json(route, { history: state.history, total: state.history.length } satisfies HistoryResponse),
+  )
+  await page.route(`${ACCOUNTING_API_URL}/v1/accounting/deposits/check`, route =>
+    json(route, [] satisfies DepositCheckResponse[]),
   )
 
   // --- Services API ---

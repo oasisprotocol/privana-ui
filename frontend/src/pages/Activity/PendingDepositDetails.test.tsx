@@ -44,8 +44,18 @@ describe('PendingDepositDetails', () => {
   it('adds the deposit id once crediting starts', () => {
     render(<PendingDepositDetails progress={progress({ stage: 'crediting', depositId: '0xd1' })} />)
 
-    expect(screen.getByText('Step 2/2 · Adding your deposit to Available')).toBeInTheDocument()
+    expect(screen.getByText('Adding to Available')).toBeInTheDocument()
     expect(screen.getByRole('button', { name: 'Copy deposit ID' })).toBeInTheDocument()
+  })
+
+  it('counts the sweep confirmations while crediting', () => {
+    render(
+      <PendingDepositDetails
+        progress={progress({ stage: 'crediting', finality: { confirmations: 12, required: 250 } })}
+      />,
+    )
+
+    expect(screen.getByText('Adding to Available · 12/250 confirmations')).toBeInTheDocument()
   })
 
   it('says where funds are for a deposit it could not confirm, reverted or not', () => {
