@@ -1,6 +1,11 @@
 import { describe, expect, it } from 'vitest'
 import type { DepositProgress, TokenConfig, WithdrawalInfo } from '@oasisprotocol/privana-sdk'
-import { buildPendingTransfers, pendingDepositKey, pendingDepositTxHash } from './usePendingTransfers'
+import {
+  buildPendingTransfers,
+  confirmationsText,
+  pendingDepositKey,
+  pendingDepositTxHash,
+} from './usePendingTransfers'
 
 const USDC: TokenConfig = {
   id: '0xusdc',
@@ -40,6 +45,14 @@ describe('buildPendingTransfers', () => {
     expect(buildPendingTransfers(deposit('crediting'), [], getTokenById)[0]).toMatchObject({ step: 2 })
   })
 
+  it('carries the sweep confirmations while crediting', () => {
+    const finality = { confirmations: 12, required: 250 }
+    expect(buildPendingTransfers({ ...deposit('crediting'), finality }, [], getTokenById)[0]).toMatchObject({
+      step: 2,
+      finality,
+    })
+  })
+
   it('drops the deposit once it credits, fails or times out', () => {
     for (const stage of ['credited', 'failed', 'timeout'] as const) {
       expect(buildPendingTransfers(deposit(stage), [], getTokenById)).toEqual([])
@@ -59,6 +72,13 @@ describe('buildPendingTransfers', () => {
     expect(buildPendingTransfers(null, [withdrawal(1)], () => undefined)).toMatchObject([
       { kind: 'withdraw', token: undefined },
     ])
+  })
+})
+
+describe('confirmationsText', () => {
+  it('counts up to the required confirmations', () => {
+    expect(confirmationsText({ confirmations: 12, required: 250 })).toBe('12/250 confirmations')
+    expect(confirmationsText({ confirmations: 260, required: 250 })).toBe('250/250 confirmations')
   })
 })
 

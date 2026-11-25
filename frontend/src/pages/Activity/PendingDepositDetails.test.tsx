@@ -48,6 +48,18 @@ describe('PendingDepositDetails', () => {
     expect(screen.getByRole('button', { name: 'Copy deposit ID' })).toBeInTheDocument()
   })
 
+  it('counts the sweep confirmations while crediting', () => {
+    render(
+      <PendingDepositDetails
+        progress={progress({ stage: 'crediting', finality: { confirmations: 12, required: 250 } })}
+      />,
+    )
+
+    expect(
+      screen.getByText('Step 2/2 · 12/250 confirmations · Adding your deposit to Available'),
+    ).toBeInTheDocument()
+  })
+
   it('says where funds are for a deposit it could not confirm, reverted or not', () => {
     render(<PendingDepositDetails progress={progress({ stage: 'failed' })} />)
     expect(

@@ -1,5 +1,6 @@
 import { ExternalLink } from 'lucide-react'
 import { getExplorerLabel, usePrivanaContext, type DepositProgress } from '@oasisprotocol/privana-sdk'
+import { confirmationsText } from '@/hooks/usePendingTransfers'
 import { formatDateTime } from '@/lib/dates'
 import { activityIcon } from './activityVisuals'
 import { AmountValue, DetailsCard, DetailsHero, DetailsRow, HeroAmount, IdValue } from './DetailsParts'
@@ -31,7 +32,11 @@ export const PendingDepositDetails = ({ progress }: { progress: DepositProgress 
         Icon={activityIcon('deposit')}
         status="in-progress"
         amount={token ? <HeroAmount amount={amount} token={token} /> : null}
-        statusLine={STAGE_LINE[progress.stage]}
+        statusLine={
+          progress.stage === 'crediting' && progress.finality
+            ? `Step 2/2 · ${confirmationsText(progress.finality)} · Adding your deposit to Available`
+            : STAGE_LINE[progress.stage]
+        }
       />
       <DetailsCard>
         {token && (

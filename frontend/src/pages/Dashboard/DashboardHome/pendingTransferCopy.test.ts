@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import type { TokenConfig } from '@oasisprotocol/privana-sdk'
+import type { DepositFinalityProgress, TokenConfig } from '@oasisprotocol/privana-sdk'
 import type { PendingTransfer } from '@/hooks/usePendingTransfers'
 import { pendingTransferCopy } from './pendingTransferCopy'
 
@@ -12,7 +12,11 @@ const USDC: TokenConfig = {
   chainId: 8453,
 }
 
-const deposit = (step: 1 | 2, token: TokenConfig | undefined): PendingTransfer => ({
+const deposit = (
+  step: 1 | 2,
+  token: TokenConfig | undefined,
+  finality?: DepositFinalityProgress,
+): PendingTransfer => ({
   kind: 'deposit',
   key: 'deposit:0xabc',
   amount: 10_000_000n,
@@ -21,6 +25,7 @@ const deposit = (step: 1 | 2, token: TokenConfig | undefined): PendingTransfer =
   step,
   sentAt: 0,
   depositId: undefined,
+  finality,
 })
 
 const withdrawal = (token: TokenConfig | undefined): PendingTransfer => ({
@@ -41,6 +46,12 @@ describe('pendingTransferCopy', () => {
     })
     expect(pendingTransferCopy(deposit(2, USDC)).detail).toBe(
       'Step 2/2 · Adding your 10.00 USDC to Available',
+    )
+  })
+
+  it('puts the sweep confirmations first, where truncation keeps them', () => {
+    expect(pendingTransferCopy(deposit(2, USDC, { confirmations: 12, required: 250 })).detail).toBe(
+      'Step 2/2 · 12/250 confirmations · Adding your 10.00 USDC to Available',
     )
   })
 
