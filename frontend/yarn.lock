@@ -7071,7 +7071,7 @@ __metadata:
     react: "npm:^19.3.1"
     react-dom: "npm:^19.3.1"
     react-router: "npm:^8.5.1"
-    recharts: "npm:^3.10.1"
+    recharts: "npm:^3.11.2"
     reflect-metadata: "npm:^0.2.2"
     sonner: "npm:^2.0.8"
     tailwind-merge: "npm:^3.7.0"
@@ -7436,12 +7436,11 @@ __metadata:
   languageName: node
   linkType: hard
 
-"recharts@npm:^3.10.1":
-  version: 3.10.1
-  resolution: "recharts@npm:3.10.1"
+"recharts@npm:^3.11.2":
+  version: 3.11.2
+  resolution: "recharts@npm:3.11.2"
   dependencies:
     "@reduxjs/toolkit": "npm:^1.9.0 || 2.x.x"
-    clsx: "npm:^2.1.1"
     decimal.js-light: "npm:^2.5.1"
     es-toolkit: "npm:^1.39.3"
     eventemitter3: "npm:^5.0.1"
@@ -7450,12 +7449,16 @@ __metadata:
     reselect: "npm:5.2.0"
     tiny-invariant: "npm:^1.3.3"
     use-sync-external-store: "npm:^1.2.2"
-    victory-vendor: "npm:^37.0.2"
+    victory-vendor: "npm:^38.1.1"
   peerDependencies:
+    "@types/react": "*"
     react: ^16.8.0 || ^17.0.0 || ^18.0.0 || ^19.0.0
     react-dom: ^16.0.0 || ^17.0.0 || ^18.0.0 || ^19.0.0
     react-is: ^16.8.0 || ^17.0.0 || ^18.0.0 || ^19.0.0
-  checksum: 10c0/0f65737930ef37c879f36f32e2ba26e9b3fa08b5056e5002d77da73061eb0f8e89e0610d75a890bdbf7d956f2f82f030812d30251ad1ef550e6a21fb3af13028
+  peerDependenciesMeta:
+    "@types/react":
+      optional: true
+  checksum: 10c0/83f9e2d7e5479b83e534a0649651cf4114ab3ca71e06ab24fab683860f78eabed051bfeaf0c8242be443c5c49fa16aeda4fda95510b70be579b5fa3e9abc4ad2
   languageName: node
   linkType: hard
 
@@ -8147,9 +8150,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"victory-vendor@npm:^37.0.2":
-  version: 37.3.6
-  resolution: "victory-vendor@npm:37.3.6"
+"victory-vendor@npm:^38.1.1":
+  version: 38.1.1
+  resolution: "victory-vendor@npm:38.1.1"
   dependencies:
     "@types/d3-array": "npm:^3.0.3"
     "@types/d3-ease": "npm:^3.0.0"
@@ -8165,7 +8168,7 @@ __metadata:
     d3-shape: "npm:^3.1.0"
     d3-time: "npm:^3.0.0"
     d3-timer: "npm:^3.0.1"
-  checksum: 10c0/0a9628db30b898160409628f26d457ba15adc86472531817d73fbeb847de498d94f91dee5f4caa969195744e91be93e100eeff7a392b591ac5349343a36dec29
+  checksum: 10c0/bcb9eaa4d0ca5d9267fadb7dffef6af3664ba8394a057c54dddd220237be6d8af4f76bfffbaff88c4799908dd45c30a9fc5db712e90a3f201347e3f25f0a9a55
   languageName: node
   linkType: hard
 
